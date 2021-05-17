@@ -24,6 +24,8 @@ using NVorbis;
 using System.Windows.Media.Animation;
 using System.Reflection;
 using NAudio.Wave.SampleProviders;
+using System.Reactive;
+using System.Reactive.Linq;
 
 namespace RagnarockEditor {
     /// <summary>
@@ -41,6 +43,25 @@ namespace RagnarockEditor {
         string[] difficultyNames = { "Easy", "Normal", "Hard"};
         double notePlaybackDelta = 0.02;
         int simultaneousNotePlaybackStreams = 16;
+        int gridRedrawInterval = 100; // ms
+        // readonly values
+
+        double unitLength {
+            get { return Drum.ActualWidth * double.Parse((string)getForMapCustomInfoDat("_editorGridSpacing")); }
+        }
+        double unitLengthUnscaled {
+            get { return Drum.ActualWidth; }
+        }
+        double unitHeight {
+            get { return Drum.ActualHeight; }
+        }
+
+        double editorScrollPosition {
+            get { return Math.Max(EditorGrid.ActualHeight - scrollEditor.VerticalOffset - scrollEditor.ActualHeight, 0); }
+        }
+        string songFilePath {
+            get { return absPath((string)getValInfoDat("_songFilename")); }
+        }
 
         // state variables
         int _selectedDifficulty;
@@ -61,6 +82,7 @@ namespace RagnarockEditor {
         double currentBPM {
             get { return double.Parse((string)getValInfoDat("_beatsPerMinute")); }
         }
+        double prevScrollPercent = 0; // percentage of scroll progress before the scroll viewport was changed
 
         int numDifficulties {
            get {
@@ -81,23 +103,6 @@ namespace RagnarockEditor {
         int gridDivision; 
         double editorDrawRangeLower = 0;
         double editorDrawRangeHigher = 0;
-        double editorScrollPosition {
-            get { return Math.Max(EditorGrid.ActualHeight - scrollEditor.VerticalOffset - scrollEditor.ActualHeight, 0); }
-        }
-
-        string songFilePath {
-            get { return absPath((string) getValInfoDat("_songFilename")); }
-        }
-
-        double unitLength {
-            get { return Drum.ActualWidth * double.Parse((string)getForMapCustomInfoDat("_editorGridSpacing"));}
-        }
-        double unitLengthUnscaled {
-            get { return Drum.ActualWidth; }
-        }
-        double unitHeight {
-            get { return Drum.ActualHeight; }
-        }
 
         public MainWindow() {
             InitializeComponent();
@@ -130,6 +135,11 @@ namespace RagnarockEditor {
             sliderSongProgress.IsEnabled = false;
             scrollEditor.IsEnabled = false;
 
+            // debounce grid redrawing on resize
+            Observable
+            .FromEventPattern<SizeChangedEventArgs>(EditorGrid, nameof(Canvas.SizeChanged))
+            .Throttle(TimeSpan.FromMilliseconds(gridRedrawInterval))
+            .Subscribe(eventPattern => _EditorGrid_SizeChanged(eventPattern.Sender, eventPattern.EventArgs));
         }
 
         void MainWindow_Closed(object sender, EventArgs e) {
@@ -254,56 +264,10 @@ namespace RagnarockEditor {
         }
 
         private void btnSongPlayer_Click(object sender, RoutedEventArgs e) {
-            // pause -> play
             if (!songIsPlaying) {
-
-                songIsPlaying = true;
-
-                // disable some UI elements for performance reasons
-                txtGridDivision.IsEnabled = false;
-                txtGridOffset.IsEnabled = false;
-                txtGridSpacing.IsEnabled = false;
-
-                // update seek time from slider
-                var seek = (int)sliderSongProgress.Value;
-                var seekTime = new TimeSpan(0, 0, (seek / 1000) / 60, (seek / 1000) % 60, seek % 1000);
-                songStream.CurrentTime = seekTime; 
-
-                // calculate scan index for playing drum hits
-                rescanNotes();
-
-                // disable scrolling while playing
-                scrollEditor.IsEnabled = false;
-                sliderSongProgress.IsEnabled = false;
-
-                // animate for smooth scrolling 
-                var remainingTime = songStream.TotalTime.TotalMilliseconds - songStream.CurrentTime.TotalMilliseconds;
-                var remainingTimeSpan = new TimeSpan(0, 0, 0, 0, (int)(remainingTime));
-
-                DoubleAnimation anim = new DoubleAnimation();
-                anim.From = sliderSongProgress.Value;
-                anim.To = sliderSongProgress.Maximum;
-                anim.Duration = new Duration(remainingTimeSpan);
-                sliderSongProgress.BeginAnimation(Slider.ValueProperty, anim);
-
-                // play song
-                songPlayer.Play();
-
-            // play -> pause
+                beginSongPlayback();
             } else {
-                // disable some UI elements for performance reasons
-                txtGridDivision.IsEnabled = true;
-                txtGridOffset.IsEnabled = true;
-                txtGridSpacing.IsEnabled = true;
-
-                // enable scrolling while paused
-                scrollEditor.IsEnabled = true;
-                sliderSongProgress.IsEnabled = true;
-
-                sliderSongProgress.BeginAnimation(Slider.ValueProperty, null);
-
-                songPlayer.Stop();
-                songIsPlaying = false;
+                endSongPlayback();
             }          
         }
 
@@ -361,13 +325,14 @@ namespace RagnarockEditor {
                 var noteBeat = selectedDifficultyNotes[noteScanIndex].Item1;
                 //Trace.WriteLine($"Current beat: {currentBeat}, target beat: {noteBeat}");
                 // we are scanning too late, probably due to a large skip in animation
-                while (currentBeat - noteBeat > notePlaybackDelta) {
+                while (currentBeat - noteBeat > notePlaybackDelta && noteScanIndex < selectedDifficultyNotes.Length - 1) {
+                    Trace.WriteLine("WARNING: A note was skipped during playback.");
                     noteScanIndex++;
                     noteBeat = selectedDifficultyNotes[noteScanIndex].Item1;
                 }
                 while (approximatelyEqual(currentBeat, noteBeat, notePlaybackDelta)) {
                     //Trace.WriteLine($"Played note at beat {Math.Round(currentBeat, 2)}; scrollBar is {Math.Round((scrollEditor.ScrollableHeight - scrollEditor.VerticalOffset)/unitLength, 2)}");
-                    Trace.WriteLine($"Played note at second {Math.Round(currentBeat / (currentBPM / 60), 2)}; song is {Math.Round(songStream.CurrentTime.TotalSeconds, 2)}");
+                    //Trace.WriteLine($"Played note at second {Math.Round(currentBeat / (currentBPM / 60), 2)}; song is {Math.Round(songStream.CurrentTime.TotalSeconds, 2)}");
                     playDrumHit();
                     if (noteScanIndex >= selectedDifficultyNotes.Length - 1) {
                         break;
@@ -379,12 +344,24 @@ namespace RagnarockEditor {
             }
         }
 
+        private void scrollEditor_SizeChanged(object sender, SizeChangedEventArgs e) {
+            updateEditorGridHeight();
+        }
+
         private void scrollEditor_ScrollChanged(object sender, ScrollChangedEventArgs e) {
             //if (!songIsPlaying) {
                 var curr = scrollEditor.VerticalOffset;
                 var range = scrollEditor.ScrollableHeight;
                 var value = (1 - curr / range) * (sliderSongProgress.Maximum - sliderSongProgress.Minimum);
                 sliderSongProgress.Value = Double.IsNaN(value) ? 0 : value;
+            
+            if (e.ExtentHeightChange != 0) {
+                scrollEditor.ScrollToVerticalOffset((1 - prevScrollPercent) * scrollEditor.ScrollableHeight);
+                //Trace.Write($"time: {txtSongPosition.Text} curr: {scrollEditor.VerticalOffset} max: {scrollEditor.ScrollableHeight} change: {e.ExtentHeightChange}\n");
+            } else if (range != 0) {
+                prevScrollPercent = (1 - curr / range);
+            }
+            
             //}
             //Trace.WriteLine($"{scrollEditor.VerticalOffset}/{scrollEditor.ScrollableHeight}");
         }
@@ -423,7 +400,6 @@ namespace RagnarockEditor {
                 setForMapCustomInfoDat("_editorOffset", offset);
                 txtGridOffset.Text = offset.ToString();
                 updateEditorGridHeight();
-                drawEditorGrid();
             }
         }
 
@@ -433,9 +409,7 @@ namespace RagnarockEditor {
             if (double.TryParse(txtGridSpacing.Text, out spacing) && spacing != prev) {
                 setForMapCustomInfoDat("_editorGridSpacing", spacing);
                 txtGridSpacing.Text = spacing.ToString();
-                rescanNotes();
                 updateEditorGridHeight();
-                drawEditorGrid();
             }
         }
 
@@ -451,7 +425,6 @@ namespace RagnarockEditor {
             if (div != gridDivision) {
                 gridDivision = div;
                 txtGridDivision.Text = div.ToString();
-                rescanNotes();
                 drawEditorGrid();
             }
         }
@@ -470,16 +443,25 @@ namespace RagnarockEditor {
         }
 
         private void EditorGrid_SizeChanged(object sender, SizeChangedEventArgs e) {
-            if (infoStr != null) {
-                rescanNotes();
-                updateEditorGridHeight();
-                drawEditorGrid();
-                if (e.PreviousSize.Height <= EditorPanel.ActualHeight) {
-                    scrollEditor.ScrollToBottom();
-                } else {
-                    scrollEditor.ScrollToVerticalOffset(scrollEditor.VerticalOffset / e.PreviousSize.Height * e.NewSize.Height);
+        }
+        private void _EditorGrid_SizeChanged(object sender, SizeChangedEventArgs e) {
+            this.Dispatcher.Invoke(() => {
+                if (songIsPlaying) {
+                    endSongPlayback();
                 }
-            }          
+                if (infoStr != null) {
+                    rescanNotes();
+                    updateEditorGridHeight();
+                    drawEditorGrid();
+                    //if (e.PreviousSize.Height <= EditorPanel.ActualHeight) {
+                    //    scrollEditor.ScrollToBottom();
+                    //} else {
+                    //    // try to maintain scroll position at the same time in the song
+                    //    //scrollEditor.ScrollToVerticalOffset(scrollEditor.ScrollableHeight * (1 - songStream.CurrentTime/songStream.TotalTime));
+                    //    sliderSongProgress.Value = songStream.CurrentTime.TotalMilliseconds;
+                    //}
+                }
+            });
         }
 
         // (re)initialise UI
@@ -508,8 +490,8 @@ namespace RagnarockEditor {
             var duration = (int) songStream.TotalTime.TotalSeconds;
             txtSongDuration.Text = $"{duration / 60}:{(duration % 60).ToString("D2")}";
          
-            gridDivision = 1;
-            txtGridDivision.Text = "1";
+            gridDivision = 4;
+            txtGridDivision.Text = "4";
             txtGridOffset.Text = (string)getForMapCustomInfoDat("_editorOffset");
             txtGridSpacing.Text = (string)getForMapCustomInfoDat("_editorGridSpacing");
 
@@ -542,8 +524,6 @@ namespace RagnarockEditor {
             updateDifficultyButtonVisibility();
             updateEditorGridHeight();
             selectedDifficulty = 0;
-            drawEditorGrid();
-
             scrollEditor.ScrollToBottom();
         }
 
@@ -631,7 +611,7 @@ namespace RagnarockEditor {
             btnAddDifficulty.Visibility = (numDifficulties == 3) ? Visibility.Hidden : Visibility.Visible;
         }
 
-        private void switchDifficultyMap(int indx) {
+        private void enableDifficultyButtons(int indx) {
             foreach (Button b in DifficultyChangePanel.Children) {
                 if (b.Name == ((Button)DifficultyChangePanel.Children[indx]).Name) {
                     b.IsEnabled = false;
@@ -639,6 +619,10 @@ namespace RagnarockEditor {
                     b.IsEnabled = true;
                 }
             }
+        }
+
+        private void switchDifficultyMap(int indx) {
+            enableDifficultyButtons(indx);
             selectedDifficultyNotes = getMapStrNotes(_selectedDifficulty);
             drawEditorGrid();
         }
@@ -828,8 +812,8 @@ namespace RagnarockEditor {
             // set editor grid height
             double userOffset = double.Parse((string)getForMapCustomInfoDat("_editorOffset"));
             double beats = (currentBPM / 60) * songStream.TotalTime.TotalSeconds;
-            //double beatsUsr = currentBPM * userOffset / 60;
-            //EditorGrid.Height = (beats + beatsUsr) * unitLength;
+
+            // this triggers a grid redraw
             EditorGrid.Height = beats * unitLength + scrollEditor.ActualHeight;
         }
 
@@ -838,6 +822,8 @@ namespace RagnarockEditor {
             if (infoStr == null) {
                 return;
             }
+
+            Trace.WriteLine("INFO: Redrawing editor grid...");
 
             EditorGrid.Children.Clear();
 
@@ -896,6 +882,9 @@ namespace RagnarockEditor {
                 Canvas.SetLeft(img, noteXOffset - unknownNoteXAdjustment);
                 EditorGrid.Children.Add(img);
             }
+
+            // rescan notes after drawing
+            rescanNotes();
         }
 
         private void playDrumHit() {
@@ -917,11 +906,71 @@ namespace RagnarockEditor {
             }
         }
 
+
+        private void beginSongPlayback() {
+            songIsPlaying = true;
+
+            // disable some UI elements for performance reasons
+            txtGridDivision.IsEnabled = false;
+            txtGridOffset.IsEnabled = false;
+            txtGridSpacing.IsEnabled = false;
+            btnDeleteDifficulty.IsEnabled = false;
+            btnChangeDifficulty0.IsEnabled = false;
+            btnChangeDifficulty1.IsEnabled = false;
+            btnChangeDifficulty2.IsEnabled = false;
+            btnAddDifficulty.IsEnabled = false;
+
+            // update seek time from slider
+            var seek = (int)sliderSongProgress.Value;
+            var seekTime = new TimeSpan(0, 0, (seek / 1000) / 60, (seek / 1000) % 60, seek % 1000);
+            songStream.CurrentTime = seekTime;
+
+            // calculate scan index for playing drum hits
+            rescanNotes();
+
+            // disable scrolling while playing
+            scrollEditor.IsEnabled = false;
+            sliderSongProgress.IsEnabled = false;
+
+            // animate for smooth scrolling 
+            var remainingTime = songStream.TotalTime.TotalMilliseconds - songStream.CurrentTime.TotalMilliseconds;
+            var remainingTimeSpan = new TimeSpan(0, 0, 0, 0, (int)(remainingTime));
+
+            DoubleAnimation anim = new DoubleAnimation();
+            anim.From = sliderSongProgress.Value;
+            anim.To = sliderSongProgress.Maximum;
+            anim.Duration = new Duration(remainingTimeSpan);
+            sliderSongProgress.BeginAnimation(Slider.ValueProperty, anim);
+
+            // play song
+            songPlayer.Play();
+        }
+
+        private void endSongPlayback() {
+            songIsPlaying = false;
+            // disable some UI elements for performance reasons
+            // song/note playback gets desynced if these are changed during playback
+            // TODO: fix this?
+            txtGridDivision.IsEnabled = true;
+            txtGridOffset.IsEnabled = true;
+            txtGridSpacing.IsEnabled = true;
+            btnDeleteDifficulty.IsEnabled = true;
+            enableDifficultyButtons(selectedDifficulty);
+            btnAddDifficulty.IsEnabled = true;
+
+            // enable scrolling while paused
+            scrollEditor.IsEnabled = true;
+            sliderSongProgress.IsEnabled = true;
+
+            sliderSongProgress.BeginAnimation(Slider.ValueProperty, null);
+
+            songPlayer.Stop();
+        }
+
         //=======================
 
         private bool approximatelyEqual(double x, double y, double delta) {
-            return (Math.Abs(x - y) < delta) ? true : false;
+            return Math.Abs(x - y) < delta;
         }
-
     }
 }

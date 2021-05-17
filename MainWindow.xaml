@@ -304,7 +304,7 @@
                 <Image Grid.Column="5" Source="pack://application:,,,/RagnarockEditor;component/resources/placeholder.png"/>
                 <Image Grid.Column="7" Source="pack://application:,,,/RagnarockEditor;component/resources/placeholder.png"/>
             </Grid>
-            <ScrollViewer x:Name="scrollEditor" VerticalScrollBarVisibility="Hidden" CanContentScroll="False" ScrollChanged="scrollEditor_ScrollChanged" PreviewMouseWheel="scrollEditor_PreviewMouseWheel">
+            <ScrollViewer x:Name="scrollEditor" VerticalScrollBarVisibility="Hidden" CanContentScroll="False" ScrollChanged="scrollEditor_ScrollChanged" PreviewMouseWheel="scrollEditor_PreviewMouseWheel" SizeChanged="scrollEditor_SizeChanged">
                 <Canvas x:Name="EditorGrid" SizeChanged="EditorGrid_SizeChanged"/>
             </ScrollViewer>
         </Grid>
