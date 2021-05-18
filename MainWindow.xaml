@@ -202,6 +202,7 @@
                     <RowDefinition Height="*" />
                     <RowDefinition Height="*" />
                     <RowDefinition Height="*" />
+                    <RowDefinition Height="*" />
                 </Grid.RowDefinitions>
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="*" />
@@ -214,7 +215,7 @@
 
                 <Border Grid.Row="0" Grid.Column="1">
                     <DockPanel>
-                        <TextBlock x:Name="txtSongVol" DockPanel.Dock="Right" Width="25" Margin="5 0 0 0">0</TextBlock>
+                        <TextBlock x:Name="txtSongVol" DockPanel.Dock="Right" Width="30" Margin="5 0 0 0">0%</TextBlock>
                         <Slider x:Name="sliderSongVol" Maximum="1" ValueChanged="sliderSongVol_ValueChanged"/>
                     </DockPanel>
                 </Border>
@@ -225,7 +226,7 @@
 
                 <Border Grid.Row="1" Grid.Column="1">
                     <DockPanel>
-                        <TextBlock x:Name="txtDrumVol" DockPanel.Dock="Right" Width="25" Margin="5 0 0 0">0</TextBlock>
+                        <TextBlock x:Name="txtDrumVol" DockPanel.Dock="Right" Width="30" Margin="5 0 0 0">0%</TextBlock>
                         <Slider x:Name="sliderDrumVol" Maximum="1" ValueChanged="sliderDrumVol_ValueChanged"/>
                     </DockPanel>
                 </Border>
@@ -233,35 +234,45 @@
                 <Border Grid.Row="2" Grid.Column="0" Margin="0 5 0 0"/>
 
                 <Border Grid.Row="3" Grid.Column="0">
-                    <TextBlock VerticalAlignment="Center">Grid Division</TextBlock>
+                    <TextBlock VerticalAlignment="Center">Snap to Grid</TextBlock>
                 </Border>
 
                 <Border Grid.Row="3" Grid.Column="1">
+                    <StackPanel Orientation="Horizontal">
+                        <CheckBox x:Name="checkGridSnap" VerticalAlignment="Center" Click="checkGridSnap_Click"></CheckBox>
+                    </StackPanel>
+                </Border>
+                
+                <Border Grid.Row="4" Grid.Column="0">
+                    <TextBlock VerticalAlignment="Center">Grid Division</TextBlock>
+                </Border>
+
+                <Border Grid.Row="4" Grid.Column="1">
                     <StackPanel Orientation="Horizontal">
                         <TextBlock Margin="0 0 3 0" VerticalAlignment="Center">1/</TextBlock>
                         <TextBox Width="25" x:Name="txtGridDivision" LostFocus="txtGridDivision_LostFocus" VerticalAlignment="Center"/>
                     </StackPanel>
                 </Border>
 
-                <Border Grid.Row="4" Grid.Column="0">
+                <Border Grid.Row="5" Grid.Column="0">
                     <TextBlock VerticalAlignment="Center">Grid Offset</TextBlock>
                 </Border>
 
-                <Border Grid.Row="4" Grid.Column="1">
+                <Border Grid.Row="5" Grid.Column="1">
                     <TextBox x:Name="txtGridOffset" LostFocus="txtGridOffset_LostFocus"/>
                 </Border>
 
-                <Border Grid.Row="5" Grid.Column="0">
+                <Border Grid.Row="6" Grid.Column="0">
                     <TextBlock VerticalAlignment="Center">Grid Spacing</TextBlock>
                 </Border>
 
-                <Border Grid.Row="5" Grid.Column="1">
+                <Border Grid.Row="6" Grid.Column="1">
                     <TextBox x:Name="txtGridSpacing" LostFocus="txtGridSpacing_LostFocus"/>
                 </Border>
 
-                <Border Grid.Row="6" Grid.Column="0" Margin="0 5 0 0"/>
+                <Border Grid.Row="7" Grid.Column="0" Margin="0 5 0 0"/>
 
-                <Border Grid.Row="7" Grid.Column="1">
+                <Border Grid.Row="8" Grid.Column="1">
                     <Button x:Name="btnDeleteDifficulty" Click="btnDeleteDifficulty_Click">Delete Difficulty</Button>
                 </Border>
 
@@ -269,6 +280,7 @@
         </StackPanel>
 
         <Grid Name="EditorPanel" MinWidth="300">
+            <!-- Drum Column Guides -->
             <Grid VerticalAlignment="Bottom" Background="#FF2C7ADB">
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="*" />
@@ -286,6 +298,7 @@
                 <Canvas Grid.Column="5" Background="#ffA55F2A" Height="{Binding ElementName=EditorPanel, Path=ActualHeight}" Width="{Binding ElementName=Drum, Path=ActualWidth}"/>
                 <Canvas Grid.Column="7" Background="#ffA55F2A" Height="{Binding ElementName=EditorPanel, Path=ActualHeight}" Width="{Binding ElementName=Drum, Path=ActualWidth}"/>
             </Grid>
+            <!-- Scanline Drums -->
             <Grid VerticalAlignment="Bottom">
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="*" />
@@ -304,7 +317,8 @@
                 <Image Grid.Column="5" Source="pack://application:,,,/RagnarockEditor;component/resources/placeholder.png"/>
                 <Image Grid.Column="7" Source="pack://application:,,,/RagnarockEditor;component/resources/placeholder.png"/>
             </Grid>
-            <ScrollViewer x:Name="scrollEditor" VerticalScrollBarVisibility="Hidden" CanContentScroll="False" ScrollChanged="scrollEditor_ScrollChanged" PreviewMouseWheel="scrollEditor_PreviewMouseWheel" SizeChanged="scrollEditor_SizeChanged">
+            <!-- Map Notes -->
+            <ScrollViewer x:Name="scrollEditor" VerticalScrollBarVisibility="Hidden" CanContentScroll="False" ScrollChanged="scrollEditor_ScrollChanged" PreviewMouseWheel="scrollEditor_PreviewMouseWheel" SizeChanged="scrollEditor_SizeChanged" MouseMove="scrollEditor_MouseMove" MouseLeave="scrollEditor_MouseLeave" MouseEnter="scrollEditor_MouseEnter">
                 <Canvas x:Name="EditorGrid" SizeChanged="EditorGrid_SizeChanged"/>
             </ScrollViewer>
         </Grid>

@@ -40,7 +40,7 @@ public class Drummer : IDisposable {
 
 	public void changeVolume(double vol) {
 		for (int i = 0; i < streams; i++) {
-			noteStreams[i].Volume = (float)Math.Max(Math.Abs(vol), 1);
+			noteStreams[i].Volume = (float)Math.Min(Math.Abs(vol), 1);
 		}
 	}
 

@@ -16,7 +16,7 @@ Some things that you can do are:
 - Open existing Ragnarock maps
   - Play the entire map with notes and audio
 
-Edda is written in C# for the Windows 10 operating system.
+Edda is written in C# for Windows 10.
 
 ## Why make a new map editor?
 
