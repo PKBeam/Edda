@@ -115,6 +115,9 @@ namespace RagnarockEditor {
         uint editorAudioDelay; // in ms
         double editorDrawRangeLower = 0;
         double editorDrawRangeHigher = 0;
+        int editorMouseGridRow;
+        int editorMouseGridCol;
+        double editorMouseGridRowFractional;
 
         // variables used to handle drum hits on a separate thread
         int noteScanIndex;
@@ -372,6 +375,7 @@ namespace RagnarockEditor {
                 sliderSongProgress.Value = Double.IsNaN(value) ? 0 : value;
             }
 
+            // try to keep the scroller at the same percentage scroll that it was before
             if (e.ExtentHeightChange != 0) {
                 scrollEditor.ScrollToVerticalOffset((1 - prevScrollPercent) * scrollEditor.ScrollableHeight);
                 //Trace.Write($"time: {txtSongPosition.Text} curr: {scrollEditor.VerticalOffset} max: {scrollEditor.ScrollableHeight} change: {e.ExtentHeightChange}\n");
@@ -379,8 +383,6 @@ namespace RagnarockEditor {
                 prevScrollPercent = (1 - curr / range);
             }
             
-            //}
-            //Trace.WriteLine($"{scrollEditor.VerticalOffset}/{scrollEditor.ScrollableHeight}");
         }
         
         private void scrollEditor_PreviewMouseWheel(object sender, MouseWheelEventArgs e) {
@@ -462,7 +464,7 @@ namespace RagnarockEditor {
 
         private void EditorGrid_SizeChanged(object sender, SizeChangedEventArgs e) {
             if (songIsPlaying) {
-                endSongPlayback();
+                //endSongPlayback();
             }
             if (infoStr != null) {
                 rescanNoteIndex();
@@ -478,40 +480,50 @@ namespace RagnarockEditor {
         private void scrollEditor_MouseMove(object sender, MouseEventArgs e) {
 
             // set vertical element
+            double userOffsetBeat = currentBPM * editorGridOffset / 60;
+            double userOffset = userOffsetBeat * unitLength;
             var mousePos = EditorGrid.ActualHeight - e.GetPosition(EditorGrid).Y - unitHeight / 2;
             double gridLength = unitLength / (double)editorGridDivision;
-            int gridNumber = (int)Math.Round(mousePos / gridLength, MidpointRounding.AwayFromZero);
-            if (!editorSnapToGrid) {
-                if (gridNumber >= 0) {
-                    Canvas.SetBottom(imgPreviewNote, Math.Max(mousePos, 0));
-                }
+
+            // check if mouse position would correspond to a negative beat index
+            if (mousePos < 0) {
+                editorMouseGridRowFractional = - userOffset / gridLength;
+                editorMouseGridRow = (int)(editorMouseGridRowFractional); // round towards infinity; otherwise this lands on a negative beat
             } else {
-                double beatOffset = currentBPM * editorGridOffset / 60;
-                double modBeatOffset = beatOffset - (int)beatOffset;
-                if (gridNumber >= 0) {
-                    Canvas.SetBottom(imgPreviewNote, (gridLength * gridNumber) + modBeatOffset);
-                }
+                editorMouseGridRowFractional = (mousePos - userOffset) / gridLength;
+                editorMouseGridRow = (int)Math.Round(editorMouseGridRowFractional, MidpointRounding.AwayFromZero);
+            }
+
+            if (editorSnapToGrid) {
+                Canvas.SetBottom(imgPreviewNote, gridLength * editorMouseGridRow + userOffset);
+            } else {
+                Canvas.SetBottom(imgPreviewNote, Math.Max(mousePos, 0));
             }
 
             // set horizontal element
             var mouseX = e.GetPosition(EditorGrid).X / unitSubLength;
-            var imageLeft = 0.0;
-
             if (0 <= mouseX && mouseX <= 4.5) {
-                imageLeft = 1;
+                editorMouseGridCol = 1;
             } else if (4.5 <= mouseX && mouseX <= 8.5) {
-                imageLeft = 5;
+                editorMouseGridCol = 2;
             } else if (8.5 <= mouseX && mouseX <= 12.5) {
-                imageLeft = 9;
+                editorMouseGridCol = 3;
             } else if (12.5 <= mouseX && mouseX <= 17.0) {
-                imageLeft = 13;
+                editorMouseGridCol = 4;
             }
             var unknownNoteXAdjustment = ((unitLength / unitLengthUnscaled - 1) * unitLengthUnscaled / 2);
-            Canvas.SetLeft(imgPreviewNote, (imageLeft * unitSubLength) - unknownNoteXAdjustment);
+            var unitSubLengthOffset = 1 + 4 * (editorMouseGridCol - 1);
+            Canvas.SetLeft(imgPreviewNote, (unitSubLengthOffset * unitSubLength) - unknownNoteXAdjustment);
         }
 
         private void scrollEditor_MouseLeave(object sender, MouseEventArgs e) {
             imgPreviewNote.Opacity = 0;
+        }
+
+        private void scrollEditor_MouseLeftButtonUp(object sender, MouseButtonEventArgs e) {
+            double userOffsetBeat = currentBPM * editorGridOffset / 60;
+            double beat = editorMouseGridRow/(double)editorGridDivision + userOffsetBeat;
+            Trace.WriteLine($"Row: {editorMouseGridRow} ({Math.Round(editorMouseGridRowFractional, 2)}), Col: {editorMouseGridCol}, Beat: {beat}");
         }
 
         private void checkGridSnap_Click(object sender, RoutedEventArgs e) {
@@ -900,8 +912,7 @@ namespace RagnarockEditor {
             // animate for smooth scrolling 
             var remainingTimeSpan = songStream.TotalTime - songStream.CurrentTime;
 
-            // TODO: the DoubleAnimation induces a desync of around 0.1 seconds
-            // maybe use Task.Delay to play all the notes?
+            // note: the DoubleAnimation induces a desync of around 0.1 seconds
             songPlayAnim = new DoubleAnimation();
             songPlayAnim.From = sliderSongProgress.Value;
             songPlayAnim.To = sliderSongProgress.Maximum;
@@ -915,6 +926,7 @@ namespace RagnarockEditor {
             rescanNoteIndex();
             noteScanTokenSource = new CancellationTokenSource();
             noteScanToken = noteScanTokenSource.Token;
+
             // wait for user-specified delay
             Task.Delay((int)editorAudioDelay).ContinueWith(_ => {
 
@@ -1081,7 +1093,7 @@ namespace RagnarockEditor {
 
             //            default                  user specified
             var offset = (unitHeight / 2) + (offsetBeats * unitLength);
-
+            Trace.WriteLine(offset);
             // draw gridlines
             int counter = 0;
             while (offset <= EditorGrid.ActualHeight) {
@@ -1141,6 +1153,7 @@ namespace RagnarockEditor {
         private bool approximatelyEqual(double x, double y, double delta) {
             return Math.Abs(x - y) < delta;
         }
+
     }
 }
 
