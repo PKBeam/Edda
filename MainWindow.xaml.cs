@@ -415,7 +415,7 @@ namespace RagnarockEditor {
         private void txtGridOffset_LostFocus(object sender, RoutedEventArgs e) {
             double offset;
             if (double.TryParse(txtGridOffset.Text, out offset) && offset != editorGridOffset) {
-                setForMapCustomInfoDat("_editorOffset", offset);
+                setCustomMapValInfoDat("_editorOffset", offset);
                 txtGridOffset.Text = offset.ToString();
                 editorGridOffset = offset;
                 updateEditorGridHeight();
@@ -426,7 +426,7 @@ namespace RagnarockEditor {
         private void txtGridSpacing_LostFocus(object sender, RoutedEventArgs e) {
             double spacing;
             if (double.TryParse(txtGridSpacing.Text, out spacing) && spacing != editorGridSpacing) {
-                setForMapCustomInfoDat("_editorGridSpacing", spacing);
+                setCustomMapValInfoDat("_editorGridSpacing", spacing);
                 txtGridSpacing.Text = spacing.ToString();
                 editorGridSpacing = spacing;
                 updateEditorGridHeight();
@@ -503,16 +503,16 @@ namespace RagnarockEditor {
             // set horizontal element
             var mouseX = e.GetPosition(EditorGrid).X / unitSubLength;
             if (0 <= mouseX && mouseX <= 4.5) {
-                editorMouseGridCol = 1;
+                editorMouseGridCol = 0;
             } else if (4.5 <= mouseX && mouseX <= 8.5) {
-                editorMouseGridCol = 2;
+                editorMouseGridCol = 1;
             } else if (8.5 <= mouseX && mouseX <= 12.5) {
-                editorMouseGridCol = 3;
+                editorMouseGridCol = 2;
             } else if (12.5 <= mouseX && mouseX <= 17.0) {
-                editorMouseGridCol = 4;
+                editorMouseGridCol = 3;
             }
             var unknownNoteXAdjustment = ((unitLength / unitLengthUnscaled - 1) * unitLengthUnscaled / 2);
-            var unitSubLengthOffset = 1 + 4 * (editorMouseGridCol - 1);
+            var unitSubLengthOffset = 1 + 4 * (editorMouseGridCol);
             Canvas.SetLeft(imgPreviewNote, (unitSubLengthOffset * unitSubLength) - unknownNoteXAdjustment);
         }
 
@@ -522,8 +522,41 @@ namespace RagnarockEditor {
 
         private void scrollEditor_MouseLeftButtonUp(object sender, MouseButtonEventArgs e) {
             double userOffsetBeat = currentBPM * editorGridOffset / 60;
-            double beat = editorMouseGridRow/(double)editorGridDivision + userOffsetBeat;
-            Trace.WriteLine($"Row: {editorMouseGridRow} ({Math.Round(editorMouseGridRowFractional, 2)}), Col: {editorMouseGridCol}, Beat: {beat}");
+            double beat = editorMouseGridRow / (double)editorGridDivision + userOffsetBeat;
+            double beatFractional = editorMouseGridRowFractional / (double)editorGridDivision + userOffsetBeat;
+            //Trace.WriteLine($"Row: {editorMouseGridRow} ({Math.Round(editorMouseGridRowFractional, 2)}), Col: {editorMouseGridCol}, Beat: {beat} ({beatFractional})");
+
+            // add the note
+            Note n;
+            n.Item1 = (editorSnapToGrid) ? beat : beatFractional;
+            n.Item2 = editorMouseGridCol;
+            addNote(n);
+
+            // draw the added notes
+            Note[] notesToDraw = {n};
+            drawEditorGridNotes(notesToDraw);
+
+            // save new note data
+            setMapStrNotes(selectedDifficulty);
+        }
+
+        private void scrollEditor_MouseRightButtonUp(object sender, MouseButtonEventArgs e) {
+            double userOffsetBeat = currentBPM * editorGridOffset / 60;
+            double beat = editorMouseGridRow / (double)editorGridDivision + userOffsetBeat;
+            double beatFractional = editorMouseGridRowFractional / (double)editorGridDivision + userOffsetBeat;
+            //Trace.WriteLine($"Row: {editorMouseGridRow} ({Math.Round(editorMouseGridRowFractional, 2)}), Col: {editorMouseGridCol}, Beat: {beat} ({beatFractional})");
+
+            // remove the note
+            Note n;
+            n.Item1 = (editorSnapToGrid) ? beat : beatFractional;
+            n.Item2 = editorMouseGridCol;
+            removeNote(n);
+
+            // undraw the added notes
+            undrawEditorGridNote(uidGenerator(n));
+
+            // save new note data
+            setMapStrNotes(selectedDifficulty);
         }
 
         private void checkGridSnap_Click(object sender, RoutedEventArgs e) {
@@ -559,10 +592,10 @@ namespace RagnarockEditor {
             editorGridDivision = defaultGridDivision;
             txtGridDivision.Text = editorGridDivision.ToString();
 
-            editorGridSpacing = double.Parse((string)getForMapCustomInfoDat("_editorGridSpacing"));
+            editorGridSpacing = double.Parse((string)getCustomMapValInfoDat("_editorGridSpacing"));
             txtGridSpacing.Text = editorGridSpacing.ToString();
 
-            editorGridOffset = double.Parse((string)getForMapCustomInfoDat("_editorOffset"));
+            editorGridOffset = double.Parse((string)getCustomMapValInfoDat("_editorOffset"));
             txtGridOffset.Text = editorGridOffset.ToString();
 
             editorSnapToGrid = true;
@@ -750,25 +783,25 @@ namespace RagnarockEditor {
             return res;
         }
 
-        private void setForMapInfoDat(string key, object value, int indx) {
+        private void setMapValInfoDat(string key, object value, int indx) {
             var obj = JObject.Parse(infoStr);
             obj["_difficultyBeatmapSets"][0]["_difficultyBeatmaps"][indx][key] = JToken.FromObject(value);
             infoStr = JsonConvert.SerializeObject(obj, Formatting.Indented);
         }
 
-        private JToken getForMapInfoDat(string key, int indx) {
+        private JToken getMapValInfoDat(string key, int indx) {
             var obj = JObject.Parse(infoStr);
             var res = obj["_difficultyBeatmapSets"][0]["_difficultyBeatmaps"][indx][key];
             return res;
         }
 
-        private void setForMapCustomInfoDat(string key, object value) {
+        private void setCustomMapValInfoDat(string key, object value) {
             var obj = JObject.Parse(infoStr);
             obj["_difficultyBeatmapSets"][0]["_difficultyBeatmaps"][selectedDifficulty]["_customData"][key] = JToken.FromObject(value);
             infoStr = JsonConvert.SerializeObject(obj, Formatting.Indented);
         } 
 
-        private JToken getForMapCustomInfoDat(string key) {
+        private JToken getCustomMapValInfoDat(string key) {
             var obj = JObject.Parse(infoStr);
             var res = obj["_difficultyBeatmapSets"][0]["_difficultyBeatmaps"][selectedDifficulty]["_customData"][key];
             return res;
@@ -783,27 +816,27 @@ namespace RagnarockEditor {
         }
 
         private void readMapStr(int indx) {
-            var filename = (string) getForMapInfoDat("_beatmapFilename", indx);
+            var filename = (string) getMapValInfoDat("_beatmapFilename", indx);
             mapsStr[indx] = File.ReadAllText(absPath(filename));
         }
 
         private void writeMapStr(int indx) {
-            var filename = (string) getForMapInfoDat("_beatmapFilename", indx);
+            var filename = (string) getMapValInfoDat("_beatmapFilename", indx);
             File.WriteAllText(absPath(filename), mapsStr[indx]);
         }
 
         private void deleteMapStr(int indx) {
-            var filename = (string)getForMapInfoDat("_beatmapFilename", indx);
+            var filename = (string)getMapValInfoDat("_beatmapFilename", indx);
             File.Delete(absPath(filename));
             mapsStr[indx] = "";
         }
 
         private void renameMapStr() {
             for (int i = 0; i < numDifficulties; i++) {
-                setForMapInfoDat("_difficulty", difficultyNames[i], i);
-                var oldFile = (string) getForMapInfoDat("_beatmapFilename", i);
+                setMapValInfoDat("_difficulty", difficultyNames[i], i);
+                var oldFile = (string) getMapValInfoDat("_beatmapFilename", i);
                 File.Move(absPath(oldFile), absPath($"{difficultyNames[i]}_temp.dat"));
-                setForMapInfoDat("_beatmapFilename", $"{difficultyNames[i]}.dat", i);
+                setMapValInfoDat("_beatmapFilename", $"{difficultyNames[i]}.dat", i);
             }
             for (int i = 0; i < numDifficulties; i++) {
                 File.Move(absPath($"{difficultyNames[i]}_temp.dat"), absPath($"{difficultyNames[i]}.dat"));
@@ -822,6 +855,26 @@ namespace RagnarockEditor {
                 i++;
             }
             return output;
+        }
+
+        private void setMapStrNotes(int indx) {
+            var numNotes = selectedDifficultyNotes.Length;
+            var notes = new Object[numNotes];
+            for (int i = 0; i < numNotes; i++) {
+                var thisNote = selectedDifficultyNotes[i];
+                var thisNoteObj = new {
+                    _time = thisNote.Item1,
+                    _lineIndex = thisNote.Item2,
+                    _lineLayer = 1,
+                    _type = 0,
+                    _cutDirection = 1
+                };
+                notes[i] = thisNoteObj;
+            }
+            var thisMapStr = JObject.Parse(mapsStr[selectedDifficulty]);
+            thisMapStr["_notes"] = JToken.FromObject(notes);
+            mapsStr[selectedDifficulty] = JsonConvert.SerializeObject(thisMapStr, Formatting.Indented);
+            //mapsStr[selectedDifficulty]["_notes"] = jObj;
         }
 
         // ===================================
@@ -1000,7 +1053,7 @@ namespace RagnarockEditor {
             while (!ct.IsCancellationRequested) {
                 if ((noteScanStopwatch.ElapsedMilliseconds + startFrom) % notePollRate == 0) {
                     //Trace.WriteLine($"{noteScanStopwatch.ElapsedMilliseconds}ms");
-                    scanForNotes();
+                    playNotes();
                 }
             }
             //var interval = new TimeSpan(0, 0, 0, 0, notePollRate);
@@ -1017,7 +1070,7 @@ namespace RagnarockEditor {
             //}
         }
 
-        private void scanForNotes() {
+        private void playNotes() {
             var currentTime = noteScanStopwatch.ElapsedMilliseconds + noteScanStopwatchOffset;
             // check if we started past the last note in the song
             if (noteScanIndex < selectedDifficultyNotes.Length) {
@@ -1044,6 +1097,65 @@ namespace RagnarockEditor {
                 //Trace.WriteLine(sliderSongProgress.Value/1000);
             }
         }
+
+        // =======================================
+
+        private bool addNote(Note n) {
+            var insertIndx = 0;
+
+            // check which index to insert the new note at (keep everything in sorted order)
+            foreach (var thisNote in selectedDifficultyNotes) {
+
+                // no duplicates of the same note
+                if (n.Item1 == thisNote.Item1 && n.Item2 == thisNote.Item2) {
+                    return false;
+                }
+
+                if (n.Item1 <= thisNote.Item1 || (n.Item1 == thisNote.Item1 && n.Item2 <= thisNote.Item2)) {
+                    break;
+                }
+
+                insertIndx++;
+            }
+
+            // do the inserting
+            selectedDifficultyNotes.Append((0, 0));
+            // shift notes across
+            for (var i = selectedDifficultyNotes.Length - 1; i > insertIndx; i--) {
+                selectedDifficultyNotes[i] = selectedDifficultyNotes[i - 1];
+            }
+            selectedDifficultyNotes[insertIndx] = n;
+            return true;
+        }
+
+        private bool removeNote(Note n) {
+            var removeIndx = 0;
+
+            // check which index to insert the new note at (keep everything in sorted order)
+            foreach (var thisNote in selectedDifficultyNotes) {
+                // no duplicates of the same note
+                if (n.Item1 == thisNote.Item1 && n.Item2 == thisNote.Item2) {
+                    break;
+                }
+                removeIndx++;
+            }
+
+            // note not found
+            if (removeIndx == selectedDifficultyNotes.Length) {
+                return false;
+            }
+
+            // do the removal
+            // shift notes across
+            for (var i = removeIndx; i < selectedDifficultyNotes.Length - 2; i++) {
+                selectedDifficultyNotes[i] = selectedDifficultyNotes[i + 1];
+            }
+            // remove the last element
+            selectedDifficultyNotes = (Note[]) selectedDifficultyNotes.Take(selectedDifficultyNotes.Length - 1).ToArray();
+            return true;
+        }
+
+        // ======================================
 
         private void loadCoverImage() {
             var fileName = (string)getValInfoDat("_coverImageFilename");
@@ -1088,6 +1200,15 @@ namespace RagnarockEditor {
             //editorDrawRangeLower  = Math.Max(editorScrollPosition -     (gridDrawRange) * scrollEditor.ActualHeight, 0                      );
             //editorDrawRangeHigher = Math.Min(editorScrollPosition + (1 + gridDrawRange) * scrollEditor.ActualHeight, EditorGrid.ActualHeight);
 
+            drawEditorGridLines();
+
+            drawEditorGridNotes(selectedDifficultyNotes);
+
+            // rescan notes after drawing
+            rescanNoteIndex();
+        }
+
+        private void drawEditorGridLines() {
             // calculate grid offset: default is 
             double offsetBeats = currentBPM * editorGridOffset / 60;
 
@@ -1111,11 +1232,11 @@ namespace RagnarockEditor {
                 offset += unitLength / editorGridDivision;
                 counter++;
             }
+        }
 
+        private void drawEditorGridNotes(Note[] notes) {
             // draw drum notes
             // TODO: paginate these? they cause lag when resizing
-
-            offset = 0;
 
             // init drum note image
             var b = new BitmapImage();
@@ -1129,24 +1250,31 @@ namespace RagnarockEditor {
             // e.g. Canvas.SetLeft(img, 0) leaves a small gap between the left side of the Canvas and the img
             var unknownNoteXAdjustment = ((unitLength / unitLengthUnscaled - 1) * unitLengthUnscaled / 2);
 
-            foreach (var n in selectedDifficultyNotes) {
+            foreach (var n in notes) {
                 var img = new Image();
                 img.Source = b;
                 img.Width = unitLength;
                 img.Height = unitHeight;
 
-                var noteHeight = offset + n.Item1 * unitLength;
+                var noteHeight = n.Item1 * unitLength;
                 var noteXOffset = (1 + 4 * n.Item2) * unitLengthUnscaled / 3;
+
+                // this assumes there are no duplicate notes given to us
+                img.Uid = uidGenerator(n);
 
                 Canvas.SetBottom(img, noteHeight);
                 Canvas.SetLeft(img, noteXOffset - unknownNoteXAdjustment);
                 EditorGrid.Children.Add(img);
             }
-
-            // rescan notes after drawing
-            rescanNoteIndex();
         }
-
+        private void undrawEditorGridNote(string Uid) {
+            foreach (UIElement u in EditorGrid.Children) {
+                if (u.Uid == Uid) {
+                    EditorGrid.Children.Remove(u);
+                    break;
+                }
+            }
+        }
 
         //=======================
 
@@ -1154,6 +1282,9 @@ namespace RagnarockEditor {
             return Math.Abs(x - y) < delta;
         }
 
+        private string uidGenerator(Note n) {
+            return $"Note({n.Item1},{n.Item2})";
+        }
     }
 }
 

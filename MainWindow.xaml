@@ -318,7 +318,7 @@
                 <Image Grid.Column="7" Source="pack://application:,,,/RagnarockEditor;component/resources/placeholder.png"/>
             </Grid>
             <!-- Map Notes -->
-            <ScrollViewer x:Name="scrollEditor" VerticalScrollBarVisibility="Hidden" CanContentScroll="False" ScrollChanged="scrollEditor_ScrollChanged" PreviewMouseWheel="scrollEditor_PreviewMouseWheel" SizeChanged="scrollEditor_SizeChanged" MouseMove="scrollEditor_MouseMove" MouseLeave="scrollEditor_MouseLeave" MouseEnter="scrollEditor_MouseEnter" MouseLeftButtonUp="scrollEditor_MouseLeftButtonUp">
+            <ScrollViewer x:Name="scrollEditor" VerticalScrollBarVisibility="Hidden" CanContentScroll="False" ScrollChanged="scrollEditor_ScrollChanged" PreviewMouseWheel="scrollEditor_PreviewMouseWheel" SizeChanged="scrollEditor_SizeChanged" MouseMove="scrollEditor_MouseMove" MouseLeave="scrollEditor_MouseLeave" MouseEnter="scrollEditor_MouseEnter" MouseLeftButtonUp="scrollEditor_MouseLeftButtonUp" MouseRightButtonUp="scrollEditor_MouseRightButtonUp">
                 <Canvas x:Name="EditorGrid" SizeChanged="EditorGrid_SizeChanged"/>
             </ScrollViewer>
         </Grid>
