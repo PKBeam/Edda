@@ -538,6 +538,8 @@ namespace RagnarockEditor {
 
             // save new note data
             setMapStrNotes(selectedDifficulty);
+
+            printNotes();
         }
 
         private void scrollEditor_MouseRightButtonUp(object sender, MouseButtonEventArgs e) {
@@ -557,6 +559,8 @@ namespace RagnarockEditor {
 
             // save new note data
             setMapStrNotes(selectedDifficulty);
+
+            printNotes();
         }
 
         private void checkGridSnap_Click(object sender, RoutedEventArgs e) {
@@ -1089,10 +1093,10 @@ namespace RagnarockEditor {
                     //Trace.WriteLine($"Played note at second {Math.Round(currentBeat / (currentBPM / 60), 2)}; song is {Math.Round(songStream.CurrentTime.TotalSeconds, 2)}");
                     playDrumHit();
                     noteScanIndex++;
-                    noteTime = 60000 * selectedDifficultyNotes[noteScanIndex].Item1 / currentBPM;
                     if (noteScanIndex >= selectedDifficultyNotes.Length) {
                         break;
                     }
+                    noteTime = 60000 * selectedDifficultyNotes[noteScanIndex].Item1 / currentBPM;
                 }
                 //Trace.WriteLine(sliderSongProgress.Value/1000);
             }
@@ -1119,7 +1123,7 @@ namespace RagnarockEditor {
             }
 
             // do the inserting
-            selectedDifficultyNotes.Append((0, 0));
+            selectedDifficultyNotes = selectedDifficultyNotes.Append((0, 0)).ToArray();
             // shift notes across
             for (var i = selectedDifficultyNotes.Length - 1; i > insertIndx; i--) {
                 selectedDifficultyNotes[i] = selectedDifficultyNotes[i - 1];
@@ -1147,7 +1151,7 @@ namespace RagnarockEditor {
 
             // do the removal
             // shift notes across
-            for (var i = removeIndx; i < selectedDifficultyNotes.Length - 2; i++) {
+            for (var i = removeIndx; i < selectedDifficultyNotes.Length - 1; i++) {
                 selectedDifficultyNotes[i] = selectedDifficultyNotes[i + 1];
             }
             // remove the last element
@@ -1284,6 +1288,14 @@ namespace RagnarockEditor {
 
         private string uidGenerator(Note n) {
             return $"Note({n.Item1},{n.Item2})";
+        }
+
+        private void printNotes() {
+            string output = "Notes: ";
+            foreach (Note n in selectedDifficultyNotes) {
+                output += $"({n.Item1}, {n.Item2}) ";
+            }
+            Trace.WriteLine(output);
         }
     }
 }
