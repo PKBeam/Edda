@@ -2,7 +2,7 @@
 
 Edda is a map editor for the VR rhythm game [Ragnarock](https://www.ragnarock-vr.com/home) ([Steam page](https://store.steampowered.com/app/1345820/Ragnarock/)).
 
-It is currently under development and not fully functional.
+It is currently under development and not fully functional. Naturally, it will be very buggy until it gets polished up, so use it at your own risk.
 Some things that you can do are:
 - Edit/change the following:
   - Song name
@@ -15,6 +15,7 @@ Some things that you can do are:
 - Add new map difficulties
 - Open existing Ragnarock maps
   - Play the entire map with notes and audio
+  - Add and delete notes (Left- and Right-Click)
 
 Edda is written in C# for Windows 10.
 
