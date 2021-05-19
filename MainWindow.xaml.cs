@@ -27,6 +27,7 @@ using NAudio.Wave.SampleProviders;
 using System.Reactive;
 using System.Reactive.Linq;
 using System.Threading;
+using NAudio.CoreAudioApi;
 
 namespace RagnarockEditor {
     /// <summary>
@@ -38,16 +39,17 @@ namespace RagnarockEditor {
     public partial class MainWindow : Window {
 
         // constants
-        string   gridColourMajor     = "#333333";
-        string   gridColourMinor     = "#666666";
-        double   gridThicknessMajor  = 2;
-        double   gridThicknessMinor  = 1.5;
-        int      gridDivisionMax     = 24;
-        string[] difficultyNames     = {"Easy", "Normal", "Hard"};
-        int      notePlaybackStreams = 16;
-        int      notePollRate        = 5; // ms
-        double   noteDetectionDelta  = 5; // ms
-        int      defaultGridDivision = 4;
+        string   gridColourMajor      = "#333333";
+        string   gridColourMinor      = "#666666";
+        double   gridThicknessMajor   = 2;
+        double   gridThicknessMinor   = 1.5;
+        int      gridDivisionMax      = 24;
+        string[] difficultyNames      = {"Easy", "Normal", "Hard"};
+        int      notePlaybackStreams  = 16; 
+        int      desiredWasapiLatency = 75; // ms
+        int      notePollRate         = 20; // ms
+        double   noteDetectionDelta   = 20; // ms
+        int      defaultGridDivision  = 4;
         // int gridRedrawInterval = 200; // ms
         // double   gridDrawRange = 1;
 
@@ -104,6 +106,7 @@ namespace RagnarockEditor {
         }
         string infoStr;
         string saveFolder;
+        double songOffset;
         double prevScrollPercent = 0; // percentage of scroll progress before the scroll viewport was changed
 
         // variables used in the map editor
@@ -129,7 +132,7 @@ namespace RagnarockEditor {
         // variables used to play audio
         SampleChannel songChannel;
         VorbisWaveReader songStream;
-        WaveOut songPlayer;
+        WasapiOut songPlayer;
         Drummer drummer;
 
         public MainWindow() {
@@ -138,7 +141,7 @@ namespace RagnarockEditor {
             sliderSongProgress.Tag = 0;
             scrollEditor.Tag = 0;
 
-            drummer = new Drummer(new String[] { "Resources/drum1.wav", "Resources/drum2.wav", "Resources/drum3.wav", "Resources/drum4.wav" }, notePlaybackStreams);
+            drummer = new Drummer(new String[] { "Resources/drum1.wav", "Resources/drum2.wav", "Resources/drum3.wav", "Resources/drum4.wav" }, notePlaybackStreams, desiredWasapiLatency);
 
             // disable parts of UI, as no map is loaded
             btnSaveMap.IsEnabled = false;
@@ -150,12 +153,13 @@ namespace RagnarockEditor {
             txtArtistName.IsEnabled = false;
             txtMapperName.IsEnabled = false;
             txtSongBPM.IsEnabled = false;
+            txtSongOffset.IsEnabled = false;
             comboEnvironment.IsEnabled = false;
             btnPickSong.IsEnabled = false;
             btnPickCover.IsEnabled = false;
             sliderSongVol.IsEnabled = false;
             sliderDrumVol.IsEnabled = false;
-            checkGridSnap.IsEnabled = false;
+            //checkGridSnap.IsEnabled = false;
             txtGridDivision.IsEnabled = false;
             txtGridOffset.IsEnabled = false;
             txtGridSpacing.IsEnabled = false;
@@ -174,12 +178,18 @@ namespace RagnarockEditor {
             //.Subscribe(eventPattern => _EditorGrid_SizeChanged(eventPattern.Sender, eventPattern.EventArgs));
         }
 
-        void MainWindow_Closed(object sender, EventArgs e) {
+        private void AppMainWindow_Closed(object sender, EventArgs e) {
+            Trace.WriteLine("Closing window...");
+            songPlayer.Stop();
+            if (noteScanTokenSource != null) {
+                noteScanTokenSource.Cancel();
+            }
             try {
                 songStream.Dispose();
                 songPlayer.Dispose();
                 drummer.Dispose();
             } catch {
+                Trace.WriteLine("Could not dispose of audio players!");
                 return;
             }
         }
@@ -393,11 +403,22 @@ namespace RagnarockEditor {
             double BPM;
             if (!double.TryParse(txtSongBPM.Text, out BPM)) {
                 BPM = currentBPM;
+            } else {
+                setValInfoDat("_beatsPerMinute", BPM);
             }
-            setValInfoDat("_beatsPerMinute", BPM);
             txtSongBPM.Text = BPM.ToString();
             updateEditorGridHeight();
             drawEditorGrid();
+        }
+
+        private void txtSongOffset_LostFocus(object sender, RoutedEventArgs e) {
+            double offset;
+            if (!double.TryParse(txtSongOffset.Text, out offset)) {
+                offset = songOffset;
+            } else {
+                setValInfoDat("_songTimeOffset", offset);
+            }
+            txtSongBPM.Text = offset.ToString();
         }
 
         private void txtSongName_TextChanged(object sender, TextChangedEventArgs e) {
@@ -464,7 +485,7 @@ namespace RagnarockEditor {
 
         private void EditorGrid_SizeChanged(object sender, SizeChangedEventArgs e) {
             if (songIsPlaying) {
-                //endSongPlayback();
+                endSongPlayback();
             }
             if (infoStr != null) {
                 rescanNoteIndex();
@@ -564,7 +585,7 @@ namespace RagnarockEditor {
         }
 
         private void checkGridSnap_Click(object sender, RoutedEventArgs e) {
-            editorSnapToGrid = (checkGridSnap.IsChecked == true);
+            //editorSnapToGrid = (checkGridSnap.IsChecked == true);
         }
 
         // (re)initialise UI
@@ -592,7 +613,10 @@ namespace RagnarockEditor {
             }
             var duration = (int) songStream.TotalTime.TotalSeconds;
             txtSongDuration.Text = $"{duration / 60}:{(duration % 60).ToString("D2")}";
-         
+
+            songOffset = double.Parse((string)getValInfoDat("_songTimeOffset"));
+            txtSongOffset.Text = songOffset.ToString();
+
             editorGridDivision = defaultGridDivision;
             txtGridDivision.Text = editorGridDivision.ToString();
 
@@ -603,7 +627,7 @@ namespace RagnarockEditor {
             txtGridOffset.Text = editorGridOffset.ToString();
 
             editorSnapToGrid = true;
-            checkGridSnap.IsChecked = true;
+            //checkGridSnap.IsChecked = true;
 
             editorAudioDelay = 0;
 
@@ -620,12 +644,13 @@ namespace RagnarockEditor {
             txtArtistName.IsEnabled = true;
             txtMapperName.IsEnabled = true;
             txtSongBPM.IsEnabled = true;
+            txtSongOffset.IsEnabled = true;
             comboEnvironment.IsEnabled = true;
             btnPickSong.IsEnabled = true;
             btnPickCover.IsEnabled = true;
             sliderSongVol.IsEnabled = true;
             sliderDrumVol.IsEnabled = true;
-            checkGridSnap.IsEnabled = true;
+            //checkGridSnap.IsEnabled = true;
             txtGridDivision.IsEnabled = true;
             txtGridOffset.IsEnabled = true;
             txtGridSpacing.IsEnabled = true;
@@ -930,12 +955,13 @@ namespace RagnarockEditor {
             }
 
             songStream = new NAudio.Vorbis.VorbisWaveReader(songFilePath);
-            songPlayer = new WaveOut();
+            songPlayer = new WasapiOut(AudioClientShareMode.Shared, desiredWasapiLatency);
+
             songChannel = new SampleChannel(songStream);
             songPlayer.Init(songChannel);
+
             // subscribe to playbackstopped
             songPlayer.PlaybackStopped += (sender, args) => { endSongPlayback(); };
-
             sliderSongProgress.Minimum = 0;
             sliderSongProgress.Maximum = songStream.TotalTime.TotalSeconds * 1000;
 
@@ -947,7 +973,7 @@ namespace RagnarockEditor {
             // disable some UI elements for performance reasons
             // song/note playback gets desynced if these are changed during playback
             // TODO: fix this?
-            checkGridSnap.IsEnabled = false;
+            //checkGridSnap.IsEnabled = false;
             txtGridDivision.IsEnabled = false;
             txtGridOffset.IsEnabled = false;
             txtGridSpacing.IsEnabled = false;
@@ -984,12 +1010,12 @@ namespace RagnarockEditor {
             noteScanTokenSource = new CancellationTokenSource();
             noteScanToken = noteScanTokenSource.Token;
 
+            // start scanning for notes
+            Task.Run(() => beginNoteScanning(noteScanStopwatchOffset, noteScanToken), noteScanToken);
+            noteScanStopwatch.Start();
+
             // wait for user-specified delay
             Task.Delay((int)editorAudioDelay).ContinueWith(_ => {
-
-                // start scanning for notes
-                Task.Run(() => beginNoteScanning(noteScanStopwatchOffset, noteScanToken), noteScanToken);
-                noteScanStopwatch.Start();
 
                 // play song
                 songPlayer.Play();
@@ -1005,7 +1031,7 @@ namespace RagnarockEditor {
             noteScanStopwatch.Reset();
 
             // re-enable UI elements
-            checkGridSnap.IsEnabled = true;
+            //checkGridSnap.IsEnabled = true;
             txtGridDivision.IsEnabled = true;
             txtGridOffset.IsEnabled = true;
             txtGridSpacing.IsEnabled = true;
@@ -1033,9 +1059,8 @@ namespace RagnarockEditor {
             songPlayer.Stop();
         }
 
-        private void playDrumHit() {
-            var res = drummer.playDrum();
-            if (res == false) {
+        private void playDrumHit(int hits) {
+            if (drummer.playDrum(hits) == false) {
                 Trace.WriteLine("WARNING: drummer skipped a drum hit");
             }
         }
@@ -1052,53 +1077,47 @@ namespace RagnarockEditor {
             }
         }
 
+        // this function is called on a separate thread
         private void beginNoteScanning(int startFrom, CancellationToken ct) {
-            // scan notes while song is not finished playing
+            // scan notes while song is still playing
+            var nextPollTime = notePollRate;
             while (!ct.IsCancellationRequested) {
-                if ((noteScanStopwatch.ElapsedMilliseconds + startFrom) % notePollRate == 0) {
-                    //Trace.WriteLine($"{noteScanStopwatch.ElapsedMilliseconds}ms");
+                if (noteScanStopwatch.ElapsedMilliseconds + startFrom >= nextPollTime) {
                     playNotes();
+                    nextPollTime += notePollRate;
                 }
             }
-            //var interval = new TimeSpan(0, 0, 0, 0, notePollRate);
-            //var nextTick = DateTime.Now + interval;
-            //while (noteScanTimer <= songStream.TotalTime.TotalMilliseconds) {
-            //    while (DateTime.Now < nextTick) {
-            //        Thread.Sleep(nextTick - DateTime.Now);
-            //    }
-            //    if (!ct.IsCancellationRequested) {
-            //        nextTick += interval;
-            //        noteScanTimer += notePollRate;
-            //        scanForNotes();
-            //    }
-            //}
         }
-
         private void playNotes() {
             var currentTime = noteScanStopwatch.ElapsedMilliseconds + noteScanStopwatchOffset;
             // check if we started past the last note in the song
             if (noteScanIndex < selectedDifficultyNotes.Length) {
                 var noteTime = 60000 * selectedDifficultyNotes[noteScanIndex].Item1 / currentBPM;
-                
+                var drumHits = 0;
+
                 // check if any notes were missed
-                while (currentTime - noteTime > noteDetectionDelta && noteScanIndex < selectedDifficultyNotes.Length - 1) {
-                    Trace.WriteLine("WARNING: A note was skipped during playback.");
-                    playDrumHit();
+                while (currentTime - noteTime >= noteDetectionDelta && noteScanIndex < selectedDifficultyNotes.Length - 1) {
+                    Trace.WriteLine($"WARNING: A note was played late during playback. (Delta: {Math.Round(currentTime - noteTime, 2)})");
+                    drumHits++;
                     noteScanIndex++;
                     noteTime = 60000 * selectedDifficultyNotes[noteScanIndex].Item1 / currentBPM;
                 }
+
+                // check if we need to play any notes
                 while (approximatelyEqual(currentTime, noteTime, noteDetectionDelta)) {
                     //Trace.WriteLine($"Played note at beat {selectedDifficultyNotes[noteScanIndex].Item1}");
-                    Trace.WriteLine($"Played note {Math.Round(noteTime - currentTime, 2)}ms early");
-                    //Trace.WriteLine($"Played note at second {Math.Round(currentBeat / (currentBPM / 60), 2)}; song is {Math.Round(songStream.CurrentTime.TotalSeconds, 2)}");
-                    playDrumHit();
+                    //Trace.WriteLine($"Played note - slider: {Math.Round(sliderSongProgress.Value, 2)}ms, stream: {Math.Round(songStream.CurrentTime.TotalMilliseconds, 2)}, timer: {currentTime}");
+                    
+                    drumHits++;
                     noteScanIndex++;
                     if (noteScanIndex >= selectedDifficultyNotes.Length) {
                         break;
                     }
                     noteTime = 60000 * selectedDifficultyNotes[noteScanIndex].Item1 / currentBPM;
                 }
-                //Trace.WriteLine(sliderSongProgress.Value/1000);
+
+                // play pending drum hits
+                playDrumHit(drumHits);
             }
         }
 
@@ -1218,7 +1237,7 @@ namespace RagnarockEditor {
 
             //            default                  user specified
             var offset = (unitHeight / 2) + (offsetBeats * unitLength);
-            Trace.WriteLine(offset);
+
             // draw gridlines
             int counter = 0;
             while (offset <= EditorGrid.ActualHeight) {
@@ -1271,6 +1290,7 @@ namespace RagnarockEditor {
                 EditorGrid.Children.Add(img);
             }
         }
+
         private void undrawEditorGridNote(string Uid) {
             foreach (UIElement u in EditorGrid.Children) {
                 if (u.Uid == Uid) {
@@ -1297,6 +1317,7 @@ namespace RagnarockEditor {
             }
             Trace.WriteLine(output);
         }
+
     }
 }
 

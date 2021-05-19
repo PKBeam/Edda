@@ -28,3 +28,8 @@ Beat Saber maps are far more complex than Ragnarock ones; thus MMA2 has too much
 (e.g. Ragnarock maps are two-dimensional, so we don't need to render them in 3D!)
 
 A dedicated editor for Ragnarock could trim down the clutter, greatly improving the user experience for new mappers.
+
+## System requirements
+- Windows 10
+- A good CPU will help with lower audio latency
+  - For best results, match the sample rate of your sound output to your `.ogg` file

@@ -5,7 +5,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:RagnarockEditor"
         mc:Ignorable="d"
-        x:Name="AppMainWindow" Title="Ragnarock Map Editor" Height="780" Width="800" MinWidth="800">
+        x:Name="AppMainWindow" Title="Ragnarock Map Editor" Height="780" Width="800" MinWidth="800" Closed="AppMainWindow_Closed">
     <DockPanel>
         <DockPanel DockPanel.Dock="Top" Name="TopPanel" Background="#FFB6B6B6">
             <StackPanel DockPanel.Dock="Left" Orientation="Horizontal">
@@ -57,7 +57,7 @@
             <Slider x:Name="sliderSongProgress" Margin="15 15 15 15" VerticalAlignment="Center" IsMoveToPointEnabled="True" ValueChanged="sliderSongProgress_ValueChanged"/>
         </DockPanel>
         <ScrollViewer DockPanel.Dock="Left" MinWidth="210" Background="#FF7A7A7A" VerticalScrollBarVisibility="Auto">
-            <StackPanel Orientation="Vertical"  >
+            <StackPanel Orientation="Vertical">
                 <Label Margin="5 0 0 5" FontWeight="Bold" FontSize="14">Map Settings</Label>
                 <Grid Margin="10 0 5 0" VerticalAlignment="Center">
                     <Grid.Resources>
@@ -114,6 +114,15 @@
                     <Border Grid.Row="4" Grid.Column="1">
                         <TextBox x:Name="txtSongBPM" Grid.Row="0" Grid.Column="1" LostFocus="txtSongBPM_LostFocus"/>
                     </Border>
+
+                    <Border Grid.Row="5" Grid.Column="0">
+                        <TextBlock>Song Offset</TextBlock>
+                    </Border>
+
+                    <Border Grid.Row="5" Grid.Column="1">
+                        <TextBox x:Name="txtSongOffset" Grid.Row="0" Grid.Column="1" LostFocus="txtSongOffset_LostFocus" />
+                    </Border>
+
 
                     <Border Grid.Row="7" Grid.Column="0" Margin="0 5 0 0"/>
 
@@ -182,103 +191,100 @@
                 </Grid>
             </StackPanel>
         </ScrollViewer>
-        <StackPanel DockPanel.Dock="Right" Name="EditorInfoPanel" Orientation="Vertical" MinWidth="210" Background="#FF7A7A7A">
-            <Label Margin="5 0 0 5" FontWeight="Bold" FontSize="14">Editor Settings</Label>
-            <Grid Margin="10 0 5 0" VerticalAlignment="Center">
-                <Grid.Resources>
-                    <Style TargetType="Border" >
-                        <Setter Property="Padding" Value="5,5,5,5" />
-                    </Style>
-                </Grid.Resources>
-                <Grid.RowDefinitions>
-                    <RowDefinition Height="*" />
-                    <RowDefinition Height="*" />
-                    <RowDefinition Height="*" />
-                    <RowDefinition Height="*" />
-                    <RowDefinition Height="*" />
-                    <RowDefinition Height="*" />
-                    <RowDefinition Height="*" />
-                    <RowDefinition Height="*" />
-                    <RowDefinition Height="*" />
-                    <RowDefinition Height="*" />
-                    <RowDefinition Height="*" />
-                    <RowDefinition Height="*" />
-                </Grid.RowDefinitions>
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="*" />
-                    <ColumnDefinition Width="120" />
-                </Grid.ColumnDefinitions>
+        <ScrollViewer DockPanel.Dock="Right" MinWidth="210" Background="#FF7A7A7A" VerticalScrollBarVisibility="Auto">
+            <StackPanel Name="EditorInfoPanel" Orientation="Vertical">
+                <Label Margin="5 0 0 5" FontWeight="Bold" FontSize="14">Editor Settings</Label>
+                <Grid Margin="10 0 5 0" VerticalAlignment="Center">
+                    <Grid.Resources>
+                        <Style TargetType="Border" >
+                            <Setter Property="Padding" Value="5,5,5,5" />
+                        </Style>
+                    </Grid.Resources>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="*" />
+                        <RowDefinition Height="*" />
+                        <RowDefinition Height="*" />
+                        <RowDefinition Height="*" />
+                        <RowDefinition Height="*" />
+                        <RowDefinition Height="*" />
+                        <RowDefinition Height="*" />
+                        <RowDefinition Height="*" />
+                    </Grid.RowDefinitions>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="120" />
+                    </Grid.ColumnDefinitions>
 
-                <Border Grid.Row="0" Grid.Column="0">
-                    <TextBlock VerticalAlignment="Center">Song Volume</TextBlock>
-                </Border>
+                    <Border Grid.Row="0" Grid.Column="0">
+                        <TextBlock VerticalAlignment="Center">Song Volume</TextBlock>
+                    </Border>
 
-                <Border Grid.Row="0" Grid.Column="1">
-                    <DockPanel>
-                        <TextBlock x:Name="txtSongVol" DockPanel.Dock="Right" Width="30" Margin="5 0 0 0">0%</TextBlock>
-                        <Slider x:Name="sliderSongVol" Maximum="1" ValueChanged="sliderSongVol_ValueChanged"/>
-                    </DockPanel>
-                </Border>
+                    <Border Grid.Row="0" Grid.Column="1">
+                        <DockPanel>
+                            <TextBlock x:Name="txtSongVol" DockPanel.Dock="Right" Width="30" Margin="5 0 0 0">0%</TextBlock>
+                            <Slider x:Name="sliderSongVol" Maximum="1" ValueChanged="sliderSongVol_ValueChanged"/>
+                        </DockPanel>
+                    </Border>
 
-                <Border Grid.Row="1" Grid.Column="0">
-                    <TextBlock VerticalAlignment="Center">Drum Volume</TextBlock>
-                </Border>
+                    <Border Grid.Row="1" Grid.Column="0">
+                        <TextBlock VerticalAlignment="Center">Drum Volume</TextBlock>
+                    </Border>
 
-                <Border Grid.Row="1" Grid.Column="1">
-                    <DockPanel>
-                        <TextBlock x:Name="txtDrumVol" DockPanel.Dock="Right" Width="30" Margin="5 0 0 0">0%</TextBlock>
-                        <Slider x:Name="sliderDrumVol" Maximum="1" ValueChanged="sliderDrumVol_ValueChanged"/>
-                    </DockPanel>
-                </Border>
+                    <Border Grid.Row="1" Grid.Column="1">
+                        <DockPanel>
+                            <TextBlock x:Name="txtDrumVol" DockPanel.Dock="Right" Width="30" Margin="5 0 0 0">0%</TextBlock>
+                            <Slider x:Name="sliderDrumVol" Maximum="1" ValueChanged="sliderDrumVol_ValueChanged"/>
+                        </DockPanel>
+                    </Border>
 
-                <Border Grid.Row="2" Grid.Column="0" Margin="0 5 0 0"/>
+                    <Border Grid.Row="2" Grid.Column="0" Margin="0 5 0 0"/>
+                    <!--
+                    <Border Grid.Row="3" Grid.Column="0">
+                        <TextBlock VerticalAlignment="Center">Snap to Grid</TextBlock>
+                    </Border>
 
-                <Border Grid.Row="3" Grid.Column="0">
-                    <TextBlock VerticalAlignment="Center">Snap to Grid</TextBlock>
-                </Border>
+                    <Border Grid.Row="3" Grid.Column="1">
+                        <StackPanel Orientation="Horizontal">
+                            <CheckBox x:Name="checkGridSnap" VerticalAlignment="Center" Click="checkGridSnap_Click"></CheckBox>
+                        </StackPanel>
+                    </Border>
+                    -->
+                    <Border Grid.Row="4" Grid.Column="0">
+                        <TextBlock VerticalAlignment="Center">Grid Division</TextBlock>
+                    </Border>
 
-                <Border Grid.Row="3" Grid.Column="1">
-                    <StackPanel Orientation="Horizontal">
-                        <CheckBox x:Name="checkGridSnap" VerticalAlignment="Center" Click="checkGridSnap_Click"></CheckBox>
-                    </StackPanel>
-                </Border>
-                
-                <Border Grid.Row="4" Grid.Column="0">
-                    <TextBlock VerticalAlignment="Center">Grid Division</TextBlock>
-                </Border>
+                    <Border Grid.Row="4" Grid.Column="1">
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock Margin="0 0 3 0" VerticalAlignment="Center">1/</TextBlock>
+                            <TextBox Width="25" x:Name="txtGridDivision" LostFocus="txtGridDivision_LostFocus" VerticalAlignment="Center"/>
+                        </StackPanel>
+                    </Border>
 
-                <Border Grid.Row="4" Grid.Column="1">
-                    <StackPanel Orientation="Horizontal">
-                        <TextBlock Margin="0 0 3 0" VerticalAlignment="Center">1/</TextBlock>
-                        <TextBox Width="25" x:Name="txtGridDivision" LostFocus="txtGridDivision_LostFocus" VerticalAlignment="Center"/>
-                    </StackPanel>
-                </Border>
+                    <Border Grid.Row="5" Grid.Column="0">
+                        <TextBlock VerticalAlignment="Center">Grid Offset</TextBlock>
+                    </Border>
 
-                <Border Grid.Row="5" Grid.Column="0">
-                    <TextBlock VerticalAlignment="Center">Grid Offset</TextBlock>
-                </Border>
+                    <Border Grid.Row="5" Grid.Column="1">
+                        <TextBox x:Name="txtGridOffset" LostFocus="txtGridOffset_LostFocus"/>
+                    </Border>
 
-                <Border Grid.Row="5" Grid.Column="1">
-                    <TextBox x:Name="txtGridOffset" LostFocus="txtGridOffset_LostFocus"/>
-                </Border>
+                    <Border Grid.Row="6" Grid.Column="0">
+                        <TextBlock VerticalAlignment="Center">Grid Spacing</TextBlock>
+                    </Border>
 
-                <Border Grid.Row="6" Grid.Column="0">
-                    <TextBlock VerticalAlignment="Center">Grid Spacing</TextBlock>
-                </Border>
+                    <Border Grid.Row="6" Grid.Column="1">
+                        <TextBox x:Name="txtGridSpacing" LostFocus="txtGridSpacing_LostFocus"/>
+                    </Border>
 
-                <Border Grid.Row="6" Grid.Column="1">
-                    <TextBox x:Name="txtGridSpacing" LostFocus="txtGridSpacing_LostFocus"/>
-                </Border>
+                    <Border Grid.Row="7" Grid.Column="0" Margin="0 5 0 0"/>
 
-                <Border Grid.Row="7" Grid.Column="0" Margin="0 5 0 0"/>
+                    <Border Grid.Row="8" Grid.Column="1">
+                        <Button x:Name="btnDeleteDifficulty" Click="btnDeleteDifficulty_Click">Delete Difficulty</Button>
+                    </Border>
 
-                <Border Grid.Row="8" Grid.Column="1">
-                    <Button x:Name="btnDeleteDifficulty" Click="btnDeleteDifficulty_Click">Delete Difficulty</Button>
-                </Border>
-
-            </Grid>
-        </StackPanel>
-
+                </Grid>
+            </StackPanel>
+        </ScrollViewer>
         <Grid Name="EditorPanel" MinWidth="300">
             <!-- Drum Column Guides -->
             <Grid VerticalAlignment="Bottom" Background="#FF2C7ADB">
