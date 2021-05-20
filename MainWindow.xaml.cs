@@ -46,7 +46,7 @@ namespace RagnarockEditor {
         int      gridDivisionMax      = 24;
         string[] difficultyNames      = {"Easy", "Normal", "Hard"};
         int      notePlaybackStreams  = 16; 
-        int      desiredWasapiLatency = 100; // ms
+        int      desiredWasapiLatency = 120; // ms
         int      notePollRate         = 10; // ms
         double   noteDetectionDelta   = 20; // ms
         int      defaultGridDivision  = 4;
