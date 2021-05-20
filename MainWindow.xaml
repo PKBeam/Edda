@@ -1,9 +1,8 @@
-﻿<Window x:Class="RagnarockEditor.MainWindow"
+﻿<Window x:Class="Edda.MainWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-        xmlns:local="clr-namespace:RagnarockEditor"
         mc:Ignorable="d"
         x:Name="AppMainWindow" Title="Edda" Height="780" Width="800" MinWidth="800" Closed="AppMainWindow_Closed">
     <DockPanel>
@@ -18,19 +17,19 @@
                 <StackPanel DockPanel.Dock="Left" Orientation="Horizontal">
                     <StackPanel Margin="10 10 0 10">
                         <Button x:Name="btnNewMap" Width="50" Height="50" Click="btnNewMap_Click">
-                            <Image Source="pack://application:,,,/RagnarockEditor;component/resources/newMap.png"/>
+                            <Image Source="pack://application:,,,/Edda;component/resources/newMap.png"/>
                         </Button>
                         <TextBlock Margin="0 3 0 0" FontSize="12" HorizontalAlignment="Center">New Map</TextBlock>
                     </StackPanel>
                     <StackPanel Margin="10 10 0 10">
                         <Button x:Name="btnOpenMap" Width="50" Height="50" Click="btnOpenMap_Click">
-                            <Image Source="pack://application:,,,/RagnarockEditor;component/resources/openMap.png"/>
+                            <Image Source="pack://application:,,,/Edda;component/resources/openMap.png"/>
                         </Button>
                         <TextBlock Margin="0 3 0 0" FontSize="12" HorizontalAlignment="Center">Open Map</TextBlock>
                     </StackPanel>
                     <StackPanel Margin="10 10 0 10">
                         <Button x:Name="btnSaveMap" Width="50" Height="50" Click="btnSaveMap_Click">
-                            <Image Source="pack://application:,,,/RagnarockEditor;component/resources/saveMap.png"/>
+                            <Image Source="pack://application:,,,/Edda;component/resources/saveMap.png"/>
                         </Button>
                         <TextBlock Margin="0 3 0 0" FontSize="12" HorizontalAlignment="Center">Save Map</TextBlock>
                     </StackPanel>
@@ -40,13 +39,13 @@
                     <StackPanel Orientation="Vertical">
                         <StackPanel x:Name="DifficultyChangePanel" Margin="10 0 10 0" Orientation="Horizontal">
                             <Button x:Name="btnChangeDifficulty0" Width="50" Height="50" Click="btnChangeDifficulty0_Click">
-                                <Image Source="pack://application:,,,/RagnarockEditor;component/resources/difficulty1.png"/>
+                                <Image Source="pack://application:,,,/Edda;component/resources/difficulty1.png"/>
                             </Button>
                             <Button x:Name="btnChangeDifficulty1" Margin="5 0 0 0"  Width="50" Height="50" Click="btnChangeDifficulty1_Click">
-                                <Image Source="pack://application:,,,/RagnarockEditor;component/resources/difficulty2.png"/>
+                                <Image Source="pack://application:,,,/Edda;component/resources/difficulty2.png"/>
                             </Button>
                             <Button x:Name="btnChangeDifficulty2" Margin="5 0 0 0" Width="50" Height="50" Click="btnChangeDifficulty2_Click">
-                                <Image Source="pack://application:,,,/RagnarockEditor;component/resources/difficulty3.png"/>
+                                <Image Source="pack://application:,,,/Edda;component/resources/difficulty3.png"/>
                             </Button>
                         </StackPanel>
                         <TextBlock Margin="0 3 0 0" HorizontalAlignment="Center">Change Difficulty</TextBlock>
@@ -64,7 +63,7 @@
             <DockPanel Width="{Binding ElementName=TopPanel, Path=ActualWidth}" HorizontalAlignment="Center" VerticalAlignment="Center">
                 <StackPanel DockPanel.Dock="Left" Margin="10 0 0 0" Orientation="Horizontal">
                     <Button x:Name="btnSongPlayer" Width="30" Height="30" Margin="0 0 10 0" Click="btnSongPlayer_Click">
-                        <Image x:Name="imgPlayerButton" Source="pack://application:,,,/RagnarockEditor;component/resources/playButton.png"/>
+                        <Image x:Name="imgPlayerButton" Source="pack://application:,,,/Edda;component/resources/playButton.png"/>
                     </Button>
                     <TextBlock x:Name="txtSongPosition" FontSize="16" VerticalAlignment="Center">0:00</TextBlock>
                 </StackPanel>
@@ -381,10 +380,10 @@
                     </Canvas.Background>
                 </Canvas>
 
-                <Image Grid.Column="1" Source="pack://application:,,,/RagnarockEditor;component/resources/drum.png" Name="Drum1" VerticalAlignment="Bottom"/>
-                <Image Grid.Column="3" Source="pack://application:,,,/RagnarockEditor;component/resources/drum.png" Name="Drum2" VerticalAlignment="Bottom"/>
-                <Image Grid.Column="5" Source="pack://application:,,,/RagnarockEditor;component/resources/drum.png" Name="Drum3" VerticalAlignment="Bottom"/>
-                <Image Grid.Column="7" Source="pack://application:,,,/RagnarockEditor;component/resources/drum.png" Name="Drum4" VerticalAlignment="Bottom"/>
+                <Image Grid.Column="1" Source="pack://application:,,,/Edda;component/resources/drum.png" Name="Drum1" VerticalAlignment="Bottom"/>
+                <Image Grid.Column="3" Source="pack://application:,,,/Edda;component/resources/drum.png" Name="Drum2" VerticalAlignment="Bottom"/>
+                <Image Grid.Column="5" Source="pack://application:,,,/Edda;component/resources/drum.png" Name="Drum3" VerticalAlignment="Bottom"/>
+                <Image Grid.Column="7" Source="pack://application:,,,/Edda;component/resources/drum.png" Name="Drum4" VerticalAlignment="Bottom"/>
             </Grid>
             <!-- Map Notes -->
             <ScrollViewer x:Name="scrollEditor" VerticalScrollBarVisibility="Hidden" CanContentScroll="False" ScrollChanged="scrollEditor_ScrollChanged" PreviewMouseWheel="scrollEditor_PreviewMouseWheel" SizeChanged="scrollEditor_SizeChanged" MouseMove="scrollEditor_MouseMove" MouseLeave="scrollEditor_MouseLeave" MouseEnter="scrollEditor_MouseEnter" MouseLeftButtonUp="scrollEditor_MouseLeftButtonUp" MouseRightButtonUp="scrollEditor_MouseRightButtonUp">

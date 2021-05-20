@@ -10,16 +10,18 @@ public class Drummer : IDisposable {
 
 	int streams;
 	int uniqueSamples;
-	int lastPlayed;
+	int lastPlayedStream;
+	DateTime[] lastPlayedTimes;
 	AudioFileReader[] noteStreams;
 	WasapiOut[] notePlayers;
 
 	public Drummer(string[] filePaths, int streams, int desiredLatency) {
-		this.lastPlayed = 0;
+		this.lastPlayedStream = 0;
 		this.streams = streams;
 		this.uniqueSamples = filePaths.Length;
 		noteStreams = new AudioFileReader[streams];
 		notePlayers = new WasapiOut[streams];
+		lastPlayedTimes = new DateTime[streams];
 		for (int i = 0; i < streams; i++) {
 			noteStreams[i] = new AudioFileReader(filePaths[streams % uniqueSamples]);
 			noteStreams[i].Volume = 1.0f;
@@ -34,13 +36,12 @@ public class Drummer : IDisposable {
         }
 		int playedHits = 0;
 		for (int i = 0; i < streams; i++) {
-			if (notePlayers[i].PlaybackState != PlaybackState.Playing && (i % uniqueSamples != lastPlayed % uniqueSamples)) {
-				noteStreams[i].CurrentTime = new TimeSpan(0, 0, 0, 0, 1);
+			// check that the stream is available to play, and that the sample file is not the same as the last
+			if (DateTime.Now - lastPlayedTimes[i] > new TimeSpan(0, 0, 1) && (i % uniqueSamples != lastPlayedStream % uniqueSamples)) {
+				noteStreams[i].CurrentTime = new TimeSpan(0, 0, 0, 0, 0);
 				notePlayers[i].Play();
-				this.lastPlayed = i;
-				//Task.Delay(1500).ContinueWith(_ => {
-				//	notePlayers[i].Stop();
-				//});
+				this.lastPlayedStream = i;
+				lastPlayedTimes[i] = DateTime.Now;
 				playedHits++;
 				if (playedHits == hits) {
 					return true;

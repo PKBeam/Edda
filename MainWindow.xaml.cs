@@ -2,35 +2,27 @@
 using System.Diagnostics;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
 using System.IO;
 using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
 using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
-using System.Windows.Navigation;
 using System.Windows.Shapes;
-using System.Timers;
 using Microsoft.WindowsAPICodePack.Dialogs;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using NAudio.Vorbis;
 using NAudio.Wave;
-using NVorbis;
 using System.Windows.Media.Animation;
-using System.Reflection;
 using NAudio.Wave.SampleProviders;
-using System.Reactive;
 using System.Reactive.Linq;
 using System.Threading;
 using NAudio.CoreAudioApi;
 using System.Text.RegularExpressions;
 
-namespace RagnarockEditor {
+namespace Edda {
     /// <summary>
     /// Interaction logic for MainWindow.xaml
     /// </summary>
@@ -40,7 +32,8 @@ namespace RagnarockEditor {
     public partial class MainWindow : Window {
 
         // constants
-        string eddaVersionNumber = "0.0.3";
+        string   eddaVersionNumber    = "0.0.3";
+        string   settingsFileName     = "settings.txt";
         string   gridColourMajor      = "#333333";
         string   gridColourMinor      = "#666666";
         double   gridThicknessMajor   = 2;
@@ -94,6 +87,7 @@ namespace RagnarockEditor {
         string[] mapsStr = {"", "", ""};
         Note[] selectedDifficultyNotes;
         DoubleAnimation songPlayAnim;
+        bool isChangingSong;
 
         bool songIsPlaying {
             set { btnSongPlayer.Tag = (value == false) ? 0 : 1; }
@@ -121,7 +115,7 @@ namespace RagnarockEditor {
         int    editorGridDivision;
         double editorGridSpacing;
         double editorGridOffset;
-        int    editorAudioDelay; // in ms
+        int    editorAudioLatency; // in ms
         double editorDrawRangeLower = 0;
         double editorDrawRangeHigher = 0;
         int    editorMouseGridRow;
@@ -147,7 +141,8 @@ namespace RagnarockEditor {
             sliderSongProgress.Tag = 0;
             scrollEditor.Tag = 0;
 
-            drummer = new Drummer(new String[] { "Resources/drum1.wav", "Resources/drum2.wav", "Resources/drum3.wav", "Resources/drum4.wav" }, notePlaybackStreams, desiredWasapiLatency);
+            string[] drumSounds = { "Resources/drum1.wav", "Resources/drum2.wav", "Resources/drum3.wav", "Resources/drum4.wav" };
+            drummer = new Drummer(drumSounds, notePlaybackStreams, desiredWasapiLatency);
 
             // disable parts of UI, as no map is loaded
             btnSaveMap.IsEnabled = false;
@@ -174,7 +169,24 @@ namespace RagnarockEditor {
             sliderSongProgress.IsEnabled = false;
             scrollEditor.IsEnabled = false;
 
- 
+            // load config file
+            if (File.Exists(settingsFileName)) {
+                string[] lines = File.ReadAllLines(settingsFileName);
+                foreach (var line in lines) {
+                    if (line.StartsWith("editorAudioLatency")) {
+                        int latency;
+                        if (!int.TryParse(line.Split("=")[1], out latency)) {
+                            Trace.WriteLine("INFO: using default editor audio latency");
+                            editorAudioLatency = defaultEditorAudioLatency;
+                        } else {
+                            editorAudioLatency = latency;
+                        }
+                    }
+                }
+            } else {
+                createConfigFile();
+                editorAudioLatency = defaultEditorAudioLatency;
+            }
 
 
             // TODO: properly debounce grid redrawing on resize
@@ -200,7 +212,6 @@ namespace RagnarockEditor {
                 drummer.Dispose();
             }
         }
-
         private void btnNewMap_Click(object sender, RoutedEventArgs e) {
 
             // check if map already open
@@ -258,7 +269,6 @@ namespace RagnarockEditor {
             initUI();
 
         }
-         
         private void btnOpenMap_Click(object sender, RoutedEventArgs e) {
 
             // select folder for map
@@ -285,7 +295,6 @@ namespace RagnarockEditor {
             loadSong();
             initUI();
         }
-
         private void btnSaveMap_Click(object sender, RoutedEventArgs e) {
             // TODO: update _lastEditedBy field 
             writeInfoStr();
@@ -294,7 +303,6 @@ namespace RagnarockEditor {
                 writeMapStr(i);
             }
         }
-
         private void btnPickSong_Click(object sender, RoutedEventArgs e) {
             if (changeSong()) {
                 setValInfoDat("_songFilename", "song.ogg");
@@ -306,7 +314,6 @@ namespace RagnarockEditor {
                 initUI();
             }
         }
-
         private void btnPickCover_Click(object sender, RoutedEventArgs e) {
             var d = new Microsoft.Win32.OpenFileDialog() { Filter = "JPEG Files|*.jpg;*.jpeg" };
             d.Title = "Select a song to map";
@@ -325,7 +332,6 @@ namespace RagnarockEditor {
             setValInfoDat("_coverImageFilename", "cover.jpg");
             loadCoverImage();
         }
-
         private void btnSongPlayer_Click(object sender, RoutedEventArgs e) {
             if (!songIsPlaying) {
                 beginSongPlayback();
@@ -333,11 +339,9 @@ namespace RagnarockEditor {
                 endSongPlayback();
             }          
         }
-
         private void btnAddDifficulty_Click(object sender, RoutedEventArgs e) {
             addDifficulty(numDifficulties == 1 ? "Normal" : "Hard");
         }
-
         private void btnDeleteDifficulty_Click(object sender, RoutedEventArgs e) {
             var res = MessageBox.Show("Are you sure you want to delete this difficulty?", "Warning", MessageBoxButton.YesNo);
             if (res != MessageBoxResult.Yes) {
@@ -345,29 +349,23 @@ namespace RagnarockEditor {
             }
             deleteDifficultyMap(selectedDifficulty);
         }
-
         private void btnChangeDifficulty0_Click(object sender, RoutedEventArgs e) {
             selectedDifficulty = 0;
         }
-
         private void btnChangeDifficulty1_Click(object sender, RoutedEventArgs e) {
             selectedDifficulty = 1;
         }
-
         private void btnChangeDifficulty2_Click(object sender, RoutedEventArgs e) {
             selectedDifficulty = 2;
         }
-
         private void sliderSongVol_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e) {
             songChannel.Volume = (float)sliderSongVol.Value; 
             txtSongVol.Text = $"{(int)(sliderSongVol.Value * 100)}%";
         }
-
         private void sliderDrumVol_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e) {
             drummer.changeVolume(sliderDrumVol.Value);
             txtDrumVol.Text = $"{(int) (sliderDrumVol.Value * 100)}%";
         }
-
         private void sliderSongProgress_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e) {
 
             // update song seek time text box
@@ -388,11 +386,9 @@ namespace RagnarockEditor {
             //    scanForNotes();
             //}
         }
-
         private void scrollEditor_SizeChanged(object sender, SizeChangedEventArgs e) {
             updateEditorGridHeight();
         }
-
         private void scrollEditor_ScrollChanged(object sender, ScrollChangedEventArgs e) {
             var curr = scrollEditor.VerticalOffset;
             var range = scrollEditor.ScrollableHeight;
@@ -403,18 +399,20 @@ namespace RagnarockEditor {
 
             // try to keep the scroller at the same percentage scroll that it was before
             if (e.ExtentHeightChange != 0) {
-                scrollEditor.ScrollToVerticalOffset((1 - prevScrollPercent) * scrollEditor.ScrollableHeight);
+                if (isChangingSong) {
+                    isChangingSong = false;
+                } else {
+                    scrollEditor.ScrollToVerticalOffset((1 - prevScrollPercent) * scrollEditor.ScrollableHeight);
+                }
                 //Trace.Write($"time: {txtSongPosition.Text} curr: {scrollEditor.VerticalOffset} max: {scrollEditor.ScrollableHeight} change: {e.ExtentHeightChange}\n");
             } else if (range != 0) {
                 prevScrollPercent = (1 - curr / range);
             }
             
-        }
-        
+        }       
         private void scrollEditor_PreviewMouseWheel(object sender, MouseWheelEventArgs e) {
 
         }
-
         private void txtSongBPM_LostFocus(object sender, RoutedEventArgs e) {
             double BPM;
             if (!double.TryParse(txtSongBPM.Text, out BPM)) {
@@ -426,7 +424,6 @@ namespace RagnarockEditor {
             updateEditorGridHeight();
             drawEditorGrid();
         }
-
         private void txtSongOffset_LostFocus(object sender, RoutedEventArgs e) {
             double offset;
             if (!double.TryParse(txtSongOffset.Text, out offset)) {
@@ -436,19 +433,15 @@ namespace RagnarockEditor {
             }
             txtSongBPM.Text = offset.ToString();
         }
-
         private void txtSongName_TextChanged(object sender, TextChangedEventArgs e) {
             setValInfoDat("_songName", txtSongName.Text);
         }
-
         private void txtArtistName_TextChanged(object sender, TextChangedEventArgs e) {
             setValInfoDat("_songAuthorName", txtArtistName.Text);
         }
-
         private void txtMapperName_TextChanged(object sender, TextChangedEventArgs e) {
             setValInfoDat("_levelAuthorName", txtMapperName.Text);
         }
-
         private void txtDifficultyNumber_LostFocus(object sender, RoutedEventArgs e) {
             int prevLevel = (int)getMapValInfoDat("_difficultyRank", selectedDifficulty);
             int level;
@@ -460,7 +453,6 @@ namespace RagnarockEditor {
             }
             txtDifficultyNumber.Text = level.ToString();
         }
-
         private void txtNoteSpeed_LostFocus(object sender, RoutedEventArgs e) {
             double prevSpeed = (int)getMapValInfoDat("_noteJumpMovementSpeed", selectedDifficulty);
             double speed;
@@ -472,7 +464,6 @@ namespace RagnarockEditor {
             }
             txtNoteSpeed.Text = speed.ToString();
         }
-
         private void txtGridOffset_LostFocus(object sender, RoutedEventArgs e) {
             double offset;
             if (double.TryParse(txtGridOffset.Text, out offset) && offset != editorGridOffset) {
@@ -492,7 +483,6 @@ namespace RagnarockEditor {
             }
             txtGridOffset.Text = offset.ToString();
         }
-
         private void txtGridSpacing_LostFocus(object sender, RoutedEventArgs e) {
             double spacing;
             if (double.TryParse(txtGridSpacing.Text, out spacing) && spacing != editorGridSpacing) {
@@ -504,7 +494,6 @@ namespace RagnarockEditor {
             }
             txtGridSpacing.Text = spacing.ToString();
         }
-
         private void txtGridDivision_LostFocus(object sender, RoutedEventArgs e) {
             int div;
             if (!int.TryParse(txtGridDivision.Text, out div) || div < 1) {
@@ -520,7 +509,6 @@ namespace RagnarockEditor {
                 drawEditorGrid();
             }
         }
-
         private void comboEnvironment_SelectionChanged(object sender, SelectionChangedEventArgs e) {
             string env = "DefaultEnvironment";
             switch (comboEnvironment.SelectedIndex) {
@@ -535,7 +523,6 @@ namespace RagnarockEditor {
             }
             setValInfoDat("_environmentName", env);
         }
-
         private void EditorGrid_SizeChanged(object sender, SizeChangedEventArgs e) {
             if (songIsPlaying) {
                 endSongPlayback();
@@ -546,11 +533,9 @@ namespace RagnarockEditor {
                 drawEditorGrid();
             }
         }
-
         private void scrollEditor_MouseEnter(object sender, MouseEventArgs e) {
             imgPreviewNote.Opacity = 0.5;
         }
-
         private void scrollEditor_MouseMove(object sender, MouseEventArgs e) {
 
             // set vertical element
@@ -589,11 +574,9 @@ namespace RagnarockEditor {
             var unitSubLengthOffset = 1 + 4 * (editorMouseGridCol);
             Canvas.SetLeft(imgPreviewNote, (unitSubLengthOffset * unitSubLength) - unknownNoteXAdjustment);
         }
-
         private void scrollEditor_MouseLeave(object sender, MouseEventArgs e) {
             imgPreviewNote.Opacity = 0;
         }
-
         private void scrollEditor_MouseLeftButtonUp(object sender, MouseButtonEventArgs e) {
             double userOffsetBeat = currentBPM * editorGridOffset / 60;
             double beat = editorMouseGridRow / (double)editorGridDivision + userOffsetBeat;
@@ -619,7 +602,6 @@ namespace RagnarockEditor {
 
             //printNotes();
         }
-
         private void scrollEditor_MouseRightButtonUp(object sender, MouseButtonEventArgs e) {
             double userOffsetBeat = currentBPM * editorGridOffset / 60;
             double beat = editorMouseGridRow / (double)editorGridDivision + userOffsetBeat;
@@ -637,7 +619,6 @@ namespace RagnarockEditor {
 
             //printNotes();
         }
-
         private void checkGridSnap_Click(object sender, RoutedEventArgs e) {
             //editorSnapToGrid = (checkGridSnap.IsChecked == true);
         }
@@ -689,8 +670,6 @@ namespace RagnarockEditor {
             editorSnapToGrid = true;
             //checkGridSnap.IsChecked = true;
 
-            editorAudioDelay = defaultEditorAudioLatency;
-
             sliderSongVol.Value = 0.25;
             sliderDrumVol.Value = 1.0;
 
@@ -733,7 +712,6 @@ namespace RagnarockEditor {
             selectedDifficulty = 0;
             scrollEditor.ScrollToBottom();
         }
-
         private void initialiseInfoDat() {
             // init info.dat json
             var infoDat = new {
@@ -770,7 +748,6 @@ namespace RagnarockEditor {
             };
             infoStr = JsonConvert.SerializeObject(infoDat, Formatting.Indented);
         }
-
         private void addDifficulty(string difficulty) {
             var obj = JObject.Parse(infoStr);
             var beatmaps = (JArray)obj["_difficultyBeatmapSets"][0]["_difficultyBeatmaps"];
@@ -806,7 +783,6 @@ namespace RagnarockEditor {
             mapsStr[numDifficulties - 1] = JsonConvert.SerializeObject(mapDat, Formatting.Indented);
             updateDifficultyButtonVisibility();
         }
-
         private void updateDifficultyButtonVisibility() {
             for (var i = 0; i < numDifficulties; i++) {
                 ((Button)DifficultyChangePanel.Children[i]).Visibility = Visibility.Visible;
@@ -817,7 +793,6 @@ namespace RagnarockEditor {
             btnDeleteDifficulty.IsEnabled = (numDifficulties == 1) ? false : true;
             btnAddDifficulty.Visibility = (numDifficulties == 3) ? Visibility.Hidden : Visibility.Visible;
         }
-
         private void enableDifficultyButtons(int indx) {
             foreach (Button b in DifficultyChangePanel.Children) {
                 if (b.Name == ((Button)DifficultyChangePanel.Children[indx]).Name) {
@@ -827,14 +802,12 @@ namespace RagnarockEditor {
                 }
             }
         }
-
         private void switchDifficultyMap(int indx) {
             enableDifficultyButtons(indx);
             selectedDifficultyNotes = getMapStrNotes(_selectedDifficulty);
             txtDifficultyNumber.Text = int.Parse((string)getMapValInfoDat("_difficultyRank", selectedDifficulty)).ToString();
             drawEditorGrid();
         }
-
         private void deleteDifficultyMap(int indx) {
             if (numDifficulties == 1) {
                 return;
@@ -851,72 +824,59 @@ namespace RagnarockEditor {
             updateDifficultyButtonVisibility();
         }
 
-        // == read/write values to .dat files ==
-
+        // == file I/O ==
         private string absPath(string f) {
             return System.IO.Path.Combine(saveFolder, f);
         }
-
         private void setValInfoDat(string key, object value) {
             var obj = JObject.Parse(infoStr);
             obj[key] = JToken.FromObject(value);
             infoStr = JsonConvert.SerializeObject(obj, Formatting.Indented);
         }
-
         private JToken getValInfoDat(string key) {
             var obj = JObject.Parse(infoStr);
             var res = obj[key];
             return res;
         }
-
         private void setMapValInfoDat(string key, object value, int indx) {
             var obj = JObject.Parse(infoStr);
             obj["_difficultyBeatmapSets"][0]["_difficultyBeatmaps"][indx][key] = JToken.FromObject(value);
             infoStr = JsonConvert.SerializeObject(obj, Formatting.Indented);
         }
-
         private JToken getMapValInfoDat(string key, int indx) {
             var obj = JObject.Parse(infoStr);
             var res = obj["_difficultyBeatmapSets"][0]["_difficultyBeatmaps"][indx][key];
             return res;
         }
-
         private void setCustomMapValInfoDat(string key, object value) {
             var obj = JObject.Parse(infoStr);
             obj["_difficultyBeatmapSets"][0]["_difficultyBeatmaps"][selectedDifficulty]["_customData"][key] = JToken.FromObject(value);
             infoStr = JsonConvert.SerializeObject(obj, Formatting.Indented);
         } 
-
         private JToken getCustomMapValInfoDat(string key) {
             var obj = JObject.Parse(infoStr);
             var res = obj["_difficultyBeatmapSets"][0]["_difficultyBeatmaps"][selectedDifficulty]["_customData"][key];
             return res;
         }
-
         private void readInfoStr() {
             infoStr = File.ReadAllText(absPath("info.dat"));
         }
-
         private void writeInfoStr() {
             File.WriteAllText(absPath("info.dat"), infoStr);
         }
-
         private void readMapStr(int indx) {
             var filename = (string) getMapValInfoDat("_beatmapFilename", indx);
             mapsStr[indx] = File.ReadAllText(absPath(filename));
         }
-
         private void writeMapStr(int indx) {
             var filename = (string) getMapValInfoDat("_beatmapFilename", indx);
             File.WriteAllText(absPath(filename), mapsStr[indx]);
         }
-
         private void deleteMapStr(int indx) {
             var filename = (string)getMapValInfoDat("_beatmapFilename", indx);
             File.Delete(absPath(filename));
             mapsStr[indx] = "";
         }
-
         private void renameMapStr() {
             for (int i = 0; i < numDifficulties; i++) {
                 setMapValInfoDat("_difficulty", difficultyNames[i], i);
@@ -928,7 +888,6 @@ namespace RagnarockEditor {
                 File.Move(absPath($"{difficultyNames[i]}_temp.dat"), absPath($"{difficultyNames[i]}.dat"));
             }
         }
-
         private Note[] getMapStrNotes(int indx) {
             var obj = JObject.Parse(mapsStr[indx]);
             var res = obj["_notes"];
@@ -942,7 +901,6 @@ namespace RagnarockEditor {
             }
             return output;
         }
-
         private void setMapStrNotes(int indx) {
             var numNotes = selectedDifficultyNotes.Length;
             var notes = new Object[numNotes];
@@ -962,9 +920,14 @@ namespace RagnarockEditor {
             mapsStr[selectedDifficulty] = JsonConvert.SerializeObject(thisMapStr, Formatting.Indented);
             //mapsStr[selectedDifficulty]["_notes"] = jObj;
         }
+        private void createConfigFile() {
+            string[] fields = { 
+                "editorAudioLatency=" 
+            };
+            File.WriteAllLines("settings.txt", fields);
+        }
 
         // ===================================
-
         private bool changeSong() {
             // select audio file
             var d = new Microsoft.Win32.OpenFileDialog();
@@ -1000,7 +963,6 @@ namespace RagnarockEditor {
 
             return true;
         }
-
         private void loadSong() {
 
             // cleanup old players
@@ -1021,11 +983,11 @@ namespace RagnarockEditor {
             // subscribe to playbackstopped
             songPlayer.PlaybackStopped += (sender, args) => { endSongPlayback(); };
             sliderSongProgress.Minimum = 0;
-            sliderSongProgress.Value = 0;
             sliderSongProgress.Maximum = songStream.TotalTime.TotalSeconds * 1000;
+            sliderSongProgress.Value = 0;
+            isChangingSong = true;
 
         }
-
         private void beginSongPlayback() {
             songIsPlaying = true;
             imgPlayerButton.Source = imageGenerator(packUriGenerator("pauseButton.png"));
@@ -1064,7 +1026,7 @@ namespace RagnarockEditor {
 
             // init stopwatch
             noteScanStopwatch = new Stopwatch();
-            noteScanStopwatchOffset = (int)(sliderSongProgress.Value - editorAudioDelay); // set user audio delay
+            noteScanStopwatchOffset = (int)(sliderSongProgress.Value - editorAudioLatency); // set user audio delay
             rescanNoteIndex();
             noteScanTokenSource = new CancellationTokenSource();
             noteScanToken = noteScanTokenSource.Token;
@@ -1077,7 +1039,6 @@ namespace RagnarockEditor {
             // play song
             songPlayer.Play();
         }
-
         private void endSongPlayback() {
             songIsPlaying = false;
             imgPlayerButton.Source = imageGenerator(packUriGenerator("playButton.png"));
@@ -1114,13 +1075,11 @@ namespace RagnarockEditor {
 
             songPlayer.Pause();
         }
-
         private void playDrumHit(int hits) {
             if (drummer.playDrum(hits) == false) {
                 Trace.WriteLine("WARNING: drummer skipped a drum hit");
             }
         }
-
         private void rescanNoteIndex() {
             // calculate scan index for playing drum hits
             var seekBeat = (noteScanStopwatchOffset / 1000.0) * (currentBPM / 60.0);
@@ -1144,7 +1103,6 @@ namespace RagnarockEditor {
                 }
             }
         }
-
         private void playNotes() {
             var currentTime = noteScanStopwatch.ElapsedMilliseconds + noteScanStopwatchOffset;
             //var currentTime = songStream.CurrentTime.TotalMilliseconds;
@@ -1185,7 +1143,6 @@ namespace RagnarockEditor {
         }
 
         // =======================================
-
         private bool addNote(Note n) {
             var insertIndx = 0;
             // check which index to insert the new note at (keep everything in sorted order)
@@ -1215,7 +1172,6 @@ namespace RagnarockEditor {
             return true;
             
         }
-
         private bool removeNote(Note n) {
             var removeIndx = 0;
 
@@ -1244,14 +1200,12 @@ namespace RagnarockEditor {
         }
 
         // ======================================
-
         private void loadCoverImage() {
             var fileName = (string)getValInfoDat("_coverImageFilename");
             BitmapImage b = imageGenerator(new Uri(absPath(fileName)));
             imgCover.Source = b;
             txtCoverFileName.Text = fileName;
         }
-
         private void updateEditorGridHeight() {
             if (infoStr == null) {
                 return;
@@ -1267,7 +1221,6 @@ namespace RagnarockEditor {
             imgPreviewNote.Width = unitLength;
             imgPreviewNote.Height = unitHeight;
         }
-
         private void drawEditorGrid() {
 
             if (infoStr == null) {
@@ -1290,7 +1243,6 @@ namespace RagnarockEditor {
             // rescan notes after drawing
             rescanNoteIndex();
         }
-
         private void drawEditorGridLines() {
             // calculate grid offset: default is 
             double offsetBeats = currentBPM * editorGridOffset / 60;
@@ -1316,7 +1268,6 @@ namespace RagnarockEditor {
                 counter++;
             }
         }
-
         private void drawEditorGridNotes(Note[] notes) {
             // draw drum notes
             // TODO: paginate these? they cause lag when resizing
@@ -1346,7 +1297,6 @@ namespace RagnarockEditor {
                 EditorGrid.Children.Add(img);
             }
         }
-
         private void undrawEditorGridNote(string Uid) {
             foreach (UIElement u in EditorGrid.Children) {
                 if (u.Uid == Uid) {
@@ -1357,11 +1307,9 @@ namespace RagnarockEditor {
         }
 
         //=======================
-
         private bool approximatelyEqual(double x, double y, double delta) {
             return Math.Abs(x - y) < delta;
         }
-
         private string imageForBeat(double beat) {
             var fracBeat = beat - (int)beat;
             switch (Math.Round(fracBeat, 5)) {
@@ -1374,15 +1322,12 @@ namespace RagnarockEditor {
                 default:      return "runeX.png";
             }
         }
-
         private string uidGenerator(Note n) {
             return $"Note({n.Item1},{n.Item2})";
         }
-
         private Uri packUriGenerator(string fileName) {
             return new Uri($"pack://application:,,,/resources/{fileName}");
         }
-
         private BitmapImage imageGenerator(Uri u) {
             var b = new BitmapImage();
             b.BeginInit();
@@ -1392,7 +1337,6 @@ namespace RagnarockEditor {
             b.Freeze();
             return b;
         }
-
         private void printNotes() {
             string output = "Notes: ";
             foreach (Note n in selectedDifficultyNotes) {
@@ -1400,7 +1344,6 @@ namespace RagnarockEditor {
             }
             Trace.WriteLine(output);
         }
-
     }
 }
 

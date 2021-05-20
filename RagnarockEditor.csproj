@@ -4,8 +4,9 @@
     <OutputType>WinExe</OutputType>
     <TargetFramework>net5.0-windows</TargetFramework>
     <UseWPF>true</UseWPF>
-    <AssemblyName>RagnarockEditor</AssemblyName>
+    <AssemblyName>Edda</AssemblyName>
     <ApplicationIcon>Resources\AppIcon.ico</ApplicationIcon>
+    <RootNamespace>Edda</RootNamespace>
   </PropertyGroup>
 
   <ItemGroup>
