@@ -5,14 +5,28 @@
     <TargetFramework>net5.0-windows</TargetFramework>
     <UseWPF>true</UseWPF>
     <AssemblyName>RagnarockEditor</AssemblyName>
+    <ApplicationIcon>Resources\AppIcon.ico</ApplicationIcon>
   </PropertyGroup>
 
   <ItemGroup>
+    <None Remove="Resources\difficulty1.png" />
+    <None Remove="Resources\difficulty2.png" />
+    <None Remove="Resources\difficulty3.png" />
+    <None Remove="Resources\drum.png" />
     <None Remove="Resources\drum1.wav" />
     <None Remove="Resources\drum2.wav" />
     <None Remove="Resources\drum3.wav" />
     <None Remove="Resources\drum4.wav" />
+    <None Remove="Resources\newMap.png" />
+    <None Remove="Resources\openMap.png" />
+    <None Remove="Resources\pauseButton.png" />
     <None Remove="Resources\placeholder.png" />
+    <None Remove="Resources\playButton.png" />
+    <None Remove="Resources\rune.png" />
+    <None Remove="Resources\rune1.png" />
+    <None Remove="Resources\saveMap.png" />
+    <None Remove="Resources\waterTexture.png" />
+    <None Remove="Resources\waterTextureSmall.png" />
   </ItemGroup>
 
   <ItemGroup>
@@ -37,7 +51,22 @@
     <Content Include="Resources\drum4.wav">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
+    <Resource Include="Resources\difficulty1.png" />
+    <Resource Include="Resources\difficulty2.png" />
+    <Resource Include="Resources\difficulty3.png" />
+    <Resource Include="Resources\drum.png" />
+    <Resource Include="Resources\newMap.png" />
+    <Resource Include="Resources\openMap.png">
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </Resource>
+    <Resource Include="Resources\pauseButton.png" />
     <Resource Include="Resources\placeholder.png" />
+    <Resource Include="Resources\playButton.png" />
+    <Resource Include="Resources\rune.png" />
+    <Resource Include="Resources\rune1.png" />
+    <Resource Include="Resources\saveMap.png" />
+    <Resource Include="Resources\waterTexture.png" />
+    <Resource Include="Resources\waterTextureSmall.png" />
   </ItemGroup>
 
   <ItemGroup>
@@ -53,6 +82,10 @@
       <Generator>ResXFileCodeGenerator</Generator>
       <LastGenOutput>Resources.Designer.cs</LastGenOutput>
     </EmbeddedResource>
+  </ItemGroup>
+
+  <ItemGroup>
+    <_DeploymentManifestIconFile Remove="Resources\AppIcon.ico" />
   </ItemGroup>
 
 </Project>

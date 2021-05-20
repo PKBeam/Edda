@@ -46,10 +46,11 @@ namespace RagnarockEditor {
         int      gridDivisionMax      = 24;
         string[] difficultyNames      = {"Easy", "Normal", "Hard"};
         int      notePlaybackStreams  = 16; 
-        int      desiredWasapiLatency = 75; // ms
-        int      notePollRate         = 20; // ms
+        int      desiredWasapiLatency = 100; // ms
+        int      notePollRate         = 10; // ms
         double   noteDetectionDelta   = 20; // ms
         int      defaultGridDivision  = 4;
+        int defaultEditorAudioLatency = 0; // ms
         // int gridRedrawInterval = 200; // ms
         // double   gridDrawRange = 1;
 
@@ -110,16 +111,16 @@ namespace RagnarockEditor {
         double prevScrollPercent = 0; // percentage of scroll progress before the scroll viewport was changed
 
         // variables used in the map editor
-        Image imgPreviewNote;
-        bool editorSnapToGrid;
-        int editorGridDivision;
+        Image  imgPreviewNote;
+        bool   editorSnapToGrid;
+        int    editorGridDivision;
         double editorGridSpacing;
         double editorGridOffset;
-        uint editorAudioDelay; // in ms
+        int    editorAudioDelay; // in ms
         double editorDrawRangeLower = 0;
         double editorDrawRangeHigher = 0;
-        int editorMouseGridRow;
-        int editorMouseGridCol;
+        int    editorMouseGridRow;
+        int    editorMouseGridCol;
         double editorMouseGridRowFractional;
 
         // variables used to handle drum hits on a separate thread
@@ -180,17 +181,18 @@ namespace RagnarockEditor {
 
         private void AppMainWindow_Closed(object sender, EventArgs e) {
             Trace.WriteLine("Closing window...");
-            songPlayer.Stop();
             if (noteScanTokenSource != null) {
                 noteScanTokenSource.Cancel();
             }
-            try {
-                songStream.Dispose();
+            if (songPlayer != null) {
+                songPlayer.Stop();
                 songPlayer.Dispose();
+            }
+            if (songStream != null) {
+                songStream.Dispose();
+            }
+            if (drummer != null) {
                 drummer.Dispose();
-            } catch {
-                Trace.WriteLine("Could not dispose of audio players!");
-                return;
             }
         }
 
@@ -479,6 +481,8 @@ namespace RagnarockEditor {
                     env = "Alfheim"; break;
                 case 2:
                     env = "Nidavellir"; break;
+                case 3:
+                    env = "Asgard"; break;
             }
             setValInfoDat("_environmentName", env);
         }
@@ -560,7 +564,7 @@ namespace RagnarockEditor {
             // save new note data
             setMapStrNotes(selectedDifficulty);
 
-            printNotes();
+            //printNotes();
         }
 
         private void scrollEditor_MouseRightButtonUp(object sender, MouseButtonEventArgs e) {
@@ -602,6 +606,8 @@ namespace RagnarockEditor {
                     comboEnvironment.SelectedIndex = 1; break;
                 case "Nidavellir":
                     comboEnvironment.SelectedIndex = 2; break;
+                case "Asgard":
+                    comboEnvironment.SelectedIndex = 3; break;
                 default:
                     comboEnvironment.SelectedIndex = 0; break;
             }
@@ -629,7 +635,7 @@ namespace RagnarockEditor {
             editorSnapToGrid = true;
             //checkGridSnap.IsChecked = true;
 
-            editorAudioDelay = 0;
+            editorAudioDelay = defaultEditorAudioLatency;
 
             sliderSongVol.Value = 0.25;
             sliderDrumVol.Value = 1.0;
@@ -660,11 +666,7 @@ namespace RagnarockEditor {
             scrollEditor.IsEnabled = true;
 
             // load editor resources
-            var b = new BitmapImage();
-            b.BeginInit();
-            b.UriSource = new Uri("pack://application:,,,/resources/placeholder.png");
-            b.CacheOption = BitmapCacheOption.OnLoad;
-            b.EndInit();
+            BitmapImage b = imageGenerator(packUriGenerator("rune1.png"));
             imgPreviewNote = new Image();
             imgPreviewNote.Source = b;
             imgPreviewNote.Opacity = 0.5;
@@ -969,7 +971,7 @@ namespace RagnarockEditor {
 
         private void beginSongPlayback() {
             songIsPlaying = true;
-
+            imgPlayerButton.Source = imageGenerator(packUriGenerator("pauseButton.png"));
             // disable some UI elements for performance reasons
             // song/note playback gets desynced if these are changed during playback
             // TODO: fix this?
@@ -1005,26 +1007,23 @@ namespace RagnarockEditor {
 
             // init stopwatch
             noteScanStopwatch = new Stopwatch();
-            noteScanStopwatchOffset = (int)sliderSongProgress.Value;
+            noteScanStopwatchOffset = (int)(sliderSongProgress.Value - editorAudioDelay); // set user audio delay
             rescanNoteIndex();
             noteScanTokenSource = new CancellationTokenSource();
             noteScanToken = noteScanTokenSource.Token;
 
             // start scanning for notes
             Task.Run(() => beginNoteScanning(noteScanStopwatchOffset, noteScanToken), noteScanToken);
+
             noteScanStopwatch.Start();
 
-            // wait for user-specified delay
-            Task.Delay((int)editorAudioDelay).ContinueWith(_ => {
-
-                // play song
-                songPlayer.Play();
-
-            });
+            // play song
+            songPlayer.Play();
         }
 
         private void endSongPlayback() {
             songIsPlaying = false;
+            imgPlayerButton.Source = imageGenerator(packUriGenerator("playButton.png"));
 
             // reset note scan
             noteScanTokenSource.Cancel();
@@ -1088,8 +1087,10 @@ namespace RagnarockEditor {
                 }
             }
         }
+
         private void playNotes() {
             var currentTime = noteScanStopwatch.ElapsedMilliseconds + noteScanStopwatchOffset;
+            //var currentTime = songStream.CurrentTime.TotalMilliseconds;
             // check if we started past the last note in the song
             if (noteScanIndex < selectedDifficultyNotes.Length) {
                 var noteTime = 60000 * selectedDifficultyNotes[noteScanIndex].Item1 / currentBPM;
@@ -1106,8 +1107,7 @@ namespace RagnarockEditor {
                 // check if we need to play any notes
                 while (approximatelyEqual(currentTime, noteTime, noteDetectionDelta)) {
                     //Trace.WriteLine($"Played note at beat {selectedDifficultyNotes[noteScanIndex].Item1}");
-                    //Trace.WriteLine($"Played note - slider: {Math.Round(sliderSongProgress.Value, 2)}ms, stream: {Math.Round(songStream.CurrentTime.TotalMilliseconds, 2)}, timer: {currentTime}");
-                    
+                      
                     drumHits++;
                     noteScanIndex++;
                     if (noteScanIndex >= selectedDifficultyNotes.Length) {
@@ -1118,6 +1118,12 @@ namespace RagnarockEditor {
 
                 // play pending drum hits
                 playDrumHit(drumHits);
+                //if (drumHits > 0) {
+                //    this.Dispatcher.Invoke(() => {
+                //        Trace.WriteLine($"Played note - UI: {Math.Round(sliderSongProgress.Value, 2)}ms, stream: {Math.Round(songStream.CurrentTime.TotalMilliseconds, 2)}, timer: {currentTime}");
+                //    });
+                //}
+                
             }
         }
 
@@ -1182,13 +1188,8 @@ namespace RagnarockEditor {
 
         private void loadCoverImage() {
             var fileName = (string)getValInfoDat("_coverImageFilename");
-            var b = new BitmapImage();
-            b.BeginInit();
-            b.UriSource = new Uri(absPath(fileName));
-            b.CacheOption = BitmapCacheOption.OnLoad;
-            b.EndInit();
+            BitmapImage b = imageGenerator(new Uri(absPath(fileName)));
             imgCover.Source = b;
-
             txtCoverFileName.Text = fileName;
         }
 
@@ -1262,12 +1263,7 @@ namespace RagnarockEditor {
             // TODO: paginate these? they cause lag when resizing
 
             // init drum note image
-            var b = new BitmapImage();
-            b.BeginInit();
-            b.UriSource = new Uri("pack://application:,,,/resources/placeholder.png");
-            b.CacheOption = BitmapCacheOption.OnLoad;
-            b.EndInit();
-            b.Freeze();
+            BitmapImage b = imageGenerator(packUriGenerator("rune1.png"));
 
             // for some reason, WPF does not display notes in the correct x-position with a Grid Scaling multiplier not equal to 1.
             // e.g. Canvas.SetLeft(img, 0) leaves a small gap between the left side of the Canvas and the img
@@ -1308,6 +1304,20 @@ namespace RagnarockEditor {
 
         private string uidGenerator(Note n) {
             return $"Note({n.Item1},{n.Item2})";
+        }
+
+        private Uri packUriGenerator(string fileName) {
+            return new Uri($"pack://application:,,,/resources/{fileName}");
+        }
+
+        private BitmapImage imageGenerator(Uri u) {
+            var b = new BitmapImage();
+            b.BeginInit();
+            b.UriSource = u;
+            b.CacheOption = BitmapCacheOption.OnLoad;
+            b.EndInit();
+            b.Freeze();
+            return b;
         }
 
         private void printNotes() {

@@ -5,240 +5,260 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:RagnarockEditor"
         mc:Ignorable="d"
-        x:Name="AppMainWindow" Title="Ragnarock Map Editor" Height="780" Width="800" MinWidth="800" Closed="AppMainWindow_Closed">
+        x:Name="AppMainWindow" Title="Edda" Height="780" Width="800" MinWidth="800" Closed="AppMainWindow_Closed">
     <DockPanel>
-        <DockPanel DockPanel.Dock="Top" Name="TopPanel" Background="#FFB6B6B6">
-            <StackPanel DockPanel.Dock="Left" Orientation="Horizontal">
-                <StackPanel Margin="10 10 0 10">
-                    <Button x:Name="btnNewMap" Width="50" Height="50" Click="btnNewMap_Click">
-                        <Image Source="pack://application:,,,/RagnarockEditor;component/resources/placeholder.png"/>
-                    </Button>
-                    <TextBlock Margin="0 3 0 0" FontSize="12" HorizontalAlignment="Center">New Map</TextBlock>
-                </StackPanel>
-                <StackPanel Margin="10 10 0 10">
-                    <Button x:Name="btnOpenMap" Width="50" Height="50" Click="btnOpenMap_Click">
-                        <Image Source="pack://application:,,,/RagnarockEditor;component/resources/placeholder.png"/>
-                    </Button>
-                    <TextBlock Margin="0 3 0 0" FontSize="12" HorizontalAlignment="Center">Open Map</TextBlock>
-                </StackPanel>
-                <StackPanel Margin="10 10 0 10">
-                    <Button x:Name="btnSaveMap" Width="50" Height="50" Click="btnSaveMap_Click">
-                        <Image Source="pack://application:,,,/RagnarockEditor;component/resources/placeholder.png"/>
-                    </Button>
-                    <TextBlock Margin="0 3 0 0" FontSize="12" HorizontalAlignment="Center">Save Map</TextBlock>
-                </StackPanel>
-            </StackPanel>
-            <StackPanel DockPanel.Dock="Right" Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Center">
-                <Button x:Name="btnAddDifficulty"  Height="50" FontSize="16" Click="btnAddDifficulty_Click" VerticalAlignment="Top">+</Button>
-                <StackPanel Orientation="Vertical">
-                    <StackPanel x:Name="DifficultyChangePanel" Margin="10 0 10 0" Orientation="Horizontal">
-                        <Button x:Name="btnChangeDifficulty0" Width="50" Height="50" Click="btnChangeDifficulty0_Click">
-                            <Image Source="pack://application:,,,/RagnarockEditor;component/resources/placeholder.png"/>
+        <Border DockPanel.Dock="Top" BorderBrush="{DynamicResource {x:Static SystemColors.ControlDarkDarkBrushKey}}" BorderThickness="0, 0, 0, 2">
+            <Border.Background>
+                <LinearGradientBrush EndPoint="0.5,1" StartPoint="0.5,0">
+                    <GradientStop Color="{DynamicResource {x:Static SystemColors.ControlDarkColorKey}}" Offset="1"/>
+                    <GradientStop Color="{DynamicResource {x:Static SystemColors.ControlLightColorKey}}" Offset="0"/>
+                </LinearGradientBrush>
+            </Border.Background>
+            <DockPanel  Name="TopPanel">
+                <StackPanel DockPanel.Dock="Left" Orientation="Horizontal">
+                    <StackPanel Margin="10 10 0 10">
+                        <Button x:Name="btnNewMap" Width="50" Height="50" Click="btnNewMap_Click">
+                            <Image Source="pack://application:,,,/RagnarockEditor;component/resources/newMap.png"/>
                         </Button>
-                        <Button x:Name="btnChangeDifficulty1" Margin="5 0 0 0"  Width="50" Height="50" Click="btnChangeDifficulty1_Click">
-                            <Image Source="pack://application:,,,/RagnarockEditor;component/resources/placeholder.png"/>
-                        </Button>
-                        <Button x:Name="btnChangeDifficulty2" Margin="5 0 0 0" Width="50" Height="50" Click="btnChangeDifficulty2_Click">
-                            <Image Source="pack://application:,,,/RagnarockEditor;component/resources/placeholder.png"/>
-                        </Button>
+                        <TextBlock Margin="0 3 0 0" FontSize="12" HorizontalAlignment="Center">New Map</TextBlock>
                     </StackPanel>
-                    <TextBlock Margin="0 3 0 0" HorizontalAlignment="Center">Change Difficulty</TextBlock>
-               </StackPanel>
-            </StackPanel>
-        </DockPanel>
-        <DockPanel DockPanel.Dock="Bottom" Width="{Binding ElementName=TopPanel, Path=ActualWidth}" HorizontalAlignment="Center" VerticalAlignment="Center" Background="#FFB6B6B6">
-            <StackPanel DockPanel.Dock="Left" Margin="10 0 0 0" Orientation="Horizontal">
-                <Button x:Name="btnSongPlayer" Width="30" Height="30" Margin="0 0 10 0" Click="btnSongPlayer_Click">
-                    <Image Source="pack://application:,,,/RagnarockEditor;component/resources/placeholder.png"/>
-                </Button>
-                <TextBlock x:Name="txtSongPosition" FontSize="16" VerticalAlignment="Center">0:00</TextBlock>
-            </StackPanel>
-            <TextBlock DockPanel.Dock="Right" Margin="0 0 15 0" x:Name="txtSongDuration" FontSize="16" VerticalAlignment="Center">0:00</TextBlock>
-            <Slider x:Name="sliderSongProgress" Margin="15 15 15 15" VerticalAlignment="Center" IsMoveToPointEnabled="True" ValueChanged="sliderSongProgress_ValueChanged"/>
-        </DockPanel>
-        <ScrollViewer DockPanel.Dock="Left" MinWidth="210" Background="#FF7A7A7A" VerticalScrollBarVisibility="Auto">
-            <StackPanel Orientation="Vertical">
-                <Label Margin="5 0 0 5" FontWeight="Bold" FontSize="14">Map Settings</Label>
-                <Grid Margin="10 0 5 0" VerticalAlignment="Center">
-                    <Grid.Resources>
-                        <Style TargetType="Border" >
-                            <Setter Property="Padding" Value="5,5,5,5" />
-                        </Style>
-                    </Grid.Resources>
-                    <Grid.RowDefinitions>
-                        <RowDefinition Height="*" />
-                        <RowDefinition Height="*" />
-                        <RowDefinition Height="*" />
-                        <RowDefinition Height="*" />
-                        <RowDefinition Height="*" />
-                        <RowDefinition Height="*" />
-                        <RowDefinition Height="*" />
-                        <RowDefinition Height="*" />
-                        <RowDefinition Height="*" />
-                    </Grid.RowDefinitions>
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="*" />
-                        <ColumnDefinition Width="120" />
-                    </Grid.ColumnDefinitions>
-
-                    <Border Grid.Row="0" Grid.Column="0">
-                        <TextBlock>Song Name</TextBlock>
-                    </Border>
-
-                    <Border Grid.Row="0" Grid.Column="1">
-                        <TextBox x:Name="txtSongName" TextChanged="txtSongName_TextChanged"/>
-                    </Border>
-
-                    <Border Grid.Row="1" Grid.Column="0">
-                        <TextBlock>Artist Name</TextBlock>
-                    </Border>
-
-                    <Border Grid.Row="1" Grid.Column="1">
-                        <TextBox x:Name="txtArtistName" TextChanged="txtArtistName_TextChanged"/>
-                    </Border>
-
-                    <Border Grid.Row="2" Grid.Column="0">
-                        <TextBlock>Mapper</TextBlock>
-                    </Border>
-
-                    <Border Grid.Row="2" Grid.Column="1">
-                        <TextBox x:Name="txtMapperName" TextChanged="txtMapperName_TextChanged"/>
-                    </Border>
-
-                    <Border Grid.Row="3" Grid.Column="0" Margin="0 5 0 0"/>
-
-                    <Border Grid.Row="4" Grid.Column="0">
-                        <TextBlock>Song BPM</TextBlock>
-                    </Border>
-
-                    <Border Grid.Row="4" Grid.Column="1">
-                        <TextBox x:Name="txtSongBPM" Grid.Row="0" Grid.Column="1" LostFocus="txtSongBPM_LostFocus"/>
-                    </Border>
-
-                    <Border Grid.Row="5" Grid.Column="0">
-                        <TextBlock>Song Offset</TextBlock>
-                    </Border>
-
-                    <Border Grid.Row="5" Grid.Column="1">
-                        <TextBox x:Name="txtSongOffset" Grid.Row="0" Grid.Column="1" LostFocus="txtSongOffset_LostFocus" />
-                    </Border>
-
-
-                    <Border Grid.Row="7" Grid.Column="0" Margin="0 5 0 0"/>
-
-                    <Border Grid.Row="8" Grid.Column="0">
-                        <TextBlock VerticalAlignment="Center">Environment</TextBlock>
-                    </Border>
-
-                    <Border Grid.Row="8" Grid.Column="1">
-                        <ComboBox x:Name="comboEnvironment" SelectionChanged="comboEnvironment_SelectionChanged">
-                            <ComboBoxItem>Midgard</ComboBoxItem>
-                            <ComboBoxItem>Alfheim</ComboBoxItem>
-                            <ComboBoxItem>Nidavellir</ComboBoxItem>
-                        </ComboBox>
-                    </Border>
-
-                </Grid>
-                <Label Margin="5 5 0 0" FontWeight="Bold" FontSize="14">File Info</Label>
-                <Grid Margin="10 0 5 0" VerticalAlignment="Center">
-                    <Grid.Resources>
-                        <Style TargetType="Border" >
-                            <Setter Property="Padding" Value="5,5,5,5" />
-                        </Style>
-                    </Grid.Resources>
-                    <Grid.RowDefinitions>
-                        <RowDefinition Height="*" />
-                        <RowDefinition Height="*" />
-                        <RowDefinition Height="*" />
-                        <RowDefinition Height="*" />
-                        <RowDefinition Height="*" />
-                        <RowDefinition Height="*" />
-                        <RowDefinition Height="*" />
-                    </Grid.RowDefinitions>
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="*" />
-                        <ColumnDefinition Width="120" />
-                    </Grid.ColumnDefinitions>
-
-                    <Border Grid.Row="0" Grid.Column="0">
-                        <TextBlock VerticalAlignment="Center">Song File</TextBlock>
-                    </Border>
-
-                    <Border Grid.Row="0" Grid.Column="1">
-                        <StackPanel Orientation="Horizontal">
-                            <TextBlock x:Name="txtSongFileName" Width="90" Grid.Row="0" Grid.Column="1" VerticalAlignment="Center" FontStyle="Italic">N/A</TextBlock>
-                            <Button x:Name="btnPickSong" Width="20" Height="Auto" Click="btnPickSong_Click">...</Button>
+                    <StackPanel Margin="10 10 0 10">
+                        <Button x:Name="btnOpenMap" Width="50" Height="50" Click="btnOpenMap_Click">
+                            <Image Source="pack://application:,,,/RagnarockEditor;component/resources/openMap.png"/>
+                        </Button>
+                        <TextBlock Margin="0 3 0 0" FontSize="12" HorizontalAlignment="Center">Open Map</TextBlock>
+                    </StackPanel>
+                    <StackPanel Margin="10 10 0 10">
+                        <Button x:Name="btnSaveMap" Width="50" Height="50" Click="btnSaveMap_Click">
+                            <Image Source="pack://application:,,,/RagnarockEditor;component/resources/saveMap.png"/>
+                        </Button>
+                        <TextBlock Margin="0 3 0 0" FontSize="12" HorizontalAlignment="Center">Save Map</TextBlock>
+                    </StackPanel>
+                </StackPanel>
+                <StackPanel DockPanel.Dock="Right" Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Center">
+                    <Button x:Name="btnAddDifficulty"  Height="50" FontSize="16" Click="btnAddDifficulty_Click" VerticalAlignment="Top" Padding="1,0,1,4">+</Button>
+                    <StackPanel Orientation="Vertical">
+                        <StackPanel x:Name="DifficultyChangePanel" Margin="10 0 10 0" Orientation="Horizontal">
+                            <Button x:Name="btnChangeDifficulty0" Width="50" Height="50" Click="btnChangeDifficulty0_Click">
+                                <Image Source="pack://application:,,,/RagnarockEditor;component/resources/difficulty1.png"/>
+                            </Button>
+                            <Button x:Name="btnChangeDifficulty1" Margin="5 0 0 0"  Width="50" Height="50" Click="btnChangeDifficulty1_Click">
+                                <Image Source="pack://application:,,,/RagnarockEditor;component/resources/difficulty2.png"/>
+                            </Button>
+                            <Button x:Name="btnChangeDifficulty2" Margin="5 0 0 0" Width="50" Height="50" Click="btnChangeDifficulty2_Click">
+                                <Image Source="pack://application:,,,/RagnarockEditor;component/resources/difficulty3.png"/>
+                            </Button>
                         </StackPanel>
-                    </Border>
+                        <TextBlock Margin="0 3 0 0" HorizontalAlignment="Center">Change Difficulty</TextBlock>
+                    </StackPanel>
+                </StackPanel>
+            </DockPanel>
+        </Border>
+        <Border DockPanel.Dock="Bottom" BorderBrush="{DynamicResource {x:Static SystemColors.ControlDarkDarkBrushKey}}" BorderThickness="0, 2, 0, 0">
+            <Border.Background>
+                <LinearGradientBrush EndPoint="0.5,1" StartPoint="0.5,0">
+                    <GradientStop Color="{DynamicResource {x:Static SystemColors.ControlLightColorKey}}"/>
+                    <GradientStop Color="{DynamicResource {x:Static SystemColors.ControlDarkColorKey}}" Offset="1"/>
+                </LinearGradientBrush>
+            </Border.Background>
+            <DockPanel Width="{Binding ElementName=TopPanel, Path=ActualWidth}" HorizontalAlignment="Center" VerticalAlignment="Center">
+                <StackPanel DockPanel.Dock="Left" Margin="10 0 0 0" Orientation="Horizontal">
+                    <Button x:Name="btnSongPlayer" Width="30" Height="30" Margin="0 0 10 0" Click="btnSongPlayer_Click">
+                        <Image x:Name="imgPlayerButton" Source="pack://application:,,,/RagnarockEditor;component/resources/playButton.png"/>
+                    </Button>
+                    <TextBlock x:Name="txtSongPosition" FontSize="16" VerticalAlignment="Center">0:00</TextBlock>
+                </StackPanel>
+                <TextBlock DockPanel.Dock="Right" Margin="0 0 15 0" x:Name="txtSongDuration" FontSize="16" VerticalAlignment="Center">0:00</TextBlock>
+                <Slider x:Name="sliderSongProgress" Margin="10 15 10 15" VerticalAlignment="Center" IsMoveToPointEnabled="True" ValueChanged="sliderSongProgress_ValueChanged"/>
+            </DockPanel>
+        </Border>
+        <Border DockPanel.Dock="Left" BorderBrush="{DynamicResource {x:Static SystemColors.ControlDarkDarkBrushKey}}" BorderThickness="0, 0, 2, 0" Background="{DynamicResource {x:Static SystemColors.ControlDarkBrushKey}}">
+            <ScrollViewer MinWidth="210" VerticalScrollBarVisibility="Auto">
+                <StackPanel Orientation="Vertical">
+                    <Label Margin="5 0 0 5" FontWeight="Bold" FontSize="14">Map Settings</Label>
+                    <Grid Margin="10 0 5 0" VerticalAlignment="Center">
+                        <Grid.Resources>
+                            <Style TargetType="Border" >
+                                <Setter Property="Padding" Value="5,5,5,5" />
+                            </Style>
+                        </Grid.Resources>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="*" />
+                            <RowDefinition Height="*" />
+                            <RowDefinition Height="*" />
+                            <RowDefinition Height="*" />
+                            <RowDefinition Height="*" />
+                            <RowDefinition Height="*" />
+                            <RowDefinition Height="*" />
+                            <RowDefinition Height="*" />
+                            <RowDefinition Height="*" />
+                        </Grid.RowDefinitions>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="120" />
+                        </Grid.ColumnDefinitions>
 
-                    <Border Grid.Row="5" Grid.Column="0">
-                        <TextBlock VerticalAlignment="Center">Cover Image</TextBlock>
-                    </Border>
+                        <Border Grid.Row="0" Grid.Column="0">
+                            <TextBlock>Song Name</TextBlock>
+                        </Border>
 
-                    <Border Grid.Row="5" Grid.Column="1">
-                        <StackPanel Orientation="Horizontal">
-                            <TextBlock x:Name="txtCoverFileName" Width="90" Grid.Row="0" Grid.Column="1" VerticalAlignment="Center" FontStyle="Italic">N/A</TextBlock>
-                            <Button x:Name="btnPickCover" Width="20" Height="Auto" Click="btnPickCover_Click">...</Button>
-                        </StackPanel>
-                    </Border>
+                        <Border Grid.Row="0" Grid.Column="1">
+                            <TextBox x:Name="txtSongName" TextChanged="txtSongName_TextChanged"/>
+                        </Border>
+
+                        <Border Grid.Row="1" Grid.Column="0">
+                            <TextBlock>Artist Name</TextBlock>
+                        </Border>
+
+                        <Border Grid.Row="1" Grid.Column="1">
+                            <TextBox x:Name="txtArtistName" TextChanged="txtArtistName_TextChanged"/>
+                        </Border>
+
+                        <Border Grid.Row="2" Grid.Column="0">
+                            <TextBlock>Mapper</TextBlock>
+                        </Border>
+
+                        <Border Grid.Row="2" Grid.Column="1">
+                            <TextBox x:Name="txtMapperName" TextChanged="txtMapperName_TextChanged"/>
+                        </Border>
+
+                        <Border Grid.Row="3" Grid.Column="0" Margin="0 5 0 0"/>
+
+                        <Border Grid.Row="4" Grid.Column="0">
+                            <TextBlock>Song BPM</TextBlock>
+                        </Border>
+
+                        <Border Grid.Row="4" Grid.Column="1">
+                            <TextBox x:Name="txtSongBPM" Grid.Row="0" Grid.Column="1" LostFocus="txtSongBPM_LostFocus"/>
+                        </Border>
+
+                        <Border Grid.Row="5" Grid.Column="0">
+                            <TextBlock>Song Offset</TextBlock>
+                        </Border>
+
+                        <Border Grid.Row="5" Grid.Column="1">
+                            <TextBox x:Name="txtSongOffset" Grid.Row="0" Grid.Column="1" LostFocus="txtSongOffset_LostFocus" />
+                        </Border>
+
+
+                        <Border Grid.Row="7" Grid.Column="0" Margin="0 5 0 0"/>
+
+                        <Border Grid.Row="8" Grid.Column="0">
+                            <TextBlock VerticalAlignment="Center">Environment</TextBlock>
+                        </Border>
+
+                        <Border Grid.Row="8" Grid.Column="1">
+                            <ComboBox x:Name="comboEnvironment" SelectionChanged="comboEnvironment_SelectionChanged">
+                                <ComboBoxItem>Midgard</ComboBoxItem>
+                                <ComboBoxItem>Alfheim</ComboBoxItem>
+                                <ComboBoxItem>Nidavellir</ComboBoxItem>
+                                <ComboBoxItem>Asgard</ComboBoxItem>
+                            </ComboBox>
+                        </Border>
+
+                    </Grid>
+                    <Label Margin="5 5 0 0" FontWeight="Bold" FontSize="14">File Info</Label>
+                    <Grid Margin="10 0 5 0" VerticalAlignment="Center">
+                        <Grid.Resources>
+                            <Style TargetType="Border" >
+                                <Setter Property="Padding" Value="5,5,5,5" />
+                            </Style>
+                        </Grid.Resources>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="*" />
+                            <RowDefinition Height="*" />
+                            <RowDefinition Height="*" />
+                            <RowDefinition Height="*" />
+                            <RowDefinition Height="*" />
+                            <RowDefinition Height="*" />
+                            <RowDefinition Height="*" />
+                        </Grid.RowDefinitions>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="120" />
+                        </Grid.ColumnDefinitions>
+
+                        <Border Grid.Row="0" Grid.Column="0">
+                            <TextBlock VerticalAlignment="Center">Song File</TextBlock>
+                        </Border>
+
+                        <Border Grid.Row="0" Grid.Column="1">
+                            <StackPanel Orientation="Horizontal">
+                                <TextBlock x:Name="txtSongFileName" Width="90" Grid.Row="0" Grid.Column="1" VerticalAlignment="Center" FontStyle="Italic">N/A</TextBlock>
+                                <Button x:Name="btnPickSong" Width="20" Height="Auto" Click="btnPickSong_Click">...</Button>
+                            </StackPanel>
+                        </Border>
+
+                        <Border Grid.Row="5" Grid.Column="0">
+                            <TextBlock VerticalAlignment="Center">Cover Image</TextBlock>
+                        </Border>
+
+                        <Border Grid.Row="5" Grid.Column="1">
+                            <StackPanel Orientation="Horizontal">
+                                <TextBlock x:Name="txtCoverFileName" Width="90" Grid.Row="0" Grid.Column="1" VerticalAlignment="Center" FontStyle="Italic">N/A</TextBlock>
+                                <Button x:Name="btnPickCover" Width="20" Height="Auto" Click="btnPickCover_Click">...</Button>
+                            </StackPanel>
+                        </Border>
 
 
 
-                    <Border Grid.Row="6" Grid.ColumnSpan="2">
-                        <Image x:Name="imgCover" Width="180"/>
-                    </Border>
+                        <Border Grid.Row="6" Grid.ColumnSpan="2">
+                            <Image x:Name="imgCover" Width="180"/>
+                        </Border>
 
-                </Grid>
-            </StackPanel>
-        </ScrollViewer>
-        <ScrollViewer DockPanel.Dock="Right" MinWidth="210" Background="#FF7A7A7A" VerticalScrollBarVisibility="Auto">
-            <StackPanel Name="EditorInfoPanel" Orientation="Vertical">
-                <Label Margin="5 0 0 5" FontWeight="Bold" FontSize="14">Editor Settings</Label>
-                <Grid Margin="10 0 5 0" VerticalAlignment="Center">
-                    <Grid.Resources>
-                        <Style TargetType="Border" >
-                            <Setter Property="Padding" Value="5,5,5,5" />
-                        </Style>
-                    </Grid.Resources>
-                    <Grid.RowDefinitions>
-                        <RowDefinition Height="*" />
-                        <RowDefinition Height="*" />
-                        <RowDefinition Height="*" />
-                        <RowDefinition Height="*" />
-                        <RowDefinition Height="*" />
-                        <RowDefinition Height="*" />
-                        <RowDefinition Height="*" />
-                        <RowDefinition Height="*" />
-                    </Grid.RowDefinitions>
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="*" />
-                        <ColumnDefinition Width="120" />
-                    </Grid.ColumnDefinitions>
+                    </Grid>
+                </StackPanel>
+            </ScrollViewer>
+        </Border>
+        <Border DockPanel.Dock="Right" BorderBrush="{DynamicResource {x:Static SystemColors.ControlDarkDarkBrushKey}}" BorderThickness="2, 0, 0, 0" Background="{DynamicResource {x:Static SystemColors.ControlDarkBrushKey}}">
+            <ScrollViewer MinWidth="210" VerticalScrollBarVisibility="Auto">
+                <StackPanel Name="EditorInfoPanel" Orientation="Vertical">
+                    <Label Margin="5 0 0 5" FontWeight="Bold" FontSize="14">Editor Settings</Label>
+                    <Grid Margin="10 0 5 0" VerticalAlignment="Center">
+                        <Grid.Resources>
+                            <Style TargetType="Border" >
+                                <Setter Property="Padding" Value="5,5,5,5" />
+                            </Style>
+                        </Grid.Resources>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="*" />
+                            <RowDefinition Height="*" />
+                            <RowDefinition Height="*" />
+                            <RowDefinition Height="*" />
+                            <RowDefinition Height="*" />
+                            <RowDefinition Height="*" />
+                            <RowDefinition Height="*" />
+                            <RowDefinition Height="*" />
+                        </Grid.RowDefinitions>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="120" />
+                        </Grid.ColumnDefinitions>
 
-                    <Border Grid.Row="0" Grid.Column="0">
-                        <TextBlock VerticalAlignment="Center">Song Volume</TextBlock>
-                    </Border>
+                        <Border Grid.Row="0" Grid.Column="0">
+                            <TextBlock VerticalAlignment="Center">Song Volume</TextBlock>
+                        </Border>
 
-                    <Border Grid.Row="0" Grid.Column="1">
-                        <DockPanel>
-                            <TextBlock x:Name="txtSongVol" DockPanel.Dock="Right" Width="30" Margin="5 0 0 0">0%</TextBlock>
-                            <Slider x:Name="sliderSongVol" Maximum="1" ValueChanged="sliderSongVol_ValueChanged"/>
-                        </DockPanel>
-                    </Border>
+                        <Border Grid.Row="0" Grid.Column="1">
+                            <DockPanel>
+                                <TextBlock x:Name="txtSongVol" DockPanel.Dock="Right" Width="30" Margin="5 0 0 0">0%</TextBlock>
+                                <Slider x:Name="sliderSongVol" Maximum="1" ValueChanged="sliderSongVol_ValueChanged"/>
+                            </DockPanel>
+                        </Border>
 
-                    <Border Grid.Row="1" Grid.Column="0">
-                        <TextBlock VerticalAlignment="Center">Drum Volume</TextBlock>
-                    </Border>
+                        <Border Grid.Row="1" Grid.Column="0">
+                            <TextBlock VerticalAlignment="Center">Drum Volume</TextBlock>
+                        </Border>
 
-                    <Border Grid.Row="1" Grid.Column="1">
-                        <DockPanel>
-                            <TextBlock x:Name="txtDrumVol" DockPanel.Dock="Right" Width="30" Margin="5 0 0 0">0%</TextBlock>
-                            <Slider x:Name="sliderDrumVol" Maximum="1" ValueChanged="sliderDrumVol_ValueChanged"/>
-                        </DockPanel>
-                    </Border>
+                        <Border Grid.Row="1" Grid.Column="1">
+                            <DockPanel>
+                                <TextBlock x:Name="txtDrumVol" DockPanel.Dock="Right" Width="30" Margin="5 0 0 0">0%</TextBlock>
+                                <Slider x:Name="sliderDrumVol" Maximum="1" ValueChanged="sliderDrumVol_ValueChanged"/>
+                            </DockPanel>
+                        </Border>
 
-                    <Border Grid.Row="2" Grid.Column="0" Margin="0 5 0 0"/>
-                    <!--
+                        <Border Grid.Row="2" Grid.Column="0" Margin="0 5 0 0"/>
+                        <!--
                     <Border Grid.Row="3" Grid.Column="0">
                         <TextBlock VerticalAlignment="Center">Snap to Grid</TextBlock>
                     </Border>
@@ -249,63 +269,50 @@
                         </StackPanel>
                     </Border>
                     -->
-                    <Border Grid.Row="4" Grid.Column="0">
-                        <TextBlock VerticalAlignment="Center">Grid Division</TextBlock>
-                    </Border>
+                        <Border Grid.Row="4" Grid.Column="0">
+                            <TextBlock VerticalAlignment="Center">Grid Division</TextBlock>
+                        </Border>
 
-                    <Border Grid.Row="4" Grid.Column="1">
-                        <StackPanel Orientation="Horizontal">
-                            <TextBlock Margin="0 0 3 0" VerticalAlignment="Center">1/</TextBlock>
-                            <TextBox Width="25" x:Name="txtGridDivision" LostFocus="txtGridDivision_LostFocus" VerticalAlignment="Center"/>
-                        </StackPanel>
-                    </Border>
+                        <Border Grid.Row="4" Grid.Column="1">
+                            <StackPanel Orientation="Horizontal">
+                                <TextBlock Margin="0 0 3 0" VerticalAlignment="Center">1/</TextBlock>
+                                <TextBox Width="25" x:Name="txtGridDivision" LostFocus="txtGridDivision_LostFocus" VerticalAlignment="Center"/>
+                            </StackPanel>
+                        </Border>
 
-                    <Border Grid.Row="5" Grid.Column="0">
-                        <TextBlock VerticalAlignment="Center">Grid Offset</TextBlock>
-                    </Border>
+                        <Border Grid.Row="5" Grid.Column="0">
+                            <TextBlock VerticalAlignment="Center">Grid Offset</TextBlock>
+                        </Border>
 
-                    <Border Grid.Row="5" Grid.Column="1">
-                        <TextBox x:Name="txtGridOffset" LostFocus="txtGridOffset_LostFocus"/>
-                    </Border>
+                        <Border Grid.Row="5" Grid.Column="1">
+                            <TextBox x:Name="txtGridOffset" LostFocus="txtGridOffset_LostFocus"/>
+                        </Border>
 
-                    <Border Grid.Row="6" Grid.Column="0">
-                        <TextBlock VerticalAlignment="Center">Grid Spacing</TextBlock>
-                    </Border>
+                        <Border Grid.Row="6" Grid.Column="0">
+                            <TextBlock VerticalAlignment="Center">Grid Spacing</TextBlock>
+                        </Border>
 
-                    <Border Grid.Row="6" Grid.Column="1">
-                        <TextBox x:Name="txtGridSpacing" LostFocus="txtGridSpacing_LostFocus"/>
-                    </Border>
+                        <Border Grid.Row="6" Grid.Column="1">
+                            <TextBox x:Name="txtGridSpacing" LostFocus="txtGridSpacing_LostFocus"/>
+                        </Border>
 
-                    <Border Grid.Row="7" Grid.Column="0" Margin="0 5 0 0"/>
+                        <Border Grid.Row="7" Grid.Column="0" Margin="0 5 0 0"/>
 
-                    <Border Grid.Row="8" Grid.Column="1">
-                        <Button x:Name="btnDeleteDifficulty" Click="btnDeleteDifficulty_Click">Delete Difficulty</Button>
-                    </Border>
+                        <Border Grid.Row="8" Grid.Column="1">
+                            <Button x:Name="btnDeleteDifficulty" Click="btnDeleteDifficulty_Click">Delete Difficulty</Button>
+                        </Border>
 
-                </Grid>
-            </StackPanel>
-        </ScrollViewer>
+                    </Grid>
+                </StackPanel>
+            </ScrollViewer>
+        </Border>
         <Grid Name="EditorPanel" MinWidth="300">
-            <!-- Drum Column Guides -->
-            <Grid VerticalAlignment="Bottom" Background="#FF2C7ADB">
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="*" />
-                    <ColumnDefinition Width="3*" />
-                    <ColumnDefinition Width="*" />
-                    <ColumnDefinition Width="3*" />
-                    <ColumnDefinition Width="*" />
-                    <ColumnDefinition Width="3*" />
-                    <ColumnDefinition Width="*" />
-                    <ColumnDefinition Width="3*" />
-                    <ColumnDefinition Width="*" />
-                </Grid.ColumnDefinitions>
-                <Canvas Grid.Column="1" Background="#ffA55F2A" Height="{Binding ElementName=EditorPanel, Path=ActualHeight}" Width="{Binding ElementName=Drum, Path=ActualWidth}"/>
-                <Canvas Grid.Column="3" Background="#ffA55F2A" Height="{Binding ElementName=EditorPanel, Path=ActualHeight}" Width="{Binding ElementName=Drum, Path=ActualWidth}"/>
-                <Canvas Grid.Column="5" Background="#ffA55F2A" Height="{Binding ElementName=EditorPanel, Path=ActualHeight}" Width="{Binding ElementName=Drum, Path=ActualWidth}"/>
-                <Canvas Grid.Column="7" Background="#ffA55F2A" Height="{Binding ElementName=EditorPanel, Path=ActualHeight}" Width="{Binding ElementName=Drum, Path=ActualWidth}"/>
-            </Grid>
-            <!-- Scanline Drums -->
+            <Grid.Background>
+                <ImageBrush ImageSource="/Resources/waterTexture.png" TileMode="Tile" ViewportUnits="Absolute" Viewport="0,0,256,256"/>
+            </Grid.Background>
+            <!-- Static Renders -->
             <Grid VerticalAlignment="Bottom">
+
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="*" />
                     <ColumnDefinition Width="3*" />
@@ -317,11 +324,47 @@
                     <ColumnDefinition Width="3*" />
                     <ColumnDefinition Width="*" />
                 </Grid.ColumnDefinitions>
-                <Separator Grid.Row="0" Grid.ColumnSpan="9" Background="Black"/>
-                <Image Grid.Column="1" Source="pack://application:,,,/RagnarockEditor;component/resources/placeholder.png" Name="Drum"/>
-                <Image Grid.Column="3" Source="pack://application:,,,/RagnarockEditor;component/resources/placeholder.png"/>
-                <Image Grid.Column="5" Source="pack://application:,,,/RagnarockEditor;component/resources/placeholder.png"/>
-                <Image Grid.Column="7" Source="pack://application:,,,/RagnarockEditor;component/resources/placeholder.png"/>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="*"/>
+                </Grid.RowDefinitions>
+
+                <Canvas Grid.Column="1" Height="{Binding ElementName=EditorPanel, Path=ActualHeight}" Width="{Binding ElementName=Drum, Path=ActualWidth}">
+                    <Canvas.Background>
+                        <LinearGradientBrush EndPoint="0.5,1" StartPoint="0.5,0">
+                            <GradientStop Color="#40000000" Offset="1"/>
+                            <GradientStop Color="#00000000" Offset="0"/>
+                        </LinearGradientBrush>
+                    </Canvas.Background>
+                </Canvas>
+                <Canvas Grid.Column="3" Height="{Binding ElementName=EditorPanel, Path=ActualHeight}" Width="{Binding ElementName=Drum, Path=ActualWidth}">
+                    <Canvas.Background>
+                        <LinearGradientBrush EndPoint="0.5,1" StartPoint="0.5,0">
+                            <GradientStop Color="#40000000" Offset="1"/>
+                            <GradientStop Color="#00000000" Offset="0"/>
+                        </LinearGradientBrush>
+                    </Canvas.Background>
+                </Canvas>
+                <Canvas Grid.Column="5" Height="{Binding ElementName=EditorPanel, Path=ActualHeight}" Width="{Binding ElementName=Drum, Path=ActualWidth}">
+                    <Canvas.Background>
+                        <LinearGradientBrush EndPoint="0.5,1" StartPoint="0.5,0">
+                            <GradientStop Color="#40000000" Offset="1"/>
+                            <GradientStop Color="#00000000" Offset="0"/>
+                        </LinearGradientBrush>
+                    </Canvas.Background>
+                </Canvas>
+                <Canvas Grid.Column="7" Height="{Binding ElementName=EditorPanel, Path=ActualHeight}" Width="{Binding ElementName=Drum, Path=ActualWidth}">
+                    <Canvas.Background>
+                        <LinearGradientBrush EndPoint="0.5,1" StartPoint="0.5,0">
+                            <GradientStop Color="#40000000" Offset="1"/>
+                            <GradientStop Color="#00000000" Offset="0"/>
+                        </LinearGradientBrush>
+                    </Canvas.Background>
+                </Canvas>
+
+                <Image Grid.Column="1" Source="pack://application:,,,/RagnarockEditor;component/resources/drum.png" Name="Drum" VerticalAlignment="Bottom"/>
+                <Image Grid.Column="3" Source="pack://application:,,,/RagnarockEditor;component/resources/drum.png" VerticalAlignment="Bottom"/>
+                <Image Grid.Column="5" Source="pack://application:,,,/RagnarockEditor;component/resources/drum.png" VerticalAlignment="Bottom"/>
+                <Image Grid.Column="7" Source="pack://application:,,,/RagnarockEditor;component/resources/drum.png" VerticalAlignment="Bottom"/>
             </Grid>
             <!-- Map Notes -->
             <ScrollViewer x:Name="scrollEditor" VerticalScrollBarVisibility="Hidden" CanContentScroll="False" ScrollChanged="scrollEditor_ScrollChanged" PreviewMouseWheel="scrollEditor_PreviewMouseWheel" SizeChanged="scrollEditor_SizeChanged" MouseMove="scrollEditor_MouseMove" MouseLeave="scrollEditor_MouseLeave" MouseEnter="scrollEditor_MouseEnter" MouseLeftButtonUp="scrollEditor_MouseLeftButtonUp" MouseRightButtonUp="scrollEditor_MouseRightButtonUp">
