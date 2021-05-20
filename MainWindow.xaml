@@ -229,6 +229,9 @@
                             <RowDefinition Height="*" />
                             <RowDefinition Height="*" />
                             <RowDefinition Height="*" />
+                            <RowDefinition Height="*" />
+                            <RowDefinition Height="*" />
+                            <RowDefinition Height="*" />
                         </Grid.RowDefinitions>
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="*" />
@@ -236,28 +239,50 @@
                         </Grid.ColumnDefinitions>
 
                         <Border Grid.Row="0" Grid.Column="0">
-                            <TextBlock VerticalAlignment="Center">Song Volume</TextBlock>
+                            <TextBlock VerticalAlignment="Center">Difficulty Level</TextBlock>
                         </Border>
 
                         <Border Grid.Row="0" Grid.Column="1">
+                            <TextBox x:Name="txtDifficultyNumber" LostFocus="txtDifficultyNumber_LostFocus"/>
+                        </Border>
+
+                        <Border Grid.Row="1" Grid.Column="0">
+                            <TextBlock VerticalAlignment="Center">Note Speed</TextBlock>
+                        </Border>
+
+                        <Border Grid.Row="1" Grid.Column="1">
+                            <TextBox x:Name="txtNoteSpeed" LostFocus="txtNoteSpeed_LostFocus"/>
+                        </Border>
+
+                        <Border Grid.Row="2" Grid.Column="1">
+                            <Button x:Name="btnDeleteDifficulty" Click="btnDeleteDifficulty_Click">Delete Difficulty</Button>
+                        </Border>
+
+                        <Border Grid.Row="3" Grid.Column="0" Margin="0 5 0 0"/>
+
+                        <Border Grid.Row="4" Grid.Column="0">
+                            <TextBlock VerticalAlignment="Center">Song Volume</TextBlock>
+                        </Border>
+
+                        <Border Grid.Row="4" Grid.Column="1">
                             <DockPanel>
                                 <TextBlock x:Name="txtSongVol" DockPanel.Dock="Right" Width="30" Margin="5 0 0 0">0%</TextBlock>
                                 <Slider x:Name="sliderSongVol" Maximum="1" ValueChanged="sliderSongVol_ValueChanged"/>
                             </DockPanel>
                         </Border>
 
-                        <Border Grid.Row="1" Grid.Column="0">
+                        <Border Grid.Row="5" Grid.Column="0">
                             <TextBlock VerticalAlignment="Center">Drum Volume</TextBlock>
                         </Border>
 
-                        <Border Grid.Row="1" Grid.Column="1">
+                        <Border Grid.Row="5" Grid.Column="1">
                             <DockPanel>
                                 <TextBlock x:Name="txtDrumVol" DockPanel.Dock="Right" Width="30" Margin="5 0 0 0">0%</TextBlock>
                                 <Slider x:Name="sliderDrumVol" Maximum="1" ValueChanged="sliderDrumVol_ValueChanged"/>
                             </DockPanel>
                         </Border>
 
-                        <Border Grid.Row="2" Grid.Column="0" Margin="0 5 0 0"/>
+                        <Border Grid.Row="6" Grid.Column="0" Margin="0 5 0 0"/>
                         <!--
                     <Border Grid.Row="3" Grid.Column="0">
                         <TextBlock VerticalAlignment="Center">Snap to Grid</TextBlock>
@@ -269,38 +294,33 @@
                         </StackPanel>
                     </Border>
                     -->
-                        <Border Grid.Row="4" Grid.Column="0">
+                        <Border Grid.Row="7" Grid.Column="0">
                             <TextBlock VerticalAlignment="Center">Grid Division</TextBlock>
                         </Border>
 
-                        <Border Grid.Row="4" Grid.Column="1">
+                        <Border Grid.Row="7" Grid.Column="1">
                             <StackPanel Orientation="Horizontal">
                                 <TextBlock Margin="0 0 3 0" VerticalAlignment="Center">1/</TextBlock>
                                 <TextBox Width="25" x:Name="txtGridDivision" LostFocus="txtGridDivision_LostFocus" VerticalAlignment="Center"/>
                             </StackPanel>
                         </Border>
 
-                        <Border Grid.Row="5" Grid.Column="0">
+                        <Border Grid.Row="8" Grid.Column="0">
                             <TextBlock VerticalAlignment="Center">Grid Offset</TextBlock>
                         </Border>
 
-                        <Border Grid.Row="5" Grid.Column="1">
+                        <Border Grid.Row="8" Grid.Column="1">
                             <TextBox x:Name="txtGridOffset" LostFocus="txtGridOffset_LostFocus"/>
                         </Border>
 
-                        <Border Grid.Row="6" Grid.Column="0">
+                        <Border Grid.Row="9" Grid.Column="0">
                             <TextBlock VerticalAlignment="Center">Grid Spacing</TextBlock>
                         </Border>
 
-                        <Border Grid.Row="6" Grid.Column="1">
+                        <Border Grid.Row="9" Grid.Column="1">
                             <TextBox x:Name="txtGridSpacing" LostFocus="txtGridSpacing_LostFocus"/>
                         </Border>
 
-                        <Border Grid.Row="7" Grid.Column="0" Margin="0 5 0 0"/>
-
-                        <Border Grid.Row="8" Grid.Column="1">
-                            <Button x:Name="btnDeleteDifficulty" Click="btnDeleteDifficulty_Click">Delete Difficulty</Button>
-                        </Border>
 
                     </Grid>
                 </StackPanel>
@@ -328,7 +348,7 @@
                     <RowDefinition Height="*"/>
                 </Grid.RowDefinitions>
 
-                <Canvas Grid.Column="1" Height="{Binding ElementName=EditorPanel, Path=ActualHeight}" Width="{Binding ElementName=Drum, Path=ActualWidth}">
+                <Canvas Grid.Column="1" Height="{Binding ElementName=EditorPanel, Path=ActualHeight}" Width="{Binding ElementName=Drum1, Path=ActualWidth}">
                     <Canvas.Background>
                         <LinearGradientBrush EndPoint="0.5,1" StartPoint="0.5,0">
                             <GradientStop Color="#40000000" Offset="1"/>
@@ -336,7 +356,7 @@
                         </LinearGradientBrush>
                     </Canvas.Background>
                 </Canvas>
-                <Canvas Grid.Column="3" Height="{Binding ElementName=EditorPanel, Path=ActualHeight}" Width="{Binding ElementName=Drum, Path=ActualWidth}">
+                <Canvas Grid.Column="3" Height="{Binding ElementName=EditorPanel, Path=ActualHeight}" Width="{Binding ElementName=Drum1, Path=ActualWidth}">
                     <Canvas.Background>
                         <LinearGradientBrush EndPoint="0.5,1" StartPoint="0.5,0">
                             <GradientStop Color="#40000000" Offset="1"/>
@@ -344,7 +364,7 @@
                         </LinearGradientBrush>
                     </Canvas.Background>
                 </Canvas>
-                <Canvas Grid.Column="5" Height="{Binding ElementName=EditorPanel, Path=ActualHeight}" Width="{Binding ElementName=Drum, Path=ActualWidth}">
+                <Canvas Grid.Column="5" Height="{Binding ElementName=EditorPanel, Path=ActualHeight}" Width="{Binding ElementName=Drum1, Path=ActualWidth}">
                     <Canvas.Background>
                         <LinearGradientBrush EndPoint="0.5,1" StartPoint="0.5,0">
                             <GradientStop Color="#40000000" Offset="1"/>
@@ -352,7 +372,7 @@
                         </LinearGradientBrush>
                     </Canvas.Background>
                 </Canvas>
-                <Canvas Grid.Column="7" Height="{Binding ElementName=EditorPanel, Path=ActualHeight}" Width="{Binding ElementName=Drum, Path=ActualWidth}">
+                <Canvas Grid.Column="7" Height="{Binding ElementName=EditorPanel, Path=ActualHeight}" Width="{Binding ElementName=Drum1, Path=ActualWidth}">
                     <Canvas.Background>
                         <LinearGradientBrush EndPoint="0.5,1" StartPoint="0.5,0">
                             <GradientStop Color="#40000000" Offset="1"/>
@@ -361,10 +381,10 @@
                     </Canvas.Background>
                 </Canvas>
 
-                <Image Grid.Column="1" Source="pack://application:,,,/RagnarockEditor;component/resources/drum.png" Name="Drum" VerticalAlignment="Bottom"/>
-                <Image Grid.Column="3" Source="pack://application:,,,/RagnarockEditor;component/resources/drum.png" VerticalAlignment="Bottom"/>
-                <Image Grid.Column="5" Source="pack://application:,,,/RagnarockEditor;component/resources/drum.png" VerticalAlignment="Bottom"/>
-                <Image Grid.Column="7" Source="pack://application:,,,/RagnarockEditor;component/resources/drum.png" VerticalAlignment="Bottom"/>
+                <Image Grid.Column="1" Source="pack://application:,,,/RagnarockEditor;component/resources/drum.png" Name="Drum1" VerticalAlignment="Bottom"/>
+                <Image Grid.Column="3" Source="pack://application:,,,/RagnarockEditor;component/resources/drum.png" Name="Drum2" VerticalAlignment="Bottom"/>
+                <Image Grid.Column="5" Source="pack://application:,,,/RagnarockEditor;component/resources/drum.png" Name="Drum3" VerticalAlignment="Bottom"/>
+                <Image Grid.Column="7" Source="pack://application:,,,/RagnarockEditor;component/resources/drum.png" Name="Drum4" VerticalAlignment="Bottom"/>
             </Grid>
             <!-- Map Notes -->
             <ScrollViewer x:Name="scrollEditor" VerticalScrollBarVisibility="Hidden" CanContentScroll="False" ScrollChanged="scrollEditor_ScrollChanged" PreviewMouseWheel="scrollEditor_PreviewMouseWheel" SizeChanged="scrollEditor_SizeChanged" MouseMove="scrollEditor_MouseMove" MouseLeave="scrollEditor_MouseLeave" MouseEnter="scrollEditor_MouseEnter" MouseLeftButtonUp="scrollEditor_MouseLeftButtonUp" MouseRightButtonUp="scrollEditor_MouseRightButtonUp">

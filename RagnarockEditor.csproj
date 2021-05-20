@@ -24,6 +24,12 @@
     <None Remove="Resources\playButton.png" />
     <None Remove="Resources\rune.png" />
     <None Remove="Resources\rune1.png" />
+    <None Remove="Resources\rune12.png" />
+    <None Remove="Resources\rune13.png" />
+    <None Remove="Resources\rune14.png" />
+    <None Remove="Resources\rune23.png" />
+    <None Remove="Resources\rune34.png" />
+    <None Remove="Resources\runeX.png" />
     <None Remove="Resources\saveMap.png" />
     <None Remove="Resources\waterTexture.png" />
     <None Remove="Resources\waterTextureSmall.png" />
@@ -64,6 +70,12 @@
     <Resource Include="Resources\playButton.png" />
     <Resource Include="Resources\rune.png" />
     <Resource Include="Resources\rune1.png" />
+    <Resource Include="Resources\rune12.png" />
+    <Resource Include="Resources\rune13.png" />
+    <Resource Include="Resources\rune14.png" />
+    <Resource Include="Resources\rune23.png" />
+    <Resource Include="Resources\rune34.png" />
+    <Resource Include="Resources\runeX.png" />
     <Resource Include="Resources\saveMap.png" />
     <Resource Include="Resources\waterTexture.png" />
     <Resource Include="Resources\waterTextureSmall.png" />

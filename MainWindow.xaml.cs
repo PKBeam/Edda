@@ -28,6 +28,7 @@ using System.Reactive;
 using System.Reactive.Linq;
 using System.Threading;
 using NAudio.CoreAudioApi;
+using System.Text.RegularExpressions;
 
 namespace RagnarockEditor {
     /// <summary>
@@ -39,6 +40,7 @@ namespace RagnarockEditor {
     public partial class MainWindow : Window {
 
         // constants
+        string eddaVersionNumber = "0.0.3";
         string   gridColourMajor      = "#333333";
         string   gridColourMinor      = "#666666";
         double   gridThicknessMajor   = 2;
@@ -46,28 +48,31 @@ namespace RagnarockEditor {
         int      gridDivisionMax      = 24;
         string[] difficultyNames      = {"Easy", "Normal", "Hard"};
         int      notePlaybackStreams  = 16; 
-        int      desiredWasapiLatency = 120; // ms
-        int      notePollRate         = 10; // ms
-        double   noteDetectionDelta   = 20; // ms
+        int      desiredWasapiLatency = 100; // ms
+        int      notePollRate         = 15; // ms
+        double   noteDetectionDelta   = 15; // ms
         int      defaultGridDivision  = 4;
-        int defaultEditorAudioLatency = 0; // ms
+        int defaultEditorAudioLatency = -20; // ms
+
+        int defaultNoteJumpMovementSpeed = 15;
+        double defaultBPM = 120;
         // int gridRedrawInterval = 200; // ms
         // double   gridDrawRange = 1;
 
         // readonly values
 
         double unitLength {
-            get { return Drum.ActualWidth * editorGridSpacing; }
+            get { return Drum1.ActualWidth * editorGridSpacing; }
         }
         double unitLengthUnscaled {
-            get { return Drum.ActualWidth; }
+            get { return Drum1.ActualWidth; }
         }
 
         double unitSubLength {
-            get { return Drum.ActualWidth/3; }
+            get { return Drum1.ActualWidth/3; }
         }
         double unitHeight {
-            get { return Drum.ActualHeight; }
+            get { return Drum1.ActualHeight; }
         }
 
         double editorScrollPosition {
@@ -219,6 +224,13 @@ namespace RagnarockEditor {
 
             saveFolder = d2.FileName;
 
+            // check folder name is appropriate
+            if (!Regex.IsMatch(saveFolder, @"^[a-zA-Z]+$")) {
+                MessageBox.Show("The folder name cannot contain spaces or non-alphabetic characters.", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                return;
+            }
+
+            // check folder is empty
             if (Directory.GetFiles(saveFolder).Length > 0) {
                 MessageBox.Show("The specified folder is not empty.", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
                 return;
@@ -275,8 +287,10 @@ namespace RagnarockEditor {
         }
 
         private void btnSaveMap_Click(object sender, RoutedEventArgs e) {
+            // TODO: update _lastEditedBy field 
             writeInfoStr();
             for (int i = 0; i < numDifficulties; i++) {
+                setMapStrNotes(i);
                 writeMapStr(i);
             }
         }
@@ -435,25 +449,60 @@ namespace RagnarockEditor {
             setValInfoDat("_levelAuthorName", txtMapperName.Text);
         }
 
+        private void txtDifficultyNumber_LostFocus(object sender, RoutedEventArgs e) {
+            int prevLevel = (int)getMapValInfoDat("_difficultyRank", selectedDifficulty);
+            int level;
+            if (!int.TryParse(txtDifficultyNumber.Text, out level) || level < 1 || level > 10) {
+                MessageBox.Show($"The difficulty level must be an integer between 1 and 10.", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                level = prevLevel;
+            } else {
+                setMapValInfoDat("_difficultyRank", level, selectedDifficulty);
+            }
+            txtDifficultyNumber.Text = level.ToString();
+        }
+
+        private void txtNoteSpeed_LostFocus(object sender, RoutedEventArgs e) {
+            double prevSpeed = (int)getMapValInfoDat("_noteJumpMovementSpeed", selectedDifficulty);
+            double speed;
+            if (!double.TryParse(txtNoteSpeed.Text, out speed) || speed <= 0) {
+                MessageBox.Show($"The note speed must be a positive number.", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                speed = prevSpeed;
+            } else {
+                setMapValInfoDat("_noteJumpMovementSpeed", speed, selectedDifficulty);
+            }
+            txtNoteSpeed.Text = speed.ToString();
+        }
+
         private void txtGridOffset_LostFocus(object sender, RoutedEventArgs e) {
             double offset;
             if (double.TryParse(txtGridOffset.Text, out offset) && offset != editorGridOffset) {
                 setCustomMapValInfoDat("_editorOffset", offset);
-                txtGridOffset.Text = offset.ToString();
+                // resnap all notes
+                var offsetDelta = offset - editorGridOffset;
+                var beatOffset = currentBPM / 60 * offsetDelta;
+                for (int i = 0; i < selectedDifficultyNotes.Length; i++) {
+                    selectedDifficultyNotes[i].Item1 += beatOffset;
+                }
                 editorGridOffset = offset;
                 updateEditorGridHeight();
                 drawEditorGrid();
+
+            } else {
+                offset = editorGridOffset;
             }
+            txtGridOffset.Text = offset.ToString();
         }
 
         private void txtGridSpacing_LostFocus(object sender, RoutedEventArgs e) {
             double spacing;
             if (double.TryParse(txtGridSpacing.Text, out spacing) && spacing != editorGridSpacing) {
                 setCustomMapValInfoDat("_editorGridSpacing", spacing);
-                txtGridSpacing.Text = spacing.ToString();
                 editorGridSpacing = spacing;
                 updateEditorGridHeight();
+            } else {
+                spacing = editorGridSpacing;
             }
+            txtGridSpacing.Text = spacing.ToString();
         }
 
         private void txtGridDivision_LostFocus(object sender, RoutedEventArgs e) {
@@ -551,6 +600,8 @@ namespace RagnarockEditor {
             double beatFractional = editorMouseGridRowFractional / (double)editorGridDivision + userOffsetBeat;
             //Trace.WriteLine($"Row: {editorMouseGridRow} ({Math.Round(editorMouseGridRowFractional, 2)}), Col: {editorMouseGridCol}, Beat: {beat} ({beatFractional})");
 
+            // TODO: check if note exists
+
             // add the note
             Note n;
             n.Item1 = (editorSnapToGrid) ? beat : beatFractional;
@@ -558,11 +609,13 @@ namespace RagnarockEditor {
             addNote(n);
 
             // draw the added notes
+            // note: by drawing this note out of order, it is inconsistently layered with other notes.
+            //       should we take the performance hit of redrawing the entire grid for visual consistency?
             Note[] notesToDraw = {n};
             drawEditorGridNotes(notesToDraw);
 
             // save new note data
-            setMapStrNotes(selectedDifficulty);
+            ;
 
             //printNotes();
         }
@@ -582,10 +635,7 @@ namespace RagnarockEditor {
             // undraw the added notes
             undrawEditorGridNote(uidGenerator(n));
 
-            // save new note data
-            setMapStrNotes(selectedDifficulty);
-
-            printNotes();
+            //printNotes();
         }
 
         private void checkGridSnap_Click(object sender, RoutedEventArgs e) {
@@ -622,6 +672,10 @@ namespace RagnarockEditor {
 
             songOffset = double.Parse((string)getValInfoDat("_songTimeOffset"));
             txtSongOffset.Text = songOffset.ToString();
+
+            txtDifficultyNumber.Text = int.Parse((string)getMapValInfoDat("_difficultyRank", selectedDifficulty)).ToString();
+
+            txtNoteSpeed.Text = double.Parse((string)getMapValInfoDat("_noteJumpMovementSpeed", selectedDifficulty)).ToString();
 
             editorGridDivision = defaultGridDivision;
             txtGridDivision.Text = editorGridDivision.ToString();
@@ -688,7 +742,7 @@ namespace RagnarockEditor {
                 _songSubName = "",                              // dummy
                 _songAuthorName = "",
                 _levelAuthorName = "",
-                _beatsPerMinute = 120,
+                _beatsPerMinute = defaultBPM,
                 _shuffle = 0,                                   // dummy?
                 _shufflePeriod = 0.5,                           // dummy?
                 _previewStartTime = 0,                          // dummy?
@@ -701,10 +755,10 @@ namespace RagnarockEditor {
                 _customData = new {
                     _contributors = new List<string>(),
                     _editors = new {
-                        RagnarockEditor = new {
-                            version = "0.0.1",
+                        Edda = new {
+                            version = eddaVersionNumber,
                         },
-                        _lastEditedBy = "RagnarockEditor"
+                        _lastEditedBy = "Edda"
                     },
                 },
                 _difficultyBeatmapSets = new [] {
@@ -724,7 +778,7 @@ namespace RagnarockEditor {
                 _difficulty = difficulty,
                 _difficultyRank = 1,
                 _beatmapFilename = $"{difficulty}.dat",
-                _noteJumpMovementSpeed = 10,
+                _noteJumpMovementSpeed = defaultNoteJumpMovementSpeed,
                 _noteJumpStartBeatOffset = 0,
                 _customData = new {
                     _editorOffset = 0,
@@ -777,6 +831,7 @@ namespace RagnarockEditor {
         private void switchDifficultyMap(int indx) {
             enableDifficultyButtons(indx);
             selectedDifficultyNotes = getMapStrNotes(_selectedDifficulty);
+            txtDifficultyNumber.Text = int.Parse((string)getMapValInfoDat("_difficultyRank", selectedDifficulty)).ToString();
             drawEditorGrid();
         }
 
@@ -960,11 +1015,13 @@ namespace RagnarockEditor {
             songPlayer = new WasapiOut(AudioClientShareMode.Shared, desiredWasapiLatency);
 
             songChannel = new SampleChannel(songStream);
+            songChannel.Volume = (float)sliderSongVol.Value;
             songPlayer.Init(songChannel);
 
             // subscribe to playbackstopped
             songPlayer.PlaybackStopped += (sender, args) => { endSongPlayback(); };
             sliderSongProgress.Minimum = 0;
+            sliderSongProgress.Value = 0;
             sliderSongProgress.Maximum = songStream.TotalTime.TotalSeconds * 1000;
 
         }
@@ -1055,7 +1112,7 @@ namespace RagnarockEditor {
 
             //Trace.WriteLine($"Slider is late by {Math.Round(songStream.CurrentTime.TotalMilliseconds - sliderSongProgress.Value, 2)}ms");
 
-            songPlayer.Stop();
+            songPlayer.Pause();
         }
 
         private void playDrumHit(int hits) {
@@ -1120,7 +1177,7 @@ namespace RagnarockEditor {
                 playDrumHit(drumHits);
                 //if (drumHits > 0) {
                 //    this.Dispatcher.Invoke(() => {
-                //        Trace.WriteLine($"Played note - UI: {Math.Round(sliderSongProgress.Value, 2)}ms, stream: {Math.Round(songStream.CurrentTime.TotalMilliseconds, 2)}, timer: {currentTime}");
+                //        Trace.WriteLine($"Played note {Math.Round(songStream.CurrentTime.TotalMilliseconds - currentTime, 2)}ms late");
                 //    });
                 //}
                 
@@ -1131,7 +1188,6 @@ namespace RagnarockEditor {
 
         private bool addNote(Note n) {
             var insertIndx = 0;
-
             // check which index to insert the new note at (keep everything in sorted order)
             foreach (var thisNote in selectedDifficultyNotes) {
 
@@ -1153,8 +1209,11 @@ namespace RagnarockEditor {
             for (var i = selectedDifficultyNotes.Length - 1; i > insertIndx; i--) {
                 selectedDifficultyNotes[i] = selectedDifficultyNotes[i - 1];
             }
+
+            // round off the beat decimal
             selectedDifficultyNotes[insertIndx] = n;
             return true;
+            
         }
 
         private bool removeNote(Note n) {
@@ -1263,20 +1322,21 @@ namespace RagnarockEditor {
             // TODO: paginate these? they cause lag when resizing
 
             // init drum note image
-            BitmapImage b = imageGenerator(packUriGenerator("rune1.png"));
-
             // for some reason, WPF does not display notes in the correct x-position with a Grid Scaling multiplier not equal to 1.
             // e.g. Canvas.SetLeft(img, 0) leaves a small gap between the left side of the Canvas and the img
             var unknownNoteXAdjustment = ((unitLength / unitLengthUnscaled - 1) * unitLengthUnscaled / 2);
 
             foreach (var n in notes) {
                 var img = new Image();
-                img.Source = b;
                 img.Width = unitLength;
                 img.Height = unitHeight;
 
                 var noteHeight = n.Item1 * unitLength;
                 var noteXOffset = (1 + 4 * n.Item2) * unitLengthUnscaled / 3;
+
+                // find which beat fraction this note lies on
+                // TODO: find out what runes correspond to 1/3, 1/4 etc beats
+                img.Source = imageGenerator(packUriGenerator(imageForBeat(n.Item1)));
 
                 // this assumes there are no duplicate notes given to us
                 img.Uid = uidGenerator(n);
@@ -1300,6 +1360,19 @@ namespace RagnarockEditor {
 
         private bool approximatelyEqual(double x, double y, double delta) {
             return Math.Abs(x - y) < delta;
+        }
+
+        private string imageForBeat(double beat) {
+            var fracBeat = beat - (int)beat;
+            switch (Math.Round(fracBeat, 5)) {
+                case 0:       return "rune1.png";
+                case 0.25:    return "rune14.png";
+                case 0.33333: return "rune13.png";
+                case 0.5:     return "rune12.png";
+                case 0.66667: return "rune23.png";
+                case 0.75:    return "rune34.png";
+                default:      return "runeX.png";
+            }
         }
 
         private string uidGenerator(Note n) {

@@ -18,6 +18,7 @@ Some things that you should be able to do are:
 - Add and delete map difficulties
 - Open existing Ragnarock maps and create new ones
   - Listen to the entire map with audio and mapped drum hits
+     - Notes will be marked with the same rune that would appear in-game
   - Add and delete notes (Left- and Right-Click)
 
 Edda is written in C# for Windows 10.
@@ -29,6 +30,30 @@ Beat Saber maps are far more complex than Ragnarock ones; thus MMA2 has too much
 (e.g. Ragnarock maps are two-dimensional, so we don't need to render them in 3D!)
 
 A dedicated editor for Ragnarock could trim down the clutter, greatly improving the user experience for new mappers.
+
+## Usage
+### Creating a new map
+- Click "New Map".
+- Select an `.ogg` song to map.
+   - If the song does not start on an non-integer beat, incorrect runes will be shown on the notes.
+     - For this reason, **it is recommended you trim the song so it begins on a beat**.
+- Select an empty folder.
+  - The folder's name cannot have spaces or non-alphabetical characters.
+  - Ragnarock searches the directory `Documents/Ragnarock/CustomSongs` for folders containing maps.
+
+You're now ready to start mapping!
+
+- Fill in the Map Settings and File Info sections with the appropriate metadata.
+- Fill in the Difficulty Level and Note Speed.
+- You can create and switch between difficulties using the "Change Difficulty" buttons.
+- Set your Grid Division, Grid Offset and Grid Spacing.
+
+### Editing an existing map
+- Click "Open Map".
+- Select a folder containing a map.
+  - Edda does not yet check that the folder contains a valid map, so you must do this check.
+
+You're now ready to start mapping!
 
 ## System requirements
 - Windows 10

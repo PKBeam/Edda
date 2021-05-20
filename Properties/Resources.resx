@@ -169,6 +169,24 @@
   <data name="rune1" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\rune1.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
+  <data name="rune12" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\rune12.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="rune13" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\rune13.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="rune14" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\rune14.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="rune23" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\rune23.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="rune34" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\rune34.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="runeX" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\runeX.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
   <data name="saveMap" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\saveMap.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
