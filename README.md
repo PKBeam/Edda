@@ -66,7 +66,7 @@ You're now ready to start mapping!
 ### Adjusting audio latency
 There is a slight delay between the playback of the song and the playback of individual notes.  
 You can adjust this delay by opening `settings.txt` in the application folder and entering the `editorAudioLatency` in milliseconds.  
-For example, `editorAudioLatency=-40. A blank value will use the default latency of -20 ms.
+For example, `editorAudioLatency=5` or `editorAudioLatency=-40`. A blank value will use the default latency of -20 ms.
 
 ## System requirements
 - Windows 10
