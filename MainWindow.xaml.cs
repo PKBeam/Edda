@@ -234,9 +234,9 @@ namespace Edda {
             }
 
             saveFolder = d2.FileName;
-
+            var folderName = new FileInfo(saveFolder).Name;
             // check folder name is appropriate
-            if (!Regex.IsMatch(saveFolder, @"^[a-zA-Z]+$")) {
+            if (!Regex.IsMatch(folderName, @"^[a-zA-Z]+$")) {
                 MessageBox.Show("The folder name cannot contain spaces or non-alphabetic characters.", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
                 return;
             }
@@ -572,6 +572,8 @@ namespace Edda {
             }
             var unknownNoteXAdjustment = ((unitLength / unitLengthUnscaled - 1) * unitLengthUnscaled / 2);
             var unitSubLengthOffset = 1 + 4 * (editorMouseGridCol);
+            double beat = editorMouseGridRow / (double)editorGridDivision + userOffsetBeat;
+            imgPreviewNote.Source = imageGenerator(packUriGenerator(imageForBeat(beat)));
             Canvas.SetLeft(imgPreviewNote, (unitSubLengthOffset * unitSubLength) - unknownNoteXAdjustment);
         }
         private void scrollEditor_MouseLeave(object sender, MouseEventArgs e) {
@@ -678,7 +680,9 @@ namespace Edda {
             btnChangeDifficulty0.IsEnabled = true;
             btnChangeDifficulty1.IsEnabled = true;
             btnChangeDifficulty2.IsEnabled = true;
-            btnAddDifficulty.IsEnabled = true;
+            if (numDifficulties < 3) {
+                btnAddDifficulty.IsEnabled = true;
+            }
             txtSongName.IsEnabled = true;
             txtArtistName.IsEnabled = true;
             txtMapperName.IsEnabled = true;
@@ -748,6 +752,14 @@ namespace Edda {
             };
             infoStr = JsonConvert.SerializeObject(infoDat, Formatting.Indented);
         }
+        private void loadCoverImage() {
+            var fileName = (string)getValInfoDat("_coverImageFilename");
+            BitmapImage b = imageGenerator(new Uri(absPath(fileName)));
+            imgCover.Source = b;
+            txtCoverFileName.Text = fileName;
+        }
+
+        // manage difficulties
         private void addDifficulty(string difficulty) {
             var obj = JObject.Parse(infoStr);
             var beatmaps = (JArray)obj["_difficultyBeatmapSets"][0]["_difficultyBeatmaps"];
@@ -801,6 +813,8 @@ namespace Edda {
                     b.IsEnabled = true;
                 }
             }
+            btnDeleteDifficulty.IsEnabled = (numDifficulties > 1);
+            btnAddDifficulty.IsEnabled = (numDifficulties < 3);
         }
         private void switchDifficultyMap(int indx) {
             enableDifficultyButtons(indx);
@@ -927,7 +941,7 @@ namespace Edda {
             File.WriteAllLines("settings.txt", fields);
         }
 
-        // ===================================
+        // song/note playback
         private bool changeSong() {
             // select audio file
             var d = new Microsoft.Win32.OpenFileDialog();
@@ -1092,7 +1106,7 @@ namespace Edda {
             }
         }
 
-        // this function is called on a separate thread
+        // NOTE: this function is called on a separate thread
         private void beginNoteScanning(int startFrom, CancellationToken ct) {
             // scan notes while song is still playing
             var nextPollTime = notePollRate;
@@ -1142,7 +1156,7 @@ namespace Edda {
             }
         }
 
-        // =======================================
+        // editor functions
         private bool addNote(Note n) {
             var insertIndx = 0;
             // check which index to insert the new note at (keep everything in sorted order)
@@ -1199,13 +1213,8 @@ namespace Edda {
             return true;
         }
 
-        // ======================================
-        private void loadCoverImage() {
-            var fileName = (string)getValInfoDat("_coverImageFilename");
-            BitmapImage b = imageGenerator(new Uri(absPath(fileName)));
-            imgCover.Source = b;
-            txtCoverFileName.Text = fileName;
-        }
+        // drawing functions for the editor grid
+
         private void updateEditorGridHeight() {
             if (infoStr == null) {
                 return;
@@ -1306,7 +1315,7 @@ namespace Edda {
             }
         }
 
-        //=======================
+        // helper functions
         private bool approximatelyEqual(double x, double y, double delta) {
             return Math.Abs(x - y) < delta;
         }
