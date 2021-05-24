@@ -31,118 +31,101 @@ namespace Edda {
     using Note = ValueTuple<double, int>;
     public partial class MainWindow : Window {
 
-        // constants
-        string   eddaVersionNumber    = "0.0.3";
-        string   settingsFileName     = "settings.txt";
-        string   gridColourMajor      = "#333333";
-        string   gridColourMinor      = "#666666";
-        double   gridThicknessMajor   = 2;
-        double   gridThicknessMinor   = 1.5;
-        int      gridDivisionMax      = 24;
-        string[] difficultyNames      = {"Easy", "Normal", "Hard"};
-        int      notePlaybackStreams  = 16; 
-        int      desiredWasapiLatency = 100; // ms
-        int      notePollRate         = 15; // ms
-        double   noteDetectionDelta   = 15; // ms
-        int      defaultGridDivision  = 4;
-        double   initDragThreshold    = 10;
-        int defaultEditorAudioLatency = -20; // ms
-        int defaultNoteJumpMovementSpeed = 15;
+        // CONSTANTS
 
+        readonly string   eddaVersionNumber    = "0.1.1";
+        readonly string   defaultSongName      = "song.ogg";
+        readonly string   settingsFileName     = "settings.txt";
+        readonly string   gridColourMajor      = "#333333";
+        readonly string   gridColourMinor      = "#666666";
+        readonly double   gridThicknessMajor   = 2;
+        readonly double   gridThicknessMinor   = 1.5;
+        readonly int      gridDivisionMax      = 24;
+        readonly int      notePlaybackStreams  = 16; 
+        readonly int      desiredWasapiLatency = 100; // ms
+        readonly int      notePollRate         = 15;  // ms
+        readonly double   noteDetectionDelta   = 15;  // ms
+        readonly double   initDragThreshold    = 10;
+        readonly float    defaultSongVolume    = 0.25f;
+        readonly float    defaultDrumVolume    = 1.0f;
+        readonly int defaultEditorAudioLatency = -20; // ms
+        readonly List<string> environmentNames = new List<string> { "DefaultEnvironment", "Alfheim", "Nidavellir", "Asgard" };
         // int gridRedrawInterval = 200; // ms
         // double   gridDrawRange = 1;
 
-        // readonly values
-
+        // COMPUTED PROPERTIES
         double unitLength {
             get { return Drum1.ActualWidth * editorGridSpacing; }
         }
         double unitLengthUnscaled {
             get { return Drum1.ActualWidth; }
         }
-
         double unitSubLength {
             get { return Drum1.ActualWidth/3; }
         }
         double unitHeight {
             get { return Drum1.ActualHeight; }
         }
-
-        double editorScrollPosition {
-            get { return Math.Max(EditorGrid.ActualHeight - scrollEditor.VerticalOffset - scrollEditor.ActualHeight, 0); }
-        }
-        string songFilePath {
-            get { return absPath((string)getValInfoDat("_songFilename")); }
-        }
-
-        // state variables
-        int _selectedDifficulty;
-        int selectedDifficulty {  // 0, 1, 2
-            get { return _selectedDifficulty; }
-            set {
-                _selectedDifficulty = value;
-                switchDifficultyMap(_selectedDifficulty);
-            }
-        }
-        string[] mapsStr = {"", "", ""};
-        Note[] selectedDifficultyNotes;
-        DoubleAnimation songPlayAnim;
-        bool isChangingSong;
-
         bool songIsPlaying {
             set { btnSongPlayer.Tag = (value == false) ? 0 : 1; }
             get { return (int)btnSongPlayer.Tag == 1; }
         }
         double currentBPM {
-            get { return double.Parse((string)getValInfoDat("_beatsPerMinute")); }
+            get { return double.Parse((string)beatMap.getValue("_beatsPerMinute")); }
         }
 
-        RagnarockMap beatMap;
-        int numDifficulties {
-           get {
-                var obj = JObject.Parse(infoStr);
-                var res = obj["_difficultyBeatmapSets"][0]["_difficultyBeatmaps"];
-                return res.Count();
-           }
-        }
-        string infoStr;
-        string saveFolder;
-        double songOffset;
-        double prevScrollPercent = 0; // percentage of scroll progress before the scroll viewport was changed
+
+        // STATE VARIABLES
+
+        RagnarockMap    beatMap;
+
+        // store info about the currently selected difficulty
+        int             currentDifficulty;
+        Note[]          currentDifficultyNotes;
+
+        DoubleAnimation songPlayAnim;            // used for animating scroll when playing a song
+        bool            songWasChanged;          // used for resetting scroll position on a new song load
+        double          prevScrollPercent;       // percentage of scroll progress before the scroll viewport was changed
 
         // variables used in the map editor
         Image      imgPreviewNote;
-        List<Note> editorSelectedNotes = new List<Note>();
         List<Note> editorClipboard = new List<Note>();
+
+        // -- for note placement
+        int editorMouseGridRow;
+        int editorMouseGridCol;
+        double editorMouseGridRowFractional;
+
+        // -- for drag select
+        List<Note> editorSelectedNotes = new List<Note>();
         Border     editorDragSelectBorder;
         Point      editorDragSelectStart;
         double     editorRowStart;
         int        editorColStart;
-        bool       editorIsDragging;
-        bool       editorMouseDown;
-        bool       editorSnapToGrid;
+        bool       editorIsDragging = false;
+        bool       editorMouseDown = false;
+
+        // -- for grid drawing
+        bool       editorSnapToGrid = true;
         int        editorGridDivision;
         double     editorGridSpacing;
         double     editorGridOffset;
-        int        editorAudioLatency; // in ms
-        double     editorDrawRangeLower = 0;
-        double     editorDrawRangeHigher = 0;
-        int        editorMouseGridRow;
-        int        editorMouseGridCol;
-        double     editorMouseGridRowFractional;
+        //double     editorDrawRangeLower = 0;
+        //double     editorDrawRangeHigher = 0;
 
         // variables used to handle drum hits on a separate thread
         int noteScanIndex;
-        Stopwatch noteScanStopwatch;
         int noteScanStopwatchOffset = 0;
+        Stopwatch noteScanStopwatch;
         CancellationTokenSource noteScanTokenSource;
         CancellationToken noteScanToken;
 
         // variables used to play audio
-        SampleChannel songChannel;
+        int editorAudioLatency; // ms
+        SampleChannel    songChannel;
         VorbisWaveReader songStream;
-        WasapiOut songPlayer;
-        Drummer drummer;
+        WasapiOut        songPlayer;
+        Drummer          drummer;
 
         public MainWindow() {
             InitializeComponent();
@@ -170,6 +153,8 @@ namespace Edda {
             sliderSongVol.IsEnabled = false;
             sliderDrumVol.IsEnabled = false;
             //checkGridSnap.IsEnabled = false;
+            txtDifficultyNumber.IsEnabled = false;
+            txtNoteSpeed.IsEnabled = false;
             txtGridDivision.IsEnabled = false;
             txtGridOffset.IsEnabled = false;
             txtGridSpacing.IsEnabled = false;
@@ -182,13 +167,14 @@ namespace Edda {
             if (File.Exists(settingsFileName)) {
                 string[] lines = File.ReadAllLines(settingsFileName);
                 foreach (var line in lines) {
-                    // load editorAudioLatency-
+                    // load editorAudioLatency
                     if (line.StartsWith("editorAudioLatency")) {
                         int latency;
                         if (!int.TryParse(line.Split("=")[1], out latency)) {
                             Trace.WriteLine("INFO: using default editor audio latency");
                             editorAudioLatency = defaultEditorAudioLatency;
                         } else {
+                            Trace.WriteLine($"INFO: using user editor audio latency ({latency}ms)");
                             editorAudioLatency = latency;
                         }
                     }
@@ -206,6 +192,15 @@ namespace Edda {
             editorDragSelectBorder.Opacity = 0.5;
             editorDragSelectBorder.Visibility = Visibility.Hidden;
 
+            // load editor preview
+            BitmapImage b = imageGenerator(packUriGenerator("rune1.png"));
+            imgPreviewNote = new Image();
+            imgPreviewNote.Source = b;
+            imgPreviewNote.Opacity = 0.25;
+            imgPreviewNote.Width = unitLength;
+            imgPreviewNote.Height = unitHeight;
+            EditorGrid.Children.Add(imgPreviewNote);
+
             // TODO: properly debounce grid redrawing on resize
             //Observable
             //.FromEventPattern<SizeChangedEventArgs>(EditorGrid, nameof(Canvas.SizeChanged))
@@ -213,6 +208,7 @@ namespace Edda {
             //.Subscribe(eventPattern => _EditorGrid_SizeChanged(eventPattern.Sender, eventPattern.EventArgs));
         }
 
+        // UI bindings
         private void AppMainWindow_Closed(object sender, EventArgs e) {
             Trace.WriteLine("Closing window...");
             if (noteScanTokenSource != null) {
@@ -232,13 +228,13 @@ namespace Edda {
         private void btnNewMap_Click(object sender, RoutedEventArgs e) {
 
             // check if map already open
-            if (saveFolder != null) {
+            if (beatMap != null) {
                 var res = MessageBox.Show("A map is already open. Creating a new map will close the existing map. Are you sure you want to continue?", "Warning", MessageBoxButton.YesNo);
                 if (res != MessageBoxResult.Yes) {
                     return;
                 }
                 // save existing work before making a new map
-                writeInfoStr();
+                beatMap.writeInfo();
             }
 
             // select folder for map
@@ -250,8 +246,7 @@ namespace Edda {
                 return;
             }
 
-            saveFolder = d2.FileName;
-            var folderName = new FileInfo(saveFolder).Name;
+            var folderName = new FileInfo(d2.FileName).Name;
             // check folder name is appropriate
             if (!Regex.IsMatch(folderName, @"^[a-zA-Z]+$")) {
                 MessageBox.Show("The folder name cannot contain spaces or non-alphabetic characters.", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
@@ -259,30 +254,21 @@ namespace Edda {
             }
 
             // check folder is empty
-            if (Directory.GetFiles(saveFolder).Length > 0) {
+            if (Directory.GetFiles(d2.FileName).Length > 0) {
                 MessageBox.Show("The specified folder is not empty.", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
                 return;
             }
 
             // select audio file
-            if (!changeSong()) {
+            if (!selectSong(d2.FileName)) {
                 return;
             }
-
-            beatMap = new RagnarockMap(d2.FileName, true);
-
-            // init info.dat json
-            initialiseInfoDat();
-
-            // init first difficulty map
-            addDifficulty(difficultyNames[0]);
-            writeMapStr(0);
-
-            // save to file
-            writeInfoStr();
+            beatMap = new RagnarockMap(d2.FileName, true, eddaVersionNumber);
 
             // load the selected song
             loadSong();
+
+            beatMap.setValue("_songApproximativeDuration", (int)songStream.TotalTime.TotalSeconds + 1);
 
             // open the newly created map
             initUI();
@@ -291,8 +277,7 @@ namespace Edda {
         private void btnOpenMap_Click(object sender, RoutedEventArgs e) {
 
             // select folder for map
-
-            // TODO: this dialog is really slow and sometimes hangs... is there another way to select a folder?
+            // TODO: this dialog is sometimes hangs, is there a better way to select a folder?
             var d2 = new CommonOpenFileDialog();
             d2.Title = "Select your map's containing folder";
             d2.IsFolderPicker = true;
@@ -301,37 +286,31 @@ namespace Edda {
                 return;
             }
 
-            // check folder is OK
+            // TODO: check folder has a valid map
 
             // load info
+            beatMap = new RagnarockMap(d2.FileName, false, eddaVersionNumber);
 
-            beatMap = new RagnarockMap(d2.FileName, false);
-
-            saveFolder = d2.FileName;
-
-            readInfoStr();
-
-            for (int i = 0; i < numDifficulties; i++) {
-                readMapStr(i);
-            }
             loadSong();
             initUI();
         }
         private void btnSaveMap_Click(object sender, RoutedEventArgs e) {
             // TODO: update _lastEditedBy field 
-            writeInfoStr();
-            for (int i = 0; i < numDifficulties; i++) {
-                setMapStrNotes(i);
-                writeMapStr(i);
+            beatMap.writeInfo();
+            beatMap.setNotesForMap(currentDifficultyNotes, currentDifficulty);
+            for (int i = 0; i < beatMap.numDifficulties; i++) {
+                beatMap.writeDifficultyMap(i);
             }
         }
         private void btnPickSong_Click(object sender, RoutedEventArgs e) {
-            if (changeSong()) {
-                setValInfoDat("_songFilename", "song.ogg");
-                setValInfoDat("_songName", "");
-                setValInfoDat("_songAuthorName", "");
-                setValInfoDat("_beatsPerMinute", 120);
-                setValInfoDat("_coverImageFilename", "");
+            if (selectSong(beatMap.folderPath)) {
+                beatMap.setValue("_songFilename", defaultSongName);
+                beatMap.setValue("_songName", "");
+                beatMap.setValue("_songAuthorName", "");
+                beatMap.setValue("_beatsPerMinute", beatMap.defaultBPM);
+                beatMap.setValue("_coverImageFilename", "");
+                loadSong();
+
                 // TODO: clear generated preview?
                 initUI();
             }
@@ -351,34 +330,43 @@ namespace Edda {
             }
             
             File.Copy(d.FileName, absPath("cover.jpg"));
-            setValInfoDat("_coverImageFilename", "cover.jpg");
+            beatMap.setValue("_coverImageFilename", "cover.jpg");
             loadCoverImage();
         }
         private void btnSongPlayer_Click(object sender, RoutedEventArgs e) {
             if (!songIsPlaying) {
-                beginSongPlayback();
+                playSong();
             } else {
-                endSongPlayback();
+                pauseSong();
             }          
         }
         private void btnAddDifficulty_Click(object sender, RoutedEventArgs e) {
-            addDifficulty(numDifficulties == 1 ? "Normal" : "Hard");
+            beatMap.addDifficultyMap(beatMap.numDifficulties == 1 ? "Normal" : "Hard");
+            updateDifficultyButtonVisibility();
+            switchDifficultyMap(beatMap.numDifficulties - 1);
         }
         private void btnDeleteDifficulty_Click(object sender, RoutedEventArgs e) {
-            var res = MessageBox.Show("Are you sure you want to delete this difficulty?", "Warning", MessageBoxButton.YesNo);
+            var res = MessageBox.Show("Are you sure you want to delete this difficulty? This cannot be undone.", "Warning", MessageBoxButton.YesNo);
             if (res != MessageBoxResult.Yes) {
                 return;
             }
-            deleteDifficultyMap(selectedDifficulty);
+            beatMap.deleteDifficultyMap(currentDifficulty);
+            switchDifficultyMap(Math.Min(currentDifficulty, beatMap.numDifficulties - 1));
+            updateDifficultyButtonVisibility();
         }
         private void btnChangeDifficulty0_Click(object sender, RoutedEventArgs e) {
-            selectedDifficulty = 0;
+            // save previous work to buffer before switching
+            // note: this does NOT save to file
+            beatMap.setNotesForMap(currentDifficultyNotes, currentDifficulty); 
+            switchDifficultyMap(0);
         }
         private void btnChangeDifficulty1_Click(object sender, RoutedEventArgs e) {
-            selectedDifficulty = 1;
+            beatMap.setNotesForMap(currentDifficultyNotes, currentDifficulty);
+            switchDifficultyMap(1);
         }
         private void btnChangeDifficulty2_Click(object sender, RoutedEventArgs e) {
-            selectedDifficulty = 2;
+            beatMap.setNotesForMap(currentDifficultyNotes, currentDifficulty);
+            switchDifficultyMap(2);
         }
         private void sliderSongVol_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e) {
             songChannel.Volume = (float)sliderSongVol.Value; 
@@ -421,8 +409,8 @@ namespace Edda {
 
             // try to keep the scroller at the same percentage scroll that it was before
             if (e.ExtentHeightChange != 0) {
-                if (isChangingSong) {
-                    isChangingSong = false;
+                if (songWasChanged) {
+                    songWasChanged = false;
                 } else {
                     scrollEditor.ScrollToVerticalOffset((1 - prevScrollPercent) * scrollEditor.ScrollableHeight);
                 }
@@ -437,99 +425,116 @@ namespace Edda {
         }
         private void txtSongBPM_LostFocus(object sender, RoutedEventArgs e) {
             double BPM;
-            if (!double.TryParse(txtSongBPM.Text, out BPM)) {
-                BPM = currentBPM;
+            double prevBPM = double.Parse((string)beatMap.getValue("_beatsPerMinute"));
+            if (double.TryParse(txtSongBPM.Text, out BPM)) {
+                if (BPM != prevBPM) {
+                    beatMap.setValue("_beatsPerMinute", BPM);
+                    updateEditorGridHeight();
+                    //drawEditorGrid();
+                }
             } else {
-                setValInfoDat("_beatsPerMinute", BPM);
+                MessageBox.Show($"The BPM must be numerical.", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                BPM = prevBPM;
             }
             txtSongBPM.Text = BPM.ToString();
-            updateEditorGridHeight();
-            drawEditorGrid();
+
         }
         private void txtSongOffset_LostFocus(object sender, RoutedEventArgs e) {
             double offset;
-            if (!double.TryParse(txtSongOffset.Text, out offset)) {
-                offset = songOffset;
+            double prevOffset = double.Parse((string)beatMap.getValue("_songTimeOffset"));
+            if (double.TryParse(txtSongOffset.Text, out offset)) {
+                beatMap.setValue("_songTimeOffset", offset);
             } else {
-                setValInfoDat("_songTimeOffset", offset);
+                MessageBox.Show($"The song offset must be numerical.", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                offset = prevOffset;
             }
-            txtSongBPM.Text = offset.ToString();
+            txtSongOffset.Text = offset.ToString();
         }
         private void txtSongName_TextChanged(object sender, TextChangedEventArgs e) {
-            setValInfoDat("_songName", txtSongName.Text);
+            beatMap.setValue("_songName", txtSongName.Text);
         }
         private void txtArtistName_TextChanged(object sender, TextChangedEventArgs e) {
-            setValInfoDat("_songAuthorName", txtArtistName.Text);
+            beatMap.setValue("_songAuthorName", txtArtistName.Text);
         }
         private void txtMapperName_TextChanged(object sender, TextChangedEventArgs e) {
-            setValInfoDat("_levelAuthorName", txtMapperName.Text);
+            beatMap.setValue("_levelAuthorName", txtMapperName.Text);
         }
         private void txtDifficultyNumber_LostFocus(object sender, RoutedEventArgs e) {
-            int prevLevel = (int)getMapValInfoDat("_difficultyRank", selectedDifficulty);
+            int prevLevel = (int)beatMap.getValueForDifficultyMap("_difficultyRank", currentDifficulty);
             int level;
-            if (!int.TryParse(txtDifficultyNumber.Text, out level) || level < 1 || level > 10) {
+            if (int.TryParse(txtDifficultyNumber.Text, out level) && intRangeCheck(level, 1, 10)) {
+                beatMap.setValueForDifficultyMap("_difficultyRank", level, currentDifficulty);
+            } else {
                 MessageBox.Show($"The difficulty level must be an integer between 1 and 10.", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
                 level = prevLevel;
-            } else {
-                setMapValInfoDat("_difficultyRank", level, selectedDifficulty);
             }
             txtDifficultyNumber.Text = level.ToString();
         }
         private void txtNoteSpeed_LostFocus(object sender, RoutedEventArgs e) {
-            double prevSpeed = (int)getMapValInfoDat("_noteJumpMovementSpeed", selectedDifficulty);
+            double prevSpeed = int.Parse((string)beatMap.getValueForDifficultyMap("_noteJumpMovementSpeed", currentDifficulty));
             double speed;
-            if (!double.TryParse(txtNoteSpeed.Text, out speed) || speed <= 0) {
+            if (double.TryParse(txtNoteSpeed.Text, out speed) && speed > 0) {
+                beatMap.setValueForDifficultyMap("_noteJumpMovementSpeed", speed, currentDifficulty);
+            } else {
                 MessageBox.Show($"The note speed must be a positive number.", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
                 speed = prevSpeed;
-            } else {
-                setMapValInfoDat("_noteJumpMovementSpeed", speed, selectedDifficulty);
             }
             txtNoteSpeed.Text = speed.ToString();
         }
         private void txtGridOffset_LostFocus(object sender, RoutedEventArgs e) {
+            double prevOffset = double.Parse((string)beatMap.getCustomValueForDifficultyMap("_editorOffset", currentDifficulty));
             double offset;
-            if (double.TryParse(txtGridOffset.Text, out offset) && offset != editorGridOffset) {
-                setCustomMapValInfoDat("_editorOffset", offset);
-                // resnap all notes
-                var offsetDelta = offset - editorGridOffset;
-                var beatOffset = currentBPM / 60 * offsetDelta;
-                for (int i = 0; i < selectedDifficultyNotes.Length; i++) {
-                    selectedDifficultyNotes[i].Item1 += beatOffset;
-                }
-                editorGridOffset = offset;
-                updateEditorGridHeight();
-                drawEditorGrid();
+            if (double.TryParse(txtGridOffset.Text, out offset)) {
+                if (offset != prevOffset) {
+                    // resnap all notes
+                    var offsetDelta = offset - editorGridOffset;
+                    var beatOffset = currentBPM / 60 * offsetDelta;
+                    for (int i = 0; i < currentDifficultyNotes.Length; i++) {
+                        currentDifficultyNotes[i].Item1 += beatOffset;
+                    }
 
+                    editorGridOffset = offset;
+                    beatMap.setCustomValueForDifficultyMap("_editorOffset", offset, currentDifficulty);
+                    updateEditorGridHeight();
+                    drawEditorGrid();
+                }
             } else {
-                offset = editorGridOffset;
+                MessageBox.Show($"The grid offset must be numerical.", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                offset = prevOffset;
             }
             txtGridOffset.Text = offset.ToString();
         }
         private void txtGridSpacing_LostFocus(object sender, RoutedEventArgs e) {
+            double prevSpacing = double.Parse((string)beatMap.getCustomValueForDifficultyMap("_editorGridSpacing", currentDifficulty));
             double spacing;
-            if (double.TryParse(txtGridSpacing.Text, out spacing) && spacing != editorGridSpacing) {
-                setCustomMapValInfoDat("_editorGridSpacing", spacing);
-                editorGridSpacing = spacing;
-                updateEditorGridHeight();
+            if (double.TryParse(txtGridSpacing.Text, out spacing)) {
+                if (spacing != prevSpacing) {
+                    editorGridSpacing = spacing;
+                    beatMap.setCustomValueForDifficultyMap("_editorGridSpacing", spacing, currentDifficulty);
+                    updateEditorGridHeight();
+                    //drawEditorGrid();
+                }
             } else {
-                spacing = editorGridSpacing;
+                MessageBox.Show($"The grid spacing must be numerical.", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                spacing = prevSpacing;
             }
             txtGridSpacing.Text = spacing.ToString();
         }
         private void txtGridDivision_LostFocus(object sender, RoutedEventArgs e) {
+            int prevDiv = int.Parse((string)beatMap.getCustomValueForDifficultyMap("_editorGridDivision", currentDifficulty));
             int div;
-            if (!int.TryParse(txtGridDivision.Text, out div) || div < 1) {
-                div = 1;
+
+            if (int.TryParse(txtGridDivision.Text, out div) && intRangeCheck(div, 1, gridDivisionMax)) {
+                if (div != prevDiv) {
+                    editorGridDivision = div;
+                    beatMap.setCustomValueForDifficultyMap("_editorGridDivision", div, currentDifficulty);
+                    drawEditorGrid();
+                }
+            } else {
+                MessageBox.Show($"The grid division amount must be an integer from 1 to {gridDivisionMax}.", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                div = prevDiv;
             }
-            if (div > gridDivisionMax) {
-                div = gridDivisionMax;
-                MessageBox.Show($"The maximum grid division amount is {gridDivisionMax}.", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
-            }
-            if (div != editorGridDivision) {
-                txtGridDivision.Text = div.ToString();
-                editorGridDivision = div;
-                drawEditorGrid();
-            }
+            txtGridDivision.Text = div.ToString();
         }
         private void comboEnvironment_SelectionChanged(object sender, SelectionChangedEventArgs e) {
             string env = "DefaultEnvironment";
@@ -543,14 +548,14 @@ namespace Edda {
                 case 3:
                     env = "Asgard"; break;
             }
-            setValInfoDat("_environmentName", env);
+            beatMap.setValue("_environmentName", env);
         }
         private void EditorGrid_SizeChanged(object sender, SizeChangedEventArgs e) {
             if (songIsPlaying) {
-                endSongPlayback();
+                pauseSong();
             }
-            if (infoStr != null) {
-                rescanNoteIndex();
+            if (beatMap != null) {
+                scanNoteIndex();
                 //updateEditorGridHeight();
                 drawEditorGrid();
             }
@@ -589,11 +594,14 @@ namespace Edda {
             } else {
                 Canvas.SetBottom(imgPreviewNote, Math.Max(mousePos, 0));
             }
+            double noteX = (1 + 4 * (editorMouseGridCol)) * unitSubLength;
+
+            // for some reason Canvas.SetLeft(0) doesn't correspond to the leftmost of the canvas, so we need to do some unknown adjustment to line it up
             var unknownNoteXAdjustment = ((unitLength / unitLengthUnscaled - 1) * unitLengthUnscaled / 2);
-            var unitSubLengthOffset = 1 + 4 * (editorMouseGridCol);
+
             double beat = editorMouseGridRow / (double)editorGridDivision + userOffsetBeat;
             imgPreviewNote.Source = imageGenerator(packUriGenerator(imageForBeat(beat)));
-            Canvas.SetLeft(imgPreviewNote, (unitSubLengthOffset * unitSubLength) - unknownNoteXAdjustment);
+            Canvas.SetLeft(imgPreviewNote, noteX - unknownNoteXAdjustment);
 
             // calculate drag stuff
             if (editorIsDragging) {
@@ -635,7 +643,7 @@ namespace Edda {
                 imgPreviewNote.Opacity = 0.5;
                 List<Note> list = new List<Note>();
                 // calculate new selections
-                foreach (Note n in selectedDifficultyNotes) {
+                foreach (Note n in currentDifficultyNotes) {
                     // minor optimisation
                     if (n.Item1 > Math.Max(startBeatFractional, endBeatFractional)) {
                         break;
@@ -656,14 +664,14 @@ namespace Edda {
 
                 // check if note exists
                 bool noteExists = false;
-                foreach (Note m in selectedDifficultyNotes) {
+                foreach (Note m in currentDifficultyNotes) {
                     if (m == n) {
                         noteExists = true;
                     }
                 }
 
                 if (noteExists) {
-                    if (noteIsSelected(n)) {
+                    if (editorSelectedNotes.Contains(n)) {
                         unselectNote(n);
                     } else {
                         newNoteSelection(new List<Note>() { n });
@@ -706,68 +714,53 @@ namespace Edda {
         private void scrollEditor_KeyDown(object sender, KeyEventArgs e) {
             Trace.WriteLine(e.Key);
         }
-        private void checkGridSnap_Click(object sender, RoutedEventArgs e) {
-            //editorSnapToGrid = (checkGridSnap.IsChecked == true);
-        }
 
-        // (re)initialise UI
+        //private void checkGridSnap_Click(object sender, RoutedEventArgs e) {
+        //    editorSnapToGrid = (checkGridSnap.IsChecked == true);
+        //}
+
+
+        // UI initialisation
         private void initUI() {
-            txtSongName.Text   = (string) getValInfoDat("_songName");
-            txtArtistName.Text = (string) getValInfoDat("_songAuthorName");
-            txtMapperName.Text = (string) getValInfoDat("_levelAuthorName");
-            txtSongBPM.Text    = (string) getValInfoDat("_beatsPerMinute");
- 
-            switch ((string)getValInfoDat("_environmentName")) {
-                case "DefaultEnvironment":
-                    comboEnvironment.SelectedIndex = 0; break;
-                case "Alfheim":
-                    comboEnvironment.SelectedIndex = 1; break;
-                case "Nidavellir":
-                    comboEnvironment.SelectedIndex = 2; break;
-                case "Asgard":
-                    comboEnvironment.SelectedIndex = 3; break;
-                default:
-                    comboEnvironment.SelectedIndex = 0; break;
-            }
+
+            // reset variables
+            currentDifficulty = 0;
+            prevScrollPercent = 0;
+
+            // map settings
+            txtSongName.Text   = (string)beatMap.getValue("_songName");
+            txtArtistName.Text = (string)beatMap.getValue("_songAuthorName");
+            txtMapperName.Text = (string)beatMap.getValue("_levelAuthorName");
+            txtSongBPM.Text    = (string)beatMap.getValue("_beatsPerMinute");
+            txtSongOffset.Text = (string)beatMap.getValue("_songTimeOffset");
+
+            comboEnvironment.SelectedIndex = environmentNames.IndexOf((string)beatMap.getValue("_environmentName"));
             
-            txtSongFileName.Text  = (string)getValInfoDat("_songFilename")       == "" ? "N/A" : (string)getValInfoDat("_songFilename");
-            txtCoverFileName.Text = (string)getValInfoDat("_coverImageFilename") == "" ? "N/A" : (string)getValInfoDat("_coverImageFilename");
-            if (txtCoverFileName.Text != "N/A") {
+            // file info
+            txtSongFileName.Text = (string)beatMap.getValue("_songFilename");
+
+            if ((string)beatMap.getValue("_coverImageFilename") != "") {
                 loadCoverImage();
+            } else {
+                clearCoverImage();
             }
+
+            // song player
             var duration = (int) songStream.TotalTime.TotalSeconds;
             txtSongDuration.Text = $"{duration / 60}:{(duration % 60).ToString("D2")}";
 
-            songOffset = double.Parse((string)getValInfoDat("_songTimeOffset"));
-            txtSongOffset.Text = songOffset.ToString();
+            //checkGridSnap.IsChecked = editorSnapToGrid;
 
-            txtDifficultyNumber.Text = int.Parse((string)getMapValInfoDat("_difficultyRank", selectedDifficulty)).ToString();
-
-            txtNoteSpeed.Text = double.Parse((string)getMapValInfoDat("_noteJumpMovementSpeed", selectedDifficulty)).ToString();
-
-            editorGridDivision = defaultGridDivision;
-            txtGridDivision.Text = editorGridDivision.ToString();
-
-            editorGridSpacing = double.Parse((string)getCustomMapValInfoDat("_editorGridSpacing"));
-            txtGridSpacing.Text = editorGridSpacing.ToString();
-
-            editorGridOffset = double.Parse((string)getCustomMapValInfoDat("_editorOffset"));
-            txtGridOffset.Text = editorGridOffset.ToString();
-
-            editorSnapToGrid = true;
-            //checkGridSnap.IsChecked = true;
-
-            sliderSongVol.Value = 0.25;
-            sliderDrumVol.Value = 1.0;
+            sliderSongVol.Value = defaultSongVolume;
+            sliderDrumVol.Value = defaultDrumVolume;
 
             // enable UI parts
             btnSaveMap.IsEnabled = true;
             btnChangeDifficulty0.IsEnabled = true;
             btnChangeDifficulty1.IsEnabled = true;
             btnChangeDifficulty2.IsEnabled = true;
-            if (numDifficulties < 3) {
-                btnAddDifficulty.IsEnabled = true;
-            }
+            enableDifficultyButtons();
+            updateDifficultyButtonVisibility();
             txtSongName.IsEnabled = true;
             txtArtistName.IsEnabled = true;
             txtMapperName.IsEnabled = true;
@@ -779,6 +772,8 @@ namespace Edda {
             sliderSongVol.IsEnabled = true;
             sliderDrumVol.IsEnabled = true;
             //checkGridSnap.IsEnabled = true;
+            txtDifficultyNumber.IsEnabled = true;
+            txtNoteSpeed.IsEnabled = true;
             txtGridDivision.IsEnabled = true;
             txtGridOffset.IsEnabled = true;
             txtGridSpacing.IsEnabled = true;
@@ -787,238 +782,77 @@ namespace Edda {
             sliderSongProgress.IsEnabled = true;
             scrollEditor.IsEnabled = true;
 
-            // load editor resources
-            BitmapImage b = imageGenerator(packUriGenerator("rune1.png"));
-            imgPreviewNote = new Image();
-            imgPreviewNote.Source = b;
-            imgPreviewNote.Opacity = 0.25;
-            imgPreviewNote.Width = unitLength;
-            imgPreviewNote.Height = unitHeight;
-            EditorGrid.Children.Add(imgPreviewNote);
+            // init difficulty-specific UI 
+            switchDifficultyMap(currentDifficulty);
 
-            updateDifficultyButtonVisibility();
             updateEditorGridHeight();
-            selectedDifficulty = 0;
             scrollEditor.ScrollToBottom();
         }
-        private void initialiseInfoDat() {
-            // init info.dat json
-            var infoDat = new {
-                _version = "1",
-                _songName = "",
-                _songSubName = "",                              // dummy
-                _songAuthorName = "",
-                _levelAuthorName = "",
-                _beatsPerMinute = defaultBPM,
-                _shuffle = 0,                                   // dummy?
-                _shufflePeriod = 0.5,                           // dummy?
-                _previewStartTime = 0,                          // dummy?
-                _previewDuration = 0,                           // dummy?
-                _songApproximativeDuration = 0,
-                _songFilename = "song.ogg",
-                _coverImageFilename = "",
-                _environmentName = "DefaultEnvironment",
-                _songTimeOffset = 0,
-                _customData = new {
-                    _contributors = new List<string>(),
-                    _editors = new {
-                        Edda = new {
-                            version = eddaVersionNumber,
-                        },
-                        _lastEditedBy = "Edda"
-                    },
-                },
-                _difficultyBeatmapSets = new [] {
-                    new {
-                        _beatmapCharacteristicName = "Standard",
-                        _difficultyBeatmaps = new List<object> {},
-                    },
-                },
-            };
-            infoStr = JsonConvert.SerializeObject(infoDat, Formatting.Indented);
-        }
+
+        // manage cover image
         private void loadCoverImage() {
-            var fileName = (string)getValInfoDat("_coverImageFilename");
+            var fileName = (string)beatMap.getValue("_coverImageFilename");
             BitmapImage b = imageGenerator(new Uri(absPath(fileName)));
             imgCover.Source = b;
             txtCoverFileName.Text = fileName;
         }
+        private void clearCoverImage() {
+            imgCover.Source = null;
+            txtCoverFileName.Text = "N/A";
+        }
 
         // manage difficulties
-        private void addDifficulty(string difficulty) {
-            var obj = JObject.Parse(infoStr);
-            var beatmaps = (JArray)obj["_difficultyBeatmapSets"][0]["_difficultyBeatmaps"];
-            var beatmapDat = new {
-                _difficulty = difficulty,
-                _difficultyRank = 1,
-                _beatmapFilename = $"{difficulty}.dat",
-                _noteJumpMovementSpeed = defaultNoteJumpMovementSpeed,
-                _noteJumpStartBeatOffset = 0,
-                _customData = new {
-                    _editorOffset = 0,
-                    _editorOldOffset = 0,
-                    _editorGridSpacing = 1,
-                    _warnings = new List<string>(),
-                    _information = new List<string>(),
-                    _suggestions = new List<string>(),
-                    _requirements = new List<string>(),
-                },
-            };
-            beatmaps.Add(JToken.FromObject(beatmapDat));
-            infoStr = JsonConvert.SerializeObject(obj, Formatting.Indented);
-            var mapDat = new {
-                _version = "1",
-                _customData = new {
-                    _time = 0,
-                    _BPMChanges = new List<object>(),
-                    _bookmarks = new List<object>(),
-                },
-                _events = new List<object>(),
-                _notes = new List<object>(),
-                _obstacles = new List<object>(),
-            };
-            mapsStr[numDifficulties - 1] = JsonConvert.SerializeObject(mapDat, Formatting.Indented);
-            updateDifficultyButtonVisibility();
-        }
         private void updateDifficultyButtonVisibility() {
-            for (var i = 0; i < numDifficulties; i++) {
+            var numDiff = beatMap.numDifficulties;
+            for (var i = 0; i < numDiff; i++) {
                 ((Button)DifficultyChangePanel.Children[i]).Visibility = Visibility.Visible;
             }
-            for (var i = numDifficulties; i < 3; i++) {
+            for (var i = numDiff; i < 3; i++) {
                 ((Button)DifficultyChangePanel.Children[i]).Visibility = Visibility.Hidden;
             }
-            btnDeleteDifficulty.IsEnabled = (numDifficulties == 1) ? false : true;
-            btnAddDifficulty.Visibility = (numDifficulties == 3) ? Visibility.Hidden : Visibility.Visible;
+            btnDeleteDifficulty.IsEnabled = (numDiff == 1) ? false : true;
+            btnAddDifficulty.Visibility = (numDiff == 3) ? Visibility.Hidden : Visibility.Visible;
         }
-        private void enableDifficultyButtons(int indx) {
+        private void enableDifficultyButtons() {
             foreach (Button b in DifficultyChangePanel.Children) {
-                if (b.Name == ((Button)DifficultyChangePanel.Children[indx]).Name) {
+                if (b.Name == ((Button)DifficultyChangePanel.Children[currentDifficulty]).Name) {
                     b.IsEnabled = false;
                 } else {
                     b.IsEnabled = true;
                 }
             }
-            btnDeleteDifficulty.IsEnabled = (numDifficulties > 1);
-            btnAddDifficulty.IsEnabled = (numDifficulties < 3);
+            btnDeleteDifficulty.IsEnabled = (beatMap.numDifficulties > 1);
+            btnAddDifficulty.IsEnabled = (beatMap.numDifficulties < 3);
         }
         private void switchDifficultyMap(int indx) {
-            enableDifficultyButtons(indx);
-            selectedDifficultyNotes = getMapStrNotes(_selectedDifficulty);
-            txtDifficultyNumber.Text = int.Parse((string)getMapValInfoDat("_difficultyRank", selectedDifficulty)).ToString();
+            currentDifficulty = indx;
+            currentDifficultyNotes = beatMap.getNotesForMap(indx);
+
+            txtDifficultyNumber.Text = (string)beatMap.getValueForDifficultyMap("_difficultyRank", indx);
+            txtNoteSpeed.Text        = (string)beatMap.getValueForDifficultyMap("_noteJumpMovementSpeed", indx);
+            txtGridOffset.Text       = (string)beatMap.getCustomValueForDifficultyMap("_editorOffset", indx);
+            txtGridSpacing.Text      = (string)beatMap.getCustomValueForDifficultyMap("_editorGridSpacing", indx);
+            txtGridDivision.Text     = (string)beatMap.getCustomValueForDifficultyMap("_editorGridDivision", indx);
+
+            // Edda-specific values 
+            // TODO: fix this properly by validating maps on open
+            if (txtGridSpacing.Text == "") {
+                txtGridSpacing.Text = "1";
+            }
+            if (txtGridDivision.Text == "") {
+                txtGridDivision.Text = "4";
+            }
+
+            // set internal values
+            editorGridDivision = int.Parse(txtGridDivision.Text);
+            editorGridSpacing = double.Parse(txtGridSpacing.Text);
+            editorGridOffset = double.Parse(txtGridOffset.Text);
+
+            enableDifficultyButtons();
             drawEditorGrid();
         }
-        private void deleteDifficultyMap(int indx) {
-            if (numDifficulties == 1) {
-                return;
-            }
-            deleteMapStr(indx);
-            var obj = JObject.Parse(infoStr);
-            var beatmaps = (JArray) obj["_difficultyBeatmapSets"][0]["_difficultyBeatmaps"];
-            beatmaps.RemoveAt(indx);
-            infoStr = JsonConvert.SerializeObject(obj, Formatting.Indented);
-            selectedDifficulty = Math.Min(selectedDifficulty, numDifficulties - 1);
-            renameMapStr();
-            writeInfoStr();
-            writeMapStr(indx);
-            updateDifficultyButtonVisibility();
-        }
 
-        // == file I/O ==
-        private string absPath(string f) {
-            return System.IO.Path.Combine(saveFolder, f);
-        }
-        private void setValInfoDat(string key, object value) {
-            var obj = JObject.Parse(infoStr);
-            obj[key] = JToken.FromObject(value);
-            infoStr = JsonConvert.SerializeObject(obj, Formatting.Indented);
-        }
-        private JToken getValInfoDat(string key) {
-            var obj = JObject.Parse(infoStr);
-            var res = obj[key];
-            return res;
-        }
-        private void setMapValInfoDat(string key, object value, int indx) {
-            var obj = JObject.Parse(infoStr);
-            obj["_difficultyBeatmapSets"][0]["_difficultyBeatmaps"][indx][key] = JToken.FromObject(value);
-            infoStr = JsonConvert.SerializeObject(obj, Formatting.Indented);
-        }
-        private JToken getMapValInfoDat(string key, int indx) {
-            var obj = JObject.Parse(infoStr);
-            var res = obj["_difficultyBeatmapSets"][0]["_difficultyBeatmaps"][indx][key];
-            return res;
-        }
-        private void setCustomMapValInfoDat(string key, object value) {
-            var obj = JObject.Parse(infoStr);
-            obj["_difficultyBeatmapSets"][0]["_difficultyBeatmaps"][selectedDifficulty]["_customData"][key] = JToken.FromObject(value);
-            infoStr = JsonConvert.SerializeObject(obj, Formatting.Indented);
-        } 
-        private JToken getCustomMapValInfoDat(string key) {
-            var obj = JObject.Parse(infoStr);
-            var res = obj["_difficultyBeatmapSets"][0]["_difficultyBeatmaps"][selectedDifficulty]["_customData"][key];
-            return res;
-        }
-        private void readInfoStr() {
-            infoStr = File.ReadAllText(absPath("info.dat"));
-        }
-        private void writeInfoStr() {
-            File.WriteAllText(absPath("info.dat"), infoStr);
-        }
-        private void readMapStr(int indx) {
-            var filename = (string) getMapValInfoDat("_beatmapFilename", indx);
-            mapsStr[indx] = File.ReadAllText(absPath(filename));
-        }
-        private void writeMapStr(int indx) {
-            var filename = (string) getMapValInfoDat("_beatmapFilename", indx);
-            File.WriteAllText(absPath(filename), mapsStr[indx]);
-        }
-        private void deleteMapStr(int indx) {
-            var filename = (string)getMapValInfoDat("_beatmapFilename", indx);
-            File.Delete(absPath(filename));
-            mapsStr[indx] = "";
-        }
-        private void renameMapStr() {
-            for (int i = 0; i < numDifficulties; i++) {
-                setMapValInfoDat("_difficulty", difficultyNames[i], i);
-                var oldFile = (string) getMapValInfoDat("_beatmapFilename", i);
-                File.Move(absPath(oldFile), absPath($"{difficultyNames[i]}_temp.dat"));
-                setMapValInfoDat("_beatmapFilename", $"{difficultyNames[i]}.dat", i);
-            }
-            for (int i = 0; i < numDifficulties; i++) {
-                File.Move(absPath($"{difficultyNames[i]}_temp.dat"), absPath($"{difficultyNames[i]}.dat"));
-            }
-        }
-        private Note[] getMapStrNotes(int indx) {
-            var obj = JObject.Parse(mapsStr[indx]);
-            var res = obj["_notes"];
-            Note[] output = new Note[res.Count()];
-            var i = 0;
-            foreach (JToken n in res) {
-                double time = double.Parse((string)n["_time"]);
-                int colIndex = int.Parse((string)n["_lineIndex"]);
-                output[i] = (time, colIndex);
-                i++;
-            }
-            return output;
-        }
-        private void setMapStrNotes(int indx) {
-            var numNotes = selectedDifficultyNotes.Length;
-            var notes = new Object[numNotes];
-            for (int i = 0; i < numNotes; i++) {
-                var thisNote = selectedDifficultyNotes[i];
-                var thisNoteObj = new {
-                    _time = thisNote.Item1,
-                    _lineIndex = thisNote.Item2,
-                    _lineLayer = 1,
-                    _type = 0,
-                    _cutDirection = 1
-                };
-                notes[i] = thisNoteObj;
-            }
-            var thisMapStr = JObject.Parse(mapsStr[selectedDifficulty]);
-            thisMapStr["_notes"] = JToken.FromObject(notes);
-            mapsStr[selectedDifficulty] = JsonConvert.SerializeObject(thisMapStr, Formatting.Indented);
-            //mapsStr[selectedDifficulty]["_notes"] = jObj;
-        }
+        // file creation
         private void createConfigFile() {
             string[] fields = { 
                 "editorAudioLatency=" 
@@ -1027,7 +861,7 @@ namespace Edda {
         }
 
         // song/note playback
-        private bool changeSong() {
+        private bool selectSong(string folderPath) {
             // select audio file
             var d = new Microsoft.Win32.OpenFileDialog();
             d.Title = "Select a song to map";
@@ -1037,11 +871,6 @@ namespace Edda {
             if (d.ShowDialog() != true) {
                 return false;
             }
-
-            if (d.FileName == absPath("song.ogg")) {
-                MessageBox.Show("This song is already being used.", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
-                return false;
-            }
             VorbisWaveReader vorbisStream;
             try {
                 vorbisStream = new NAudio.Vorbis.VorbisWaveReader(d.FileName);
@@ -1049,17 +878,15 @@ namespace Edda {
                 MessageBox.Show("The .ogg file is corrupted.", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
                 return false;
             }
-            var time = vorbisStream.TotalTime;
-            if (time.TotalHours >= 1) {
+            if (vorbisStream.TotalTime.TotalHours >= 1) {
                 MessageBox.Show("Songs over 1 hour in duration are not supported.", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
                 return false;
             }
-            setValInfoDat("_songApproximativeDuration", (int) time.TotalSeconds + 1);
-
-            File.Delete(absPath("song.ogg"));
-            File.Copy(d.FileName, absPath("song.ogg"));
-            loadSong();
-
+            var songPath = System.IO.Path.Combine(folderPath, defaultSongName);
+            if (beatMap != null) {
+                File.Delete(songPath);
+            }
+            File.Copy(d.FileName, songPath);
             return true;
         }
         private void loadSong() {
@@ -1072,7 +899,8 @@ namespace Edda {
                 songPlayer.Dispose();
             }
 
-            songStream = new NAudio.Vorbis.VorbisWaveReader(songFilePath);
+            var songPath = System.IO.Path.Combine(beatMap.folderPath, (string)beatMap.getValue("_songFilename"));
+            songStream = new NAudio.Vorbis.VorbisWaveReader(songPath);
             songPlayer = new WasapiOut(AudioClientShareMode.Shared, desiredWasapiLatency);
 
             songChannel = new SampleChannel(songStream);
@@ -1080,14 +908,14 @@ namespace Edda {
             songPlayer.Init(songChannel);
 
             // subscribe to playbackstopped
-            songPlayer.PlaybackStopped += (sender, args) => { endSongPlayback(); };
+            songPlayer.PlaybackStopped += (sender, args) => { pauseSong(); };
             sliderSongProgress.Minimum = 0;
             sliderSongProgress.Maximum = songStream.TotalTime.TotalSeconds * 1000;
             sliderSongProgress.Value = 0;
-            isChangingSong = true;
+            songWasChanged = true;
 
         }
-        private void beginSongPlayback() {
+        private void playSong() {
             songIsPlaying = true;
             imgPlayerButton.Source = imageGenerator(packUriGenerator("pauseButton.png"));
             // disable some UI elements for performance reasons
@@ -1126,19 +954,19 @@ namespace Edda {
             // init stopwatch
             noteScanStopwatch = new Stopwatch();
             noteScanStopwatchOffset = (int)(sliderSongProgress.Value - editorAudioLatency); // set user audio delay
-            rescanNoteIndex();
+            scanNoteIndex();
             noteScanTokenSource = new CancellationTokenSource();
             noteScanToken = noteScanTokenSource.Token;
 
             // start scanning for notes
-            Task.Run(() => beginNoteScanning(noteScanStopwatchOffset, noteScanToken), noteScanToken);
+            Task.Run(() => scanForNotes(noteScanStopwatchOffset, noteScanToken), noteScanToken);
 
             noteScanStopwatch.Start();
 
             // play song
             songPlayer.Play();
         }
-        private void endSongPlayback() {
+        private void pauseSong() {
             songIsPlaying = false;
             imgPlayerButton.Source = imageGenerator(packUriGenerator("playButton.png"));
 
@@ -1152,7 +980,7 @@ namespace Edda {
             txtGridOffset.IsEnabled = true;
             txtGridSpacing.IsEnabled = true;
             btnDeleteDifficulty.IsEnabled = true;
-            enableDifficultyButtons(selectedDifficulty);
+            enableDifficultyButtons();
             btnAddDifficulty.IsEnabled = true;
 
             // enable scrolling while paused
@@ -1174,25 +1002,20 @@ namespace Edda {
 
             songPlayer.Pause();
         }
-        private void playDrumHit(int hits) {
-            if (drummer.playDrum(hits) == false) {
-                Trace.WriteLine("WARNING: drummer skipped a drum hit");
-            }
-        }
-        private void rescanNoteIndex() {
+        private void scanNoteIndex() {
             // calculate scan index for playing drum hits
             var seekBeat = (noteScanStopwatchOffset / 1000.0) * (currentBPM / 60.0);
             noteScanIndex = 0;
-            foreach (var n in selectedDifficultyNotes) {
+            foreach (var n in currentDifficultyNotes) {
                 if (n.Item1 >= seekBeat) {
                     break;
                 }
                 noteScanIndex++;
             }
         }
+        private void scanForNotes(int startFrom, CancellationToken ct) {
+            // NOTE: this function is called on a separate thread
 
-        // NOTE: this function is called on a separate thread
-        private void beginNoteScanning(int startFrom, CancellationToken ct) {
             // scan notes while song is still playing
             var nextPollTime = notePollRate;
             while (!ct.IsCancellationRequested) {
@@ -1204,18 +1027,17 @@ namespace Edda {
         }
         private void playNotes() {
             var currentTime = noteScanStopwatch.ElapsedMilliseconds + noteScanStopwatchOffset;
-            //var currentTime = songStream.CurrentTime.TotalMilliseconds;
             // check if we started past the last note in the song
-            if (noteScanIndex < selectedDifficultyNotes.Length) {
-                var noteTime = 60000 * selectedDifficultyNotes[noteScanIndex].Item1 / currentBPM;
+            if (noteScanIndex < currentDifficultyNotes.Length) {
+                var noteTime = 60000 * currentDifficultyNotes[noteScanIndex].Item1 / currentBPM;
                 var drumHits = 0;
 
                 // check if any notes were missed
-                while (currentTime - noteTime >= noteDetectionDelta && noteScanIndex < selectedDifficultyNotes.Length - 1) {
+                while (currentTime - noteTime >= noteDetectionDelta && noteScanIndex < currentDifficultyNotes.Length - 1) {
                     Trace.WriteLine($"WARNING: A note was played late during playback. (Delta: {Math.Round(currentTime - noteTime, 2)})");
                     drumHits++;
                     noteScanIndex++;
-                    noteTime = 60000 * selectedDifficultyNotes[noteScanIndex].Item1 / currentBPM;
+                    noteTime = 60000 * currentDifficultyNotes[noteScanIndex].Item1 / currentBPM;
                 }
 
                 // check if we need to play any notes
@@ -1224,20 +1046,16 @@ namespace Edda {
                       
                     drumHits++;
                     noteScanIndex++;
-                    if (noteScanIndex >= selectedDifficultyNotes.Length) {
+                    if (noteScanIndex >= currentDifficultyNotes.Length) {
                         break;
                     }
-                    noteTime = 60000 * selectedDifficultyNotes[noteScanIndex].Item1 / currentBPM;
+                    noteTime = 60000 * currentDifficultyNotes[noteScanIndex].Item1 / currentBPM;
                 }
 
-                // play pending drum hits
-                playDrumHit(drumHits);
-                //if (drumHits > 0) {
-                //    this.Dispatcher.Invoke(() => {
-                //        Trace.WriteLine($"Played note {Math.Round(songStream.CurrentTime.TotalMilliseconds - currentTime, 2)}ms late");
-                //    });
-                //}
-                
+                // play all pending drum hits
+                if (drummer.playDrum(drumHits) == false) {
+                    Trace.WriteLine("WARNING: Drummer skipped a drum hit");
+                }
             }
         }
 
@@ -1245,7 +1063,7 @@ namespace Edda {
         private bool addNote(Note n) {
             var insertIndx = 0;
             // check which index to insert the new note at (keep everything in sorted order)
-            foreach (var thisNote in selectedDifficultyNotes) {
+            foreach (var thisNote in currentDifficultyNotes) {
 
                 // no duplicates of the same note
                 if (n.Item1 == thisNote.Item1 && n.Item2 == thisNote.Item2) {
@@ -1260,14 +1078,14 @@ namespace Edda {
             }
 
             // do the inserting
-            selectedDifficultyNotes = selectedDifficultyNotes.Append((0, 0)).ToArray();
+            currentDifficultyNotes = currentDifficultyNotes.Append((0, 0)).ToArray();
             // shift notes across
-            for (var i = selectedDifficultyNotes.Length - 1; i > insertIndx; i--) {
-                selectedDifficultyNotes[i] = selectedDifficultyNotes[i - 1];
+            for (var i = currentDifficultyNotes.Length - 1; i > insertIndx; i--) {
+                currentDifficultyNotes[i] = currentDifficultyNotes[i - 1];
             }
 
             // round off the beat decimal
-            selectedDifficultyNotes[insertIndx] = n;
+            currentDifficultyNotes[insertIndx] = n;
             return true;
             
         }
@@ -1275,7 +1093,7 @@ namespace Edda {
             var removeIndx = 0;
 
             // check which index to insert the new note at (keep everything in sorted order)
-            foreach (var thisNote in selectedDifficultyNotes) {
+            foreach (var thisNote in currentDifficultyNotes) {
                 // no duplicates of the same note
                 if (n.Item1 == thisNote.Item1 && n.Item2 == thisNote.Item2) {
                     break;
@@ -1284,21 +1102,18 @@ namespace Edda {
             }
 
             // note not found
-            if (removeIndx == selectedDifficultyNotes.Length) {
+            if (removeIndx == currentDifficultyNotes.Length) {
                 return false;
             }
 
             // do the removal
             // shift notes across
-            for (var i = removeIndx; i < selectedDifficultyNotes.Length - 1; i++) {
-                selectedDifficultyNotes[i] = selectedDifficultyNotes[i + 1];
+            for (var i = removeIndx; i < currentDifficultyNotes.Length - 1; i++) {
+                currentDifficultyNotes[i] = currentDifficultyNotes[i + 1];
             }
             // remove the last element
-            selectedDifficultyNotes = (Note[]) selectedDifficultyNotes.Take(selectedDifficultyNotes.Length - 1).ToArray();
+            currentDifficultyNotes = (Note[]) currentDifficultyNotes.Take(currentDifficultyNotes.Length - 1).ToArray();
             return true;
-        }
-        private bool noteIsSelected(Note n) {
-            return editorSelectedNotes.Contains(n);
         }
         private void selectNote(Note n) {
             editorSelectedNotes.Add(n);
@@ -1372,7 +1187,7 @@ namespace Edda {
 
         // drawing functions for the editor grid
         private void updateEditorGridHeight() {
-            if (infoStr == null) {
+            if (beatMap == null) {
                 return;
             }
 
@@ -1388,7 +1203,7 @@ namespace Edda {
         }
         private void drawEditorGrid() {
 
-            if (infoStr == null) {
+            if (beatMap == null) {
                 return;
             }
 
@@ -1404,10 +1219,10 @@ namespace Edda {
 
             drawEditorGridLines();
 
-            drawEditorGridNotes(selectedDifficultyNotes);
+            drawEditorGridNotes(currentDifficultyNotes);
 
             // rescan notes after drawing
-            rescanNoteIndex();
+            scanNoteIndex();
         }
         private void drawEditorGridLines() {
             // calculate grid offset: default is 
@@ -1439,27 +1254,23 @@ namespace Edda {
             // TODO: paginate these? they cause lag when resizing
 
             // init drum note image
-            // for some reason, WPF does not display notes in the correct x-position with a Grid Scaling multiplier not equal to 1.
-            // e.g. Canvas.SetLeft(img, 0) leaves a small gap between the left side of the Canvas and the img
-            var unknownNoteXAdjustment = ((unitLength / unitLengthUnscaled - 1) * unitLengthUnscaled / 2);
 
             foreach (var n in notes) {
                 var img = new Image();
-                img.Width = unitLength;
+                img.Width = unitLengthUnscaled;
                 img.Height = unitHeight;
 
                 var noteHeight = n.Item1 * unitLength;
-                var noteXOffset = (1 + 4 * n.Item2) * unitLengthUnscaled / 3;
+                var noteXOffset = (1 + 4 * n.Item2) * unitSubLength;
 
                 // find which beat fraction this note lies on
-                // TODO: find out what runes correspond to 1/3, 1/4 etc beats
                 img.Source = imageGenerator(packUriGenerator(imageForBeat(n.Item1)));
 
                 // this assumes there are no duplicate notes given to us
                 img.Uid = uidGenerator(n);
 
                 Canvas.SetBottom(img, noteHeight);
-                Canvas.SetLeft(img, noteXOffset - unknownNoteXAdjustment);
+                Canvas.SetLeft(img, noteXOffset);
                 EditorGrid.Children.Add(img);
             }
         }
@@ -1472,10 +1283,10 @@ namespace Edda {
             }
         }
 
-        // drag select functions
-
-
         // helper functions
+        private string absPath(string f) {
+            return System.IO.Path.Combine(beatMap.folderPath, f);
+        }
         private bool intRangeCheck(int a, int x, int y) {
             int lower = Math.Min(x, y);
             int higher = Math.Max(x, y);
@@ -1504,20 +1315,6 @@ namespace Edda {
         private string uidGenerator(Note n) {
             return $"Note({n.Item1},{n.Item2})";
         }
-        private string uidHighlightGenerator(Note n) {
-            return $"SelectedNote({n.Item1},{n.Item2})";
-        }
-        private bool uidIsHighlight(string uid) {
-            return uid.StartsWith("SelectedNote");
-        }
-        private Note? noteFromUid(string uid) {
-            try {
-                string[] n = uid.Split("(")[1].Split(")")[0].Split(",");
-                return new Note(double.Parse(n[0]), int.Parse(n[1]));
-            } catch (Exception) {
-                return null;
-            }
-        }
         private Uri packUriGenerator(string fileName) {
             return new Uri($"pack://application:,,,/resources/{fileName}");
         }
@@ -1530,14 +1327,6 @@ namespace Edda {
             b.Freeze();
             return b;
         }
-        private void printNotes() {
-            string output = "Notes: ";
-            foreach (Note n in selectedDifficultyNotes) {
-                output += $"({n.Item1}, {n.Item2}) ";
-            }
-            Trace.WriteLine(output);
-        }
-
     }
 }
 
