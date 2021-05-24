@@ -45,8 +45,8 @@ namespace Edda {
         int      notePollRate         = 15; // ms
         double   noteDetectionDelta   = 15; // ms
         int      defaultGridDivision  = 4;
+        double   initDragThreshold    = 10;
         int defaultEditorAudioLatency = -20; // ms
-
         int defaultNoteJumpMovementSpeed = 15;
         double defaultBPM = 120;
         // int gridRedrawInterval = 200; // ms
@@ -110,17 +110,25 @@ namespace Edda {
         double prevScrollPercent = 0; // percentage of scroll progress before the scroll viewport was changed
 
         // variables used in the map editor
-        Image  imgPreviewNote;
-        bool   editorSnapToGrid;
-        int    editorGridDivision;
-        double editorGridSpacing;
-        double editorGridOffset;
-        int    editorAudioLatency; // in ms
-        double editorDrawRangeLower = 0;
-        double editorDrawRangeHigher = 0;
-        int    editorMouseGridRow;
-        int    editorMouseGridCol;
-        double editorMouseGridRowFractional;
+        Image      imgPreviewNote;
+        List<Note> editorSelectedNotes = new List<Note>();
+        List<Note> editorClipboard = new List<Note>();
+        Border     editorDragSelectBorder;
+        Point      editorDragSelectStart;
+        double     editorRowStart;
+        int        editorColStart;
+        bool       editorIsDragging;
+        bool       editorMouseDown;
+        bool       editorSnapToGrid;
+        int        editorGridDivision;
+        double     editorGridSpacing;
+        double     editorGridOffset;
+        int        editorAudioLatency; // in ms
+        double     editorDrawRangeLower = 0;
+        double     editorDrawRangeHigher = 0;
+        int        editorMouseGridRow;
+        int        editorMouseGridCol;
+        double     editorMouseGridRowFractional;
 
         // variables used to handle drum hits on a separate thread
         int noteScanIndex;
@@ -173,6 +181,7 @@ namespace Edda {
             if (File.Exists(settingsFileName)) {
                 string[] lines = File.ReadAllLines(settingsFileName);
                 foreach (var line in lines) {
+                    // load editorAudioLatency-
                     if (line.StartsWith("editorAudioLatency")) {
                         int latency;
                         if (!int.TryParse(line.Split("=")[1], out latency)) {
@@ -188,6 +197,13 @@ namespace Edda {
                 editorAudioLatency = defaultEditorAudioLatency;
             }
 
+            // init border
+            editorDragSelectBorder = new Border();
+            editorDragSelectBorder.BorderBrush = Brushes.Black;
+            editorDragSelectBorder.BorderThickness = new Thickness(2);
+            editorDragSelectBorder.Background = Brushes.LightBlue;
+            editorDragSelectBorder.Opacity = 0.5;
+            editorDragSelectBorder.Visibility = Visibility.Hidden;
 
             // TODO: properly debounce grid redrawing on resize
             //Observable
@@ -533,17 +549,13 @@ namespace Edda {
                 drawEditorGrid();
             }
         }
-        private void scrollEditor_MouseEnter(object sender, MouseEventArgs e) {
-            imgPreviewNote.Opacity = 0.5;
-        }
         private void scrollEditor_MouseMove(object sender, MouseEventArgs e) {
 
-            // set vertical element
+            // calculate vertical element
             double userOffsetBeat = currentBPM * editorGridOffset / 60;
             double userOffset = userOffsetBeat * unitLength;
             var mousePos = EditorGrid.ActualHeight - e.GetPosition(EditorGrid).Y - unitHeight / 2;
             double gridLength = unitLength / (double)editorGridDivision;
-
             // check if mouse position would correspond to a negative beat index
             if (mousePos < 0) {
                 editorMouseGridRowFractional = - userOffset / gridLength;
@@ -553,13 +565,7 @@ namespace Edda {
                 editorMouseGridRow = (int)Math.Round(editorMouseGridRowFractional, MidpointRounding.AwayFromZero);
             }
 
-            if (editorSnapToGrid) {
-                Canvas.SetBottom(imgPreviewNote, gridLength * editorMouseGridRow + userOffset);
-            } else {
-                Canvas.SetBottom(imgPreviewNote, Math.Max(mousePos, 0));
-            }
-
-            // set horizontal element
+            // calculate horizontal element
             var mouseX = e.GetPosition(EditorGrid).X / unitSubLength;
             if (0 <= mouseX && mouseX <= 4.5) {
                 editorMouseGridCol = 0;
@@ -570,39 +576,109 @@ namespace Edda {
             } else if (12.5 <= mouseX && mouseX <= 17.0) {
                 editorMouseGridCol = 3;
             }
+
+            // place preview note
+            if (editorSnapToGrid) {
+                Canvas.SetBottom(imgPreviewNote, gridLength * editorMouseGridRow + userOffset);
+            } else {
+                Canvas.SetBottom(imgPreviewNote, Math.Max(mousePos, 0));
+            }
             var unknownNoteXAdjustment = ((unitLength / unitLengthUnscaled - 1) * unitLengthUnscaled / 2);
             var unitSubLengthOffset = 1 + 4 * (editorMouseGridCol);
             double beat = editorMouseGridRow / (double)editorGridDivision + userOffsetBeat;
             imgPreviewNote.Source = imageGenerator(packUriGenerator(imageForBeat(beat)));
             Canvas.SetLeft(imgPreviewNote, (unitSubLengthOffset * unitSubLength) - unknownNoteXAdjustment);
+
+            // calculate drag stuff
+            if (editorIsDragging) {
+                updateDragSelection(e.GetPosition(EditorGrid));
+            } else if (editorMouseDown) {
+                Vector delta = e.GetPosition(EditorGrid) - editorDragSelectStart;
+                if (delta.Length > initDragThreshold) {
+                    imgPreviewNote.Opacity = 0;
+                    editorIsDragging = true;
+                    editorDragSelectBorder.Visibility = Visibility.Visible;
+                    updateDragSelection(e.GetPosition(EditorGrid));
+                }
+            
+            }  
+        }
+        private void scrollEditor_MouseEnter(object sender, MouseEventArgs e) {
+            imgPreviewNote.Opacity = 0.5;
         }
         private void scrollEditor_MouseLeave(object sender, MouseEventArgs e) {
             imgPreviewNote.Opacity = 0;
+        }
+        private void scrollEditor_PreviewMouseLeftButtonDown(object sender, MouseButtonEventArgs e) {
+            editorMouseDown = true;
+            editorDragSelectStart = e.GetPosition(EditorGrid);
+            editorRowStart = editorMouseGridRowFractional;
+            editorColStart = editorMouseGridCol;
+            EditorGrid.CaptureMouse();
         }
         private void scrollEditor_MouseLeftButtonUp(object sender, MouseButtonEventArgs e) {
             double userOffsetBeat = currentBPM * editorGridOffset / 60;
             double beat = editorMouseGridRow / (double)editorGridDivision + userOffsetBeat;
             double beatFractional = editorMouseGridRowFractional / (double)editorGridDivision + userOffsetBeat;
-            //Trace.WriteLine($"Row: {editorMouseGridRow} ({Math.Round(editorMouseGridRowFractional, 2)}), Col: {editorMouseGridCol}, Beat: {beat} ({beatFractional})");
 
-            // TODO: check if note exists
+            if (editorIsDragging) {
+                int editorColEnd = editorMouseGridCol;
+                double endBeatFractional = beatFractional;
+                double startBeatFractional = editorRowStart / (double)editorGridDivision + userOffsetBeat;
+                editorDragSelectBorder.Visibility = Visibility.Hidden;
+                imgPreviewNote.Opacity = 0.5;
+                List<Note> list = new List<Note>();
+                // calculate new selections
+                foreach (Note n in selectedDifficultyNotes) {
+                    // minor optimisation
+                    if (n.Item1 > Math.Max(startBeatFractional, endBeatFractional)) {
+                        break;
+                    }
+                    // check range
+                    if (doubleRangeCheck(n.Item1, startBeatFractional, endBeatFractional) && intRangeCheck(n.Item2, editorColStart, editorColEnd)) {
+                        list.Add(n);
+                    }
+                }
+                newNoteSelection(list);
+            } else {
+                //Trace.WriteLine($"Row: {editorMouseGridRow} ({Math.Round(editorMouseGridRowFractional, 2)}), Col: {editorMouseGridCol}, Beat: {beat} ({beatFractional})");
 
-            // add the note
-            Note n;
-            n.Item1 = (editorSnapToGrid) ? beat : beatFractional;
-            n.Item2 = editorMouseGridCol;
-            addNote(n);
+                // create the note
+                Note n;
+                n.Item1 = (editorSnapToGrid) ? beat : beatFractional;
+                n.Item2 = editorMouseGridCol;
 
-            // draw the added notes
-            // note: by drawing this note out of order, it is inconsistently layered with other notes.
-            //       should we take the performance hit of redrawing the entire grid for visual consistency?
-            Note[] notesToDraw = {n};
-            drawEditorGridNotes(notesToDraw);
+                // check if note exists
+                bool noteExists = false;
+                foreach (Note m in selectedDifficultyNotes) {
+                    if (m == n) {
+                        noteExists = true;
+                    }
+                }
 
-            // save new note data
-            ;
+                if (noteExists) {
+                    if (noteIsSelected(n)) {
+                        unselectNote(n);
+                    } else {
+                        newNoteSelection(new List<Note>() { n });
+                    }         
+                } else {
 
-            //printNotes();
+                    // add note
+                    addNote(n);
+
+                    // draw the added notes
+                    // note: by drawing this note out of order, it is inconsistently layered with other notes.
+                    //       should we take the performance hit of redrawing the entire grid for visual consistency?
+                    Note[] notesToDraw = { n };
+                    drawEditorGridNotes(notesToDraw);
+
+                    //printNotes();
+                }
+            }
+            EditorGrid.ReleaseMouseCapture();
+            editorIsDragging = false;
+            editorMouseDown = false;
         }
         private void scrollEditor_MouseRightButtonUp(object sender, MouseButtonEventArgs e) {
             double userOffsetBeat = currentBPM * editorGridOffset / 60;
@@ -620,6 +696,9 @@ namespace Edda {
             undrawEditorGridNote(uidGenerator(n));
 
             //printNotes();
+        }
+        private void scrollEditor_KeyDown(object sender, KeyEventArgs e) {
+            Trace.WriteLine(e.Key);
         }
         private void checkGridSnap_Click(object sender, RoutedEventArgs e) {
             //editorSnapToGrid = (checkGridSnap.IsChecked == true);
@@ -706,7 +785,7 @@ namespace Edda {
             BitmapImage b = imageGenerator(packUriGenerator("rune1.png"));
             imgPreviewNote = new Image();
             imgPreviewNote.Source = b;
-            imgPreviewNote.Opacity = 0.5;
+            imgPreviewNote.Opacity = 0.25;
             imgPreviewNote.Width = unitLength;
             imgPreviewNote.Height = unitHeight;
             EditorGrid.Children.Add(imgPreviewNote);
@@ -1212,9 +1291,80 @@ namespace Edda {
             selectedDifficultyNotes = (Note[]) selectedDifficultyNotes.Take(selectedDifficultyNotes.Length - 1).ToArray();
             return true;
         }
+        private bool noteIsSelected(Note n) {
+            return editorSelectedNotes.Contains(n);
+        }
+        private void selectNote(Note n) {
+            editorSelectedNotes.Add(n);
+            var bitmapSel = imageGenerator(packUriGenerator("runeHighlight.png"));
+            // draw highlighted note
+            var img = new Image();
+            foreach (UIElement e in EditorGrid.Children) {
+                if (e.Uid == uidGenerator(n)) {
+                    //img.Width = unitLength;
+                    //img.Height = unitHeight;
+                    //img.Source = bitmapSel;
+                    //img.Uid = uidHighlightGenerator(n);
+                    //Canvas.SetLeft(img, Canvas.GetLeft(e));
+                    //Canvas.SetTop(img, Canvas.GetTop(e));
+                    e.Opacity = 0.5;
+                }
+            }
+            //if (img.Width != 0) {
+            //    EditorGrid.Children.Add(img);
+            //}
+        }
+        private void newNoteSelection(List<Note> list) {
+            unselectAllNotes();
+            foreach (Note n in list) {
+                selectNote(n);
+            }
+        }
+        private void unselectNote(Note n) {
+            if (editorSelectedNotes == null) {
+                return;
+            }
+            editorSelectedNotes.Remove(n);
+            foreach (UIElement e in EditorGrid.Children) {
+                if (e.Uid == uidGenerator(n)) {
+                    //EditorGrid.Children.Remove(e);
+                    e.Opacity = 1;
+                }
+            }
+        }
+        private void unselectAllNotes() {
+            if (editorSelectedNotes == null) {
+                return;
+            }
+            //List<UIElement> pendingRemoves = new List<UIElement>();
+            foreach (Note n in editorSelectedNotes) {
+                foreach (UIElement e in EditorGrid.Children) {
+                    if (e.Uid == uidGenerator(n)) {
+                        //pendingRemoves.Add(e);
+                        e.Opacity = 1;
+                    }
+                }
+            }
+            //foreach (UIElement e in pendingRemoves) {
+            //    EditorGrid.Children.Remove(e);
+            //}
+            editorSelectedNotes.Clear();
+        }
+        private void updateDragSelection(Point newPoint) {
+            Point p1;
+            p1.X = Math.Min(newPoint.X, editorDragSelectStart.X);
+            p1.Y = Math.Min(newPoint.Y, editorDragSelectStart.Y);
+            Point p2;
+            p2.X = Math.Max(newPoint.X, editorDragSelectStart.X);
+            p2.Y = Math.Max(newPoint.Y, editorDragSelectStart.Y);
+            Vector delta = p2 - p1;
+            Canvas.SetLeft(editorDragSelectBorder, p1.X);
+            Canvas.SetTop(editorDragSelectBorder, p1.Y);
+            editorDragSelectBorder.Width = delta.X;
+            editorDragSelectBorder.Height = delta.Y;
+        }
 
         // drawing functions for the editor grid
-
         private void updateEditorGridHeight() {
             if (infoStr == null) {
                 return;
@@ -1240,6 +1390,7 @@ namespace Edda {
 
             EditorGrid.Children.Clear();
             EditorGrid.Children.Add(imgPreviewNote);
+            EditorGrid.Children.Add(editorDragSelectBorder);
 
             // calculate new drawn ranges for pagination, if we need it...
             //editorDrawRangeLower  = Math.Max(editorScrollPosition -     (gridDrawRange) * scrollEditor.ActualHeight, 0                      );
@@ -1315,7 +1466,20 @@ namespace Edda {
             }
         }
 
+        // drag select functions
+
+
         // helper functions
+        private bool intRangeCheck(int a, int x, int y) {
+            int lower = Math.Min(x, y);
+            int higher = Math.Max(x, y);
+            return (lower <= a && a <= higher);
+        }
+        private bool doubleRangeCheck(double a, double x, double y) {
+            double lower = Math.Min(x, y);
+            double higher = Math.Max(x, y);
+            return (lower <= a && a <= higher);
+        }
         private bool approximatelyEqual(double x, double y, double delta) {
             return Math.Abs(x - y) < delta;
         }
@@ -1333,6 +1497,20 @@ namespace Edda {
         }
         private string uidGenerator(Note n) {
             return $"Note({n.Item1},{n.Item2})";
+        }
+        private string uidHighlightGenerator(Note n) {
+            return $"SelectedNote({n.Item1},{n.Item2})";
+        }
+        private bool uidIsHighlight(string uid) {
+            return uid.StartsWith("SelectedNote");
+        }
+        private Note? noteFromUid(string uid) {
+            try {
+                string[] n = uid.Split("(")[1].Split(")")[0].Split(",");
+                return new Note(double.Parse(n[0]), int.Parse(n[1]));
+            } catch (Exception) {
+                return null;
+            }
         }
         private Uri packUriGenerator(string fileName) {
             return new Uri($"pack://application:,,,/resources/{fileName}");
@@ -1353,6 +1531,7 @@ namespace Edda {
             }
             Trace.WriteLine(output);
         }
+
     }
 }
 

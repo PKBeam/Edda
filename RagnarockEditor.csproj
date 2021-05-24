@@ -30,6 +30,7 @@
     <None Remove="Resources\rune14.png" />
     <None Remove="Resources\rune23.png" />
     <None Remove="Resources\rune34.png" />
+    <None Remove="Resources\runeHighlight.png" />
     <None Remove="Resources\runeX.png" />
     <None Remove="Resources\saveMap.png" />
     <None Remove="Resources\waterTexture.png" />
@@ -76,6 +77,7 @@
     <Resource Include="Resources\rune14.png" />
     <Resource Include="Resources\rune23.png" />
     <Resource Include="Resources\rune34.png" />
+    <Resource Include="Resources\runeHighlight.png" />
     <Resource Include="Resources\runeX.png" />
     <Resource Include="Resources\saveMap.png" />
     <Resource Include="Resources\waterTexture.png" />

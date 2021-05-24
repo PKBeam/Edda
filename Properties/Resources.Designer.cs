@@ -269,6 +269,16 @@ namespace Edda.Properties {
         /// <summary>
         ///   Looks up a localized resource of type System.Drawing.Bitmap.
         /// </summary>
+        internal static System.Drawing.Bitmap runeHighlight {
+            get {
+                object obj = ResourceManager.GetObject("runeHighlight", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Drawing.Bitmap.
+        /// </summary>
         internal static System.Drawing.Bitmap runeX {
             get {
                 object obj = ResourceManager.GetObject("runeX", resourceCulture);
