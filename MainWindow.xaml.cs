@@ -48,7 +48,7 @@ namespace Edda {
         double   initDragThreshold    = 10;
         int defaultEditorAudioLatency = -20; // ms
         int defaultNoteJumpMovementSpeed = 15;
-        double defaultBPM = 120;
+
         // int gridRedrawInterval = 200; // ms
         // double   gridDrawRange = 1;
 
@@ -97,6 +97,7 @@ namespace Edda {
             get { return double.Parse((string)getValInfoDat("_beatsPerMinute")); }
         }
 
+        RagnarockMap beatMap;
         int numDifficulties {
            get {
                 var obj = JObject.Parse(infoStr);
@@ -263,13 +264,15 @@ namespace Edda {
                 return;
             }
 
-            // init info.dat json
-            initialiseInfoDat();
-
             // select audio file
             if (!changeSong()) {
                 return;
             }
+
+            beatMap = new RagnarockMap(d2.FileName, true);
+
+            // init info.dat json
+            initialiseInfoDat();
 
             // init first difficulty map
             addDifficulty(difficultyNames[0]);
@@ -301,6 +304,9 @@ namespace Edda {
             // check folder is OK
 
             // load info
+
+            beatMap = new RagnarockMap(d2.FileName, false);
+
             saveFolder = d2.FileName;
 
             readInfoStr();
