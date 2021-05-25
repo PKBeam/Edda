@@ -229,9 +229,29 @@ namespace Edda.Properties {
         /// <summary>
         ///   Looks up a localized resource of type System.Drawing.Bitmap.
         /// </summary>
+        internal static System.Drawing.Bitmap rune12highlight {
+            get {
+                object obj = ResourceManager.GetObject("rune12highlight", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Drawing.Bitmap.
+        /// </summary>
         internal static System.Drawing.Bitmap rune13 {
             get {
                 object obj = ResourceManager.GetObject("rune13", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Drawing.Bitmap.
+        /// </summary>
+        internal static System.Drawing.Bitmap rune13highlight {
+            get {
+                object obj = ResourceManager.GetObject("rune13highlight", resourceCulture);
                 return ((System.Drawing.Bitmap)(obj));
             }
         }
@@ -249,9 +269,39 @@ namespace Edda.Properties {
         /// <summary>
         ///   Looks up a localized resource of type System.Drawing.Bitmap.
         /// </summary>
+        internal static System.Drawing.Bitmap rune14highlight {
+            get {
+                object obj = ResourceManager.GetObject("rune14highlight", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Drawing.Bitmap.
+        /// </summary>
+        internal static System.Drawing.Bitmap rune1highlight {
+            get {
+                object obj = ResourceManager.GetObject("rune1highlight", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Drawing.Bitmap.
+        /// </summary>
         internal static System.Drawing.Bitmap rune23 {
             get {
                 object obj = ResourceManager.GetObject("rune23", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Drawing.Bitmap.
+        /// </summary>
+        internal static System.Drawing.Bitmap rune23highlight {
+            get {
+                object obj = ResourceManager.GetObject("rune23highlight", resourceCulture);
                 return ((System.Drawing.Bitmap)(obj));
             }
         }
@@ -269,9 +319,9 @@ namespace Edda.Properties {
         /// <summary>
         ///   Looks up a localized resource of type System.Drawing.Bitmap.
         /// </summary>
-        internal static System.Drawing.Bitmap runeHighlight {
+        internal static System.Drawing.Bitmap rune34highlight {
             get {
-                object obj = ResourceManager.GetObject("runeHighlight", resourceCulture);
+                object obj = ResourceManager.GetObject("rune34highlight", resourceCulture);
                 return ((System.Drawing.Bitmap)(obj));
             }
         }
@@ -282,6 +332,16 @@ namespace Edda.Properties {
         internal static System.Drawing.Bitmap runeX {
             get {
                 object obj = ResourceManager.GetObject("runeX", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Drawing.Bitmap.
+        /// </summary>
+        internal static System.Drawing.Bitmap runeXhighlight {
+            get {
+                object obj = ResourceManager.GetObject("runeXhighlight", resourceCulture);
                 return ((System.Drawing.Bitmap)(obj));
             }
         }

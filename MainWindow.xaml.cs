@@ -74,6 +74,22 @@ namespace Edda {
             get { return double.Parse((string)beatMap.getValue("_beatsPerMinute")); }
         }
 
+        // store images for drawing runes
+        BitmapImage rune1;
+        BitmapImage rune12;
+        BitmapImage rune13;
+        BitmapImage rune14;
+        BitmapImage rune23;
+        BitmapImage rune34;
+        BitmapImage runeX;
+
+        BitmapImage rune1highlight;
+        BitmapImage rune12highlight;
+        BitmapImage rune13highlight;
+        BitmapImage rune14highlight;
+        BitmapImage rune23highlight;
+        BitmapImage rune34highlight;
+        BitmapImage runeXhighlight;
 
         // STATE VARIABLES
 
@@ -194,10 +210,26 @@ namespace Edda {
             editorDragSelectBorder.Opacity = 0.5;
             editorDragSelectBorder.Visibility = Visibility.Hidden;
 
+            // load bitmaps
+            rune1  = bitmapGenerator("rune1.png");
+            rune12 = bitmapGenerator("rune12.png");
+            rune13 = bitmapGenerator("rune13.png");
+            rune14 = bitmapGenerator("rune14.png");
+            rune23 = bitmapGenerator("rune23.png");
+            rune34 = bitmapGenerator("rune34.png");
+            runeX  = bitmapGenerator("runeX.png");
+
+            rune1highlight  = bitmapGenerator("rune1highlight.png");
+            rune12highlight = bitmapGenerator("rune12highlight.png");
+            rune13highlight = bitmapGenerator("rune13highlight.png");
+            rune14highlight = bitmapGenerator("rune14highlight.png");
+            rune23highlight = bitmapGenerator("rune23highlight.png");
+            rune34highlight = bitmapGenerator("rune34highlight.png");
+            runeXhighlight  = bitmapGenerator("runeXhighlight.png");
+
             // load editor preview
-            BitmapImage b = imageGenerator(packUriGenerator("rune1.png"));
             imgPreviewNote = new Image();
-            imgPreviewNote.Source = b;
+            imgPreviewNote.Source = rune1;
             imgPreviewNote.Opacity = 0.25;
             imgPreviewNote.Width = unitLength;
             imgPreviewNote.Height = unitHeight;
@@ -640,7 +672,7 @@ namespace Edda {
             var unknownNoteXAdjustment = ((unitLength / unitLengthUnscaled - 1) * unitLengthUnscaled / 2);
 
             double beat = editorMouseGridRow / (double)editorGridDivision + userOffsetBeat;
-            imgPreviewNote.Source = imageGenerator(packUriGenerator(imageForBeat(beat)));
+            imgPreviewNote.Source = bitmapImageForBeat(beat);
             Canvas.SetLeft(imgPreviewNote, noteX - unknownNoteXAdjustment);
 
             // calculate drag stuff
@@ -701,11 +733,15 @@ namespace Edda {
 
                 if (currentDifficultyNotes.Contains(n)) {
                     var isSelected = editorSelectedNotes.Contains(n);
-                    if (shiftKeyDown && isSelected) {
-                        unselectNote(n);
-                    } else if (!isSelected) {
-                        newNoteSelection(new List<Note>() { n });
-                    }         
+                    if (shiftKeyDown) {
+                        if (isSelected) {
+                            unselectNote(n);
+                        } else {
+                            selectNote(n);
+                        }
+                    } else {
+                        newNoteSelection(n);
+                    }      
                 } else {
                     addNote(n);
                 }
@@ -718,7 +754,11 @@ namespace Edda {
             // remove the note
             double row = (editorSnapToGrid) ? (editorMouseGridRow) : (editorMouseGridRowFractional);
             Note n = new Note(beatForRow(row), editorMouseGridCol);
-            removeNote(n);
+            if (currentDifficultyNotes.Contains(n)) {
+                removeNote(n);
+            } else {
+                unselectAllNotes();
+            }
         }
 
         //private void checkGridSnap_Click(object sender, RoutedEventArgs e) {
@@ -798,7 +838,7 @@ namespace Edda {
         // manage cover image
         private void loadCoverImage() {
             var fileName = (string)beatMap.getValue("_coverImageFilename");
-            BitmapImage b = imageGenerator(new Uri(absPath(fileName)));
+            BitmapImage b = bitmapGenerator(new Uri(absPath(fileName)));
             imgCover.Source = b;
             txtCoverFileName.Text = fileName;
         }
@@ -923,7 +963,7 @@ namespace Edda {
         }
         private void playSong() {
             songIsPlaying = true;
-            imgPlayerButton.Source = imageGenerator(packUriGenerator("pauseButton.png"));
+            imgPlayerButton.Source = bitmapGenerator("pauseButton.png");
             // disable some UI elements for performance reasons
             // song/note playback gets desynced if these are changed during playback
             // TODO: fix this?
@@ -974,7 +1014,7 @@ namespace Edda {
         }
         private void pauseSong() {
             songIsPlaying = false;
-            imgPlayerButton.Source = imageGenerator(packUriGenerator("playButton.png"));
+            imgPlayerButton.Source = bitmapGenerator("playButton.png");
 
             // reset note scan
             noteScanTokenSource.Cancel();
@@ -1072,8 +1112,7 @@ namespace Edda {
             // draw the added notes
             // note: by drawing this note out of order, it is inconsistently layered with other notes.
             //       should we take the performance hit of redrawing the entire grid for visual consistency?
-            List<Note> notesToDraw = new List<Note>() { n };
-            drawEditorGridNotes(notesToDraw);
+            drawEditorGridNotes(n);
         }
         private void removeNote(Note n) {
             currentDifficultyNotes.Remove(n);
@@ -1082,31 +1121,24 @@ namespace Edda {
             undrawEditorGridNote(n);
         }
         private void selectNote(Note n) {
-            // TODO: insert in sorted order
-            editorSelectedNotes.Add(n);
-            var bitmapSel = imageGenerator(packUriGenerator("runeHighlight.png"));
+            insertSortedUnique(editorSelectedNotes, n);
+
             // draw highlighted note
-            var img = new Image();
             foreach (UIElement e in EditorGrid.Children) {
                 if (e.Uid == uidGenerator(n)) {
-                    //img.Width = unitLength;
-                    //img.Height = unitHeight;
-                    //img.Source = bitmapSel;
-                    //img.Uid = uidHighlightGenerator(n);
-                    //Canvas.SetLeft(img, Canvas.GetLeft(e));
-                    //Canvas.SetTop(img, Canvas.GetTop(e));
-                    e.Opacity = 0.5;
+                    var img = (Image)e;
+                    img.Source = bitmapImageForBeat(n.Item1, true);
                 }
             }
-            //if (img.Width != 0) {
-            //    EditorGrid.Children.Add(img);
-            //}
         }
         private void newNoteSelection(List<Note> list) {
             unselectAllNotes();
             foreach (Note n in list) {
                 selectNote(n);
             }
+        }
+        private void newNoteSelection(Note n) {
+            newNoteSelection(new List<Note>() { n });
         }
         private void unselectNote(Note n) {
             if (editorSelectedNotes == null) {
@@ -1115,8 +1147,8 @@ namespace Edda {
             editorSelectedNotes.Remove(n);
             foreach (UIElement e in EditorGrid.Children) {
                 if (e.Uid == uidGenerator(n)) {
-                    //EditorGrid.Children.Remove(e);
-                    e.Opacity = 1;
+                    var img = (Image)e;
+                    img.Source = bitmapImageForBeat(n.Item1);
                 }
             }
         }
@@ -1124,18 +1156,14 @@ namespace Edda {
             if (editorSelectedNotes == null) {
                 return;
             }
-            //List<UIElement> pendingRemoves = new List<UIElement>();
             foreach (Note n in editorSelectedNotes) {
                 foreach (UIElement e in EditorGrid.Children) {
                     if (e.Uid == uidGenerator(n)) {
-                        //pendingRemoves.Add(e);
-                        e.Opacity = 1;
+                        var img = (Image)e;
+                        img.Source = bitmapImageForBeat(n.Item1);
                     }
                 }
             }
-            //foreach (UIElement e in pendingRemoves) {
-            //    EditorGrid.Children.Remove(e);
-            //}
             editorSelectedNotes.Clear();
         }
         private void copyNotes() {
@@ -1245,7 +1273,7 @@ namespace Edda {
                 var noteXOffset = (1 + 4 * n.Item2) * unitSubLength;
 
                 // find which beat fraction this note lies on
-                img.Source = imageGenerator(packUriGenerator(imageForBeat(n.Item1)));
+                img.Source = bitmapImageForBeat(n.Item1);
 
                 // this assumes there are no duplicate notes given to us
                 img.Uid = uidGenerator(n);
@@ -1254,6 +1282,9 @@ namespace Edda {
                 Canvas.SetLeft(img, noteXOffset);
                 EditorGrid.Children.Add(img);
             }
+        }
+        private void drawEditorGridNotes(Note n) {
+            drawEditorGridNotes(new List<Note>() { n });
         }
         private void undrawEditorGridNote(Note n) {
             var nUid = uidGenerator(n);
@@ -1294,17 +1325,20 @@ namespace Edda {
         private bool approximatelyEqual(double x, double y, double delta) {
             return Math.Abs(x - y) < delta;
         }
-        private string imageForBeat(double beat) {
+        private BitmapImage bitmapImageForBeat(double beat, bool highlight) {
             var fracBeat = beat - (int)beat;
             switch (Math.Round(fracBeat, 5)) {
-                case 0:       return "rune1.png";
-                case 0.25:    return "rune14.png";
-                case 0.33333: return "rune13.png";
-                case 0.5:     return "rune12.png";
-                case 0.66667: return "rune23.png";
-                case 0.75:    return "rune34.png";
-                default:      return "runeX.png";
+                case 0:       return (highlight) ? rune1highlight  : rune1 ; 
+                case 0.25:    return (highlight) ? rune14highlight : rune14; 
+                case 0.33333: return (highlight) ? rune13highlight : rune13; 
+                case 0.5:     return (highlight) ? rune12highlight : rune12; 
+                case 0.66667: return (highlight) ? rune23highlight : rune23; 
+                case 0.75:    return (highlight) ? rune34highlight : rune34; 
+                default:      return (highlight) ? runeXhighlight  : runeX ;
             }
+        }
+        private BitmapImage bitmapImageForBeat(double beat) {
+            return bitmapImageForBeat(beat, false);
         }
         private string uidGenerator(Note n) {
             return $"Note({n.Item1},{n.Item2})";
@@ -1312,10 +1346,19 @@ namespace Edda {
         private Uri packUriGenerator(string fileName) {
             return new Uri($"pack://application:,,,/resources/{fileName}");
         }
-        private BitmapImage imageGenerator(Uri u) {
+        private BitmapImage bitmapGenerator(Uri u) {
             var b = new BitmapImage();
             b.BeginInit();
             b.UriSource = u;
+            b.CacheOption = BitmapCacheOption.OnLoad;
+            b.EndInit();
+            b.Freeze();
+            return b;
+        }
+        private BitmapImage bitmapGenerator(string file) {
+            var b = new BitmapImage();
+            b.BeginInit();
+            b.UriSource = packUriGenerator(file);
             b.CacheOption = BitmapCacheOption.OnLoad;
             b.EndInit();
             b.Freeze();
@@ -1342,9 +1385,3 @@ namespace Edda {
         }
     }
 }
-
-
-
-
-
-
