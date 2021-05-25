@@ -177,11 +177,11 @@ public class RagnarockMap {
         var beatmaps = (JArray)obj["_difficultyBeatmapSets"][0]["_difficultyBeatmaps"];
         beatmaps.RemoveAt(indx);
         infoStr = JsonConvert.SerializeObject(obj, Formatting.Indented);
-        renameDifficultyMap();
+        renameDifficultyMaps();
         writeInfo();
         //writeDifficultyMap(indx);
     }
-    public void renameDifficultyMap() {
+    private void renameDifficultyMaps() {
         for (int i = 0; i < numDifficulties; i++) {
             var oldFile = (string)getValueForDifficultyMap("_beatmapFilename", i);
             File.Move(absPath(oldFile), absPath($"{difficultyNames[i]}_temp.dat"));
@@ -192,21 +192,19 @@ public class RagnarockMap {
             File.Move(absPath($"{difficultyNames[i]}_temp.dat"), absPath($"{difficultyNames[i]}.dat"));
         }
     }
-    public Note[] getNotesForMap(int indx) {
+    public List<Note> getNotesForMap(int indx) {
         var obj = JObject.Parse(difficultyMaps[indx]);
         var res = obj["_notes"];
-        Note[] output = new Note[res.Count()];
-        var i = 0;
+        List<Note> output = new List<Note>();
         foreach (JToken n in res) {
             double time = double.Parse((string)n["_time"]);
             int colIndex = int.Parse((string)n["_lineIndex"]);
-            output[i] = (time, colIndex);
-            i++;
+            output.Add((time, colIndex));
         }
         return output;
     }
-    public void setNotesForMap(Note[] notes, int indx) {
-        var numNotes = notes.Length;
+    public void setNotesForMap(List<Note> notes, int indx) {
+        var numNotes = notes.Count;
         var notesObj = new Object[numNotes];
         for (int i = 0; i < numNotes; i++) {
             var thisNote = notes[i];

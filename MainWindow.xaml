@@ -4,7 +4,7 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         mc:Ignorable="d"
-        x:Name="AppMainWindow" Title="Edda" Height="780" Width="800" MinWidth="800" Closed="AppMainWindow_Closed">
+        x:Name="AppMainWindow" Title="Edda" Height="780" Width="800" MinWidth="800" Closed="AppMainWindow_Closed" KeyDown="AppMainWindow_KeyDown" KeyUp="AppMainWindow_KeyUp">
     <DockPanel>
         <Border DockPanel.Dock="Top" BorderBrush="{DynamicResource {x:Static SystemColors.ControlDarkDarkBrushKey}}" BorderThickness="0, 0, 0, 2">
             <Border.Background>
@@ -386,7 +386,7 @@
                 <Image Grid.Column="7" Source="pack://application:,,,/Edda;component/resources/drum.png" Name="Drum4" VerticalAlignment="Bottom"/>
             </Grid>
             <!-- Map Notes -->
-            <ScrollViewer x:Name="scrollEditor" VerticalScrollBarVisibility="Hidden" CanContentScroll="False" ScrollChanged="scrollEditor_ScrollChanged" PreviewMouseWheel="scrollEditor_PreviewMouseWheel" SizeChanged="scrollEditor_SizeChanged" MouseMove="scrollEditor_MouseMove" MouseLeave="scrollEditor_MouseLeave" MouseEnter="scrollEditor_MouseEnter" MouseLeftButtonUp="scrollEditor_MouseLeftButtonUp" MouseRightButtonUp="scrollEditor_MouseRightButtonUp" PreviewMouseLeftButtonDown="scrollEditor_PreviewMouseLeftButtonDown" KeyDown="scrollEditor_KeyDown">
+            <ScrollViewer x:Name="scrollEditor" VerticalScrollBarVisibility="Hidden" CanContentScroll="False" ScrollChanged="scrollEditor_ScrollChanged" PreviewMouseWheel="scrollEditor_PreviewMouseWheel" SizeChanged="scrollEditor_SizeChanged" MouseMove="scrollEditor_MouseMove" MouseLeave="scrollEditor_MouseLeave" MouseEnter="scrollEditor_MouseEnter" MouseLeftButtonUp="scrollEditor_MouseLeftButtonUp" MouseRightButtonUp="scrollEditor_MouseRightButtonUp" PreviewMouseLeftButtonDown="scrollEditor_PreviewMouseLeftButtonDown">
                 <Canvas x:Name="EditorGrid" SizeChanged="EditorGrid_SizeChanged"/>
             </ScrollViewer>
         </Grid>
