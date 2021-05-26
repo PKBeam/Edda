@@ -18,6 +18,7 @@ using NAudio.Wave;
 using NAudio.Wave.SampleProviders;
 using NAudio.Vorbis;
 using System.Reactive.Linq;
+using System.Globalization;
 
 namespace Edda {
     /// <summary>
@@ -69,7 +70,7 @@ namespace Edda {
             get { return (int)btnSongPlayer.Tag == 1; }
         }
         double currentBPM {
-            get { return double.Parse((string)beatMap.getValue("_beatsPerMinute")); }
+            get { return doubleParseInvariant((string)beatMap.getValue("_beatsPerMinute")); }
         }
 
         // store images for drawing runes
@@ -511,7 +512,7 @@ namespace Edda {
         }
         private void txtSongBPM_LostFocus(object sender, RoutedEventArgs e) {
             double BPM;
-            double prevBPM = double.Parse((string)beatMap.getValue("_beatsPerMinute"));
+            double prevBPM = doubleParseInvariant((string)beatMap.getValue("_beatsPerMinute"));
             if (double.TryParse(txtSongBPM.Text, out BPM)) {
                 if (BPM != prevBPM) {
                     beatMap.setValue("_beatsPerMinute", BPM);
@@ -527,7 +528,7 @@ namespace Edda {
         }
         private void txtSongOffset_LostFocus(object sender, RoutedEventArgs e) {
             double offset;
-            double prevOffset = double.Parse((string)beatMap.getValue("_songTimeOffset"));
+            double prevOffset = doubleParseInvariant((string)beatMap.getValue("_songTimeOffset"));
             if (double.TryParse(txtSongOffset.Text, out offset)) {
                 beatMap.setValue("_songTimeOffset", offset);
             } else {
@@ -568,7 +569,7 @@ namespace Edda {
             txtNoteSpeed.Text = speed.ToString();
         }
         private void txtGridOffset_LostFocus(object sender, RoutedEventArgs e) {
-            double prevOffset = double.Parse((string)beatMap.getCustomValueForDifficultyMap("_editorOffset", currentDifficulty));
+            double prevOffset = doubleParseInvariant((string)beatMap.getCustomValueForDifficultyMap("_editorOffset", currentDifficulty));
             double offset;
             if (double.TryParse(txtGridOffset.Text, out offset)) {
                 if (offset != prevOffset) {
@@ -594,7 +595,7 @@ namespace Edda {
             txtGridOffset.Text = offset.ToString();
         }
         private void txtGridSpacing_LostFocus(object sender, RoutedEventArgs e) {
-            double prevSpacing = double.Parse((string)beatMap.getCustomValueForDifficultyMap("_editorGridSpacing", currentDifficulty));
+            double prevSpacing = doubleParseInvariant((string)beatMap.getCustomValueForDifficultyMap("_editorGridSpacing", currentDifficulty));
             double spacing;
             if (double.TryParse(txtGridSpacing.Text, out spacing)) {
                 if (spacing != prevSpacing) {
@@ -922,8 +923,8 @@ namespace Edda {
 
             // set internal values
             editorGridDivision = int.Parse(txtGridDivision.Text);
-            editorGridSpacing = double.Parse(txtGridSpacing.Text);
-            editorGridOffset = double.Parse(txtGridOffset.Text);
+            editorGridSpacing = doubleParseInvariant(txtGridSpacing.Text);
+            editorGridOffset = doubleParseInvariant(txtGridOffset.Text);
 
             enableDifficultyButtons();
             drawEditorGrid();
@@ -1385,6 +1386,9 @@ namespace Edda {
         }
 
         // helper functions
+        private double doubleParseInvariant(string s) {
+            return double.Parse(s, CultureInfo.InvariantCulture);
+        }
         private double beatForRow(double row) {
             double userOffsetBeat = currentBPM * editorGridOffset / 60;
             return row / (double)editorGridDivision + userOffsetBeat;

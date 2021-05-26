@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using Newtonsoft.Json;
@@ -209,7 +210,7 @@ public class RagnarockMap {
         var res = obj["_notes"];
         List<Note> output = new List<Note>();
         foreach (JToken n in res) {
-            double time = double.Parse((string)n["_time"]);
+            double time = double.Parse((string)n["_time"], CultureInfo.InvariantCulture);
             int colIndex = int.Parse((string)n["_lineIndex"]);
             output.Add((time, colIndex));
         }
