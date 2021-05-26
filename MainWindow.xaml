@@ -271,7 +271,7 @@
                         </Border>
 
                         <Border Grid.Row="5" Grid.Column="0">
-                            <TextBlock VerticalAlignment="Center">Drum Volume</TextBlock>
+                            <TextBlock VerticalAlignment="Center">Note Volume</TextBlock>
                         </Border>
 
                         <Border Grid.Row="5" Grid.Column="1">

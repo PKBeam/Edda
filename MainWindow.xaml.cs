@@ -27,6 +27,7 @@ namespace Edda {
     /// 
 
     using Note = ValueTuple<double, int>;
+    using Pen = System.Drawing.Pen;
 
     public partial class MainWindow : Window {
 
@@ -870,7 +871,8 @@ namespace Edda {
             scrollEditor.IsEnabled = true;
 
             // init difficulty-specific UI 
-            switchDifficultyMap(currentDifficulty);
+            switchDifficultyMap(currentDifficulty, false);
+
 
             updateEditorGridHeight();
             scrollEditor.ScrollToBottom();
@@ -911,7 +913,7 @@ namespace Edda {
             btnDeleteDifficulty.IsEnabled = (beatMap.numDifficulties > 1);
             btnAddDifficulty.IsEnabled = (beatMap.numDifficulties < 3);
         }
-        private void switchDifficultyMap(int indx) {
+        private void switchDifficultyMap(int indx, bool redraw) {
             currentDifficulty = indx;
             currentDifficultyNotes = beatMap.getNotesForMap(indx);
 
@@ -927,7 +929,12 @@ namespace Edda {
             editorGridOffset = doubleParseInvariant(txtGridOffset.Text);
 
             enableDifficultyButtons();
-            drawEditorGrid();
+            if (redraw) {
+                drawEditorGrid();
+            }
+        }
+        private void switchDifficultyMap(int indx) {
+            switchDifficultyMap(indx, true);
         }
 
         // file creation
@@ -969,13 +976,14 @@ namespace Edda {
             loadSong();
             return true;
         }
+        // TODO: draw a song waveform (https://stackoverflow.com/questions/2042155/high-quality-graph-waveform-display-component-in-c-sharp)
         private void loadSong() {
 
             // cleanup old players
             unloadSong();
 
             var songPath = System.IO.Path.Combine(beatMap.folderPath, (string)beatMap.getValue("_songFilename"));
-            songStream = new NAudio.Vorbis.VorbisWaveReader(songPath);
+            songStream = new VorbisWaveReader(songPath);
             songPlayer = new WasapiOut(AudioClientShareMode.Shared, desiredWASAPILatency);
 
             songChannel = new SampleChannel(songStream);
@@ -1306,6 +1314,17 @@ namespace Edda {
             // calculate new drawn ranges for pagination, if we need it...
             //editorDrawRangeLower  = Math.Max(editorScrollPosition -     (gridDrawRange) * scrollEditor.ActualHeight, 0                      );
             //editorDrawRangeHigher = Math.Min(editorScrollPosition + (1 + gridDrawRange) * scrollEditor.ActualHeight, EditorGrid.ActualHeight);
+            if (EditorGrid.ActualHeight - scrollEditor.ActualHeight > 0) {
+                //var songPath = System.IO.Path.Combine(beatMap.folderPath, (string)beatMap.getValue("_songFilename"));
+                //var song = new VorbisWaveReader(songPath);
+                var img = new Image();
+                img.Source = AudioWaveform.createf32(songStream, EditorGrid.ActualHeight - scrollEditor.ActualHeight, EditorGrid.ActualWidth);
+                img.Height = EditorGrid.ActualHeight - scrollEditor.ActualHeight;
+                img.Width = EditorGrid.ActualWidth;
+                Canvas.SetBottom(img, 0);
+                EditorGrid.Children.Add(img);
+            }
+
 
             drawEditorGridLines();
 
