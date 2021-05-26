@@ -40,7 +40,8 @@ A dedicated editor for Ragnarock could trim down the clutter, greatly improving 
 
 ## Usage
 
-Edda does not autosave maps yet. Don't forget to save frequently by clicking "Save Map" in the UI.
+Edda does not autosave maps yet. Don't forget to save frequently by clicking "Save Map" in the UI.  
+Also, switching difficulties will discard any changes you've made so far. Please save before you switch.
 
 ### Creating a new map
 - Click "New Map".
