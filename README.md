@@ -1,10 +1,11 @@
 # Edda
 
-Edda is a map editor for the VR rhythm game [Ragnarock](https://www.ragnarock-vr.com/home) ([Steam page](https://store.steampowered.com/app/1345820/Ragnarock/)).
+Edda is a map editor for the VR rhythm game [Ragnarock](https://www.ragnarock-vr.com/home) ([Steam page](https://store.steampowered.com/app/1345820/Ragnarock/)).  
+It is written in C# for Windows 10.
 
 ![Screenshot of Edda](https://i.imgur.com/8efrXnC.png)
 
-It is currently under development. Although basic functionality is implemented, no proper testing has been conducted. Use it at your own risk.
+It is currently under development and has not been tested properly. Use it at your own risk.
 Some things that you should be able to do are:
 - Edit/change the following:
   - Song name
@@ -25,8 +26,9 @@ Some things that you should be able to do are:
     - Change the beat division
     - Add a global offset (this is not recommended)
     - Change the spacing of the grid
-
-Edda is written in C# for Windows 10.
+  - Select and delete multiple notes by dragging with the mouse
+  - Copy and paste selections
+  - Undo and redo edits
 
 ## Why make a new map editor?
 
@@ -51,17 +53,27 @@ Edda does not autosave maps yet. Don't forget to save frequently by clicking "Sa
 
 You're now ready to start mapping!
 
-- Fill in the Map Settings and File Info sections with the appropriate metadata.
-- Fill in the Difficulty Level and Note Speed.
-- You can create and switch between difficulties using the "Change Difficulty" buttons.
-- Set your Grid Division, Grid Offset and Grid Spacing.
-
 ### Editing an existing map
 - Click "Open Map".
 - Select a folder containing a map.
   - Edda does not yet check that the folder contains a valid map, so you must do this check.
 
 You're now ready to start mapping!
+
+### Keyboard Shortcuts
+- Ctrl-N: New Map
+- Ctrl-O: Open Map
+- Ctrl-S: Save Map
+- Ctrl-C: Copy Selection
+- Ctrl-V: Paste Selection
+  - Notes will be pasted on the same row the mouse is currently over.
+- Ctrl-Z: Undo Edit
+- Ctrl-Y: Redo Edit
+  - (Ctrl-Shift-Z is also supported)
+- Ctrl-M: Mirror Selection
+  - For now, this cannot be undone.
+- Delete: Delete selected notes
+- Escape: Unselect all notes
 
 ### Adjusting audio latency
 There is a slight delay between the playback of the song and the playback of individual notes.  

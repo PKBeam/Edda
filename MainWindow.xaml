@@ -202,7 +202,7 @@
 
 
                         <Border Grid.Row="6" Grid.ColumnSpan="2">
-                            <Image x:Name="imgCover" Width="180"/>
+                            <Image Margin="0 5 0 0" x:Name="imgCover" Width="180"/>
                         </Border>
 
                     </Grid>

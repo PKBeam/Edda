@@ -1,26 +1,23 @@
 ﻿using System;
 using System.Diagnostics;
 using System.Collections.Generic;
-using System.Linq;
+using System.IO;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
-using System.IO;
 using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
-using System.Windows.Shapes;
-using Microsoft.WindowsAPICodePack.Dialogs;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
-using NAudio.Vorbis;
-using NAudio.Wave;
 using System.Windows.Media.Animation;
-using NAudio.Wave.SampleProviders;
-using System.Reactive.Linq;
-using System.Threading;
-using NAudio.CoreAudioApi;
+using System.Windows.Shapes;
 using System.Text.RegularExpressions;
+using Microsoft.WindowsAPICodePack.Dialogs;
+using NAudio.CoreAudioApi;
+using NAudio.Wave;
+using NAudio.Wave.SampleProviders;
+using NAudio.Vorbis;
+using System.Reactive.Linq;
 
 namespace Edda {
     /// <summary>
@@ -32,26 +29,26 @@ namespace Edda {
     public partial class MainWindow : Window {
 
         // CONSTANTS
-
-        readonly string   eddaVersionNumber    = "0.1.1";
-        readonly string   defaultSongName      = "song.ogg";
-        readonly string   settingsFileName     = "settings.txt";
-        readonly string   gridColourMajor      = "#333333";
-        readonly string   gridColourMinor      = "#666666";
-        readonly double   gridThicknessMajor   = 2;
-        readonly double   gridThicknessMinor   = 1.5;
-        readonly int      gridDivisionMax      = 24;
-        readonly int      notePlaybackStreams  = 16; 
-        readonly int      desiredWasapiLatency = 100; // ms
-        readonly int      notePollRate         = 15;  // ms
-        readonly double   noteDetectionDelta   = 15;  // ms
-        readonly double   initDragThreshold    = 10;
-        readonly float    defaultSongVolume    = 0.25f;
-        readonly float    defaultDrumVolume    = 1.0f;
-        readonly int defaultEditorAudioLatency = -20; // ms
+        readonly string eddaVersionNumber    = "0.2.0";
+        readonly string defaultSongName      = "song.ogg";
+        readonly string settingsFileName     = "settings.txt";
+        readonly string gridColourMajor      = "#333333";
+        readonly string gridColourMinor      = "#666666";
+        readonly double gridThicknessMajor   = 2;
+        readonly double gridThicknessMinor   = 1.5;
+        readonly int    gridDivisionMax      = 12;
+        readonly int    notePlaybackStreams  = 16; 
+        readonly int    desiredWASAPILatency = 100; // ms
+        readonly int    notePollRate         = 15;  // ms
+        readonly double noteDetectionDelta   = 15;  // ms
+        readonly double initDragThreshold    = 10;
+        readonly float  defaultSongVolume    = 0.25f;
+        readonly float  defaultDrumVolume    = 1.0f;
+        readonly int    defaultAudioLatency  = -20; // ms
+        readonly int    editHistorySize      = 128;
         readonly List<string> environmentNames = new List<string> { "DefaultEnvironment", "Alfheim", "Nidavellir", "Asgard" };
-        // int gridRedrawInterval = 200; // ms
-        // double   gridDrawRange = 1;
+        //readonly int      gridRedrawInterval   = 100; // ms
+        //readonly double   gridDrawRange        = 1;
 
         // COMPUTED PROPERTIES
         double unitLength {
@@ -83,13 +80,13 @@ namespace Edda {
         BitmapImage rune34;
         BitmapImage runeX;
 
-        BitmapImage rune1highlight;
-        BitmapImage rune12highlight;
-        BitmapImage rune13highlight;
-        BitmapImage rune14highlight;
-        BitmapImage rune23highlight;
-        BitmapImage rune34highlight;
-        BitmapImage runeXhighlight;
+        BitmapImage rune1Highlight;
+        BitmapImage rune12Highlight;
+        BitmapImage rune13Highlight;
+        BitmapImage rune14Highlight;
+        BitmapImage rune23Highlight;
+        BitmapImage rune34Highlight;
+        BitmapImage runeXHighlight;
 
         // STATE VARIABLES
 
@@ -104,18 +101,20 @@ namespace Edda {
         double          prevScrollPercent;       // percentage of scroll progress before the scroll viewport was changed
 
         // variables used in the map editor
-        Image      imgPreviewNote;
-        List<Note> editorClipboard = new List<Note>();
+        Image             imgPreviewNote;
+        List<Note>        editorClipboard;
+        EditHistory<Note> editorHistory;
+
         bool shiftKeyDown;
         bool ctrlKeyDown;
 
         // -- for note placement
-        int editorMouseGridRow;
-        int editorMouseGridCol;
+        int    editorMouseGridRow;
+        int    editorMouseGridCol;
         double editorMouseGridRowFractional;
 
         // -- for drag select
-        List<Note> editorSelectedNotes = new List<Note>();
+        List<Note> editorSelectedNotes;
         Border     editorDragSelectBorder;
         Point      editorDragSelectStart;
         double     editorRowStart;
@@ -152,7 +151,7 @@ namespace Edda {
             scrollEditor.Tag = 0;
 
             string[] drumSounds = { "Resources/drum1.wav", "Resources/drum2.wav", "Resources/drum3.wav", "Resources/drum4.wav" };
-            drummer = new Drummer(drumSounds, notePlaybackStreams, desiredWasapiLatency);
+            drummer = new Drummer(drumSounds, notePlaybackStreams, desiredWASAPILatency);
 
             // disable parts of UI, as no map is loaded
             btnSaveMap.IsEnabled = false;
@@ -190,7 +189,7 @@ namespace Edda {
                         int latency;
                         if (!int.TryParse(line.Split("=")[1], out latency)) {
                             Trace.WriteLine("INFO: using default editor audio latency");
-                            editorAudioLatency = defaultEditorAudioLatency;
+                            editorAudioLatency = defaultAudioLatency;
                         } else {
                             Trace.WriteLine($"INFO: using user editor audio latency ({latency}ms)");
                             editorAudioLatency = latency;
@@ -199,7 +198,7 @@ namespace Edda {
                 }
             } else {
                 createConfigFile();
-                editorAudioLatency = defaultEditorAudioLatency;
+                editorAudioLatency = defaultAudioLatency;
             }
 
             // init border
@@ -219,13 +218,13 @@ namespace Edda {
             rune34 = bitmapGenerator("rune34.png");
             runeX  = bitmapGenerator("runeX.png");
 
-            rune1highlight  = bitmapGenerator("rune1highlight.png");
-            rune12highlight = bitmapGenerator("rune12highlight.png");
-            rune13highlight = bitmapGenerator("rune13highlight.png");
-            rune14highlight = bitmapGenerator("rune14highlight.png");
-            rune23highlight = bitmapGenerator("rune23highlight.png");
-            rune34highlight = bitmapGenerator("rune34highlight.png");
-            runeXhighlight  = bitmapGenerator("runeXhighlight.png");
+            rune1Highlight  = bitmapGenerator("rune1highlight.png");
+            rune12Highlight = bitmapGenerator("rune12highlight.png");
+            rune13Highlight = bitmapGenerator("rune13highlight.png");
+            rune14Highlight = bitmapGenerator("rune14highlight.png");
+            rune23Highlight = bitmapGenerator("rune23highlight.png");
+            rune34Highlight = bitmapGenerator("rune34highlight.png");
+            runeXHighlight  = bitmapGenerator("runeXhighlight.png");
 
             // load editor preview
             imgPreviewNote = new Image();
@@ -235,11 +234,20 @@ namespace Edda {
             imgPreviewNote.Height = unitHeight;
             EditorGrid.Children.Add(imgPreviewNote);
 
+            // init editor stuff
+            editorHistory = new EditHistory<Note>(editHistorySize);
+            editorClipboard = new List<Note>();
+            editorSelectedNotes = new List<Note>();
+
             // TODO: properly debounce grid redrawing on resize
             //Observable
             //.FromEventPattern<SizeChangedEventArgs>(EditorGrid, nameof(Canvas.SizeChanged))
             //.Throttle(TimeSpan.FromMilliseconds(gridRedrawInterval))
-            //.Subscribe(eventPattern => _EditorGrid_SizeChanged(eventPattern.Sender, eventPattern.EventArgs));
+            //.Subscribe(eventPattern => 
+            //    AppMainWindow.Dispatcher.Invoke(() => 
+            //        EditorGrid_SizeChanged(eventPattern.Sender, eventPattern.EventArgs)
+            //    )
+            //);
         }
 
         // UI bindings
@@ -268,21 +276,56 @@ namespace Edda {
                 shiftKeyDown = true;
             }
 
-            if (keyStr == "C" && ctrlKeyDown) {
-                copyNotes();
-            }
-            if (keyStr == "V" && ctrlKeyDown) {
-                pasteNotes(beatForRow(editorMouseGridRow));
-            }
-            if (keyStr == "Delete") {
-                foreach (Note n in editorSelectedNotes) {
-                    removeNote(n);
+            // ctrl shortcuts
+            if (ctrlKeyDown) {
+                // new map (Ctrl-N)
+                if (keyStr == "N") {
+                    btnNewMap_Click(null, null);
+                }
+                // open map (Ctrl-O)
+                if (keyStr == "O") {
+                    btnOpenMap_Click(null, null);
+                }
+                // save map (Ctrl-S)
+                if (keyStr == "S") {
+                    btnSaveMap_Click(null, null);
+                }
+
+                // copy (Ctrl-C)
+                if (keyStr == "C") {
+                    copyNotes();
+                }
+                // paste (Ctrl-V)
+                if (keyStr == "V") {
+                    pasteNotes(beatForRow(editorMouseGridRow));
+                }
+
+                // undo (Ctrl-Z)
+                if (keyStr == "Z") {
+                    Edit<Note> edit = editorHistory.undo();
+                    applyEdit(edit);
+                }
+                // redo (Ctrl-Y, Ctrl-Shift-Z)
+                if ((keyStr == "Y") ||
+                    (keyStr == "Z" && shiftKeyDown)) {
+                    Edit<Note> edit = editorHistory.redo();
+                    applyEdit(edit);
+                }
+
+                // mirror selected notes (Ctrl-M)
+                if (keyStr == "M") {
+                    mirrorSelection();
                 }
             }
+            // delete selected notes
+            if (keyStr == "Delete") {
+                removeNotes(editorSelectedNotes);
+            }
+            // unselect all notes
             if (keyStr == "Escape") {
                 unselectAllNotes();
             }
-            Trace.WriteLine(keyStr);
+            //Trace.WriteLine(keyStr);
             //Trace.WriteLine($"Row: {editorMouseGridRow} ({Math.Round(editorMouseGridRowFractional, 2)}), Col: {editorMouseGridCol}");
         }
         private void AppMainWindow_KeyUp(object sender, KeyEventArgs e) {
@@ -504,7 +547,7 @@ namespace Edda {
         private void txtDifficultyNumber_LostFocus(object sender, RoutedEventArgs e) {
             int prevLevel = (int)beatMap.getValueForDifficultyMap("_difficultyRank", currentDifficulty);
             int level;
-            if (int.TryParse(txtDifficultyNumber.Text, out level) && intRangeCheck(level, 1, 10)) {
+            if (int.TryParse(txtDifficultyNumber.Text, out level) && rangeCheck(level, 1, 10)) {
                 beatMap.setValueForDifficultyMap("_difficultyRank", level, currentDifficulty);
             } else {
                 MessageBox.Show($"The difficulty level must be an integer between 1 and 10.", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
@@ -569,7 +612,7 @@ namespace Edda {
             int prevDiv = int.Parse((string)beatMap.getCustomValueForDifficultyMap("_editorGridDivision", currentDifficulty));
             int div;
 
-            if (int.TryParse(txtGridDivision.Text, out div) && intRangeCheck(div, 1, gridDivisionMax)) {
+            if (int.TryParse(txtGridDivision.Text, out div) && rangeCheck(div, 1, gridDivisionMax)) {
                 if (div != prevDiv) {
                     editorGridDivision = div;
                     beatMap.setCustomValueForDifficultyMap("_editorGridDivision", div, currentDifficulty);
@@ -681,7 +724,7 @@ namespace Edda {
             } else if (editorMouseDown) {
                 Vector delta = e.GetPosition(EditorGrid) - editorDragSelectStart;
                 if (delta.Length > initDragThreshold) {
-                    imgPreviewNote.Opacity = 0;
+                    imgPreviewNote.Visibility = Visibility.Hidden;
                     editorIsDragging = true;
                     editorDragSelectBorder.Visibility = Visibility.Visible;
                     updateDragSelection(e.GetPosition(EditorGrid));
@@ -705,45 +748,41 @@ namespace Edda {
         private void scrollEditor_MouseLeftButtonUp(object sender, MouseButtonEventArgs e) {
             if (editorIsDragging) {
                 editorDragSelectBorder.Visibility = Visibility.Hidden;
-                imgPreviewNote.Opacity = 0.5;
+                imgPreviewNote.Visibility = Visibility.Visible;
                 // calculate new selections
                 List<Note> newSelection = new List<Note>();
-                int editorColEnd = editorMouseGridCol;
-                double endBeat = beatForRow(editorMouseGridRowFractional);
                 double startBeat = beatForRow(editorRowStart);
+                double endBeat = beatForRow(editorMouseGridRowFractional);
                 foreach (Note n in currentDifficultyNotes) {
                     // minor optimisation
                     if (n.Item1 > Math.Max(startBeat, endBeat)) {
                         break;
                     }
                     // check range
-                    if (doubleRangeCheck(n.Item1, startBeat, endBeat) && intRangeCheck(n.Item2, editorColStart, editorColEnd)) {
+                    if (rangeCheck(n.Item1, startBeat, endBeat) && rangeCheck(n.Item2, editorColStart, editorMouseGridCol)) {
                         newSelection.Add(n);
                     }
                 }
-                newNoteSelection(newSelection);
+                selectNewNotes(newSelection);
             } else if (editorMouseDown) {
                 //Trace.WriteLine($"Row: {editorMouseGridRow} ({Math.Round(editorMouseGridRowFractional, 2)}), Col: {editorMouseGridCol}, Beat: {beat} ({beatFractional})");
 
                 // create the note
                 double row = (editorSnapToGrid) ? (editorMouseGridRow) : (editorMouseGridRowFractional);
-                Note n;
-                n.Item1 = beatForRow(row);
-                n.Item2 = editorMouseGridCol;
+                Note n = new Note(beatForRow(row), editorMouseGridCol);
 
                 if (currentDifficultyNotes.Contains(n)) {
-                    var isSelected = editorSelectedNotes.Contains(n);
                     if (shiftKeyDown) {
-                        if (isSelected) {
+                        if (editorSelectedNotes.Contains(n)) {
                             unselectNote(n);
                         } else {
                             selectNote(n);
                         }
                     } else {
-                        newNoteSelection(n);
+                        selectNewNotes(n);
                     }      
                 } else {
-                    addNote(n);
+                    addNotes(n);
                 }
             }
             EditorGrid.ReleaseMouseCapture();
@@ -755,7 +794,7 @@ namespace Edda {
             double row = (editorSnapToGrid) ? (editorMouseGridRow) : (editorMouseGridRowFractional);
             Note n = new Note(beatForRow(row), editorMouseGridCol);
             if (currentDifficultyNotes.Contains(n)) {
-                removeNote(n);
+                removeNotes(n);
             } else {
                 unselectAllNotes();
             }
@@ -947,7 +986,7 @@ namespace Edda {
 
             var songPath = System.IO.Path.Combine(beatMap.folderPath, (string)beatMap.getValue("_songFilename"));
             songStream = new NAudio.Vorbis.VorbisWaveReader(songPath);
-            songPlayer = new WasapiOut(AudioClientShareMode.Shared, desiredWasapiLatency);
+            songPlayer = new WasapiOut(AudioClientShareMode.Shared, desiredWASAPILatency);
 
             songChannel = new SampleChannel(songStream);
             songChannel.Volume = (float)sliderSongVol.Value;
@@ -1087,7 +1126,7 @@ namespace Edda {
                 }
 
                 // check if we need to play any notes
-                while (approximatelyEqual(currentTime, noteTime, noteDetectionDelta)) {
+                while (Math.Abs(currentTime - noteTime) < noteDetectionDelta) {
                     //Trace.WriteLine($"Played note at beat {selectedDifficultyNotes[noteScanIndex].Item1}");
                       
                     drumHits++;
@@ -1106,19 +1145,43 @@ namespace Edda {
         }
 
         // editor functions
-        private void addNote(Note n) {
-            insertSortedUnique(currentDifficultyNotes, n);
-
+        private void addNotes(List<Note> notes, bool updateHistory) {
+            foreach (Note n in notes) {
+                insertSortedUnique(currentDifficultyNotes, n);
+            }
             // draw the added notes
             // note: by drawing this note out of order, it is inconsistently layered with other notes.
             //       should we take the performance hit of redrawing the entire grid for visual consistency?
-            drawEditorGridNotes(n);
-        }
-        private void removeNote(Note n) {
-            currentDifficultyNotes.Remove(n);
+            drawEditorGridNotes(notes);
 
+            if (updateHistory) {
+                editorHistory.add(true, notes);
+            }
+            //editorHistory.print();
+        }
+        private void addNotes(List<Note> notes) {
+            addNotes(notes, true);
+        }
+        private void addNotes(Note n) {
+            addNotes(new List<Note>() { n });
+        }
+        private void removeNotes(List<Note> notes, bool updateHistory) {
+            foreach (Note n in notes) {
+                currentDifficultyNotes.Remove(n);
+            }
             // undraw the added notes
-            undrawEditorGridNote(n);
+            undrawEditorGridNotes(notes);
+
+            if (updateHistory) {
+                editorHistory.add(false, notes);
+            }
+            //editorHistory.print();
+        }
+        private void removeNotes(List<Note> notes) {
+            removeNotes(notes, true);
+        }
+        private void removeNotes(Note n) {
+            removeNotes(new List<Note>() { n });
         }
         private void selectNote(Note n) {
             insertSortedUnique(editorSelectedNotes, n);
@@ -1131,14 +1194,14 @@ namespace Edda {
                 }
             }
         }
-        private void newNoteSelection(List<Note> list) {
+        private void selectNewNotes(List<Note> notes) {
             unselectAllNotes();
-            foreach (Note n in list) {
+            foreach (Note n in notes) {
                 selectNote(n);
             }
         }
-        private void newNoteSelection(Note n) {
-            newNoteSelection(new List<Note>() { n });
+        private void selectNewNotes(Note n) {
+            selectNewNotes(new List<Note>() { n });
         }
         private void unselectNote(Note n) {
             if (editorSelectedNotes == null) {
@@ -1172,13 +1235,21 @@ namespace Edda {
 
         }
         private void pasteNotes(double beatOffset) {
-            double clipboardOffset = editorClipboard[0].Item1;
+            // paste notes so that the first note lands on the given beat offset
+            double offset = beatOffset - editorClipboard[0].Item1;
+            List<Note> notes = new List<Note>();
             for (int i = 0; i < editorClipboard.Count; i++) {
-                Note offsetNote = editorClipboard[i];
-                offsetNote.Item1 += beatOffset - clipboardOffset;
-                addNote(offsetNote);
+                Note n = new Note(editorClipboard[i].Item1 + offset, editorClipboard[i].Item2);
+                notes.Add(n);
             }
-
+            addNotes(notes);
+        }
+        private void applyEdit(Edit<Note> e) {
+            if (e.isAdding) {
+                addNotes(e.items, false);
+            } else {
+                removeNotes(e.items, false);
+            }
         }
         private void updateDragSelection(Point newPoint) {
             Point p1;
@@ -1192,6 +1263,18 @@ namespace Edda {
             Canvas.SetTop(editorDragSelectBorder, p1.Y);
             editorDragSelectBorder.Width = delta.X;
             editorDragSelectBorder.Height = delta.Y;
+        }
+        private void mirrorSelection() {
+            // prepare new selection
+            List<Note> mirroredSelection = new List<Note>();
+            for (int i = 0; i < editorSelectedNotes.Count; i++) {
+                Note mirrored = new Note(editorSelectedNotes[i].Item1, 3 - editorSelectedNotes[i].Item2);
+                mirroredSelection.Add(mirrored);
+            }
+            // TODO: make this undoable
+            removeNotes(editorSelectedNotes, false);
+            addNotes(mirroredSelection, false);
+            selectNewNotes(mirroredSelection);
         }
 
         // drawing functions for the editor grid
@@ -1219,8 +1302,6 @@ namespace Edda {
             Trace.WriteLine("INFO: Redrawing editor grid...");
 
             EditorGrid.Children.Clear();
-            EditorGrid.Children.Add(imgPreviewNote);
-            EditorGrid.Children.Add(editorDragSelectBorder);
 
             // calculate new drawn ranges for pagination, if we need it...
             //editorDrawRangeLower  = Math.Max(editorScrollPosition -     (gridDrawRange) * scrollEditor.ActualHeight, 0                      );
@@ -1229,6 +1310,9 @@ namespace Edda {
             drawEditorGridLines();
 
             drawEditorGridNotes(currentDifficultyNotes);
+
+            EditorGrid.Children.Add(imgPreviewNote);
+            EditorGrid.Children.Add(editorDragSelectBorder);
 
             // rescan notes after drawing
             scanNoteIndex();
@@ -1286,17 +1370,41 @@ namespace Edda {
         private void drawEditorGridNotes(Note n) {
             drawEditorGridNotes(new List<Note>() { n });
         }
-        private void undrawEditorGridNote(Note n) {
-            var nUid = uidGenerator(n);
-            foreach (UIElement u in EditorGrid.Children) {
-                if (u.Uid == nUid) {
-                    EditorGrid.Children.Remove(u);
-                    break;
+        private void undrawEditorGridNotes(List<Note> notes) {
+            foreach (Note n in notes) {
+                var nUid = uidGenerator(n);
+                foreach (UIElement u in EditorGrid.Children) {
+                    if (u.Uid == nUid) {
+                        EditorGrid.Children.Remove(u);
+                        break;
+                    }
                 }
             }
         }
+        private void undrawEditorGridNotes(Note n) {
+            undrawEditorGridNotes(new List<Note>() { n });
+        }
 
         // helper functions
+        private double beatForRow(double row) {
+            double userOffsetBeat = currentBPM * editorGridOffset / 60;
+            return row / (double)editorGridDivision + userOffsetBeat;
+        }
+        private void insertSortedUnique(List<Note> notes, Note note) {
+            // check which index to insert the new note at (keep everything in sorted order)
+            var i = 0;
+            foreach (var thisNote in notes) {
+                if (compareNotes(thisNote, note) == 0) {
+                    return;
+                }
+                if (compareNotes(thisNote, note) > 0) {
+                    notes.Insert(i, note);
+                    return;
+                }
+                i++;
+            }
+            notes.Add(note);
+        }
         private int compareNotes(Note m, Note n) {
             if (m == n) {
                 return 0;
@@ -1312,39 +1420,28 @@ namespace Edda {
         private string absPath(string f) {
             return System.IO.Path.Combine(beatMap.folderPath, f);
         }
-        private bool intRangeCheck(int a, int x, int y) {
-            int lower = Math.Min(x, y);
-            int higher = Math.Max(x, y);
-            return (lower <= a && a <= higher);
-        }
-        private bool doubleRangeCheck(double a, double x, double y) {
+        private bool rangeCheck(double a, double x, double y) {
             double lower = Math.Min(x, y);
             double higher = Math.Max(x, y);
             return (lower <= a && a <= higher);
-        }
-        private bool approximatelyEqual(double x, double y, double delta) {
-            return Math.Abs(x - y) < delta;
-        }
-        private BitmapImage bitmapImageForBeat(double beat, bool highlight) {
-            var fracBeat = beat - (int)beat;
-            switch (Math.Round(fracBeat, 5)) {
-                case 0:       return (highlight) ? rune1highlight  : rune1 ; 
-                case 0.25:    return (highlight) ? rune14highlight : rune14; 
-                case 0.33333: return (highlight) ? rune13highlight : rune13; 
-                case 0.5:     return (highlight) ? rune12highlight : rune12; 
-                case 0.66667: return (highlight) ? rune23highlight : rune23; 
-                case 0.75:    return (highlight) ? rune34highlight : rune34; 
-                default:      return (highlight) ? runeXhighlight  : runeX ;
-            }
-        }
-        private BitmapImage bitmapImageForBeat(double beat) {
-            return bitmapImageForBeat(beat, false);
         }
         private string uidGenerator(Note n) {
             return $"Note({n.Item1},{n.Item2})";
         }
         private Uri packUriGenerator(string fileName) {
             return new Uri($"pack://application:,,,/resources/{fileName}");
+        }
+        private BitmapImage bitmapImageForBeat(double beat, bool isHighlighted) {
+            var fracBeat = beat - (int)beat;
+            switch (Math.Round(fracBeat, 5)) {
+                case 0.00000: return (isHighlighted) ? rune1Highlight  : rune1 ; 
+                case 0.25000: return (isHighlighted) ? rune14Highlight : rune14; 
+                case 0.33333: return (isHighlighted) ? rune13Highlight : rune13; 
+                case 0.50000: return (isHighlighted) ? rune12Highlight : rune12; 
+                case 0.66667: return (isHighlighted) ? rune23Highlight : rune23; 
+                case 0.75000: return (isHighlighted) ? rune34Highlight : rune34; 
+                default:      return (isHighlighted) ? runeXHighlight  : runeX ;
+            }
         }
         private BitmapImage bitmapGenerator(Uri u) {
             var b = new BitmapImage();
@@ -1364,24 +1461,8 @@ namespace Edda {
             b.Freeze();
             return b;
         }
-        private double beatForRow(double row) {
-            double userOffsetBeat = currentBPM * editorGridOffset / 60;
-            return row / (double)editorGridDivision + userOffsetBeat;
-        }
-        private void insertSortedUnique(List<Note> notes, Note note) {
-            // check which index to insert the new note at (keep everything in sorted order)
-            var i = 0;
-            foreach (var thisNote in notes) {
-                if (compareNotes(thisNote, note) == 0) {
-                    return;
-                }
-                if (compareNotes(thisNote, note) > 0) {
-                    notes.Insert(i, note);
-                    return;
-                }
-                i++;
-            }
-            notes.Add(note);
+        private BitmapImage bitmapImageForBeat(double beat) {
+            return bitmapImageForBeat(beat, false);
         }
     }
 }
