@@ -40,8 +40,7 @@ A dedicated editor for Ragnarock could trim down the clutter, greatly improving 
 
 ## Usage
 
-Edda does not autosave maps yet. Don't forget to save frequently by clicking "Save Map" in the UI.  
-Also, switching difficulties will discard any changes you've made so far. Please save before you switch.
+Edda does not autosave maps yet. Don't forget to save frequently by clicking "Save Map" in the UI.
 
 ### Creating a new map
 - Click "New Map".
@@ -75,6 +74,7 @@ You're now ready to start mapping!
   - For now, this cannot be undone.
 - Delete: Delete selected notes
 - Escape: Unselect all notes
+- Space: Play/pause song
 
 ### Adjusting audio latency
 There is a slight delay between the playback of the song and the playback of individual notes.  

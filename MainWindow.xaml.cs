@@ -26,6 +26,7 @@ namespace Edda {
     /// 
 
     using Note = ValueTuple<double, int>;
+
     public partial class MainWindow : Window {
 
         // CONSTANTS
@@ -280,15 +281,21 @@ namespace Edda {
             if (ctrlKeyDown) {
                 // new map (Ctrl-N)
                 if (keyStr == "N") {
-                    btnNewMap_Click(null, null);
+                    if (btnNewMap.IsEnabled) {
+                        btnNewMap_Click(null, null);
+                    }
                 }
                 // open map (Ctrl-O)
                 if (keyStr == "O") {
-                    btnOpenMap_Click(null, null);
+                    if (btnOpenMap.IsEnabled) {
+                        btnOpenMap_Click(null, null);
+                    }
                 }
                 // save map (Ctrl-S)
                 if (keyStr == "S") {
-                    btnSaveMap_Click(null, null);
+                    if (btnSaveMap.IsEnabled) {
+                        btnSaveMap_Click(null, null);
+                    }
                 }
 
                 // copy (Ctrl-C)
@@ -315,6 +322,12 @@ namespace Edda {
                 // mirror selected notes (Ctrl-M)
                 if (keyStr == "M") {
                     mirrorSelection();
+                }
+            }
+            // toggle media player
+            if (keyStr == "Space") {
+                if (btnSongPlayer.IsEnabled) {
+                    btnSongPlayer_Click(null, null);
                 }
             }
             // delete selected notes
@@ -358,8 +371,8 @@ namespace Edda {
                 return;
             }
 
-            var folderName = new FileInfo(d2.FileName).Name;
             // check folder name is appropriate
+            var folderName = new FileInfo(d2.FileName).Name;
             if (!Regex.IsMatch(folderName, @"^[a-zA-Z]+$")) {
                 MessageBox.Show("The folder name cannot contain spaces or non-alphabetic characters.", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
                 return;
@@ -371,20 +384,15 @@ namespace Edda {
                 return;
             }
 
-            // select audio file
-            if (!selectSong(d2.FileName)) {
-                return;
-            }
             beatMap = new RagnarockMap(d2.FileName, true, eddaVersionNumber);
 
-            // load the selected song
-            loadSong();
-
-            beatMap.setValue("_songApproximativeDuration", (int)songStream.TotalTime.TotalSeconds + 1);
+            // select and load an audio file
+            if (!selectNewSong()) {
+                return;
+            }
 
             // open the newly created map
             initUI();
-
         }
         private void btnOpenMap_Click(object sender, RoutedEventArgs e) {
 
@@ -415,14 +423,7 @@ namespace Edda {
             }
         }
         private void btnPickSong_Click(object sender, RoutedEventArgs e) {
-            if (selectSong(beatMap.folderPath)) {
-                beatMap.setValue("_songFilename", defaultSongName);
-                beatMap.setValue("_songName", "");
-                beatMap.setValue("_songAuthorName", "");
-                beatMap.setValue("_beatsPerMinute", beatMap.defaultBPM);
-                beatMap.setValue("_coverImageFilename", "");
-                loadSong();
-
+            if (selectNewSong()) {
                 // TODO: clear generated preview?
                 initUI();
             }
@@ -919,15 +920,6 @@ namespace Edda {
             txtGridSpacing.Text      = (string)beatMap.getCustomValueForDifficultyMap("_editorGridSpacing", indx);
             txtGridDivision.Text     = (string)beatMap.getCustomValueForDifficultyMap("_editorGridDivision", indx);
 
-            // Edda-specific values 
-            // TODO: fix this properly by validating maps on open
-            if (txtGridSpacing.Text == "") {
-                txtGridSpacing.Text = "1";
-            }
-            if (txtGridDivision.Text == "") {
-                txtGridDivision.Text = "4";
-            }
-
             // set internal values
             editorGridDivision = int.Parse(txtGridDivision.Text);
             editorGridSpacing = double.Parse(txtGridSpacing.Text);
@@ -946,7 +938,7 @@ namespace Edda {
         }
 
         // song/note playback
-        private bool selectSong(string folderPath) {
+        private bool selectNewSong() {
             // select audio file
             var d = new Microsoft.Win32.OpenFileDialog();
             d.Title = "Select a song to map";
@@ -967,22 +959,19 @@ namespace Edda {
                 MessageBox.Show("Songs over 1 hour in duration are not supported.", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
                 return false;
             }
-            var songPath = System.IO.Path.Combine(folderPath, defaultSongName);
-            if (beatMap != null) {
-                File.Delete(songPath);
-            }
+            var songPath = System.IO.Path.Combine(beatMap.folderPath, defaultSongName);
+
+            unloadSong();
+            File.Delete(songPath);
+            beatMap.setValue("_songApproximativeDuration", (int)vorbisStream.TotalTime.TotalSeconds + 1);
             File.Copy(d.FileName, songPath);
+            loadSong();
             return true;
         }
         private void loadSong() {
 
             // cleanup old players
-            if (songStream != null) {
-                songStream.Dispose();
-            }
-            if (songPlayer != null) {
-                songPlayer.Dispose();
-            }
+            unloadSong();
 
             var songPath = System.IO.Path.Combine(beatMap.folderPath, (string)beatMap.getValue("_songFilename"));
             songStream = new NAudio.Vorbis.VorbisWaveReader(songPath);
@@ -1000,6 +989,14 @@ namespace Edda {
             songWasChanged = true;
 
         }
+        private void unloadSong() {
+            if (songStream != null) {
+                songStream.Dispose();
+            }
+            if (songPlayer != null) {
+                songPlayer.Dispose();
+            }
+        }
         private void playSong() {
             songIsPlaying = true;
             imgPlayerButton.Source = bitmapGenerator("pauseButton.png");
@@ -1007,6 +1004,7 @@ namespace Edda {
             // song/note playback gets desynced if these are changed during playback
             // TODO: fix this?
             //checkGridSnap.IsEnabled = false;
+            txtSongBPM.IsEnabled = false;
             txtGridDivision.IsEnabled = false;
             txtGridOffset.IsEnabled = false;
             txtGridSpacing.IsEnabled = false;
@@ -1061,6 +1059,7 @@ namespace Edda {
 
             // re-enable UI elements
             //checkGridSnap.IsEnabled = true;
+            txtSongBPM.IsEnabled = true;
             txtGridDivision.IsEnabled = true;
             txtGridOffset.IsEnabled = true;
             txtGridSpacing.IsEnabled = true;

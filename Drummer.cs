@@ -29,7 +29,6 @@ public class Drummer : IDisposable {
 			notePlayers[i].Init(noteStreams[i]);
         }
 	}
-
 	public bool playDrum(int hits) {
 		if (hits == 0) {
 			return true;
@@ -50,23 +49,19 @@ public class Drummer : IDisposable {
 		}
 		return false;
     }
-
 	public void changeVolume(double vol) {
 		for (int i = 0; i < streams; i++) {
 			noteStreams[i].Volume = (float)Math.Min(Math.Abs(vol), 1);
 		}
 	}
-
 	public void stop() {
 		for (int i = 0; i < streams; i++) {
 			notePlayers[i].Stop();
 		}
 	}
-
 	public void Dispose() {
 		Dispose(true);
 	}
-
 	protected virtual void Dispose(bool disposing) {
 		// Cleanup
 		for (int i = 0; i < this.streams; i++) {

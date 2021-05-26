@@ -1,8 +1,10 @@
 ﻿using System.Collections.Generic;
 using System.Diagnostics;
+
 public class Edit<T> {
 	public bool isAdding;
 	public List<T> items;
+
 	public Edit<T> inverted() {
 		return new Edit<T>(!this.isAdding, new List<T>(this.items));
 	}
@@ -28,6 +30,7 @@ public class EditHistory<T> {
 	private int bufferSize;
 	private List<Edit<T>> history;
 	private int currentIndex; // index of the edit item after the last action
+
 	public EditHistory(int bufferSize) {
 		this.bufferSize = bufferSize;
 		this.history = new List<Edit<T>>();

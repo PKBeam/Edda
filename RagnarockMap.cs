@@ -11,8 +11,10 @@ public class RagnarockMap {
     // constants
     private readonly string[] difficultyNames = { "Easy", "Normal", "Hard" };
     private readonly int      defaultNoteJumpMovementSpeed = 15;
-    public readonly double    defaultBPM = 120;
+    private readonly double   defaultBPM = 120;
     private readonly string   defaultSongName = "song.ogg";
+    private readonly double   defaultGridSpacing = 1.0;
+    private readonly int      defaultGridDivision = 4;
 
     // public state variables
     public int numDifficulties {
@@ -28,6 +30,7 @@ public class RagnarockMap {
     private string   infoStr;
     private string[] difficultyMaps = new string[3];
     private string   eddaVersionNumber;
+
     public RagnarockMap(string folderPath, bool makeNew, string eddaVersionNumber) {
         this.folderPath = folderPath;
         this.eddaVersionNumber = eddaVersionNumber;
@@ -40,6 +43,15 @@ public class RagnarockMap {
             readInfo();
             for (int i = 0; i < numDifficulties; i++) {
                 readDifficultyMap(i);
+            }
+            // handle edda-specific custom fields for compatibility with MMA2 maps
+            for (var i = 0; i < numDifficulties; i++) {
+                if (getCustomValueForDifficultyMap("_editorGridSpacing", i) == null) {
+                    setCustomValueForDifficultyMap("_editorGridSpacing", defaultGridSpacing, i);
+                }
+                if (getCustomValueForDifficultyMap("_editorGridDivision", i) == null) {
+                    setCustomValueForDifficultyMap("_editorGridDivision", defaultGridDivision, i);
+                }
             }
         }
     }
