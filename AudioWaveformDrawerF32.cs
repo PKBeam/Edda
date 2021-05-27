@@ -10,7 +10,7 @@ using System.Windows.Threading;
 
 public class AudioWaveformDrawerF32: DispatcherObject {
     private readonly double maxDimension = 50000;
-    private readonly Color waveformColour = Color.FromArgb(180, 0, 0, 255);
+    private readonly Color waveformColour = Color.FromArgb(96, 0, 0, 255);
     private CancellationTokenSource tokenSource;
     private CancellationToken token;
     private WaveStream reader;
@@ -23,14 +23,14 @@ public class AudioWaveformDrawerF32: DispatcherObject {
         this.isDrawing = false;
     }
 
-    public BitmapSource draw(double height, double width) {
+    public BitmapSource draw(double height, double width, bool useGDI = false, double offsetStart = 0, double offsetEnd = 0) {
         var largest = Math.Max(height, width);
         if (largest > maxDimension) {
-            double scale = (maxDimension / largest);
+            double scale = maxDimension / largest;
             height *= scale;
             width *= scale;
         }
-        return drawWPF(height, width);
+        return (useGDI) ? drawGDI(height, width) : drawWPF(height, width, offsetStart, offsetEnd);
     }
     private BitmapSource drawGDI(double height, double width) {
         tokenSource.Cancel();
@@ -39,12 +39,12 @@ public class AudioWaveformDrawerF32: DispatcherObject {
         while (isDrawing) { }
         return _drawGDI(token, height, width);
     }
-    private BitmapSource drawWPF(double height, double width) {
+    private BitmapSource drawWPF(double height, double width, double offsetStart = 0, double offsetEnd = 0) {
         tokenSource.Cancel();
         recreateTokens();
         token = tokenSource.Token;
         while (isDrawing) { }
-        return _drawWPF(token, height, width);
+        return _drawWPF(token, height, width, offsetStart, offsetEnd);
     }
 
     // originally from https://stackoverflow.com/questions/2042155/high-quality-graph-waveform-display-component-in-c-sharp,
@@ -56,8 +56,9 @@ public class AudioWaveformDrawerF32: DispatcherObject {
         //Give a size to the bitmap; either a fixed size, or something based on the length of the audio
         System.Drawing.Bitmap bitmap = new System.Drawing.Bitmap((int)width, (int)height);
         System.Drawing.Graphics graphics = System.Drawing.Graphics.FromImage(bitmap);
+        graphics.SmoothingMode = System.Drawing.Drawing2D.SmoothingMode.HighSpeed;
         graphics.Clear(System.Drawing.Color.Transparent);
-        System.Drawing.Pen bluePen = new System.Drawing.Pen(System.Drawing.Color.FromArgb(200, 0, 0, 255));
+        System.Drawing.Pen bluePen = new System.Drawing.Pen(System.Drawing.Color.FromArgb(180, 0, 0, 255));
 
         int samplesPerPixel = (int)(reader.Length / (double)(height * bytesPerSample));
         int bytesPerPixel = bytesPerSample * samplesPerPixel;
@@ -91,33 +92,40 @@ public class AudioWaveformDrawerF32: DispatcherObject {
             float highValue = (float)width * highPercent;
             graphics.DrawLine(bluePen, lowValue, (int)height - y, highValue, (int)height - y);
         }
-        //Bitmap bt = new Bitmap(bitmap);
-        //bt.Save("out.bmp");
+        bitmap.Save("out.bmp");
         // https://stackoverflow.com/questions/94456/load-a-wpf-bitmapimage-from-a-system-drawing-bitmap#1069509
         BitmapSource b = System.Windows.Interop.Imaging.CreateBitmapSourceFromHBitmap(bitmap.GetHbitmap(), IntPtr.Zero, Int32Rect.Empty, BitmapSizeOptions.FromWidthAndHeight((int)width, (int)height));
         b.Freeze();
         isDrawing = false;
         return b;
     }
-    private BitmapSource _drawWPF(CancellationToken ct, double height, double width) {
+    private BitmapSource _drawWPF(CancellationToken ct, double height, double width, double offsetStart = 0, double offsetEnd = 0) {
+        if (offsetEnd == 0) {
+            offsetEnd = height;
+        }
         isDrawing = true;
-        reader.Position = 0;
-        int bytesPerSample = (reader.WaveFormat.BitsPerSample / 8) * reader.WaveFormat.Channels;
+        reader.Seek(0, SeekOrigin.Begin);
+        int bytesPerSample = reader.WaveFormat.BitsPerSample / 8 * reader.WaveFormat.Channels;
         DrawingVisual dv = new DrawingVisual();
         DrawingContext dc = dv.RenderOpen();
-        Pen bluePen = new Pen(new SolidColorBrush(waveformColour), 1);
+        Pen bluePen = new Pen(new SolidColorBrush(waveformColour), 2);
         bluePen.Freeze();
-
+        
         int samplesPerPixel = (int)(reader.Length / (double)(height * bytesPerSample));
         int bytesPerPixel = bytesPerSample * samplesPerPixel;
         int bytesRead;
         byte[] waveData = new byte[bytesPerPixel];
         // draw each pixel of height
-        for (int y = 0; y < height; y++) {
+        for (int y = 0; y <= height; y++) {
             bytesRead = reader.Read(waveData, 0, bytesPerPixel);
             if (bytesRead == 0)
                 break;
-
+            if (y < offsetStart) {
+                continue;
+            }
+            if (y > offsetEnd) {
+                break;
+            }
             float low = 0;
             float high = 0;
             // read all samples for this pixel and take the extreme values
@@ -138,17 +146,13 @@ public class AudioWaveformDrawerF32: DispatcherObject {
             float highPercent = (high + 1) / 2;
             float lowValue = (float)width * lowPercent;
             float highValue = (float)width * highPercent;
-            dc.DrawLine(bluePen, new Point(lowValue, (int)height - y), new Point(highValue, (int)height - y));
+            dc.DrawLine(bluePen, new Point(lowValue, (int)(offsetEnd - offsetStart - y)), new Point(highValue, (int)(offsetEnd - offsetStart - y)));
         }
         dc.Close();
-        RenderTargetBitmap bmp = new RenderTargetBitmap((int)width, (int)height, 96, 96, PixelFormats.Pbgra32);
+        RenderTargetBitmap bmp = new RenderTargetBitmap((int)width, (int)(offsetEnd - offsetStart), 96, 96, PixelFormats.Pbgra32);
         bmp.Render(dv);
         bmp.Freeze();
 
-        // Save the image to a location on the disk.
-        //PngBitmapEncoder encoder = new PngBitmapEncoder();
-        //encoder.Frames.Add(BitmapFrame.Create(bmp));
-        //encoder.Save(new System.IO.FileStream("out.png", System.IO.FileMode.Create));
         //Trace.WriteLine("Draw complete");
         isDrawing = false;
 
@@ -163,6 +167,9 @@ public class AudioWaveformDrawerF32: DispatcherObject {
         var bitmapEncoder = new PngBitmapEncoder();
         bitmapEncoder.Frames.Add(BitmapFrame.Create(input));
 
+        // Save the image to a location on the disk.
+        //bitmapEncoder.Save(new System.IO.FileStream("out.png", System.IO.FileMode.Create));
+
         var stream = new MemoryStream();
         bitmapEncoder.Save(stream);
         stream.Seek(0, SeekOrigin.Begin);
@@ -173,6 +180,7 @@ public class AudioWaveformDrawerF32: DispatcherObject {
         bitmapImage.StreamSource = stream;
         bitmapImage.EndInit();
         bitmapImage.Freeze();
+
         return bitmapImage;
     }
     private void recreateTokens() {

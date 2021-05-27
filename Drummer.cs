@@ -19,7 +19,7 @@ public class Drummer : IDisposable {
 		this.lastPlayedStream = 0;
 		this.streams = streams;
 		this.uniqueSamples = filePaths.Length;
-		noteStreams = new AudioFileReader[streams];
+        noteStreams = new AudioFileReader[streams];
 		notePlayers = new WasapiOut[streams];
 		lastPlayedTimes = new DateTime[streams];
 		for (int i = 0; i < streams; i++) {
@@ -52,11 +52,6 @@ public class Drummer : IDisposable {
 	public void changeVolume(double vol) {
 		for (int i = 0; i < streams; i++) {
 			noteStreams[i].Volume = (float)Math.Min(Math.Abs(vol), 1);
-		}
-	}
-	public void stop() {
-		for (int i = 0; i < streams; i++) {
-			notePlayers[i].Stop();
 		}
 	}
 	public void Dispose() {

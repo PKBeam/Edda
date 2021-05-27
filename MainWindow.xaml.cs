@@ -36,11 +36,12 @@ namespace Edda {
         readonly string defaultSongName      = "song.ogg";
         readonly string settingsFileName     = "settings.txt";
         readonly string gridColourMajor      = "#333333";
-        readonly string gridColourMinor      = "#666666";
+        readonly string gridColourMinor      = "#555555";
         readonly double gridThicknessMajor   = 2;
         readonly double gridThicknessMinor   = 1.5;
         readonly int    gridDivisionMax      = 12;
-        readonly double waveformWidthPercent = 1.00;
+        readonly double waveformWidthPercent = 0.60;
+        readonly double previewNoteOpacity   = 0.3;
         readonly int    notePlaybackStreams  = 16; 
         readonly int    desiredWASAPILatency = 100; // ms
         readonly int    notePollRate         = 15;  // ms
@@ -96,6 +97,9 @@ namespace Edda {
 
         RagnarockMap    beatMap;
 
+        bool shiftKeyDown;
+        bool ctrlKeyDown;
+
         // store info about the currently selected difficulty
         int        currentDifficulty;
         List<Note> currentDifficultyNotes;
@@ -109,11 +113,10 @@ namespace Edda {
         List<Note>        editorClipboard;
         EditHistory<Note> editorHistory;
 
-        bool shiftKeyDown;
-        bool ctrlKeyDown;
         // -- for waveform drawing
         Image imgAudioWaveform;
         AudioWaveformDrawerF32 awd;
+        bool editorShowWaveform;
 
         // -- for note placement
         int    editorMouseGridRow;
@@ -176,16 +179,20 @@ namespace Edda {
             btnPickCover.IsEnabled = false;
             sliderSongVol.IsEnabled = false;
             sliderDrumVol.IsEnabled = false;
-            //checkGridSnap.IsEnabled = false;
+            checkGridSnap.IsEnabled = false;
             txtDifficultyNumber.IsEnabled = false;
             txtNoteSpeed.IsEnabled = false;
             txtGridDivision.IsEnabled = false;
             txtGridOffset.IsEnabled = false;
             txtGridSpacing.IsEnabled = false;
+            checkWaveform.IsEnabled = false;
             btnDeleteDifficulty.IsEnabled = false;
             btnSongPlayer.IsEnabled = false;
             sliderSongProgress.IsEnabled = false;
             scrollEditor.IsEnabled = false;
+
+            checkGridSnap.IsChecked = editorSnapToGrid;
+            checkWaveform.IsChecked = editorShowWaveform;
 
             // load config file
             if (File.Exists(settingsFileName)) {
@@ -236,7 +243,7 @@ namespace Edda {
             // load editor preview
             imgPreviewNote = new Image();
             imgPreviewNote.Source = rune1;
-            imgPreviewNote.Opacity = 0.25;
+            imgPreviewNote.Opacity = previewNoteOpacity;
             imgPreviewNote.Width = unitLength;
             imgPreviewNote.Height = unitHeight;
             EditorGrid.Children.Add(imgPreviewNote);
@@ -277,7 +284,7 @@ namespace Edda {
                 drummer.Dispose();
             }
         }
-        private void AppMainWindow_KeyDown(object sender, KeyEventArgs e) {
+        private void AppMainWindow_PreviewKeyDown(object sender, KeyEventArgs e) {
             var keyStr = e.Key.ToString();
             if (keyStr.EndsWith("Ctrl")) {
                 ctrlKeyDown = true;
@@ -347,10 +354,12 @@ namespace Edda {
             if (keyStr == "Escape") {
                 unselectAllNotes();
             }
+
+            e.Handled = true;
             //Trace.WriteLine(keyStr);
             //Trace.WriteLine($"Row: {editorMouseGridRow} ({Math.Round(editorMouseGridRowFractional, 2)}), Col: {editorMouseGridCol}");
         }
-        private void AppMainWindow_KeyUp(object sender, KeyEventArgs e) {
+        private void AppMainWindow_PreviewKeyUp(object sender, KeyEventArgs e) {
             var keyStr = e.Key.ToString();
             if (keyStr.EndsWith("Ctrl")) {
                 ctrlKeyDown = false;
@@ -575,6 +584,9 @@ namespace Edda {
             }
             txtNoteSpeed.Text = speed.ToString();
         }
+        private void checkGridSnap_Click(object sender, RoutedEventArgs e) {
+            editorSnapToGrid = (checkGridSnap.IsChecked == true);
+        }
         private void txtGridOffset_LostFocus(object sender, RoutedEventArgs e) {
             double prevOffset = doubleParseInvariant((string)beatMap.getCustomValueForDifficultyMap("_editorOffset", currentDifficulty));
             double offset;
@@ -631,6 +643,14 @@ namespace Edda {
             }
             txtGridDivision.Text = div.ToString();
         }
+        private void checkWaveform_Click(object sender, RoutedEventArgs e) {
+            editorShowWaveform = (checkWaveform.IsChecked == true);
+            if (editorShowWaveform) {
+                drawEditorWaveform();
+            } else {
+                EditorGrid.Children.Remove(imgAudioWaveform);
+            }
+        }
         private void comboEnvironment_SelectionChanged(object sender, SelectionChangedEventArgs e) {
             string env = "DefaultEnvironment";
             switch (comboEnvironment.SelectedIndex) {
@@ -654,6 +674,8 @@ namespace Edda {
             }
         }
         private void scrollEditor_SizeChanged(object sender, SizeChangedEventArgs e) {
+            // TODO: redraw only gridlines
+            calculateDrawRange();
             updateEditorGridHeight(false);
         }
         private void scrollEditor_ScrollChanged(object sender, ScrollChangedEventArgs e) {
@@ -675,7 +697,7 @@ namespace Edda {
             } else if (range != 0) {
                 prevScrollPercent = (1 - curr / range);
             }
-
+            calculateDrawRange();
         }
         private void scrollEditor_PreviewMouseWheel(object sender, MouseWheelEventArgs e) {
 
@@ -690,7 +712,7 @@ namespace Edda {
             // check if mouse position would correspond to a negative beat index
             if (mousePos < 0) {
                 editorMouseGridRowFractional = - userOffset / gridLength;
-                editorMouseGridRow = (int)(editorMouseGridRowFractional); // round towards infinity; otherwise this lands on a negative beat
+                editorMouseGridRow = (int)editorMouseGridRowFractional; // round towards infinity; otherwise this lands on a negative beat
             } else {
                 editorMouseGridRowFractional = (mousePos - userOffset) / gridLength;
                 editorMouseGridRow = (int)Math.Round(editorMouseGridRowFractional, MidpointRounding.AwayFromZero);
@@ -720,7 +742,8 @@ namespace Edda {
             var unknownNoteXAdjustment = ((unitLength / unitLengthUnscaled - 1) * unitLengthUnscaled / 2);
 
             double beat = editorMouseGridRow / (double)editorGridDivision + userOffsetBeat;
-            imgPreviewNote.Source = bitmapImageForBeat(beat);
+            double beatUnsnapped = editorMouseGridRowFractional / (double)editorGridDivision + userOffsetBeat;
+            imgPreviewNote.Source = bitmapImageForBeat(editorSnapToGrid ? beat : beatUnsnapped);
             Canvas.SetLeft(imgPreviewNote, noteX - unknownNoteXAdjustment);
 
             // calculate drag stuff
@@ -738,7 +761,7 @@ namespace Edda {
             }  
         }
         private void scrollEditor_MouseEnter(object sender, MouseEventArgs e) {
-            imgPreviewNote.Opacity = 0.5;
+            imgPreviewNote.Opacity = previewNoteOpacity;
         }
         private void scrollEditor_MouseLeave(object sender, MouseEventArgs e) {
             imgPreviewNote.Opacity = 0;
@@ -788,6 +811,7 @@ namespace Edda {
                     }      
                 } else {
                     addNotes(n);
+                    drummer.playDrum(1);
                 }
             }
             EditorGrid.ReleaseMouseCapture();
@@ -804,11 +828,6 @@ namespace Edda {
                 unselectAllNotes();
             }
         }
-
-        //private void checkGridSnap_Click(object sender, RoutedEventArgs e) {
-        //    editorSnapToGrid = (checkGridSnap.IsChecked == true);
-        //}
-
 
         // UI initialisation
         private void initUI() {
@@ -861,12 +880,13 @@ namespace Edda {
             btnPickCover.IsEnabled = true;
             sliderSongVol.IsEnabled = true;
             sliderDrumVol.IsEnabled = true;
-            //checkGridSnap.IsEnabled = true;
+            checkGridSnap.IsEnabled = true;
             txtDifficultyNumber.IsEnabled = true;
             txtNoteSpeed.IsEnabled = true;
             txtGridDivision.IsEnabled = true;
             txtGridOffset.IsEnabled = true;
             txtGridSpacing.IsEnabled = true;
+            checkWaveform.IsEnabled = true;
             btnDeleteDifficulty.IsEnabled = true;
             btnSongPlayer.IsEnabled = true;
             sliderSongProgress.IsEnabled = true;
@@ -876,7 +896,6 @@ namespace Edda {
             switchDifficultyMap(currentDifficulty, false);
 
             updateEditorGridHeight();
-
             scrollEditor.ScrollToBottom();
         }
 
@@ -1280,6 +1299,20 @@ namespace Edda {
         }
 
         // drawing functions for the editor grid
+        private void calculateDrawRange() {
+            if (scrollEditor.ScrollableHeight == 0) {
+                return;
+            }
+            // calculate new drawn ranges for pagination, if we need it...
+            var scrollPos = scrollEditor.ScrollableHeight - scrollEditor.VerticalOffset;
+            if (scrollPos <= editorDrawRangeLower || editorDrawRangeHigher <= scrollPos) {
+                editorDrawRangeLower = Math.Max(scrollPos - (gridDrawRange * scrollEditor.ActualHeight), 0);
+                editorDrawRangeHigher = Math.Min(scrollPos + ((1 + gridDrawRange) * scrollEditor.ActualHeight), EditorGrid.ActualHeight);
+                //Trace.WriteLine($"draw range: {editorDrawRangeLower} - {editorDrawRangeHigher}");
+                // redraw
+                //drawEditorWaveform(editorDrawRangeLower, editorDrawRangeHigher, EditorGrid.Height - scrollEditor.ActualHeight);
+            }
+        }
         private void updateEditorGridHeight(bool redraw = true) {
             if (beatMap == null) {
                 return;
@@ -1295,20 +1328,17 @@ namespace Edda {
         }
         private void drawEditorGrid() {
 
+            DateTime start = DateTime.Now;
+
             if (beatMap == null) {
                 return;
             }
 
-            Trace.WriteLine("INFO: Redrawing editor grid...");
-
             EditorGrid.Children.Clear();
 
-            // calculate new drawn ranges for pagination, if we need it...
-            editorDrawRangeLower  = Math.Max(scrollEditor.VerticalOffset -     (gridDrawRange) * scrollEditor.ActualHeight, 0                      );
-            editorDrawRangeHigher = Math.Min(scrollEditor.VerticalOffset + (1 + gridDrawRange) * scrollEditor.ActualHeight, EditorGrid.ActualHeight);
-            Trace.WriteLine($"draw range: {editorDrawRangeLower} - {editorDrawRangeHigher}");
-
-            updateEditorWaveform();
+            if (editorShowWaveform && EditorGrid.Height - scrollEditor.ActualHeight > 0) {
+                drawEditorWaveform();
+            }
 
             drawEditorGridLines();
 
@@ -1324,28 +1354,28 @@ namespace Edda {
             // rescan notes after drawing
             scanNoteIndex();
 
-            Trace.WriteLine("INFO: Finished drawing editor grid");
+            Trace.WriteLine($"INFO: Redrew editor grid in {(DateTime.Now - start).TotalSeconds} seconds");
         }
-        private void updateEditorWaveform() {
-            if (EditorGrid.Height - scrollEditor.ActualHeight > 0) {
-                resizeEditorWaveform();
-                double height = EditorGrid.Height - scrollEditor.ActualHeight;
-                double width = EditorGrid.ActualWidth * waveformWidthPercent;
-                Task.Run(() => {
-                    drawEditorWaveform(height, width);
-                });
-                
-            }
+        private void drawEditorWaveform() {
+            resizeEditorWaveform();
+            double height = EditorGrid.Height - scrollEditor.ActualHeight;
+            double width = EditorGrid.ActualWidth * waveformWidthPercent;
+            Task.Run(() => {
+                createEditorWaveform(height, width);
+            });
         }
         private void resizeEditorWaveform() {
+            if (!editorShowWaveform) {
+                return;
+            }
             EditorGrid.Children.Remove(imgAudioWaveform);
             imgAudioWaveform.Height = EditorGrid.Height - scrollEditor.ActualHeight;
             imgAudioWaveform.Width = EditorGrid.ActualWidth;
             Canvas.SetBottom(imgAudioWaveform, unitLength / 2);
             EditorGrid.Children.Insert(0, imgAudioWaveform);
         }
-        private void drawEditorWaveform(double height, double width) {
-            BitmapSource bmp = awd.draw(height, width);
+        private void createEditorWaveform(double height, double width) {
+            BitmapSource bmp = awd.draw(height, width, false);
             if (bmp == null) {
                 return;
             }
@@ -1471,7 +1501,7 @@ namespace Edda {
         private Uri packUriGenerator(string fileName) {
             return new Uri($"pack://application:,,,/resources/{fileName}");
         }
-        private BitmapImage bitmapImageForBeat(double beat, bool isHighlighted) {
+        private BitmapImage bitmapImageForBeat(double beat, bool isHighlighted = false) {
             var fracBeat = beat - (int)beat;
             switch (Math.Round(fracBeat, 5)) {
                 case 0.00000: return (isHighlighted) ? rune1Highlight  : rune1 ; 
@@ -1501,8 +1531,7 @@ namespace Edda {
             b.Freeze();
             return b;
         }
-        private BitmapImage bitmapImageForBeat(double beat) {
-            return bitmapImageForBeat(beat, false);
-        }
+
+
     }
 }
