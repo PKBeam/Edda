@@ -8,48 +8,46 @@ using System.Windows.Media;
 using System.IO;
 using System.Windows.Threading;
 
-public class AudioWaveformDrawerF32: DispatcherObject {
+public class AudioVisualiser: DispatcherObject {
     private readonly double maxDimension = 50000;
     private readonly Color waveformColour = Color.FromArgb(96, 0, 0, 255);
     private CancellationTokenSource tokenSource;
     private CancellationToken token;
     private WaveStream reader;
     private bool isDrawing;
-    private DrawingVisual dv;
-    private DrawingContext dc;
-    public AudioWaveformDrawerF32(WaveStream reader) {
+    public AudioVisualiser(WaveStream reader) {
         recreateTokens();
         this.reader = reader;
         this.isDrawing = false;
     }
 
-    public BitmapSource draw(double height, double width, bool useGDI = false, double offsetStart = 0, double offsetEnd = 0) {
+    public BitmapSource drawFloat32(double height, double width, bool useGDI = false, double offsetStart = 0, double offsetEnd = 0) {
         var largest = Math.Max(height, width);
         if (largest > maxDimension) {
             double scale = maxDimension / largest;
             height *= scale;
             width *= scale;
         }
-        return (useGDI) ? drawGDI(height, width) : drawWPF(height, width, offsetStart, offsetEnd);
+        return (useGDI) ? drawFloat32GDI(height, width) : drawFloat32WPF(height, width, offsetStart, offsetEnd);
     }
-    private BitmapSource drawGDI(double height, double width) {
+    private BitmapSource drawFloat32GDI(double height, double width) {
         tokenSource.Cancel();
         recreateTokens();
         token = tokenSource.Token;
         while (isDrawing) { }
-        return _drawGDI(token, height, width);
+        return _drawFloat32GDI(token, height, width);
     }
-    private BitmapSource drawWPF(double height, double width, double offsetStart = 0, double offsetEnd = 0) {
+    private BitmapSource drawFloat32WPF(double height, double width, double offsetStart = 0, double offsetEnd = 0) {
         tokenSource.Cancel();
         recreateTokens();
         token = tokenSource.Token;
         while (isDrawing) { }
-        return _drawWPF(token, height, width, offsetStart, offsetEnd);
+        return _drawFloat32WPF(token, height, width, offsetStart, offsetEnd);
     }
 
     // originally from https://stackoverflow.com/questions/2042155/high-quality-graph-waveform-display-component-in-c-sharp,
     // adapted to use the pcm_f32le format and replace GDI+ with WPF drawing
-    private BitmapSource _drawGDI(CancellationToken ct, double height, double width) {
+    private BitmapSource _drawFloat32GDI(CancellationToken ct, double height, double width) {
         isDrawing = true;
         reader.Position = 0;
         int bytesPerSample = (reader.WaveFormat.BitsPerSample / 8) * reader.WaveFormat.Channels;
@@ -92,14 +90,14 @@ public class AudioWaveformDrawerF32: DispatcherObject {
             float highValue = (float)width * highPercent;
             graphics.DrawLine(bluePen, lowValue, (int)height - y, highValue, (int)height - y);
         }
-        bitmap.Save("out.bmp");
+        //bitmap.Save("out.bmp");
         // https://stackoverflow.com/questions/94456/load-a-wpf-bitmapimage-from-a-system-drawing-bitmap#1069509
         BitmapSource b = System.Windows.Interop.Imaging.CreateBitmapSourceFromHBitmap(bitmap.GetHbitmap(), IntPtr.Zero, Int32Rect.Empty, BitmapSizeOptions.FromWidthAndHeight((int)width, (int)height));
         b.Freeze();
         isDrawing = false;
         return b;
     }
-    private BitmapSource _drawWPF(CancellationToken ct, double height, double width, double offsetStart = 0, double offsetEnd = 0) {
+    private BitmapSource _drawFloat32WPF(CancellationToken ct, double height, double width, double offsetStart = 0, double offsetEnd = 0) {
         if (offsetEnd == 0) {
             offsetEnd = height;
         }

@@ -115,7 +115,7 @@ namespace Edda {
 
         // -- for waveform drawing
         Image imgAudioWaveform;
-        AudioWaveformDrawerF32 awd;
+        AudioVisualiser awd;
         bool editorShowWaveform;
 
         // -- for note placement
@@ -1015,7 +1015,7 @@ namespace Edda {
             sliderSongProgress.Value = 0;
             songWasChanged = true;
 
-            awd = new AudioWaveformDrawerF32(songStream);
+            awd = new AudioVisualiser(songStream);
         }
         private void unloadSong() {
             if (songStream != null) {
@@ -1375,7 +1375,7 @@ namespace Edda {
             EditorGrid.Children.Insert(0, imgAudioWaveform);
         }
         private void createEditorWaveform(double height, double width) {
-            BitmapSource bmp = awd.draw(height, width, false);
+            BitmapSource bmp = awd.drawFloat32(height, width, false);
             if (bmp == null) {
                 return;
             }
