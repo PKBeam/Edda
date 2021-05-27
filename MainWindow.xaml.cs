@@ -40,6 +40,7 @@ namespace Edda {
         readonly double gridThicknessMajor   = 2;
         readonly double gridThicknessMinor   = 1.5;
         readonly int    gridDivisionMax      = 12;
+        readonly double waveformWidthPercent = 1.00;
         readonly int    notePlaybackStreams  = 16; 
         readonly int    desiredWASAPILatency = 100; // ms
         readonly int    notePollRate         = 15;  // ms
@@ -51,7 +52,7 @@ namespace Edda {
         readonly int    editHistorySize      = 128;
         readonly List<string> environmentNames = new List<string> { "DefaultEnvironment", "Alfheim", "Nidavellir", "Asgard" };
         //readonly int      gridRedrawInterval   = 100; // ms
-        //readonly double   gridDrawRange        = 1;
+        readonly double   gridDrawRange        = 1;
 
         // COMPUTED PROPERTIES
         double unitLength {
@@ -110,6 +111,9 @@ namespace Edda {
 
         bool shiftKeyDown;
         bool ctrlKeyDown;
+        // -- for waveform drawing
+        Image imgAudioWaveform;
+        AudioWaveformDrawerF32 awd;
 
         // -- for note placement
         int    editorMouseGridRow;
@@ -130,8 +134,8 @@ namespace Edda {
         int        editorGridDivision;
         double     editorGridSpacing;
         double     editorGridOffset;
-        //double     editorDrawRangeLower = 0;
-        //double     editorDrawRangeHigher = 0;
+        double     editorDrawRangeLower = 0;
+        double     editorDrawRangeHigher = 0;
 
         // variables used to handle drum hits on a separate thread
         int noteScanIndex;
@@ -237,6 +241,8 @@ namespace Edda {
             imgPreviewNote.Height = unitHeight;
             EditorGrid.Children.Add(imgPreviewNote);
 
+            imgAudioWaveform = new Image();
+
             // init editor stuff
             editorHistory = new EditHistory<Note>(editHistorySize);
             editorClipboard = new List<Note>();
@@ -251,6 +257,7 @@ namespace Edda {
             //        EditorGrid_SizeChanged(eventPattern.Sender, eventPattern.EventArgs)
             //    )
             //);
+
         }
 
         // UI bindings
@@ -518,7 +525,6 @@ namespace Edda {
                 if (BPM != prevBPM) {
                     beatMap.setValue("_beatsPerMinute", BPM);
                     updateEditorGridHeight();
-                    //drawEditorGrid();
                 }
             } else {
                 MessageBox.Show($"The BPM must be numerical.", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
@@ -587,7 +593,6 @@ namespace Edda {
                     editorGridOffset = offset;
                     beatMap.setCustomValueForDifficultyMap("_editorOffset", offset, currentDifficulty);
                     updateEditorGridHeight();
-                    drawEditorGrid();
                 }
             } else {
                 MessageBox.Show($"The grid offset must be numerical.", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
@@ -603,7 +608,6 @@ namespace Edda {
                     editorGridSpacing = spacing;
                     beatMap.setCustomValueForDifficultyMap("_editorGridSpacing", spacing, currentDifficulty);
                     updateEditorGridHeight();
-                    //drawEditorGrid();
                 }
             } else {
                 MessageBox.Show($"The grid spacing must be numerical.", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
@@ -645,14 +649,12 @@ namespace Edda {
             if (songIsPlaying) {
                 pauseSong();
             }
-            if (beatMap != null) {
-                scanNoteIndex();
-                //updateEditorGridHeight();
+            if (beatMap != null && e.WidthChanged) {
                 drawEditorGrid();
             }
         }
         private void scrollEditor_SizeChanged(object sender, SizeChangedEventArgs e) {
-            updateEditorGridHeight();
+            updateEditorGridHeight(false);
         }
         private void scrollEditor_ScrollChanged(object sender, ScrollChangedEventArgs e) {
             var curr = scrollEditor.VerticalOffset;
@@ -873,8 +875,8 @@ namespace Edda {
             // init difficulty-specific UI 
             switchDifficultyMap(currentDifficulty, false);
 
-
             updateEditorGridHeight();
+
             scrollEditor.ScrollToBottom();
         }
 
@@ -913,7 +915,7 @@ namespace Edda {
             btnDeleteDifficulty.IsEnabled = (beatMap.numDifficulties > 1);
             btnAddDifficulty.IsEnabled = (beatMap.numDifficulties < 3);
         }
-        private void switchDifficultyMap(int indx, bool redraw) {
+        private void switchDifficultyMap(int indx, bool redraw = true) {
             currentDifficulty = indx;
             currentDifficultyNotes = beatMap.getNotesForMap(indx);
 
@@ -932,9 +934,6 @@ namespace Edda {
             if (redraw) {
                 drawEditorGrid();
             }
-        }
-        private void switchDifficultyMap(int indx) {
-            switchDifficultyMap(indx, true);
         }
 
         // file creation
@@ -997,6 +996,7 @@ namespace Edda {
             sliderSongProgress.Value = 0;
             songWasChanged = true;
 
+            awd = new AudioWaveformDrawerF32(songStream);
         }
         private void unloadSong() {
             if (songStream != null) {
@@ -1047,10 +1047,10 @@ namespace Edda {
             noteScanStopwatch = new Stopwatch();
             noteScanStopwatchOffset = (int)(sliderSongProgress.Value - editorAudioLatency); // set user audio delay
             scanNoteIndex();
-            noteScanTokenSource = new CancellationTokenSource();
-            noteScanToken = noteScanTokenSource.Token;
 
             // start scanning for notes
+            noteScanTokenSource = new CancellationTokenSource();
+            noteScanToken = noteScanTokenSource.Token;
             Task.Run(() => scanForNotes(noteScanStopwatchOffset, noteScanToken), noteScanToken);
 
             noteScanStopwatch.Start();
@@ -1153,7 +1153,7 @@ namespace Edda {
         }
 
         // editor functions
-        private void addNotes(List<Note> notes, bool updateHistory) {
+        private void addNotes(List<Note> notes, bool updateHistory = true) {
             foreach (Note n in notes) {
                 insertSortedUnique(currentDifficultyNotes, n);
             }
@@ -1167,13 +1167,10 @@ namespace Edda {
             }
             //editorHistory.print();
         }
-        private void addNotes(List<Note> notes) {
-            addNotes(notes, true);
+        private void addNotes(Note n, bool updateHistory = true) {
+            addNotes(new List<Note>() { n }, updateHistory);
         }
-        private void addNotes(Note n) {
-            addNotes(new List<Note>() { n });
-        }
-        private void removeNotes(List<Note> notes, bool updateHistory) {
+        private void removeNotes(List<Note> notes, bool updateHistory = true) {
             foreach (Note n in notes) {
                 currentDifficultyNotes.Remove(n);
             }
@@ -1185,11 +1182,8 @@ namespace Edda {
             }
             //editorHistory.print();
         }
-        private void removeNotes(List<Note> notes) {
-            removeNotes(notes, true);
-        }
-        private void removeNotes(Note n) {
-            removeNotes(new List<Note>() { n });
+        private void removeNotes(Note n, bool updateHistory = true) {
+            removeNotes(new List<Note>() { n }, updateHistory);
         }
         private void selectNote(Note n) {
             insertSortedUnique(editorSelectedNotes, n);
@@ -1286,20 +1280,18 @@ namespace Edda {
         }
 
         // drawing functions for the editor grid
-        private void updateEditorGridHeight() {
+        private void updateEditorGridHeight(bool redraw = true) {
             if (beatMap == null) {
                 return;
             }
 
-            // set editor grid height
+            // resize editor grid height to fit scrollEditor height
             double beats = (currentBPM / 60) * songStream.TotalTime.TotalSeconds;
-
-            // this triggers a grid redraw
             EditorGrid.Height = beats * unitLength + scrollEditor.ActualHeight;
 
-            // change editor preview note size
-            imgPreviewNote.Width = unitLength;
-            imgPreviewNote.Height = unitHeight;
+            if (redraw) {
+                drawEditorGrid();
+            }
         }
         private void drawEditorGrid() {
 
@@ -1312,29 +1304,55 @@ namespace Edda {
             EditorGrid.Children.Clear();
 
             // calculate new drawn ranges for pagination, if we need it...
-            //editorDrawRangeLower  = Math.Max(editorScrollPosition -     (gridDrawRange) * scrollEditor.ActualHeight, 0                      );
-            //editorDrawRangeHigher = Math.Min(editorScrollPosition + (1 + gridDrawRange) * scrollEditor.ActualHeight, EditorGrid.ActualHeight);
-            if (EditorGrid.ActualHeight - scrollEditor.ActualHeight > 0) {
-                //var songPath = System.IO.Path.Combine(beatMap.folderPath, (string)beatMap.getValue("_songFilename"));
-                //var song = new VorbisWaveReader(songPath);
-                var img = new Image();
-                img.Source = AudioWaveform.createf32(songStream, EditorGrid.ActualHeight - scrollEditor.ActualHeight, EditorGrid.ActualWidth);
-                img.Height = EditorGrid.ActualHeight - scrollEditor.ActualHeight;
-                img.Width = EditorGrid.ActualWidth;
-                Canvas.SetBottom(img, 0);
-                EditorGrid.Children.Add(img);
-            }
+            editorDrawRangeLower  = Math.Max(scrollEditor.VerticalOffset -     (gridDrawRange) * scrollEditor.ActualHeight, 0                      );
+            editorDrawRangeHigher = Math.Min(scrollEditor.VerticalOffset + (1 + gridDrawRange) * scrollEditor.ActualHeight, EditorGrid.ActualHeight);
+            Trace.WriteLine($"draw range: {editorDrawRangeLower} - {editorDrawRangeHigher}");
 
+            updateEditorWaveform();
 
             drawEditorGridLines();
 
             drawEditorGridNotes(currentDifficultyNotes);
 
+            // change editor preview note size
+            imgPreviewNote.Width = unitLength;
+            imgPreviewNote.Height = unitHeight;
             EditorGrid.Children.Add(imgPreviewNote);
+
             EditorGrid.Children.Add(editorDragSelectBorder);
 
             // rescan notes after drawing
             scanNoteIndex();
+
+            Trace.WriteLine("INFO: Finished drawing editor grid");
+        }
+        private void updateEditorWaveform() {
+            if (EditorGrid.Height - scrollEditor.ActualHeight > 0) {
+                resizeEditorWaveform();
+                double height = EditorGrid.Height - scrollEditor.ActualHeight;
+                double width = EditorGrid.ActualWidth * waveformWidthPercent;
+                Task.Run(() => {
+                    drawEditorWaveform(height, width);
+                });
+                
+            }
+        }
+        private void resizeEditorWaveform() {
+            EditorGrid.Children.Remove(imgAudioWaveform);
+            imgAudioWaveform.Height = EditorGrid.Height - scrollEditor.ActualHeight;
+            imgAudioWaveform.Width = EditorGrid.ActualWidth;
+            Canvas.SetBottom(imgAudioWaveform, unitLength / 2);
+            EditorGrid.Children.Insert(0, imgAudioWaveform);
+        }
+        private void drawEditorWaveform(double height, double width) {
+            BitmapSource bmp = awd.draw(height, width);
+            if (bmp == null) {
+                return;
+            }
+            this.Dispatcher.Invoke(() => {
+                imgAudioWaveform.Source = bmp;
+                resizeEditorWaveform();
+            });
         }
         private void drawEditorGridLines() {
             // calculate grid offset: default is 
@@ -1345,7 +1363,7 @@ namespace Edda {
 
             // draw gridlines
             int counter = 0;
-            while (offset <= EditorGrid.ActualHeight) {
+            while (offset <= EditorGrid.Height) {
                 var l = new Line();
                 l.X1 = 0;
                 l.X2 = EditorGrid.ActualWidth;
