@@ -1,69 +1,93 @@
 ﻿using System.Collections.Generic;
 using System.Diagnostics;
 
-public class Edit<T> {
-	public bool isAdding;
-	public List<T> items;
+public class Edits<T> {
+    public List<(bool, T)> items;
 
-	public Edit<T> inverted() {
-		return new Edit<T>(!this.isAdding, new List<T>(this.items));
+	public Edits<T> inverted() {
+		var e = new List<(bool, T)>();
+		foreach (var i in items) {
+			e.Add((!i.Item1, i.Item2));
+        }
+		return new Edits<T>(e);
 	}
-	public Edit(bool isAdding, List<T> items) {
-		this.isAdding = isAdding;
+	public Edits(List<(bool, T)> items) {
 		this.items = items;
 	}
-	public Edit() {
-		this.isAdding = true;
-		this.items = new List<T>();
+	public Edits() {
+		this.items = new List<(bool, T)>();
 	}
 	public string toString() {
 		var outStr = "[";
-		foreach (T t in this.items) {
-			outStr += $"({t})";
+		foreach ((bool, T) e in this.items) {
+			outStr += $"{(e.Item1 ? "+" : "-")}{e.Item2}";
         }
 		outStr += "]";
 		return outStr;
+    }
+	public void print() {
+		Trace.WriteLine(this.toString());
     }
 }
 
 public class EditHistory<T> {
 	private int bufferSize;
-	private List<Edit<T>> history;
+	private List<Edits<T>> history;
 	private int currentIndex; // index of the edit item after the last action
 
 	public EditHistory(int bufferSize) {
 		this.bufferSize = bufferSize;
-		this.history = new List<Edit<T>>();
-		currentIndex = 0;
+		this.clear();
 	}
 	public void add(bool isAdding, List<T> items) {
-		Edit<T> e = new Edit<T>(isAdding, items);
+		List<(bool, T)> e = new List<(bool, T)>();
+		foreach (var i in items) {
+			e.Add((isAdding, i));
+        }
+		this.add(e);
+	}
+	public void add(List<(bool, T)> items) {
+		Edits<T> e = new Edits<T>(items);
 		if (currentIndex == bufferSize) {
 			removeFirst();
         }
-		history.Add(e);
+		history.Insert(currentIndex, e);
 		currentIndex++;
 		// clear all of the "future" history
 		history.RemoveRange(currentIndex, history.Count - currentIndex);
 	}
-	public Edit<T> undo() {
+	public Edits<T> undo() {
 		if (currentIndex == 0) {
-			return new Edit<T>();
+			return new Edits<T>();
         }
 		return history[--currentIndex].inverted();
     }
-	public Edit<T> redo() {
+	public Edits<T> redo() {
 		if (currentIndex == history.Count) {
-			return new Edit<T>();
+			return new Edits<T>();
         }
 		return history[currentIndex++];
     }
-	public void print() {
-		var outStr = $"(Pos: {this.currentIndex}) [";
-		foreach (Edit<T> e in history) {
-			outStr += $"({(e.isAdding ? "Add" : "Del")}, {e.toString()})";
+	public void consolidate(int entries) {
+		Edits<T> e = new Edits<T>();
+		for (int i = 0; i < entries; i++) {
+			var edits = this.history[currentIndex - 1];
+			foreach (var edit in edits.items) {
+				e.items.Add(edit);
+            }
+			currentIndex--;
         }
-		outStr += "]";
+		this.add(e.items);
+	}
+	public void clear() {
+		this.history = new List<Edits<T>>();
+		this.currentIndex = 0;
+	}
+	public void print() {
+		var outStr = $"(Pos: {this.currentIndex})";
+		foreach (Edits<T> e in history) {
+			outStr += e.toString();
+        }
 		Trace.WriteLine(outStr);
     }
 	private void removeFirst() {

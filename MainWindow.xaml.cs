@@ -325,13 +325,13 @@ namespace Edda {
 
                 // undo (Ctrl-Z)
                 if (keyStr == "Z") {
-                    Edit<Note> edit = editorHistory.undo();
+                    Edits<Note> edit = editorHistory.undo();
                     applyEdit(edit);
                 }
                 // redo (Ctrl-Y, Ctrl-Shift-Z)
                 if ((keyStr == "Y") ||
                     (keyStr == "Z" && shiftKeyDown)) {
-                    Edit<Note> edit = editorHistory.redo();
+                    Edits<Note> edit = editorHistory.redo();
                     applyEdit(edit);
                 }
 
@@ -819,6 +819,7 @@ namespace Edda {
             editorMouseDown = false;
         }
         private void scrollEditor_MouseRightButtonUp(object sender, MouseButtonEventArgs e) {
+            editorHistory.print();
             // remove the note
             double row = (editorSnapToGrid) ? (editorMouseGridRow) : (editorMouseGridRowFractional);
             Note n = new Note(beatForRow(row), editorMouseGridCol);
@@ -937,6 +938,7 @@ namespace Edda {
         private void switchDifficultyMap(int indx, bool redraw = true) {
             currentDifficulty = indx;
             currentDifficultyNotes = beatMap.getNotesForMap(indx);
+            editorHistory.clear();
 
             txtDifficultyNumber.Text = (string)beatMap.getValueForDifficultyMap("_difficultyRank", indx);
             txtNoteSpeed.Text        = (string)beatMap.getValueForDifficultyMap("_noteJumpMovementSpeed", indx);
@@ -1184,7 +1186,7 @@ namespace Edda {
             if (updateHistory) {
                 editorHistory.add(true, notes);
             }
-            //editorHistory.print();
+            editorHistory.print();
         }
         private void addNotes(Note n, bool updateHistory = true) {
             addNotes(new List<Note>() { n }, updateHistory);
@@ -1199,7 +1201,7 @@ namespace Edda {
             if (updateHistory) {
                 editorHistory.add(false, notes);
             }
-            //editorHistory.print();
+            editorHistory.print();
         }
         private void removeNotes(Note n, bool updateHistory = true) {
             removeNotes(new List<Note>() { n }, updateHistory);
@@ -1265,12 +1267,15 @@ namespace Edda {
             }
             addNotes(notes);
         }
-        private void applyEdit(Edit<Note> e) {
-            if (e.isAdding) {
-                addNotes(e.items, false);
-            } else {
-                removeNotes(e.items, false);
+        private void applyEdit(Edits<Note> e) {
+            foreach(var edit in e.items) {
+                if (edit.Item1) {
+                    addNotes(edit.Item2, false);
+                } else {
+                    removeNotes(edit.Item2, false);
+                }
             }
+            
         }
         private void updateDragSelection(Point newPoint) {
             Point p1;
@@ -1293,8 +1298,9 @@ namespace Edda {
                 mirroredSelection.Add(mirrored);
             }
             // TODO: make this undoable
-            removeNotes(editorSelectedNotes, false);
-            addNotes(mirroredSelection, false);
+            removeNotes(editorSelectedNotes);
+            addNotes(mirroredSelection);
+            editorHistory.consolidate(2);
             selectNewNotes(mirroredSelection);
         }
 
