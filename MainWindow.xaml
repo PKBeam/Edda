@@ -16,35 +16,35 @@
             <DockPanel  Name="TopPanel">
                 <StackPanel DockPanel.Dock="Left" Orientation="Horizontal">
                     <StackPanel Margin="10 10 0 10">
-                        <Button x:Name="btnNewMap" Width="50" Height="50" Click="btnNewMap_Click">
+                        <Button x:Name="btnNewMap" Width="50" Height="50" Click="BtnNewMap_Click">
                             <Image Source="pack://application:,,,/Edda;component/resources/newMap.png"/>
                         </Button>
                         <TextBlock Margin="0 3 0 0" FontSize="12" HorizontalAlignment="Center">New Map</TextBlock>
                     </StackPanel>
                     <StackPanel Margin="10 10 0 10">
-                        <Button x:Name="btnOpenMap" Width="50" Height="50" Click="btnOpenMap_Click">
+                        <Button x:Name="btnOpenMap" Width="50" Height="50" Click="BtnOpenMap_Click">
                             <Image Source="pack://application:,,,/Edda;component/resources/openMap.png"/>
                         </Button>
                         <TextBlock Margin="0 3 0 0" FontSize="12" HorizontalAlignment="Center">Open Map</TextBlock>
                     </StackPanel>
                     <StackPanel Margin="10 10 0 10">
-                        <Button x:Name="btnSaveMap" Width="50" Height="50" Click="btnSaveMap_Click">
+                        <Button x:Name="btnSaveMap" Width="50" Height="50" Click="BtnSaveMap_Click">
                             <Image Source="pack://application:,,,/Edda;component/resources/saveMap.png"/>
                         </Button>
                         <TextBlock Margin="0 3 0 0" FontSize="12" HorizontalAlignment="Center">Save Map</TextBlock>
                     </StackPanel>
                 </StackPanel>
                 <StackPanel DockPanel.Dock="Right" Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Center">
-                    <Button x:Name="btnAddDifficulty"  Height="50" FontSize="16" Click="btnAddDifficulty_Click" VerticalAlignment="Top" Padding="1,0,1,4">+</Button>
+                    <Button x:Name="btnAddDifficulty"  Height="50" FontSize="16" Click="BtnAddDifficulty_Click" VerticalAlignment="Top" Padding="1,0,1,4">+</Button>
                     <StackPanel Orientation="Vertical">
                         <StackPanel x:Name="DifficultyChangePanel" Margin="10 0 10 0" Orientation="Horizontal">
-                            <Button x:Name="btnChangeDifficulty0" Width="50" Height="50" Click="btnChangeDifficulty0_Click">
+                            <Button x:Name="btnChangeDifficulty0" Width="50" Height="50" Click="BtnChangeDifficulty0_Click">
                                 <Image Source="pack://application:,,,/Edda;component/resources/difficulty1.png"/>
                             </Button>
-                            <Button x:Name="btnChangeDifficulty1" Margin="5 0 0 0"  Width="50" Height="50" Click="btnChangeDifficulty1_Click">
+                            <Button x:Name="btnChangeDifficulty1" Margin="5 0 0 0"  Width="50" Height="50" Click="BtnChangeDifficulty1_Click">
                                 <Image Source="pack://application:,,,/Edda;component/resources/difficulty2.png"/>
                             </Button>
-                            <Button x:Name="btnChangeDifficulty2" Margin="5 0 0 0" Width="50" Height="50" Click="btnChangeDifficulty2_Click">
+                            <Button x:Name="btnChangeDifficulty2" Margin="5 0 0 0" Width="50" Height="50" Click="BtnChangeDifficulty2_Click">
                                 <Image Source="pack://application:,,,/Edda;component/resources/difficulty3.png"/>
                             </Button>
                         </StackPanel>
@@ -62,13 +62,13 @@
             </Border.Background>
             <DockPanel Width="{Binding ElementName=TopPanel, Path=ActualWidth}" HorizontalAlignment="Center" VerticalAlignment="Center">
                 <StackPanel DockPanel.Dock="Left" Margin="10 0 0 0" Orientation="Horizontal">
-                    <Button x:Name="btnSongPlayer" Width="30" Height="30" Margin="0 0 10 0" Click="btnSongPlayer_Click">
+                    <Button x:Name="btnSongPlayer" Width="30" Height="30" Margin="0 0 10 0" Click="BtnSongPlayer_Click">
                         <Image x:Name="imgPlayerButton" Source="pack://application:,,,/Edda;component/resources/playButton.png"/>
                     </Button>
                     <TextBlock x:Name="txtSongPosition" FontSize="16" VerticalAlignment="Center">0:00</TextBlock>
                 </StackPanel>
                 <TextBlock DockPanel.Dock="Right" Margin="0 0 15 0" x:Name="txtSongDuration" FontSize="16" VerticalAlignment="Center">0:00</TextBlock>
-                <Slider x:Name="sliderSongProgress" Margin="10 15 10 15" VerticalAlignment="Center" IsMoveToPointEnabled="True" ValueChanged="sliderSongProgress_ValueChanged"/>
+                <Slider x:Name="sliderSongProgress" Margin="10 15 10 15" VerticalAlignment="Center" IsMoveToPointEnabled="True" ValueChanged="SliderSongProgress_ValueChanged"/>
             </DockPanel>
         </Border>
         <Border DockPanel.Dock="Left" BorderBrush="{DynamicResource {x:Static SystemColors.ControlDarkDarkBrushKey}}" BorderThickness="0, 0, 2, 0" Background="{DynamicResource {x:Static SystemColors.ControlDarkBrushKey}}">
@@ -102,7 +102,7 @@
                         </Border>
 
                         <Border Grid.Row="0" Grid.Column="1">
-                            <TextBox x:Name="txtSongName" TextChanged="txtSongName_TextChanged"/>
+                            <TextBox x:Name="txtSongName" TextChanged="TxtSongName_TextChanged"/>
                         </Border>
 
                         <Border Grid.Row="1" Grid.Column="0">
@@ -110,7 +110,7 @@
                         </Border>
 
                         <Border Grid.Row="1" Grid.Column="1">
-                            <TextBox x:Name="txtArtistName" TextChanged="txtArtistName_TextChanged"/>
+                            <TextBox x:Name="txtArtistName" TextChanged="TxtArtistName_TextChanged"/>
                         </Border>
 
                         <Border Grid.Row="2" Grid.Column="0">
@@ -118,7 +118,7 @@
                         </Border>
 
                         <Border Grid.Row="2" Grid.Column="1">
-                            <TextBox x:Name="txtMapperName" TextChanged="txtMapperName_TextChanged"/>
+                            <TextBox x:Name="txtMapperName" TextChanged="TxtMapperName_TextChanged"/>
                         </Border>
 
                         <Border Grid.Row="3" Grid.Column="0" Margin="0 5 0 0"/>
@@ -128,7 +128,7 @@
                         </Border>
 
                         <Border Grid.Row="4" Grid.Column="1">
-                            <TextBox x:Name="txtSongBPM" Grid.Row="0" Grid.Column="1" LostFocus="txtSongBPM_LostFocus"/>
+                            <TextBox x:Name="txtSongBPM" Grid.Row="0" Grid.Column="1" LostFocus="TxtSongBPM_LostFocus"/>
                         </Border>
 
                         <Border Grid.Row="5" Grid.Column="0">
@@ -136,7 +136,7 @@
                         </Border>
 
                         <Border Grid.Row="5" Grid.Column="1">
-                            <TextBox x:Name="txtSongOffset" Grid.Row="0" Grid.Column="1" LostFocus="txtSongOffset_LostFocus" />
+                            <TextBox x:Name="txtSongOffset" Grid.Row="0" Grid.Column="1" LostFocus="TxtSongOffset_LostFocus" />
                         </Border>
 
 
@@ -147,7 +147,7 @@
                         </Border>
 
                         <Border Grid.Row="8" Grid.Column="1">
-                            <ComboBox x:Name="comboEnvironment" SelectionChanged="comboEnvironment_SelectionChanged">
+                            <ComboBox x:Name="comboEnvironment" SelectionChanged="ComboEnvironment_SelectionChanged">
                                 <ComboBoxItem>Midgard</ComboBoxItem>
                                 <ComboBoxItem>Alfheim</ComboBoxItem>
                                 <ComboBoxItem>Nidavellir</ComboBoxItem>
@@ -184,7 +184,7 @@
                         <Border Grid.Row="0" Grid.Column="1">
                             <StackPanel Orientation="Horizontal">
                                 <TextBlock x:Name="txtSongFileName" Width="90" Grid.Row="0" Grid.Column="1" VerticalAlignment="Center" FontStyle="Italic">N/A</TextBlock>
-                                <Button x:Name="btnPickSong" Width="20" Height="Auto" Click="btnPickSong_Click">...</Button>
+                                <Button x:Name="btnPickSong" Width="20" Height="Auto" Click="BtnPickSong_Click">...</Button>
                             </StackPanel>
                         </Border>
 
@@ -195,7 +195,7 @@
                         <Border Grid.Row="5" Grid.Column="1">
                             <StackPanel Orientation="Horizontal">
                                 <TextBlock x:Name="txtCoverFileName" Width="90" Grid.Row="0" Grid.Column="1" VerticalAlignment="Center" FontStyle="Italic">N/A</TextBlock>
-                                <Button x:Name="btnPickCover" Width="20" Height="Auto" Click="btnPickCover_Click">...</Button>
+                                <Button x:Name="btnPickCover" Width="20" Height="Auto" Click="BtnPickCover_Click">...</Button>
                             </StackPanel>
                         </Border>
 
@@ -244,7 +244,7 @@
                         </Border>
 
                         <Border Grid.Row="0" Grid.Column="1">
-                            <TextBox x:Name="txtDifficultyNumber" LostFocus="txtDifficultyNumber_LostFocus"/>
+                            <TextBox x:Name="txtDifficultyNumber" LostFocus="TxtDifficultyNumber_LostFocus"/>
                         </Border>
 
                         <Border Grid.Row="1" Grid.Column="0">
@@ -252,11 +252,11 @@
                         </Border>
 
                         <Border Grid.Row="1" Grid.Column="1">
-                            <TextBox x:Name="txtNoteSpeed" LostFocus="txtNoteSpeed_LostFocus"/>
+                            <TextBox x:Name="txtNoteSpeed" LostFocus="TxtNoteSpeed_LostFocus"/>
                         </Border>
 
                         <Border Grid.Row="2" Grid.Column="1">
-                            <Button x:Name="btnDeleteDifficulty" Click="btnDeleteDifficulty_Click">Delete Difficulty</Button>
+                            <Button x:Name="btnDeleteDifficulty" Click="BtnDeleteDifficulty_Click">Delete Difficulty</Button>
                         </Border>
 
                         <Border Grid.Row="3" Grid.Column="0" Margin="0 5 0 0"/>
@@ -268,7 +268,7 @@
                         <Border Grid.Row="4" Grid.Column="1">
                             <DockPanel>
                                 <TextBlock x:Name="txtSongVol" DockPanel.Dock="Right" Width="30" Margin="5 0 0 0">0%</TextBlock>
-                                <Slider x:Name="sliderSongVol" Maximum="1" ValueChanged="sliderSongVol_ValueChanged"/>
+                                <Slider x:Name="sliderSongVol" Maximum="1" ValueChanged="SliderSongVol_ValueChanged"/>
                             </DockPanel>
                         </Border>
 
@@ -279,7 +279,7 @@
                         <Border Grid.Row="5" Grid.Column="1">
                             <DockPanel>
                                 <TextBlock x:Name="txtDrumVol" DockPanel.Dock="Right" Width="30" Margin="5 0 0 0">0%</TextBlock>
-                                <Slider x:Name="sliderDrumVol" Maximum="1" ValueChanged="sliderDrumVol_ValueChanged"/>
+                                <Slider x:Name="sliderDrumVol" Maximum="1" ValueChanged="SliderDrumVol_ValueChanged"/>
                             </DockPanel>
                         </Border>
 
@@ -291,7 +291,7 @@
 
                         <Border Grid.Row="7" Grid.Column="1">
                             <StackPanel Orientation="Horizontal">
-                                <CheckBox x:Name="checkGridSnap" VerticalAlignment="Center" Click="checkGridSnap_Click"></CheckBox>
+                                <CheckBox x:Name="checkGridSnap" VerticalAlignment="Center" Click="CheckGridSnap_Click"></CheckBox>
                             </StackPanel>
                         </Border>
       
@@ -302,7 +302,7 @@
                         <Border Grid.Row="8" Grid.Column="1">
                             <StackPanel Orientation="Horizontal">
                                 <TextBlock Margin="0 0 3 0" VerticalAlignment="Center">1/</TextBlock>
-                                <TextBox Width="25" x:Name="txtGridDivision" LostFocus="txtGridDivision_LostFocus" VerticalAlignment="Center"/>
+                                <TextBox Width="25" x:Name="txtGridDivision" LostFocus="TxtGridDivision_LostFocus" VerticalAlignment="Center"/>
                             </StackPanel>
                         </Border>
 
@@ -311,7 +311,7 @@
                         </Border>
 
                         <Border Grid.Row="9" Grid.Column="1">
-                            <TextBox x:Name="txtGridOffset" LostFocus="txtGridOffset_LostFocus"/>
+                            <TextBox x:Name="txtGridOffset" LostFocus="TxtGridOffset_LostFocus"/>
                         </Border>
 
                         <Border Grid.Row="10" Grid.Column="0">
@@ -319,7 +319,7 @@
                         </Border>
 
                         <Border Grid.Row="10" Grid.Column="1">
-                            <TextBox x:Name="txtGridSpacing" LostFocus="txtGridSpacing_LostFocus"/>
+                            <TextBox x:Name="txtGridSpacing" LostFocus="TxtGridSpacing_LostFocus"/>
                         </Border>
 
                         <Border Grid.Row="11" Grid.Column="0" Margin="0 5 0 0"/>
@@ -330,7 +330,7 @@
 
                         <Border Grid.Row="12" Grid.Column="1">
                             <StackPanel Orientation="Horizontal">
-                                <CheckBox x:Name="checkWaveform" VerticalAlignment="Center" Click="checkWaveform_Click"></CheckBox>
+                                <CheckBox x:Name="checkWaveform" VerticalAlignment="Center" Click="CheckWaveform_Click"></CheckBox>
                             </StackPanel>
                         </Border>
                     </Grid>
@@ -396,7 +396,7 @@
                 <Image Grid.Column="7" Source="pack://application:,,,/Edda;component/resources/drum.png" Name="Drum4" VerticalAlignment="Bottom"/>
             </Grid>
             <!-- Map Notes -->
-            <ScrollViewer x:Name="scrollEditor" VerticalScrollBarVisibility="Hidden" CanContentScroll="False" ScrollChanged="scrollEditor_ScrollChanged" PreviewMouseWheel="scrollEditor_PreviewMouseWheel" SizeChanged="scrollEditor_SizeChanged" MouseMove="scrollEditor_MouseMove" MouseLeave="scrollEditor_MouseLeave" MouseEnter="scrollEditor_MouseEnter" MouseLeftButtonUp="scrollEditor_MouseLeftButtonUp" MouseRightButtonUp="scrollEditor_MouseRightButtonUp" PreviewMouseLeftButtonDown="scrollEditor_PreviewMouseLeftButtonDown">
+            <ScrollViewer x:Name="scrollEditor" VerticalScrollBarVisibility="Hidden" CanContentScroll="False" ScrollChanged="ScrollEditor_ScrollChanged" PreviewMouseWheel="ScrollEditor_PreviewMouseWheel" SizeChanged="ScrollEditor_SizeChanged" MouseMove="ScrollEditor_MouseMove" MouseLeave="ScrollEditor_MouseLeave" MouseEnter="ScrollEditor_MouseEnter" MouseLeftButtonUp="ScrollEditor_MouseLeftButtonUp" MouseRightButtonUp="ScrollEditor_MouseRightButtonUp" PreviewMouseLeftButtonDown="ScrollEditor_PreviewMouseLeftButtonDown">
                 <Canvas x:Name="EditorGrid" SizeChanged="EditorGrid_SizeChanged"/>
             </ScrollViewer>
         </Grid>

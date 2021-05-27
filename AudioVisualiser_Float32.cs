@@ -8,46 +8,46 @@ using System.Windows.Media;
 using System.IO;
 using System.Windows.Threading;
 
-public class AudioVisualiser: DispatcherObject {
+public class AudioVisualiser_Float32 : DispatcherObject {
     private readonly double maxDimension = 50000;
     private readonly Color waveformColour = Color.FromArgb(96, 0, 0, 255);
     private CancellationTokenSource tokenSource;
     private CancellationToken token;
     private WaveStream reader;
     private bool isDrawing;
-    public AudioVisualiser(WaveStream reader) {
-        recreateTokens();
+    public AudioVisualiser_Float32(WaveStream reader) {
+        RecreateTokens();
         this.reader = reader;
         this.isDrawing = false;
     }
 
-    public BitmapSource drawFloat32(double height, double width, bool useGDI = false, double offsetStart = 0, double offsetEnd = 0) {
+    public BitmapSource Draw(double height, double width, bool useGDI = false, double offsetStart = 0, double offsetEnd = 0) {
         var largest = Math.Max(height, width);
         if (largest > maxDimension) {
             double scale = maxDimension / largest;
             height *= scale;
             width *= scale;
         }
-        return (useGDI) ? drawFloat32GDI(height, width) : drawFloat32WPF(height, width, offsetStart, offsetEnd);
+        return (useGDI) ? Draw_GDI(height, width) : Draw_WPF(height, width, offsetStart, offsetEnd);
     }
-    private BitmapSource drawFloat32GDI(double height, double width) {
+    private BitmapSource Draw_GDI(double height, double width) {
         tokenSource.Cancel();
-        recreateTokens();
+        RecreateTokens();
         token = tokenSource.Token;
         while (isDrawing) { }
-        return _drawFloat32GDI(token, height, width);
+        return _Draw_GDI(token, height, width);
     }
-    private BitmapSource drawFloat32WPF(double height, double width, double offsetStart = 0, double offsetEnd = 0) {
+    private BitmapSource Draw_WPF(double height, double width, double offsetStart = 0, double offsetEnd = 0) {
         tokenSource.Cancel();
-        recreateTokens();
+        RecreateTokens();
         token = tokenSource.Token;
         while (isDrawing) { }
-        return _drawFloat32WPF(token, height, width, offsetStart, offsetEnd);
+        return _Draw_WPF(token, height, width, offsetStart, offsetEnd);
     }
 
     // originally from https://stackoverflow.com/questions/2042155/high-quality-graph-waveform-display-component-in-c-sharp,
     // adapted to use the pcm_f32le format and replace GDI+ with WPF drawing
-    private BitmapSource _drawFloat32GDI(CancellationToken ct, double height, double width) {
+    private BitmapSource _Draw_GDI(CancellationToken ct, double height, double width) {
         isDrawing = true;
         reader.Position = 0;
         int bytesPerSample = (reader.WaveFormat.BitsPerSample / 8) * reader.WaveFormat.Channels;
@@ -97,7 +97,7 @@ public class AudioVisualiser: DispatcherObject {
         isDrawing = false;
         return b;
     }
-    private BitmapSource _drawFloat32WPF(CancellationToken ct, double height, double width, double offsetStart = 0, double offsetEnd = 0) {
+    private BitmapSource _Draw_WPF(CancellationToken ct, double height, double width, double offsetStart = 0, double offsetEnd = 0) {
         if (offsetEnd == 0) {
             offsetEnd = height;
         }
@@ -108,7 +108,7 @@ public class AudioVisualiser: DispatcherObject {
         DrawingContext dc = dv.RenderOpen();
         Pen bluePen = new Pen(new SolidColorBrush(waveformColour), 2);
         bluePen.Freeze();
-        
+
         int samplesPerPixel = (int)(reader.Length / (double)(height * bytesPerSample));
         int bytesPerPixel = bytesPerSample * samplesPerPixel;
         int bytesRead;
@@ -156,10 +156,10 @@ public class AudioVisualiser: DispatcherObject {
 
         // program crashes with UCEERR_RENDERTHREADFAILURE if this isnt converted to a BitmapImage
         // https://github.com/dotnet/wpf/issues/3100
-        return renderTargetToImage(bmp);
+        return RenderTargetToImage(bmp);
     }
 
-    private BitmapImage renderTargetToImage(RenderTargetBitmap input) {
+    private BitmapImage RenderTargetToImage(RenderTargetBitmap input) {
         DateTime start = DateTime.Now;
         // https://stackoverflow.com/questions/13987408/convert-rendertargetbitmap-to-bitmapimage#13988871
         var bitmapEncoder = new PngBitmapEncoder();
@@ -181,7 +181,7 @@ public class AudioVisualiser: DispatcherObject {
 
         return bitmapImage;
     }
-    private void recreateTokens() {
+    private void RecreateTokens() {
         tokenSource = new CancellationTokenSource();
         token = tokenSource.Token;
     }

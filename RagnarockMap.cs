@@ -11,11 +11,11 @@ public class RagnarockMap {
 
     // constants
     private readonly string[] difficultyNames = { "Easy", "Normal", "Hard" };
-    private readonly int      defaultNoteJumpMovementSpeed = 15;
-    private readonly double   defaultBPM = 120;
-    private readonly string   defaultSongName = "song.ogg";
-    private readonly double   defaultGridSpacing = 1.0;
-    private readonly int      defaultGridDivision = 4;
+    private readonly int defaultNoteJumpMovementSpeed = 15;
+    private readonly double defaultBPM = 120;
+    private readonly string defaultSongName = "song.ogg";
+    private readonly double defaultGridSpacing = 1.0;
+    private readonly int defaultGridDivision = 4;
 
     // public state variables
     public int numDifficulties {
@@ -28,43 +28,43 @@ public class RagnarockMap {
     public string folderPath;
 
     // private state variables
-    private string   infoStr;
+    private string infoStr;
     private string[] difficultyMaps = new string[3];
-    private string   eddaVersionNumber;
+    private string eddaVersionNumber;
 
     public RagnarockMap(string folderPath, bool makeNew, string eddaVersionNumber) {
         this.folderPath = folderPath;
         this.eddaVersionNumber = eddaVersionNumber;
         if (makeNew) {
-            initInfo();
-            addDifficultyMap(difficultyNames[0]);
-            writeDifficultyMap(0);
-            writeInfo();
+            InitInfo();
+            AddDifficultyMap(difficultyNames[0]);
+            WriteDifficultyMap(0);
+            WriteInfo();
         } else {
-            readInfo();
+            ReadInfo();
             for (int i = 0; i < numDifficulties; i++) {
-                readDifficultyMap(i);
+                ReadDifficultyMap(i);
             }
             // handle edda-specific custom fields for compatibility with MMA2 maps
             for (var i = 0; i < numDifficulties; i++) {
-                if (getCustomValueForDifficultyMap("_editorGridSpacing", i) == null) {
-                    setCustomValueForDifficultyMap("_editorGridSpacing", defaultGridSpacing, i);
+                if (GetCustomValueForDifficultyMap("_editorGridSpacing", i) == null) {
+                    SetCustomValueForDifficultyMap("_editorGridSpacing", defaultGridSpacing, i);
                 }
-                if (getCustomValueForDifficultyMap("_editorGridDivision", i) == null) {
-                    setCustomValueForDifficultyMap("_editorGridDivision", defaultGridDivision, i);
+                if (GetCustomValueForDifficultyMap("_editorGridDivision", i) == null) {
+                    SetCustomValueForDifficultyMap("_editorGridDivision", defaultGridDivision, i);
                 }
             }
         }
     }
-    private void initInfo() {
+    private void InitInfo() {
         // init info.dat json
         var infoDat = new {
             _version = "1",
             _songName = "",
             _songSubName = "",                              // unused?
-            _songAuthorName = "",                           
-            _levelAuthorName = "",                          
-            _beatsPerMinute = defaultBPM,                   
+            _songAuthorName = "",
+            _levelAuthorName = "",
+            _beatsPerMinute = defaultBPM,
             _shuffle = 0,                                   // unused?
             _shufflePeriod = 0.5,                           // unused?
             _previewStartTime = 0,                          // unused?
@@ -92,43 +92,43 @@ public class RagnarockMap {
         };
         infoStr = JsonConvert.SerializeObject(infoDat, Formatting.Indented);
     }
-    public void readInfo() {
-        infoStr = File.ReadAllText(absPath("info.dat"));
+    public void ReadInfo() {
+        infoStr = File.ReadAllText(AbsPath("info.dat"));
     }
-    public void writeInfo() {
-        File.WriteAllText(absPath("info.dat"), infoStr);
+    public void WriteInfo() {
+        File.WriteAllText(AbsPath("info.dat"), infoStr);
     }
-    public void setValue(string key, object value) {
+    public void SetValue(string key, object value) {
         var obj = JObject.Parse(infoStr);
         obj[key] = JToken.FromObject(value);
         infoStr = JsonConvert.SerializeObject(obj, Formatting.Indented);
     }
-    public JToken getValue(string key) {
+    public JToken GetValue(string key) {
         var obj = JObject.Parse(infoStr);
         var res = obj[key];
         return res;
     }
-    public void setValueForDifficultyMap(string key, object value, int indx) {
+    public void SetValueForDifficultyMap(string key, object value, int indx) {
         var obj = JObject.Parse(infoStr);
         obj["_difficultyBeatmapSets"][0]["_difficultyBeatmaps"][indx][key] = JToken.FromObject(value);
         infoStr = JsonConvert.SerializeObject(obj, Formatting.Indented);
     }
-    public JToken getValueForDifficultyMap(string key, int indx) {
+    public JToken GetValueForDifficultyMap(string key, int indx) {
         var obj = JObject.Parse(infoStr);
         var res = obj["_difficultyBeatmapSets"][0]["_difficultyBeatmaps"][indx][key];
         return res;
     }
-    public void setCustomValueForDifficultyMap(string key, object value, int indx) {
+    public void SetCustomValueForDifficultyMap(string key, object value, int indx) {
         var obj = JObject.Parse(infoStr);
         obj["_difficultyBeatmapSets"][0]["_difficultyBeatmaps"][indx]["_customData"][key] = JToken.FromObject(value);
         infoStr = JsonConvert.SerializeObject(obj, Formatting.Indented);
     }
-    public JToken getCustomValueForDifficultyMap(string key, int indx) {
+    public JToken GetCustomValueForDifficultyMap(string key, int indx) {
         var obj = JObject.Parse(infoStr);
         var res = obj["_difficultyBeatmapSets"][0]["_difficultyBeatmaps"][indx]["_customData"][key];
         return res;
     }
-    public void addDifficultyMap(string difficulty) {
+    public void AddDifficultyMap(string difficulty) {
         if (numDifficulties == 3) {
             return;
         }
@@ -167,20 +167,20 @@ public class RagnarockMap {
         var mapStr = JsonConvert.SerializeObject(mapDat, Formatting.Indented);
         difficultyMaps[numDifficulties - 1] = mapStr;
     }
-    public void readDifficultyMap(int indx) {
-        var filename = (string)getValueForDifficultyMap("_beatmapFilename", indx);
-        difficultyMaps[indx] = File.ReadAllText(absPath(filename));
+    public void ReadDifficultyMap(int indx) {
+        var filename = (string)GetValueForDifficultyMap("_beatmapFilename", indx);
+        difficultyMaps[indx] = File.ReadAllText(AbsPath(filename));
     }
-    public void writeDifficultyMap(int indx) {
-        var filename = (string)getValueForDifficultyMap("_beatmapFilename", indx);
-        File.WriteAllText(absPath(filename), difficultyMaps[indx]);
+    public void WriteDifficultyMap(int indx) {
+        var filename = (string)GetValueForDifficultyMap("_beatmapFilename", indx);
+        File.WriteAllText(AbsPath(filename), difficultyMaps[indx]);
     }
-    public void deleteDifficultyMap(int indx) {
+    public void DeleteDifficultyMap(int indx) {
         if (numDifficulties == 1) {
             return;
         }
-        var filename = (string)getValueForDifficultyMap("_beatmapFilename", indx);
-        File.Delete(absPath(filename));
+        var filename = (string)GetValueForDifficultyMap("_beatmapFilename", indx);
+        File.Delete(AbsPath(filename));
         for (int i = indx; i < numDifficulties - 1; i++) {
             difficultyMaps[i] = difficultyMaps[i + 1];
         }
@@ -190,22 +190,22 @@ public class RagnarockMap {
         var beatmaps = (JArray)obj["_difficultyBeatmapSets"][0]["_difficultyBeatmaps"];
         beatmaps.RemoveAt(indx);
         infoStr = JsonConvert.SerializeObject(obj, Formatting.Indented);
-        renameDifficultyMaps();
-        writeInfo();
+        RenameDifficultyMaps();
+        WriteInfo();
         //writeDifficultyMap(indx);
     }
-    private void renameDifficultyMaps() {
+    private void RenameDifficultyMaps() {
         for (int i = 0; i < numDifficulties; i++) {
-            var oldFile = (string)getValueForDifficultyMap("_beatmapFilename", i);
-            File.Move(absPath(oldFile), absPath($"{difficultyNames[i]}_temp.dat"));
-            setValueForDifficultyMap("_difficulty", difficultyNames[i], i);
-            setValueForDifficultyMap("_beatmapFilename", $"{difficultyNames[i]}.dat", i);
+            var oldFile = (string)GetValueForDifficultyMap("_beatmapFilename", i);
+            File.Move(AbsPath(oldFile), AbsPath($"{difficultyNames[i]}_temp.dat"));
+            SetValueForDifficultyMap("_difficulty", difficultyNames[i], i);
+            SetValueForDifficultyMap("_beatmapFilename", $"{difficultyNames[i]}.dat", i);
         }
         for (int i = 0; i < numDifficulties; i++) {
-            File.Move(absPath($"{difficultyNames[i]}_temp.dat"), absPath($"{difficultyNames[i]}.dat"));
+            File.Move(AbsPath($"{difficultyNames[i]}_temp.dat"), AbsPath($"{difficultyNames[i]}.dat"));
         }
     }
-    public List<Note> getNotesForMap(int indx) {
+    public List<Note> GetNotesForMap(int indx) {
         var obj = JObject.Parse(difficultyMaps[indx]);
         var res = obj["_notes"];
         List<Note> output = new List<Note>();
@@ -216,7 +216,7 @@ public class RagnarockMap {
         }
         return output;
     }
-    public void setNotesForMap(List<Note> notes, int indx) {
+    public void SetNotesForMap(List<Note> notes, int indx) {
         var numNotes = notes.Count;
         var notesObj = new Object[numNotes];
         for (int i = 0; i < numNotes; i++) {
@@ -237,7 +237,7 @@ public class RagnarockMap {
     }
 
     // helper functions
-    private string absPath(string f) {
+    private string AbsPath(string f) {
         return Path.Combine(folderPath, f);
     }
 }
