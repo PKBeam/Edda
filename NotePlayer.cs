@@ -2,7 +2,7 @@
 using NAudio.Wave;
 using NAudio.CoreAudioApi;
 // todo: put more drum samples in?
-public class Drummer : IDisposable {
+public class NotePlayer : IDisposable {
 
     int streams;
     int uniqueSamples;
@@ -11,7 +11,7 @@ public class Drummer : IDisposable {
     AudioFileReader[] noteStreams;
     WasapiOut[] notePlayers;
 
-    public Drummer(string[] filePaths, int streams, int desiredLatency) {
+    public NotePlayer(string[] filePaths, int streams, int desiredLatency) {
         this.lastPlayedStream = 0;
         this.streams = streams;
         this.uniqueSamples = filePaths.Length;

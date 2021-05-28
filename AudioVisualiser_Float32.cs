@@ -8,13 +8,17 @@ using System.Windows.Media;
 using System.IO;
 using System.Windows.Threading;
 
-public class AudioVisualiser_Float32 : DispatcherObject {
+public class AudioVisualiser_Float32 {
     private readonly double maxDimension = 50000;
-    private readonly Color waveformColour = Color.FromArgb(96, 0, 0, 255);
+
+    private readonly Color waveformColourWPF = Color.FromArgb(96, 0, 0, 255);
+    private readonly System.Drawing.Color waveformColourGDI = System.Drawing.Color.FromArgb(180, 0, 0, 255);
+
     private CancellationTokenSource tokenSource;
     private CancellationToken token;
     private WaveStream reader;
     private bool isDrawing;
+
     public AudioVisualiser_Float32(WaveStream reader) {
         RecreateTokens();
         this.reader = reader;
@@ -56,7 +60,7 @@ public class AudioVisualiser_Float32 : DispatcherObject {
         System.Drawing.Graphics graphics = System.Drawing.Graphics.FromImage(bitmap);
         graphics.SmoothingMode = System.Drawing.Drawing2D.SmoothingMode.HighSpeed;
         graphics.Clear(System.Drawing.Color.Transparent);
-        System.Drawing.Pen bluePen = new System.Drawing.Pen(System.Drawing.Color.FromArgb(180, 0, 0, 255));
+        System.Drawing.Pen bluePen = new System.Drawing.Pen(waveformColourGDI);
 
         int samplesPerPixel = (int)(reader.Length / (double)(height * bytesPerSample));
         int bytesPerPixel = bytesPerSample * samplesPerPixel;
@@ -106,7 +110,7 @@ public class AudioVisualiser_Float32 : DispatcherObject {
         int bytesPerSample = reader.WaveFormat.BitsPerSample / 8 * reader.WaveFormat.Channels;
         DrawingVisual dv = new DrawingVisual();
         DrawingContext dc = dv.RenderOpen();
-        Pen bluePen = new Pen(new SolidColorBrush(waveformColour), 2);
+        Pen bluePen = new Pen(new SolidColorBrush(waveformColourWPF), 2);
         bluePen.Freeze();
 
         int samplesPerPixel = (int)(reader.Length / (double)(height * bytesPerSample));

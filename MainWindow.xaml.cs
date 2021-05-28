@@ -152,7 +152,7 @@ namespace Edda {
         SampleChannel songChannel;
         VorbisWaveReader songStream;
         WasapiOut songPlayer;
-        Drummer drummer;
+        NotePlayer drummer;
 
         public MainWindow() {
             InitializeComponent();
@@ -161,7 +161,7 @@ namespace Edda {
             scrollEditor.Tag = 0;
 
             string[] drumSounds = { "Resources/drum1.wav", "Resources/drum2.wav", "Resources/drum3.wav", "Resources/drum4.wav" };
-            drummer = new Drummer(drumSounds, notePlaybackStreams, desiredWASAPILatency);
+            drummer = new NotePlayer(drumSounds, notePlaybackStreams, desiredWASAPILatency);
 
             // disable parts of UI, as no map is loaded
             btnSaveMap.IsEnabled = false;
