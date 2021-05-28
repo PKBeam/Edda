@@ -7,6 +7,7 @@ using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using Note = System.ValueTuple<double, int>;
 
+
 public class RagnarockMap {
 
     // constants
@@ -84,16 +85,19 @@ public class RagnarockMap {
                 },
             },
             _difficultyBeatmapSets = new[] {
-                new {
-                    _beatmapCharacteristicName = "Standard",
-                    _difficultyBeatmaps = new List<object> {},
-                },
+            new {
+                _beatmapCharacteristicName = "Standard",
+                _difficultyBeatmaps = new List<object> {},
             },
+        },
         };
         infoStr = JsonConvert.SerializeObject(infoDat, Formatting.Indented);
     }
     public void ReadInfo() {
         infoStr = File.ReadAllText(AbsPath("info.dat"));
+        if (!ValidateInfo()) {
+            throw new Exception("Invalid info.dat file");
+        }
     }
     public void WriteInfo() {
         File.WriteAllText(AbsPath("info.dat"), infoStr);
@@ -235,7 +239,121 @@ public class RagnarockMap {
         difficultyMaps[indx] = JsonConvert.SerializeObject(thisMapStr, Formatting.Indented);
         //mapsStr[selectedDifficulty]["_notes"] = jObj;
     }
+    private bool ValidateInfo() {
 
+        List<JTokenType> stringTypes = new List<JTokenType>() { JTokenType.String };
+        List<JTokenType> numericTypes = new List<JTokenType>() { JTokenType.Float, JTokenType.Integer };
+        List<JTokenType> arrayTypes = new List<JTokenType>() { JTokenType.Array };
+        (float, float) positiveNumeric = (0, float.PositiveInfinity);
+        (float, float) anyNumeric = (float.NegativeInfinity, float.PositiveInfinity);
+
+        Dictionary<string, List<JTokenType>> expectedTypesL1 = new Dictionary<string, List<JTokenType>> {
+            {"_version",                   stringTypes  },
+            {"_songName",                  stringTypes  },
+            {"_songSubName",               stringTypes  },
+            {"_songAuthorName",            stringTypes  },
+            {"_levelAuthorName",           stringTypes  },
+            {"_beatsPerMinute",            numericTypes },
+            {"_shuffle",                   numericTypes },
+            {"_shufflePeriod",             numericTypes },
+            {"_previewStartTime",          numericTypes },
+            {"_previewDuration",           numericTypes },
+            {"_songApproximativeDuration", numericTypes },
+            {"_songFilename",              stringTypes  },
+            {"_coverImageFilename",        stringTypes  },
+            {"_environmentName",           stringTypes  },
+            {"_songTimeOffset",            numericTypes },
+            {"_difficultyBeatmapSets",     arrayTypes   }
+        };
+        Dictionary<string, (float, float)> expectedValuesL1 = new Dictionary<string, (float, float)> {
+            {"_beatsPerMinute",            positiveNumeric },
+            {"_shuffle",                   positiveNumeric },
+            {"_shufflePeriod",             positiveNumeric },
+            {"_previewStartTime",          positiveNumeric },
+            {"_previewDuration",           positiveNumeric },
+            {"_songApproximativeDuration", positiveNumeric },
+            {"_songTimeOffset",            anyNumeric      },
+        };
+        Dictionary<string, List<JTokenType>> expectedTypesL2 = new Dictionary<string, List<JTokenType>> {
+            {"_beatmapCharacteristicName", stringTypes },
+            {"_difficultyBeatmaps",        arrayTypes  },
+        };
+        Dictionary<string, List<JTokenType>> expectedTypesL3 = new Dictionary<string, List<JTokenType>> {
+            {"_difficulty",              stringTypes  },
+            {"_difficultyRank",          numericTypes },
+            {"_beatmapFilename",         stringTypes  },
+            {"_noteJumpMovementSpeed",   numericTypes },
+            {"_noteJumpStartBeatOffset", numericTypes },
+        };
+        Dictionary<string, (float, float)> expectedValuesL3 = new Dictionary<string, (float, float)> {
+            // this is handled specially
+            /*{"_difficultyRank",          (0, 11)},*/ 
+            {"_noteJumpMovementSpeed",   positiveNumeric },
+            {"_noteJumpStartBeatOffset", anyNumeric      },
+        };
+        try {
+            // validate all fields and types
+            var obj = JObject.Parse(infoStr);
+            foreach (var i in expectedTypesL1) {
+                // validate type
+                if (!i.Value.Contains(obj[i.Key].Type)) {
+                    return false;
+                }
+                // validate value
+                if (i.Value == numericTypes) {
+                    var val = Helper.DoubleParseInvariant((string)obj[i.Key]);
+                    if (!Helper.RangeCheck(val, expectedValuesL1[i.Key].Item1, expectedValuesL1[i.Key].Item2)) {
+                        return false;
+                    }
+                }
+            }
+            // validate array
+            var dbs = (JArray)obj["_difficultyBeatmapSets"];
+            foreach (var dbsItem in dbs) {
+                foreach (var i in expectedTypesL2) {
+                    // validate type
+                    if (!i.Value.Contains(dbsItem[i.Key].Type)) {
+                        return false;
+                    }
+                }
+                // validate array
+                var db = (JArray)dbsItem["_difficultyBeatmaps"];
+                foreach (var dbItem in db) {
+                    foreach (var i in expectedTypesL3) {
+                        // validate type
+                        if (!i.Value.Contains(dbItem[i.Key].Type)) {
+                            return false;
+                        }
+                        // validate value
+                        if (i.Value == numericTypes) {
+                            var val = Helper.DoubleParseInvariant((string)dbItem[i.Key]);
+                            // special case
+                            if (i.Key == "_difficultyRank") {
+                                if (val < 1 || 10 < val) {
+                                    return false;
+                                }
+                            } else if (!Helper.RangeCheck(val, expectedValuesL3[i.Key].Item1, expectedValuesL3[i.Key].Item2)) {
+                                return false;
+                            }
+                        }
+                    }
+                }
+            }
+        } catch (Exception e) {
+            return false;
+        }
+        // create _customData if it isnt there
+        return true;
+    }
+    private bool ValidateMap() {
+
+    }
+    private void InitCustomData() {
+
+    }
+    private void InitCustomDataForMap() {
+
+    }
     // helper functions
     private string AbsPath(string f) {
         return Path.Combine(folderPath, f);

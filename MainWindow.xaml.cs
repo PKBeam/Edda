@@ -73,7 +73,7 @@ namespace Edda {
             get { return (int)btnSongPlayer.Tag == 1; }
         }
         double currentBPM {
-            get { return DoubleParseInvariant((string)beatMap.GetValue("_beatsPerMinute")); }
+            get { return Helper.DoubleParseInvariant((string)beatMap.GetValue("_beatsPerMinute")); }
         }
 
         // store images for drawing runes
@@ -529,7 +529,7 @@ namespace Edda {
         }
         private void TxtSongBPM_LostFocus(object sender, RoutedEventArgs e) {
             double BPM;
-            double prevBPM = DoubleParseInvariant((string)beatMap.GetValue("_beatsPerMinute"));
+            double prevBPM = Helper.DoubleParseInvariant((string)beatMap.GetValue("_beatsPerMinute"));
             if (double.TryParse(txtSongBPM.Text, out BPM)) {
                 if (BPM != prevBPM) {
                     beatMap.SetValue("_beatsPerMinute", BPM);
@@ -544,7 +544,7 @@ namespace Edda {
         }
         private void TxtSongOffset_LostFocus(object sender, RoutedEventArgs e) {
             double offset;
-            double prevOffset = DoubleParseInvariant((string)beatMap.GetValue("_songTimeOffset"));
+            double prevOffset = Helper.DoubleParseInvariant((string)beatMap.GetValue("_songTimeOffset"));
             if (double.TryParse(txtSongOffset.Text, out offset)) {
                 beatMap.SetValue("_songTimeOffset", offset);
             } else {
@@ -565,7 +565,7 @@ namespace Edda {
         private void TxtDifficultyNumber_LostFocus(object sender, RoutedEventArgs e) {
             int prevLevel = (int)beatMap.GetValueForDifficultyMap("_difficultyRank", currentDifficulty);
             int level;
-            if (int.TryParse(txtDifficultyNumber.Text, out level) && RangeCheck(level, 1, 10)) {
+            if (int.TryParse(txtDifficultyNumber.Text, out level) && Helper.RangeCheck(level, 1, 10)) {
                 beatMap.SetValueForDifficultyMap("_difficultyRank", level, currentDifficulty);
             } else {
                 MessageBox.Show($"The difficulty level must be an integer between 1 and 10.", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
@@ -588,7 +588,7 @@ namespace Edda {
             editorSnapToGrid = (checkGridSnap.IsChecked == true);
         }
         private void TxtGridOffset_LostFocus(object sender, RoutedEventArgs e) {
-            double prevOffset = DoubleParseInvariant((string)beatMap.GetCustomValueForDifficultyMap("_editorOffset", currentDifficulty));
+            double prevOffset = Helper.DoubleParseInvariant((string)beatMap.GetCustomValueForDifficultyMap("_editorOffset", currentDifficulty));
             double offset;
             if (double.TryParse(txtGridOffset.Text, out offset)) {
                 if (offset != prevOffset) {
@@ -613,7 +613,7 @@ namespace Edda {
             txtGridOffset.Text = offset.ToString();
         }
         private void TxtGridSpacing_LostFocus(object sender, RoutedEventArgs e) {
-            double prevSpacing = DoubleParseInvariant((string)beatMap.GetCustomValueForDifficultyMap("_editorGridSpacing", currentDifficulty));
+            double prevSpacing = Helper.DoubleParseInvariant((string)beatMap.GetCustomValueForDifficultyMap("_editorGridSpacing", currentDifficulty));
             double spacing;
             if (double.TryParse(txtGridSpacing.Text, out spacing)) {
                 if (spacing != prevSpacing) {
@@ -631,7 +631,7 @@ namespace Edda {
             int prevDiv = int.Parse((string)beatMap.GetCustomValueForDifficultyMap("_editorGridDivision", currentDifficulty));
             int div;
 
-            if (int.TryParse(txtGridDivision.Text, out div) && RangeCheck(div, 1, gridDivisionMax)) {
+            if (int.TryParse(txtGridDivision.Text, out div) && Helper.RangeCheck(div, 1, gridDivisionMax)) {
                 if (div != prevDiv) {
                     editorGridDivision = div;
                     beatMap.SetCustomValueForDifficultyMap("_editorGridDivision", div, currentDifficulty);
@@ -787,7 +787,7 @@ namespace Edda {
                         break;
                     }
                     // check range
-                    if (RangeCheck(n.Item1, startBeat, endBeat) && RangeCheck(n.Item2, editorColStart, editorMouseGridCol)) {
+                    if (Helper.RangeCheck(n.Item1, startBeat, endBeat) && Helper.RangeCheck(n.Item2, editorColStart, editorMouseGridCol)) {
                         newSelection.Add(n);
                     }
                 }
@@ -948,8 +948,8 @@ namespace Edda {
 
             // set internal values
             editorGridDivision = int.Parse(txtGridDivision.Text);
-            editorGridSpacing = DoubleParseInvariant(txtGridSpacing.Text);
-            editorGridOffset = DoubleParseInvariant(txtGridOffset.Text);
+            editorGridSpacing = Helper.DoubleParseInvariant(txtGridSpacing.Text);
+            editorGridOffset = Helper.DoubleParseInvariant(txtGridOffset.Text);
 
             EnableDifficultyButtons();
             if (redraw) {
@@ -996,7 +996,6 @@ namespace Edda {
             LoadSong();
             return true;
         }
-        // TODO: draw a song waveform (https://stackoverflow.com/questions/2042155/high-quality-graph-waveform-display-component-in-c-sharp)
         private void LoadSong() {
 
             // cleanup old players
@@ -1458,9 +1457,7 @@ namespace Edda {
         }
 
         // helper functions
-        private double DoubleParseInvariant(string s) {
-            return double.Parse(s, CultureInfo.InvariantCulture);
-        }
+
         private double BeatForRow(double row) {
             double userOffsetBeat = currentBPM * editorGridOffset / 60;
             return row / (double)editorGridDivision + userOffsetBeat;
@@ -1495,11 +1492,7 @@ namespace Edda {
         private string AbsPath(string f) {
             return System.IO.Path.Combine(beatMap.folderPath, f);
         }
-        private bool RangeCheck(double a, double x, double y) {
-            double lower = Math.Min(x, y);
-            double higher = Math.Max(x, y);
-            return (lower <= a && a <= higher);
-        }
+
         private string UidGenerator(Note n) {
             return $"Note({n.Item1},{n.Item2})";
         }
