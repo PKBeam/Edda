@@ -31,30 +31,6 @@ namespace Edda {
 
     public partial class MainWindow : Window {
 
-        // CONSTANTS
-        readonly string eddaVersionNumber = "0.2.0";
-        readonly string defaultSongName = "song.ogg";
-        readonly string settingsFileName = "settings.txt";
-        readonly string gridColourMajor = "#333333";
-        readonly string gridColourMinor = "#555555";
-        readonly double gridThicknessMajor = 2;
-        readonly double gridThicknessMinor = 1.5;
-        readonly int gridDivisionMax = 12;
-        readonly double waveformWidthPercent = 0.60;
-        readonly double previewNoteOpacity = 0.3;
-        readonly int notePlaybackStreams = 16;
-        readonly int desiredWASAPILatency = 100; // ms
-        readonly int notePollRate = 15;  // ms
-        readonly double noteDetectionDelta = 15;  // ms
-        readonly double initDragThreshold = 10;
-        readonly float defaultSongVolume = 0.25f;
-        readonly float defaultDrumVolume = 1.0f;
-        readonly int defaultAudioLatency = -20; // ms
-        readonly int editHistorySize = 128;
-        readonly List<string> environmentNames = new List<string> { "DefaultEnvironment", "Alfheim", "Nidavellir", "Asgard" };
-        //readonly int      gridRedrawInterval   = 100; // ms
-        readonly double gridDrawRange = 1;
-
         // COMPUTED PROPERTIES
         double unitLength {
             get { return Drum1.ActualWidth * editorGridSpacing; }
@@ -161,7 +137,7 @@ namespace Edda {
             scrollEditor.Tag = 0;
 
             string[] drumSounds = { "Resources/drum1.wav", "Resources/drum2.wav", "Resources/drum3.wav", "Resources/drum4.wav" };
-            drummer = new NotePlayer(drumSounds, notePlaybackStreams, desiredWASAPILatency);
+            drummer = new NotePlayer(drumSounds, Constants.Audio.NotePlaybackStreams, Constants.Audio.WASAPILatencyTarget);
 
             // disable parts of UI, as no map is loaded
             btnSaveMap.IsEnabled = false;
@@ -195,15 +171,15 @@ namespace Edda {
             checkWaveform.IsChecked = editorShowWaveform;
 
             // load config file
-            if (File.Exists(settingsFileName)) {
-                string[] lines = File.ReadAllLines(settingsFileName);
+            if (File.Exists(Constants.Misc.SettingsFile)) {
+                string[] lines = File.ReadAllLines(Constants.Misc.SettingsFile);
                 foreach (var line in lines) {
                     // load editorAudioLatency
                     if (line.StartsWith("editorAudioLatency")) {
                         int latency;
                         if (!int.TryParse(line.Split("=")[1], out latency)) {
                             Trace.WriteLine("INFO: using default editor audio latency");
-                            editorAudioLatency = defaultAudioLatency;
+                            editorAudioLatency = Constants.Audio.DefaultSongNoteLatency;
                         } else {
                             Trace.WriteLine($"INFO: using user editor audio latency ({latency}ms)");
                             editorAudioLatency = latency;
@@ -212,7 +188,7 @@ namespace Edda {
                 }
             } else {
                 CreateConfigFile();
-                editorAudioLatency = defaultAudioLatency;
+                editorAudioLatency = Constants.Audio.DefaultSongNoteLatency;
             }
 
             // init border
@@ -243,7 +219,7 @@ namespace Edda {
             // load editor preview
             imgPreviewNote = new Image();
             imgPreviewNote.Source = rune1;
-            imgPreviewNote.Opacity = previewNoteOpacity;
+            imgPreviewNote.Opacity = Constants.Editor.PreviewNoteOpacity;
             imgPreviewNote.Width = unitLength;
             imgPreviewNote.Height = unitHeight;
             EditorGrid.Children.Add(imgPreviewNote);
@@ -251,7 +227,7 @@ namespace Edda {
             imgAudioWaveform = new Image();
 
             // init editor stuff
-            editorHistory = new EditHistory<Note>(editHistorySize);
+            editorHistory = new EditHistory<Note>(Constants.Editor.HistorySizeMax);
             editorClipboard = new List<Note>();
             editorSelectedNotes = new List<Note>();
 
@@ -402,12 +378,15 @@ namespace Edda {
                 return;
             }
 
-            beatMap = new RagnarockMap(d2.FileName, true, eddaVersionNumber);
+            beatMap = new RagnarockMap(d2.FileName, true);
 
             // select and load an audio file
             if (!SelectNewSong()) {
                 return;
             }
+
+            // save changes
+            beatMap.WriteInfo();
 
             // open the newly created map
             InitUI();
@@ -428,11 +407,11 @@ namespace Edda {
 
             // try to load info
             try {
-                beatMap = new RagnarockMap(d2.FileName, false, eddaVersionNumber);
+                beatMap = new RagnarockMap(d2.FileName, false, Constants.Misc.ProgramVersionNumber);
                 LoadSong(); // song file
                 InitUI(); // cover image file
             } catch (Exception ex) {
-                MessageBox.Show($"An error occured while opening the map: {ex.Message}.", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                MessageBox.Show($"An error occured while opening the map:\n{ex.Message}.", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
                 return;
             }
         }
@@ -635,14 +614,14 @@ namespace Edda {
             int prevDiv = int.Parse((string)beatMap.GetCustomValueForDifficultyMap("_editorGridDivision", currentDifficulty));
             int div;
 
-            if (int.TryParse(txtGridDivision.Text, out div) && Helper.RangeCheck(div, 1, gridDivisionMax)) {
+            if (int.TryParse(txtGridDivision.Text, out div) && Helper.RangeCheck(div, 1, Constants.Editor.GridDivisionMax)) {
                 if (div != prevDiv) {
                     editorGridDivision = div;
                     beatMap.SetCustomValueForDifficultyMap("_editorGridDivision", div, currentDifficulty);
                     DrawEditorGrid();
                 }
             } else {
-                MessageBox.Show($"The grid division amount must be an integer from 1 to {gridDivisionMax}.", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                MessageBox.Show($"The grid division amount must be an integer from 1 to {Constants.Editor.GridDivisionMax}.", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
                 div = prevDiv;
             }
             txtGridDivision.Text = div.ToString();
@@ -755,7 +734,7 @@ namespace Edda {
                 UpdateDragSelection(e.GetPosition(EditorGrid));
             } else if (editorMouseDown) {
                 Vector delta = e.GetPosition(EditorGrid) - editorDragSelectStart;
-                if (delta.Length > initDragThreshold) {
+                if (delta.Length > Constants.Editor.DragInitThreshold) {
                     imgPreviewNote.Visibility = Visibility.Hidden;
                     editorIsDragging = true;
                     editorDragSelectBorder.Visibility = Visibility.Visible;
@@ -765,7 +744,7 @@ namespace Edda {
             }
         }
         private void ScrollEditor_MouseEnter(object sender, MouseEventArgs e) {
-                imgPreviewNote.Opacity = previewNoteOpacity;
+                imgPreviewNote.Opacity = Constants.Editor.PreviewNoteOpacity;
         }
         private void ScrollEditor_MouseLeave(object sender, MouseEventArgs e) {
             imgPreviewNote.Opacity = 0;
@@ -848,7 +827,7 @@ namespace Edda {
             txtSongBPM.Text = (string)beatMap.GetValue("_beatsPerMinute");
             txtSongOffset.Text = (string)beatMap.GetValue("_songTimeOffset");
 
-            comboEnvironment.SelectedIndex = environmentNames.IndexOf((string)beatMap.GetValue("_environmentName"));
+            comboEnvironment.SelectedIndex = Constants.Misc.EnvironmentNames.IndexOf((string)beatMap.GetValue("_environmentName"));
 
             // file info
             txtSongFileName.Text = (string)beatMap.GetValue("_songFilename");
@@ -865,8 +844,8 @@ namespace Edda {
 
             //checkGridSnap.IsChecked = editorSnapToGrid;
 
-            sliderSongVol.Value = defaultSongVolume;
-            sliderDrumVol.Value = defaultDrumVolume;
+            sliderSongVol.Value = Constants.Audio.DefaultSongVolume;
+            sliderDrumVol.Value = Constants.Audio.DefaultNoteVolume;
 
             // enable UI parts
             btnSaveMap.IsEnabled = true;
@@ -991,12 +970,13 @@ namespace Edda {
                 MessageBox.Show("Songs over 1 hour in duration are not supported.", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
                 return false;
             }
-            var songPath = System.IO.Path.Combine(beatMap.folderPath, defaultSongName);
-
             UnloadSong();
-            File.Delete(songPath);
+            var songFile = System.IO.Path.GetFileName(d.FileName);
+            var prevSongFile = (string)beatMap.GetValue("_songFilename");
+            File.Delete(AbsPath(prevSongFile));
+            File.Copy(d.FileName, AbsPath(songFile));
             beatMap.SetValue("_songApproximativeDuration", (int)vorbisStream.TotalTime.TotalSeconds + 1);
-            File.Copy(d.FileName, songPath);
+            beatMap.SetValue("_songFilename", songFile);
             LoadSong();
             return true;
         }
@@ -1007,7 +987,7 @@ namespace Edda {
 
             var songPath = System.IO.Path.Combine(beatMap.folderPath, (string)beatMap.GetValue("_songFilename"));
             songStream = new VorbisWaveReader(songPath);
-            songPlayer = new WasapiOut(AudioClientShareMode.Shared, desiredWASAPILatency);
+            songPlayer = new WasapiOut(AudioClientShareMode.Shared, Constants.Audio.WASAPILatencyTarget);
 
             songChannel = new SampleChannel(songStream);
             songChannel.Volume = (float)sliderSongVol.Value;
@@ -1134,11 +1114,11 @@ namespace Edda {
             // NOTE: this function is called on a separate thread
 
             // scan notes while song is still playing
-            var nextPollTime = notePollRate;
+            var nextPollTime = Constants.Audio.NotePollRate;
             while (!ct.IsCancellationRequested) {
                 if (noteScanStopwatch.ElapsedMilliseconds + startFrom >= nextPollTime) {
                     PlayNotes();
-                    nextPollTime += notePollRate;
+                    nextPollTime += Constants.Audio.NotePollRate;
                 }
             }
         }
@@ -1150,7 +1130,7 @@ namespace Edda {
                 var drumHits = 0;
 
                 // check if any notes were missed
-                while (currentTime - noteTime >= noteDetectionDelta && noteScanIndex < currentDifficultyNotes.Count - 1) {
+                while (currentTime - noteTime >= Constants.Audio.NoteDetectionDelta && noteScanIndex < currentDifficultyNotes.Count - 1) {
                     Trace.WriteLine($"WARNING: A note was played late during playback. (Delta: {Math.Round(currentTime - noteTime, 2)})");
                     drumHits++;
                     noteScanIndex++;
@@ -1158,7 +1138,7 @@ namespace Edda {
                 }
 
                 // check if we need to play any notes
-                while (Math.Abs(currentTime - noteTime) < noteDetectionDelta) {
+                while (Math.Abs(currentTime - noteTime) < Constants.Audio.NoteDetectionDelta) {
                     //Trace.WriteLine($"Played note at beat {selectedDifficultyNotes[noteScanIndex].Item1}");
 
                     drumHits++;
@@ -1314,8 +1294,8 @@ namespace Edda {
             // calculate new drawn ranges for pagination, if we need it...
             var scrollPos = scrollEditor.ScrollableHeight - scrollEditor.VerticalOffset;
             if (scrollPos <= editorDrawRangeLower || editorDrawRangeHigher <= scrollPos) {
-                editorDrawRangeLower = Math.Max(scrollPos - (gridDrawRange * scrollEditor.ActualHeight), 0);
-                editorDrawRangeHigher = Math.Min(scrollPos + ((1 + gridDrawRange) * scrollEditor.ActualHeight), EditorGrid.ActualHeight);
+                editorDrawRangeLower = Math.Max(scrollPos - (Constants.Editor.GridDrawRange * scrollEditor.ActualHeight), 0);
+                editorDrawRangeHigher = Math.Min(scrollPos + ((1 + Constants.Editor.GridDrawRange) * scrollEditor.ActualHeight), EditorGrid.ActualHeight);
                 //Trace.WriteLine($"draw range: {editorDrawRangeLower} - {editorDrawRangeHigher}");
                 // redraw
                 //drawEditorWaveform(editorDrawRangeLower, editorDrawRangeHigher, EditorGrid.Height - scrollEditor.ActualHeight);
@@ -1367,7 +1347,7 @@ namespace Edda {
         private void DrawEditorWaveform() {
             ResizeEditorWaveform();
             double height = EditorGrid.Height - scrollEditor.ActualHeight;
-            double width = EditorGrid.ActualWidth * waveformWidthPercent;
+            double width = EditorGrid.ActualWidth * Constants.Editor.WaveformWidth;
             Task.Run(() => {
                 CreateEditorWaveform(height, width);
             });
@@ -1408,9 +1388,9 @@ namespace Edda {
                 l.Y1 = offset;
                 l.Y2 = offset;
                 l.Stroke = (SolidColorBrush)(new BrushConverter().ConvertFrom(
-                    (counter % editorGridDivision == 0) ? gridColourMajor : gridColourMinor)
+                    (counter % editorGridDivision == 0) ? Constants.Editor.MajorGridlineColour : Constants.Editor.MinorGridlineColour)
                 );
-                l.StrokeThickness = (counter % editorGridDivision == 0) ? gridThicknessMajor : gridThicknessMinor;
+                l.StrokeThickness = (counter % editorGridDivision == 0) ? Constants.Editor.MajorGridlineThickness : Constants.Editor.MinorGridlineThickness;
                 Canvas.SetBottom(l, offset);
                 EditorGrid.Children.Add(l);
                 offset += unitLength / editorGridDivision;

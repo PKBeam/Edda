@@ -10,17 +10,8 @@ using Note = System.ValueTuple<double, int>;
 
 public class RagnarockMap {
 
-    // constants
-    private readonly string[] difficultyNames = { "Easy", "Normal", "Hard" };
-    private readonly int defaultNoteJumpMovementSpeed = 15;
-    private readonly double defaultBPM = 120;
-    private readonly string defaultSongName = "song.ogg";
-    private readonly double defaultGridSpacing = 1.0;
-    private readonly int defaultGridDivision = 4;
-    readonly int gridDivisionMax = 12;
-
     // -- data validation
-    private readonly List<JTokenType?> stringTypes = new List<JTokenType?>() { JTokenType.String };
+    private readonly List<JTokenType?> stringTypes = new () { JTokenType.String };
     private readonly List<JTokenType?> numericTypes = new List<JTokenType?>() { JTokenType.Float, JTokenType.Integer };
     private readonly List<JTokenType?> arrayTypes = new List<JTokenType?>() { JTokenType.Array };
     private readonly (float, float) positiveNumeric = (0, float.PositiveInfinity);
@@ -41,12 +32,12 @@ public class RagnarockMap {
     private string[] difficultyMaps = new string[3];
     private string eddaVersionNumber;
 
-    public RagnarockMap(string folderPath, bool makeNew, string eddaVersionNumber) {
+    public RagnarockMap(string folderPath, bool makeNew) {
         this.folderPath = folderPath;
-        this.eddaVersionNumber = eddaVersionNumber;
+        // TODO: automatically calculate makeNew?
         if (makeNew) {
             InitInfo();
-            AddDifficultyMap(difficultyNames[0]);
+            AddDifficultyMap(Constants.BeatmapDefaults.DifficultyNames[0]);
             WriteDifficultyMap(0);
             WriteInfo();
         } else {
@@ -57,10 +48,10 @@ public class RagnarockMap {
             // handle edda-specific custom fields for compatibility with MMA2 maps
             for (var i = 0; i < numDifficulties; i++) {
                 if (GetCustomValueForDifficultyMap("_editorGridSpacing", i) == null) {
-                    SetCustomValueForDifficultyMap("_editorGridSpacing", defaultGridSpacing, i);
+                    SetCustomValueForDifficultyMap("_editorGridSpacing", Constants.Editor.DefaultGridSpacing, i);
                 }
                 if (GetCustomValueForDifficultyMap("_editorGridDivision", i) == null) {
-                    SetCustomValueForDifficultyMap("_editorGridDivision", defaultGridDivision, i);
+                    SetCustomValueForDifficultyMap("_editorGridDivision", Constants.Editor.DefaultGridDivision, i);
                 }
             }
         }
@@ -73,28 +64,28 @@ public class RagnarockMap {
             _songSubName = "",                              // unused?
             _songAuthorName = "",
             _levelAuthorName = "",
-            _beatsPerMinute = defaultBPM,
-            _shuffle = 0,                                   // unused?
-            _shufflePeriod = 0.5,                           // unused?
+            _beatsPerMinute = Constants.BeatmapDefaults.BeatsPerMinute,
+            _shuffle = Constants.BeatmapDefaults.Shuffle,              // unused?
+            _shufflePeriod = Constants.BeatmapDefaults.ShufflePeriod,  // unused?
             _previewStartTime = 0,                          // unused?
             _previewDuration = 0,                           // unused?
             _songApproximativeDuration = 0,
-            _songFilename = defaultSongName,
+            _songFilename = Constants.BeatmapDefaults.SongFilename,
             _coverImageFilename = "",
-            _environmentName = "DefaultEnvironment",
+            _environmentName = Constants.Misc.EnvironmentNames[0],
             _songTimeOffset = 0,
             _customData = new {
                 _contributors = new List<object>(),
                 _editors = new {
                     Edda = new {
-                        version = eddaVersionNumber,
+                        version = Constants.Misc.ProgramVersionNumber,
                     },
-                    _lastEditedBy = "Edda"
+                    _lastEditedBy = Constants.Misc.ProgramName,
                 },
             },
             _difficultyBeatmapSets = new[] {
                 new {
-                    _beatmapCharacteristicName = "Standard",
+                    _beatmapCharacteristicName = Constants.BeatmapDefaults.BeatmapCharacteristicName,
                     _difficultyBeatmaps = new List<object> {},
                 },
             },
@@ -148,7 +139,7 @@ public class RagnarockMap {
             _difficulty = difficulty,
             _difficultyRank = 1,
             _beatmapFilename = $"{difficulty}.dat",
-            _noteJumpMovementSpeed = defaultNoteJumpMovementSpeed,
+            _noteJumpMovementSpeed = Constants.BeatmapDefaults.NoteJumpMovementSpeed,
             _noteJumpStartBeatOffset = 0,
             _customData = new {
                 _editorOffset = 0,
@@ -207,13 +198,15 @@ public class RagnarockMap {
     }
     private void RenameDifficultyMaps() {
         for (int i = 0; i < numDifficulties; i++) {
+            var fileName = Constants.BeatmapDefaults.DifficultyNames[i];
             var oldFile = (string)GetValueForDifficultyMap("_beatmapFilename", i);
-            File.Move(AbsPath(oldFile), AbsPath($"{difficultyNames[i]}_temp.dat"));
-            SetValueForDifficultyMap("_difficulty", difficultyNames[i], i);
-            SetValueForDifficultyMap("_beatmapFilename", $"{difficultyNames[i]}.dat", i);
+            File.Move(AbsPath(oldFile), AbsPath($"{fileName}_temp.dat"));
+            SetValueForDifficultyMap("_difficulty", fileName, i);
+            SetValueForDifficultyMap("_beatmapFilename", $"{fileName}.dat", i);
         }
         for (int i = 0; i < numDifficulties; i++) {
-            File.Move(AbsPath($"{difficultyNames[i]}_temp.dat"), AbsPath($"{difficultyNames[i]}.dat"));
+            var fileName = Constants.BeatmapDefaults.DifficultyNames[i];
+            File.Move(AbsPath($"{fileName}_temp.dat"), AbsPath($"{fileName}.dat"));
         }
     }
     public List<Note> GetNotesForMap(int indx) {
@@ -297,7 +290,7 @@ public class RagnarockMap {
         var obj = JObject.Parse(infoStr);
         foreach (var i in expectedTypesL1) {
             // validate type
-            if (!i.Value.Contains(obj[i.Key].Type)) {
+            if (!i.Value.Contains(obj[i.Key]?.Type)) {
                 throw new Exception($"Incorrect or missing key {i.Key}");
             }
             // validate value
@@ -313,7 +306,7 @@ public class RagnarockMap {
         foreach (var dbsItem in dbs) {
             foreach (var i in expectedTypesL2) {
                 // validate type
-                if (!i.Value.Contains(dbsItem[i.Key].Type)) {
+                if (!i.Value.Contains(dbsItem[i.Key]?.Type)) {
                     throw new Exception($"Incorrect or missing key {i.Key}");
                 }
             }
@@ -322,7 +315,7 @@ public class RagnarockMap {
             foreach (var dbItem in db) {
                 foreach (var i in expectedTypesL3) {
                     // validate type
-                    if (!i.Value.Contains(dbItem[i.Key].Type)) {
+                    if (!i.Value.Contains(dbItem[i.Key]?.Type)) {
                         throw new Exception($"Incorrect or missing key {i.Key}");
                     }
                     // validate value
@@ -423,7 +416,7 @@ public class RagnarockMap {
             var mapCustomData = map["_customData"];
             foreach (var i in expectedTypes) {
                 // validate type
-                if (!i.Value.Contains(mapCustomData[i.Key].Type)) {
+                if (!i.Value.Contains(mapCustomData[i.Key]?.Type)) {
                     mapCustomData[i.Key] = defaultValues[i.Key];
                 }
                 // validate value
@@ -431,7 +424,7 @@ public class RagnarockMap {
                     var val = Helper.DoubleParseInvariant((string)mapCustomData[i.Key]);
                     // special case
                     if (i.Key == "_editorGridDivision") {
-                        if ((int)val != val || val < 1 || gridDivisionMax < val) {
+                        if ((int)val != val || val < 1 || Constants.Editor.GridDivisionMax < val) {
                             mapCustomData[i.Key] = defaultValues[i.Key];
                         }
                     } else if (!Helper.RangeCheck(val, expectedValues[i.Key].Item1, expectedValues[i.Key].Item2)) {
@@ -462,7 +455,7 @@ public class RagnarockMap {
         var obj = JObject.Parse(difficultyMaps[indx]);
         foreach (var i in expectedTypesL1) {
             // validate type
-            if (!i.Value.Contains(obj[i.Key].Type)) {
+            if (!i.Value.Contains(obj[i.Key]?.Type)) {
                 throw new Exception($"Incorrect or missing key {i.Key}");
             }
         }
@@ -470,13 +463,12 @@ public class RagnarockMap {
         foreach (var note in notes) {
             foreach (var i in expectedTypesL2) {
                 // validate type
-                if (!i.Value.Contains(note[i.Key].Type)) {
+                if (!i.Value.Contains(note[i.Key]?.Type)) {
                     throw new Exception($"Incorrect or missing key {i.Key}");
                 }
                 // validate value
                 if (i.Value == numericTypes) {
                     var val = Helper.DoubleParseInvariant((string)note[i.Key]);
-                    // special case
                     Exception ex = new Exception($"Bad value for key {i.Key}");
                     switch (i.Key) {
                         case "_time":

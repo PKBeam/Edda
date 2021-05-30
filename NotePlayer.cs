@@ -20,7 +20,7 @@ public class NotePlayer : IDisposable {
         lastPlayedTimes = new DateTime[streams];
         for (int i = 0; i < streams; i++) {
             noteStreams[i] = new AudioFileReader(filePaths[streams % uniqueSamples]);
-            noteStreams[i].Volume = 1.0f;
+            noteStreams[i].Volume = Constants.Audio.DefaultNoteVolume;
             notePlayers[i] = new WasapiOut(AudioClientShareMode.Shared, desiredLatency);
             notePlayers[i].Init(noteStreams[i]);
         }
