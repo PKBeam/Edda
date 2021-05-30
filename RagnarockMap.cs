@@ -17,6 +17,14 @@ public class RagnarockMap {
     private readonly string defaultSongName = "song.ogg";
     private readonly double defaultGridSpacing = 1.0;
     private readonly int defaultGridDivision = 4;
+    readonly int gridDivisionMax = 12;
+
+    // -- data validation
+    private readonly List<JTokenType?> stringTypes = new List<JTokenType?>() { JTokenType.String };
+    private readonly List<JTokenType?> numericTypes = new List<JTokenType?>() { JTokenType.Float, JTokenType.Integer };
+    private readonly List<JTokenType?> arrayTypes = new List<JTokenType?>() { JTokenType.Array };
+    private readonly (float, float) positiveNumeric = (0, float.PositiveInfinity);
+    private readonly (float, float) anyNumeric = (float.NegativeInfinity, float.PositiveInfinity);
 
     // public state variables
     public int numDifficulties {
@@ -76,7 +84,7 @@ public class RagnarockMap {
             _environmentName = "DefaultEnvironment",
             _songTimeOffset = 0,
             _customData = new {
-                _contributors = new List<string>(),
+                _contributors = new List<object>(),
                 _editors = new {
                     Edda = new {
                         version = eddaVersionNumber,
@@ -85,19 +93,17 @@ public class RagnarockMap {
                 },
             },
             _difficultyBeatmapSets = new[] {
-            new {
-                _beatmapCharacteristicName = "Standard",
-                _difficultyBeatmaps = new List<object> {},
+                new {
+                    _beatmapCharacteristicName = "Standard",
+                    _difficultyBeatmaps = new List<object> {},
+                },
             },
-        },
         };
         infoStr = JsonConvert.SerializeObject(infoDat, Formatting.Indented);
     }
     public void ReadInfo() {
         infoStr = File.ReadAllText(AbsPath("info.dat"));
-        if (!ValidateInfo()) {
-            throw new Exception("Invalid info.dat file");
-        }
+        ValidateInfo();
     }
     public void WriteInfo() {
         File.WriteAllText(AbsPath("info.dat"), infoStr);
@@ -149,10 +155,10 @@ public class RagnarockMap {
                 _editorOldOffset = 0,
                 _editorGridSpacing = 1,
                 _editorGridDivision = 4,
-                _warnings = new List<string>(),
-                _information = new List<string>(),
-                _suggestions = new List<string>(),
-                _requirements = new List<string>(),
+                _warnings = new List<object>(),
+                _information = new List<object>(),
+                _suggestions = new List<object>(),
+                _requirements = new List<object>(),
             },
         };
         beatmaps.Add(JToken.FromObject(beatmapDat));
@@ -174,6 +180,7 @@ public class RagnarockMap {
     public void ReadDifficultyMap(int indx) {
         var filename = (string)GetValueForDifficultyMap("_beatmapFilename", indx);
         difficultyMaps[indx] = File.ReadAllText(AbsPath(filename));
+        ValidateMap(indx);
     }
     public void WriteDifficultyMap(int indx) {
         var filename = (string)GetValueForDifficultyMap("_beatmapFilename", indx);
@@ -239,15 +246,9 @@ public class RagnarockMap {
         difficultyMaps[indx] = JsonConvert.SerializeObject(thisMapStr, Formatting.Indented);
         //mapsStr[selectedDifficulty]["_notes"] = jObj;
     }
-    private bool ValidateInfo() {
+    private void ValidateInfo() {
 
-        List<JTokenType> stringTypes = new List<JTokenType>() { JTokenType.String };
-        List<JTokenType> numericTypes = new List<JTokenType>() { JTokenType.Float, JTokenType.Integer };
-        List<JTokenType> arrayTypes = new List<JTokenType>() { JTokenType.Array };
-        (float, float) positiveNumeric = (0, float.PositiveInfinity);
-        (float, float) anyNumeric = (float.NegativeInfinity, float.PositiveInfinity);
-
-        Dictionary<string, List<JTokenType>> expectedTypesL1 = new Dictionary<string, List<JTokenType>> {
+        Dictionary<string, List<JTokenType?>> expectedTypesL1 = new Dictionary<string, List<JTokenType?>> {
             {"_version",                   stringTypes  },
             {"_songName",                  stringTypes  },
             {"_songSubName",               stringTypes  },
@@ -274,11 +275,11 @@ public class RagnarockMap {
             {"_songApproximativeDuration", positiveNumeric },
             {"_songTimeOffset",            anyNumeric      },
         };
-        Dictionary<string, List<JTokenType>> expectedTypesL2 = new Dictionary<string, List<JTokenType>> {
+        Dictionary<string, List<JTokenType?>> expectedTypesL2 = new Dictionary<string, List<JTokenType?>> {
             {"_beatmapCharacteristicName", stringTypes },
             {"_difficultyBeatmaps",        arrayTypes  },
         };
-        Dictionary<string, List<JTokenType>> expectedTypesL3 = new Dictionary<string, List<JTokenType>> {
+        Dictionary<string, List<JTokenType?>> expectedTypesL3 = new Dictionary<string, List<JTokenType?>> {
             {"_difficulty",              stringTypes  },
             {"_difficultyRank",          numericTypes },
             {"_beatmapFilename",         stringTypes  },
@@ -291,69 +292,241 @@ public class RagnarockMap {
             {"_noteJumpMovementSpeed",   positiveNumeric },
             {"_noteJumpStartBeatOffset", anyNumeric      },
         };
-        try {
-            // validate all fields and types
-            var obj = JObject.Parse(infoStr);
-            foreach (var i in expectedTypesL1) {
-                // validate type
-                if (!i.Value.Contains(obj[i.Key].Type)) {
-                    return false;
+
+        // validate all fields and types
+        var obj = JObject.Parse(infoStr);
+        foreach (var i in expectedTypesL1) {
+            // validate type
+            if (!i.Value.Contains(obj[i.Key].Type)) {
+                throw new Exception($"Incorrect or missing key {i.Key}");
+            }
+            // validate value
+            if (i.Value == numericTypes) {
+                var val = Helper.DoubleParseInvariant((string)obj[i.Key]);
+                if (!Helper.RangeCheck(val, expectedValuesL1[i.Key].Item1, expectedValuesL1[i.Key].Item2)) {
+                    throw new Exception($"Bad value for key {i.Key}");
                 }
-                // validate value
-                if (i.Value == numericTypes) {
-                    var val = Helper.DoubleParseInvariant((string)obj[i.Key]);
-                    if (!Helper.RangeCheck(val, expectedValuesL1[i.Key].Item1, expectedValuesL1[i.Key].Item2)) {
-                        return false;
-                    }
+            }
+        }
+        // validate array
+        var dbs = (JArray)obj["_difficultyBeatmapSets"];
+        foreach (var dbsItem in dbs) {
+            foreach (var i in expectedTypesL2) {
+                // validate type
+                if (!i.Value.Contains(dbsItem[i.Key].Type)) {
+                    throw new Exception($"Incorrect or missing key {i.Key}");
                 }
             }
             // validate array
-            var dbs = (JArray)obj["_difficultyBeatmapSets"];
-            foreach (var dbsItem in dbs) {
-                foreach (var i in expectedTypesL2) {
+            var db = (JArray)dbsItem["_difficultyBeatmaps"];
+            foreach (var dbItem in db) {
+                foreach (var i in expectedTypesL3) {
                     // validate type
-                    if (!i.Value.Contains(dbsItem[i.Key].Type)) {
-                        return false;
+                    if (!i.Value.Contains(dbItem[i.Key].Type)) {
+                        throw new Exception($"Incorrect or missing key {i.Key}");
                     }
-                }
-                // validate array
-                var db = (JArray)dbsItem["_difficultyBeatmaps"];
-                foreach (var dbItem in db) {
-                    foreach (var i in expectedTypesL3) {
-                        // validate type
-                        if (!i.Value.Contains(dbItem[i.Key].Type)) {
-                            return false;
-                        }
-                        // validate value
-                        if (i.Value == numericTypes) {
-                            var val = Helper.DoubleParseInvariant((string)dbItem[i.Key]);
-                            // special case
-                            if (i.Key == "_difficultyRank") {
-                                if (val < 1 || 10 < val) {
-                                    return false;
-                                }
-                            } else if (!Helper.RangeCheck(val, expectedValuesL3[i.Key].Item1, expectedValuesL3[i.Key].Item2)) {
-                                return false;
+                    // validate value
+                    if (i.Value == numericTypes) {
+                        var val = Helper.DoubleParseInvariant((string)dbItem[i.Key]);
+                        // special case
+                        if (i.Key == "_difficultyRank") {
+                            if (val < 1 || 10 < val) {
+                                throw new Exception($"Bad value for key {i.Key}");
                             }
+                        } else if (!Helper.RangeCheck(val, expectedValuesL3[i.Key].Item1, expectedValuesL3[i.Key].Item2)) {
+                            throw new Exception($"Bad value for key {i.Key}");
                         }
                     }
                 }
             }
-        } catch (Exception e) {
-            return false;
         }
         // create _customData if it isnt there
-        return true;
-    }
-    private bool ValidateMap() {
-
+        InitCustomData();
     }
     private void InitCustomData() {
+        var obj = JObject.Parse(infoStr);
 
-    }
-    private void InitCustomDataForMap() {
+        // top level custom data
+        if (obj["_customData"]?.Type != JTokenType.Object) {
+            var customDataObject = new {
+                _contributors = new List<object>(),
+                _editors = new {
+                    Edda = new {
+                        version = eddaVersionNumber,
+                    },
+                    _lastEditedBy = "Edda"
+                },
+            };
+            obj["_customData"] = JToken.FromObject(customDataObject);
+        }
+        var customData = obj["_customData"];
+        if (customData["_contributors"]?.Type != JTokenType.Array) {
+            customData["_contributors"] = JToken.FromObject(new List<string>());
+        }
+        if (customData["_editors"]?.Type != JTokenType.Object) {
+            var editorsObject = new {
+                Edda = new {
+                    version = eddaVersionNumber,
+                },
+                _lastEditedBy = "Edda"
+            };
+            customData["_editors"] = JToken.FromObject(editorsObject);
+        }
+        if (customData["_editors"]["Edda"]?.Type != JTokenType.Object) {
+            customData["_editors"]["Edda"] = JToken.FromObject(new { version = eddaVersionNumber });
+        }
+        //if (customData["_editors"]["_lastEditedBy"]?.Type != JTokenType.String) {
+            customData["_editors"]["_lastEditedBy"] = JToken.FromObject("Edda");
+        //}
 
+        // per beatmap custom data
+        Dictionary<string, List<JTokenType?>> expectedTypes = new Dictionary<string, List<JTokenType?>> {
+            {"_editorOffset",       numericTypes },
+            {"_editorOldOffset",    numericTypes },
+            {"_editorGridSpacing",  numericTypes },
+            {"_editorGridDivision", numericTypes },
+            {"_warnings",           arrayTypes },
+            {"_information",        arrayTypes },
+            {"_suggestions",        arrayTypes },
+            {"_requirements",       arrayTypes }
+        };
+        Dictionary<string, (float, float)> expectedValues = new Dictionary<string, (float, float)> {
+            {"_editorOffset",       anyNumeric },
+            {"_editorOldOffset",    anyNumeric },
+            {"_editorGridSpacing",  positiveNumeric },
+            {"_editorGridDivision", positiveNumeric },
+        };
+        Dictionary<string, float> defaultValues = new Dictionary<string, float> {
+            {"_editorOffset",       0 },
+            {"_editorOldOffset",    0 },
+            {"_editorGridSpacing",  1 },
+            {"_editorGridDivision", 4 },
+        };
+
+        var beatmaps = obj["_difficultyBeatmapSets"][0]["_difficultyBeatmaps"];
+        foreach (var map in beatmaps) {
+            if (map["_customData"]?.Type != JTokenType.Object) {
+                var customDataObject = new {
+                    _editorOffset = 0,
+                    _editorOldOffset = 0,
+                    _editorGridSpacing = 1,
+                    _editorGridDivision = 4,
+                    _warnings = new List<object>(),
+                    _information = new List<object>(),
+                    _suggestions = new List<object>(),
+                    _requirements = new List<object>(),
+                };
+                map["_customData"] = JToken.FromObject(customDataObject);
+            }
+        }
+        foreach (var map in beatmaps) {
+            var mapCustomData = map["_customData"];
+            foreach (var i in expectedTypes) {
+                // validate type
+                if (!i.Value.Contains(mapCustomData[i.Key].Type)) {
+                    mapCustomData[i.Key] = defaultValues[i.Key];
+                }
+                // validate value
+                if (i.Value == numericTypes) {
+                    var val = Helper.DoubleParseInvariant((string)mapCustomData[i.Key]);
+                    // special case
+                    if (i.Key == "_editorGridDivision") {
+                        if ((int)val != val || val < 1 || gridDivisionMax < val) {
+                            mapCustomData[i.Key] = defaultValues[i.Key];
+                        }
+                    } else if (!Helper.RangeCheck(val, expectedValues[i.Key].Item1, expectedValues[i.Key].Item2)) {
+                        mapCustomData[i.Key] = defaultValues[i.Key];
+                    }
+                }
+            }
+        }
+
+        infoStr = JsonConvert.SerializeObject(obj, Formatting.Indented);
     }
+    private void ValidateMap(int indx) {
+        Dictionary<string, List<JTokenType?>> expectedTypesL1 = new Dictionary<string, List<JTokenType?>> {
+            {"_version",   stringTypes },
+            {"_events",    arrayTypes },
+            {"_notes",     arrayTypes },
+            {"_obstacles", arrayTypes }
+        };
+
+        Dictionary<string, List<JTokenType?>> expectedTypesL2 = new Dictionary<string, List<JTokenType?>> {
+            {"_time",         numericTypes },
+            {"_lineIndex",    numericTypes },
+            {"_lineLayer",    numericTypes },
+            {"_type",         numericTypes },
+            {"_cutDirection", numericTypes }
+        };
+
+        var obj = JObject.Parse(difficultyMaps[indx]);
+        foreach (var i in expectedTypesL1) {
+            // validate type
+            if (!i.Value.Contains(obj[i.Key].Type)) {
+                throw new Exception($"Incorrect or missing key {i.Key}");
+            }
+        }
+        var notes = (JArray)obj["_notes"];
+        foreach (var note in notes) {
+            foreach (var i in expectedTypesL2) {
+                // validate type
+                if (!i.Value.Contains(note[i.Key].Type)) {
+                    throw new Exception($"Incorrect or missing key {i.Key}");
+                }
+                // validate value
+                if (i.Value == numericTypes) {
+                    var val = Helper.DoubleParseInvariant((string)note[i.Key]);
+                    // special case
+                    Exception ex = new Exception($"Bad value for key {i.Key}");
+                    switch (i.Key) {
+                        case "_time":
+                            if (val < 0) throw ex;
+                            break;
+                        case "_lineIndex":
+                            if ((int)val != val || val < 0 || 3 < val) throw ex;
+                            break;
+                        case "_lineLayer":
+                            if (val != 1) throw ex;
+                            break;
+                        case "_type":
+                            if (val != 0) throw ex;
+                            break;
+                        case "_cutDirection":
+                            if (val != 1) throw ex;
+                            break;
+                    }
+                }
+            }
+        }
+        
+        InitCustomDataForMap(indx);
+    }
+    private void InitCustomDataForMap(int indx) {
+        var obj = JObject.Parse(difficultyMaps[indx]);
+
+        // top level custom data
+        if (obj["_customData"]?.Type != JTokenType.Object) {
+            var customDataObject = new {
+                _time = 0,
+                _BPMChanges = new List<object>(),
+                _bookmarks = new List<object>(),
+            };
+            obj["_customData"] = JToken.FromObject(customDataObject);
+        }
+        var customData = obj["_customData"];
+        if (!numericTypes.Contains(customData["_time"]?.Type)) {
+            customData["_time"] = 0;
+        }
+        // TODO: validate individual array objects
+        if (customData["_BPMChanges"]?.Type != JTokenType.Array) {
+            customData["_BPMChanges"] = JToken.FromObject(new List<object>());
+        }
+        if (customData["_bookmarks"]?.Type != JTokenType.Array) {
+            customData["_bookmarks"] = JToken.FromObject(new List<object>());
+        }
+        difficultyMaps[indx] = JsonConvert.SerializeObject(obj, Formatting.Indented);
+    }
+
     // helper functions
     private string AbsPath(string f) {
         return Path.Combine(folderPath, f);

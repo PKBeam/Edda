@@ -268,7 +268,7 @@
                         <Border Grid.Row="4" Grid.Column="1">
                             <DockPanel>
                                 <TextBlock x:Name="txtSongVol" DockPanel.Dock="Right" Width="30" Margin="5 0 0 0">0%</TextBlock>
-                                <Slider x:Name="sliderSongVol" Maximum="1" ValueChanged="SliderSongVol_ValueChanged"/>
+                                <Slider x:Name="sliderSongVol" Maximum="1" ValueChanged="SliderSongVol_ValueChanged" IsMoveToPointEnabled="True"/>
                             </DockPanel>
                         </Border>
 
@@ -279,7 +279,7 @@
                         <Border Grid.Row="5" Grid.Column="1">
                             <DockPanel>
                                 <TextBlock x:Name="txtDrumVol" DockPanel.Dock="Right" Width="30" Margin="5 0 0 0">0%</TextBlock>
-                                <Slider x:Name="sliderDrumVol" Maximum="1" ValueChanged="SliderDrumVol_ValueChanged"/>
+                                <Slider x:Name="sliderDrumVol" Maximum="1" ValueChanged="SliderDrumVol_ValueChanged" IsMoveToPointEnabled="True"/>
                             </DockPanel>
                         </Border>
 

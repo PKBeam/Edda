@@ -426,11 +426,15 @@ namespace Edda {
 
             // TODO: check folder has a valid map
 
-            // load info
-            beatMap = new RagnarockMap(d2.FileName, false, eddaVersionNumber);
-
-            LoadSong();
-            InitUI();
+            // try to load info
+            try {
+                beatMap = new RagnarockMap(d2.FileName, false, eddaVersionNumber);
+                LoadSong(); // song file
+                InitUI(); // cover image file
+            } catch (Exception ex) {
+                MessageBox.Show($"An error occured while opening the map: {ex.Message}.", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                return;
+            }
         }
         private void BtnSaveMap_Click(object sender, RoutedEventArgs e) {
             // TODO: update _lastEditedBy field 
@@ -1016,7 +1020,7 @@ namespace Edda {
             sliderSongProgress.Value = 0;
             songWasChanged = true;
 
-            awd = new AudioVisualiser_Float32(songStream);
+            awd = new AudioVisualiser_Float32(new VorbisWaveReader(songPath));
         }
         private void UnloadSong() {
             if (songStream != null) {
