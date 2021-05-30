@@ -1,7 +1,7 @@
 ﻿using System;
 using NAudio.Wave;
 using NAudio.CoreAudioApi;
-// todo: put more drum samples in?
+
 public class NotePlayer : IDisposable {
 
     int streams;
@@ -33,7 +33,7 @@ public class NotePlayer : IDisposable {
         for (int i = 0; i < streams; i++) {
             // check that the stream is available to play, and that the sample file is not the same as the last
             if (DateTime.Now - lastPlayedTimes[i] > new TimeSpan(0, 0, 1) && (i % uniqueSamples != lastPlayedStream % uniqueSamples)) {
-                noteStreams[i].CurrentTime = new TimeSpan(0, 0, 0, 0, 0);
+                noteStreams[i].CurrentTime = TimeSpan.Zero;
                 notePlayers[i].Play();
                 this.lastPlayedStream = i;
                 lastPlayedTimes[i] = DateTime.Now;

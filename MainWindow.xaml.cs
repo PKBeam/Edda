@@ -132,9 +132,8 @@ namespace Edda {
 
         public MainWindow() {
             InitializeComponent();
+
             songIsPlaying = false;
-            sliderSongProgress.Tag = 0;
-            scrollEditor.Tag = 0;
 
             string[] drumSounds = { "Resources/drum1.wav", "Resources/drum2.wav", "Resources/drum3.wav", "Resources/drum4.wav" };
             drummer = new NotePlayer(drumSounds, Constants.Audio.NotePlaybackStreams, Constants.Audio.WASAPILatencyTarget);
@@ -170,26 +169,7 @@ namespace Edda {
             checkGridSnap.IsChecked = editorSnapToGrid;
             checkWaveform.IsChecked = editorShowWaveform;
 
-            // load config file
-            if (File.Exists(Constants.Misc.SettingsFile)) {
-                string[] lines = File.ReadAllLines(Constants.Misc.SettingsFile);
-                foreach (var line in lines) {
-                    // load editorAudioLatency
-                    if (line.StartsWith("editorAudioLatency")) {
-                        int latency;
-                        if (!int.TryParse(line.Split("=")[1], out latency)) {
-                            Trace.WriteLine("INFO: using default editor audio latency");
-                            editorAudioLatency = Constants.Audio.DefaultSongNoteLatency;
-                        } else {
-                            Trace.WriteLine($"INFO: using user editor audio latency ({latency}ms)");
-                            editorAudioLatency = latency;
-                        }
-                    }
-                }
-            } else {
-                CreateConfigFile();
-                editorAudioLatency = Constants.Audio.DefaultSongNoteLatency;
-            }
+            LoadConfigFile();
 
             // init border
             editorDragSelectBorder = new Border();
@@ -200,21 +180,21 @@ namespace Edda {
             editorDragSelectBorder.Visibility = Visibility.Hidden;
 
             // load bitmaps
-            rune1 = BitmapGenerator("rune1.png");
+            rune1  = BitmapGenerator("rune1.png");
             rune12 = BitmapGenerator("rune12.png");
             rune13 = BitmapGenerator("rune13.png");
             rune14 = BitmapGenerator("rune14.png");
             rune23 = BitmapGenerator("rune23.png");
             rune34 = BitmapGenerator("rune34.png");
-            runeX = BitmapGenerator("runeX.png");
+            runeX  = BitmapGenerator("runeX.png");
 
-            rune1Highlight = BitmapGenerator("rune1highlight.png");
+            rune1Highlight  = BitmapGenerator("rune1highlight.png");
             rune12Highlight = BitmapGenerator("rune12highlight.png");
             rune13Highlight = BitmapGenerator("rune13highlight.png");
             rune14Highlight = BitmapGenerator("rune14highlight.png");
             rune23Highlight = BitmapGenerator("rune23highlight.png");
             rune34Highlight = BitmapGenerator("rune34highlight.png");
-            runeXHighlight = BitmapGenerator("runeXhighlight.png");
+            runeXHighlight  = BitmapGenerator("runeXhighlight.png");
 
             // load editor preview
             imgPreviewNote = new Image();
@@ -224,12 +204,23 @@ namespace Edda {
             imgPreviewNote.Height = unitHeight;
             EditorGrid.Children.Add(imgPreviewNote);
 
+            // load audio waveform
             imgAudioWaveform = new Image();
 
             // init editor stuff
-            editorHistory = new EditHistory<Note>(Constants.Editor.HistorySizeMax);
-            editorClipboard = new List<Note>();
-            editorSelectedNotes = new List<Note>();
+            editorHistory = new(Constants.Editor.HistorySizeMax);
+            editorClipboard = new();
+            editorSelectedNotes = new();
+
+            // init environment combobox
+            foreach (var name in Constants.BeatmapDefaults.EnvironmentNames) {
+                if (name == "DefaultEnvironment") {
+                    comboEnvironment.Items.Add(Constants.BeatmapDefaults.DefaultEnvironmentName);
+                } else {
+                    comboEnvironment.Items.Add(name);
+                }
+
+            }
 
             // TODO: properly debounce grid redrawing on resize
             //Observable
@@ -407,7 +398,7 @@ namespace Edda {
 
             // try to load info
             try {
-                beatMap = new RagnarockMap(d2.FileName, false, Constants.Misc.ProgramVersionNumber);
+                beatMap = new RagnarockMap(d2.FileName, false);
                 LoadSong(); // song file
                 InitUI(); // cover image file
             } catch (Exception ex) {
@@ -418,9 +409,9 @@ namespace Edda {
         private void BtnSaveMap_Click(object sender, RoutedEventArgs e) {
             // TODO: update _lastEditedBy field 
             beatMap.WriteInfo();
-            beatMap.SetNotesForMap(currentDifficultyNotes, currentDifficulty);
+            beatMap.SetNotesForMap(currentDifficulty, currentDifficultyNotes);
             for (int i = 0; i < beatMap.numDifficulties; i++) {
-                beatMap.WriteDifficultyMap(i);
+                beatMap.WriteMap(i);
             }
         }
         private void BtnPickSong_Click(object sender, RoutedEventArgs e) {
@@ -439,11 +430,11 @@ namespace Edda {
 
             imgCover.Source = null;
 
-            if (File.Exists(AbsPath("cover.jpg"))) {
-                File.Delete(AbsPath("cover.jpg"));
+            if (File.Exists(beatMap.PathOf("cover.jpg"))) {
+                File.Delete(beatMap.PathOf("cover.jpg"));
             }
 
-            File.Copy(d.FileName, AbsPath("cover.jpg"));
+            File.Copy(d.FileName, beatMap.PathOf("cover.jpg"));
             beatMap.SetValue("_coverImageFilename", "cover.jpg");
             LoadCoverImage();
         }
@@ -455,7 +446,7 @@ namespace Edda {
             }
         }
         private void BtnAddDifficulty_Click(object sender, RoutedEventArgs e) {
-            beatMap.AddDifficultyMap(beatMap.numDifficulties == 1 ? "Normal" : "Hard");
+            beatMap.AddMap();
             UpdateDifficultyButtonVisibility();
             SwitchDifficultyMap(beatMap.numDifficulties - 1);
         }
@@ -464,22 +455,22 @@ namespace Edda {
             if (res != MessageBoxResult.Yes) {
                 return;
             }
-            beatMap.DeleteDifficultyMap(currentDifficulty);
+            beatMap.DeleteMap(currentDifficulty);
             SwitchDifficultyMap(Math.Min(currentDifficulty, beatMap.numDifficulties - 1));
             UpdateDifficultyButtonVisibility();
         }
         private void BtnChangeDifficulty0_Click(object sender, RoutedEventArgs e) {
             // save previous work to buffer before switching
             // note: this does NOT save to file
-            beatMap.SetNotesForMap(currentDifficultyNotes, currentDifficulty);
+            beatMap.SetNotesForMap(currentDifficulty, currentDifficultyNotes);
             SwitchDifficultyMap(0);
         }
         private void BtnChangeDifficulty1_Click(object sender, RoutedEventArgs e) {
-            beatMap.SetNotesForMap(currentDifficultyNotes, currentDifficulty);
+            beatMap.SetNotesForMap(currentDifficulty, currentDifficultyNotes);
             SwitchDifficultyMap(1);
         }
         private void BtnChangeDifficulty2_Click(object sender, RoutedEventArgs e) {
-            beatMap.SetNotesForMap(currentDifficultyNotes, currentDifficulty);
+            beatMap.SetNotesForMap(currentDifficulty, currentDifficultyNotes);
             SwitchDifficultyMap(2);
         }
         private void SliderSongVol_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e) {
@@ -546,10 +537,10 @@ namespace Edda {
             beatMap.SetValue("_levelAuthorName", txtMapperName.Text);
         }
         private void TxtDifficultyNumber_LostFocus(object sender, RoutedEventArgs e) {
-            int prevLevel = (int)beatMap.GetValueForDifficultyMap("_difficultyRank", currentDifficulty);
+            int prevLevel = (int)beatMap.GetValueForMap(currentDifficulty, "_difficultyRank");
             int level;
             if (int.TryParse(txtDifficultyNumber.Text, out level) && Helper.RangeCheck(level, 1, 10)) {
-                beatMap.SetValueForDifficultyMap("_difficultyRank", level, currentDifficulty);
+                beatMap.SetValueForMap(currentDifficulty, "_difficultyRank", level);
             } else {
                 MessageBox.Show($"The difficulty level must be an integer between 1 and 10.", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
                 level = prevLevel;
@@ -557,10 +548,10 @@ namespace Edda {
             txtDifficultyNumber.Text = level.ToString();
         }
         private void TxtNoteSpeed_LostFocus(object sender, RoutedEventArgs e) {
-            double prevSpeed = int.Parse((string)beatMap.GetValueForDifficultyMap("_noteJumpMovementSpeed", currentDifficulty));
+            double prevSpeed = int.Parse((string)beatMap.GetValueForMap(currentDifficulty, "_noteJumpMovementSpeed"));
             double speed;
             if (double.TryParse(txtNoteSpeed.Text, out speed) && speed > 0) {
-                beatMap.SetValueForDifficultyMap("_noteJumpMovementSpeed", speed, currentDifficulty);
+                beatMap.SetValueForMap(currentDifficulty, "_noteJumpMovementSpeed", speed);
             } else {
                 MessageBox.Show($"The note speed must be a positive number.", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
                 speed = prevSpeed;
@@ -571,7 +562,7 @@ namespace Edda {
             editorSnapToGrid = (checkGridSnap.IsChecked == true);
         }
         private void TxtGridOffset_LostFocus(object sender, RoutedEventArgs e) {
-            double prevOffset = Helper.DoubleParseInvariant((string)beatMap.GetCustomValueForDifficultyMap("_editorOffset", currentDifficulty));
+            double prevOffset = Helper.DoubleParseInvariant((string)beatMap.GetCustomValueForMap(currentDifficulty, "_editorOffset"));
             double offset;
             if (double.TryParse(txtGridOffset.Text, out offset)) {
                 if (offset != prevOffset) {
@@ -586,7 +577,7 @@ namespace Edda {
                     }
 
                     editorGridOffset = offset;
-                    beatMap.SetCustomValueForDifficultyMap("_editorOffset", offset, currentDifficulty);
+                    beatMap.SetCustomValueForMap(currentDifficulty, "_editorOffset", offset);
                     UpdateEditorGridHeight();
                 }
             } else {
@@ -596,12 +587,12 @@ namespace Edda {
             txtGridOffset.Text = offset.ToString();
         }
         private void TxtGridSpacing_LostFocus(object sender, RoutedEventArgs e) {
-            double prevSpacing = Helper.DoubleParseInvariant((string)beatMap.GetCustomValueForDifficultyMap("_editorGridSpacing", currentDifficulty));
+            double prevSpacing = Helper.DoubleParseInvariant((string)beatMap.GetCustomValueForMap(currentDifficulty, "_editorGridSpacing"));
             double spacing;
             if (double.TryParse(txtGridSpacing.Text, out spacing)) {
                 if (spacing != prevSpacing) {
                     editorGridSpacing = spacing;
-                    beatMap.SetCustomValueForDifficultyMap("_editorGridSpacing", spacing, currentDifficulty);
+                    beatMap.SetCustomValueForMap(currentDifficulty, "_editorGridSpacing", spacing);
                     UpdateEditorGridHeight();
                 }
             } else {
@@ -611,13 +602,13 @@ namespace Edda {
             txtGridSpacing.Text = spacing.ToString();
         }
         private void TxtGridDivision_LostFocus(object sender, RoutedEventArgs e) {
-            int prevDiv = int.Parse((string)beatMap.GetCustomValueForDifficultyMap("_editorGridDivision", currentDifficulty));
+            int prevDiv = int.Parse((string)beatMap.GetCustomValueForMap(currentDifficulty, "_editorGridDivision"));
             int div;
 
             if (int.TryParse(txtGridDivision.Text, out div) && Helper.RangeCheck(div, 1, Constants.Editor.GridDivisionMax)) {
                 if (div != prevDiv) {
                     editorGridDivision = div;
-                    beatMap.SetCustomValueForDifficultyMap("_editorGridDivision", div, currentDifficulty);
+                    beatMap.SetCustomValueForMap(currentDifficulty, "_editorGridDivision", div);
                     DrawEditorGrid();
                 }
             } else {
@@ -635,16 +626,9 @@ namespace Edda {
             }
         }
         private void ComboEnvironment_SelectionChanged(object sender, SelectionChangedEventArgs e) {
-            string env = "DefaultEnvironment";
-            switch (comboEnvironment.SelectedIndex) {
-                case 0:
-                    env = "DefaultEnvironment"; break;
-                case 1:
-                    env = "Alfheim"; break;
-                case 2:
-                    env = "Nidavellir"; break;
-                case 3:
-                    env = "Asgard"; break;
+            var env = (string)comboEnvironment.SelectedItem;
+            if (env == "DefaultEnvironment") {
+                env = Constants.BeatmapDefaults.DefaultEnvironmentName;
             }
             beatMap.SetValue("_environmentName", env);
         }
@@ -827,7 +811,7 @@ namespace Edda {
             txtSongBPM.Text = (string)beatMap.GetValue("_beatsPerMinute");
             txtSongOffset.Text = (string)beatMap.GetValue("_songTimeOffset");
 
-            comboEnvironment.SelectedIndex = Constants.Misc.EnvironmentNames.IndexOf((string)beatMap.GetValue("_environmentName"));
+            comboEnvironment.SelectedIndex = Constants.BeatmapDefaults.EnvironmentNames.IndexOf((string)beatMap.GetValue("_environmentName"));
 
             // file info
             txtSongFileName.Text = (string)beatMap.GetValue("_songFilename");
@@ -883,10 +867,39 @@ namespace Edda {
             scrollEditor.ScrollToBottom();
         }
 
+        // config file
+        private void InitConfigFile() {
+            string[] fields = {
+                "editorAudioLatency="
+            };
+            File.WriteAllLines("settings.txt", fields);
+        }
+        private void LoadConfigFile() {
+            if (File.Exists(Constants.Program.SettingsFile)) {
+                string[] lines = File.ReadAllLines(Constants.Program.SettingsFile);
+                foreach (var line in lines) {
+                    // load editorAudioLatency
+                    if (line.StartsWith("editorAudioLatency")) {
+                        int latency;
+                        if (!int.TryParse(line.Split("=")[1], out latency)) {
+                            Trace.WriteLine("INFO: using default editor audio latency");
+                            editorAudioLatency = Constants.Audio.DefaultSongNoteLatency;
+                        } else {
+                            Trace.WriteLine($"INFO: using user editor audio latency ({latency}ms)");
+                            editorAudioLatency = latency;
+                        }
+                    }
+                }
+            } else {
+                InitConfigFile();
+                editorAudioLatency = Constants.Audio.DefaultSongNoteLatency;
+            }
+        }
+
         // manage cover image
         private void LoadCoverImage() {
             var fileName = (string)beatMap.GetValue("_coverImageFilename");
-            BitmapImage b = BitmapGenerator(new Uri(AbsPath(fileName)));
+            BitmapImage b = BitmapGenerator(new Uri(beatMap.PathOf(fileName)));
             imgCover.Source = b;
             txtCoverFileName.Text = fileName;
         }
@@ -923,11 +936,11 @@ namespace Edda {
             currentDifficultyNotes = beatMap.GetNotesForMap(indx);
             editorHistory.Clear();
 
-            txtDifficultyNumber.Text = (string)beatMap.GetValueForDifficultyMap("_difficultyRank", indx);
-            txtNoteSpeed.Text = (string)beatMap.GetValueForDifficultyMap("_noteJumpMovementSpeed", indx);
-            txtGridOffset.Text = (string)beatMap.GetCustomValueForDifficultyMap("_editorOffset", indx);
-            txtGridSpacing.Text = (string)beatMap.GetCustomValueForDifficultyMap("_editorGridSpacing", indx);
-            txtGridDivision.Text = (string)beatMap.GetCustomValueForDifficultyMap("_editorGridDivision", indx);
+            txtDifficultyNumber.Text = (string)beatMap.GetValueForMap(indx, "_difficultyRank");
+            txtNoteSpeed.Text = (string)beatMap.GetValueForMap(indx, "_noteJumpMovementSpeed");
+            txtGridOffset.Text = (string)beatMap.GetCustomValueForMap(indx, "_editorOffset");
+            txtGridSpacing.Text = (string)beatMap.GetCustomValueForMap(indx, "_editorGridSpacing");
+            txtGridDivision.Text = (string)beatMap.GetCustomValueForMap(indx, "_editorGridDivision");
 
             // set internal values
             editorGridDivision = int.Parse(txtGridDivision.Text);
@@ -938,14 +951,6 @@ namespace Edda {
             if (redraw) {
                 DrawEditorGrid();
             }
-        }
-
-        // file creation
-        private void CreateConfigFile() {
-            string[] fields = {
-                "editorAudioLatency="
-            };
-            File.WriteAllLines("settings.txt", fields);
         }
 
         // song/note playback
@@ -973,8 +978,8 @@ namespace Edda {
             UnloadSong();
             var songFile = System.IO.Path.GetFileName(d.FileName);
             var prevSongFile = (string)beatMap.GetValue("_songFilename");
-            File.Delete(AbsPath(prevSongFile));
-            File.Copy(d.FileName, AbsPath(songFile));
+            File.Delete(beatMap.PathOf(prevSongFile));
+            File.Copy(d.FileName, beatMap.PathOf(songFile));
             beatMap.SetValue("_songApproximativeDuration", (int)vorbisStream.TotalTime.TotalSeconds + 1);
             beatMap.SetValue("_songFilename", songFile);
             LoadSong();
@@ -985,12 +990,11 @@ namespace Edda {
             // cleanup old players
             UnloadSong();
 
-            var songPath = System.IO.Path.Combine(beatMap.folderPath, (string)beatMap.GetValue("_songFilename"));
+            var songPath = beatMap.PathOf((string)beatMap.GetValue("_songFilename"));
             songStream = new VorbisWaveReader(songPath);
-            songPlayer = new WasapiOut(AudioClientShareMode.Shared, Constants.Audio.WASAPILatencyTarget);
-
             songChannel = new SampleChannel(songStream);
             songChannel.Volume = (float)sliderSongVol.Value;
+            songPlayer = new WasapiOut(AudioClientShareMode.Shared, Constants.Audio.WASAPILatencyTarget);
             songPlayer.Init(songChannel);
 
             // subscribe to playbackstopped
@@ -1236,7 +1240,7 @@ namespace Edda {
             editorSelectedNotes.Clear();
         }
         private void CopyNotes() {
-            editorClipboard = new List<Note>(editorSelectedNotes);
+            editorClipboard = new(editorSelectedNotes);
             editorClipboard.Sort(CompareNotes);
 
         }
@@ -1347,7 +1351,7 @@ namespace Edda {
         private void DrawEditorWaveform() {
             ResizeEditorWaveform();
             double height = EditorGrid.Height - scrollEditor.ActualHeight;
-            double width = EditorGrid.ActualWidth * Constants.Editor.WaveformWidth;
+            double width = EditorGrid.ActualWidth * Constants.Editor.Waveform.Width;
             Task.Run(() => {
                 CreateEditorWaveform(height, width);
             });
@@ -1363,7 +1367,7 @@ namespace Edda {
             EditorGrid.Children.Insert(0, imgAudioWaveform);
         }
         private void CreateEditorWaveform(double height, double width) {
-            BitmapSource bmp = awd.Draw(height, width, false);
+            BitmapSource bmp = awd.Draw(height, width, Constants.Editor.Waveform.UseGDI);
             if (bmp == null) {
                 return;
             }
@@ -1441,7 +1445,6 @@ namespace Edda {
         }
 
         // helper functions
-
         private double BeatForRow(double row) {
             double userOffsetBeat = currentBPM * editorGridOffset / 60;
             return row / (double)editorGridDivision + userOffsetBeat;
@@ -1473,10 +1476,6 @@ namespace Edda {
             }
             return -1;
         }
-        private string AbsPath(string f) {
-            return System.IO.Path.Combine(beatMap.folderPath, f);
-        }
-
         private string UidGenerator(Note n) {
             return $"Note({n.Item1},{n.Item2})";
         }
@@ -1505,15 +1504,7 @@ namespace Edda {
             return b;
         }
         private BitmapImage BitmapGenerator(string file) {
-            var b = new BitmapImage();
-            b.BeginInit();
-            b.UriSource = PackUriGenerator(file);
-            b.CacheOption = BitmapCacheOption.OnLoad;
-            b.EndInit();
-            b.Freeze();
-            return b;
+            return BitmapGenerator(PackUriGenerator(file));
         }
-
-
     }
 }

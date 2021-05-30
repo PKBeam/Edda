@@ -40,14 +40,14 @@ public class EditHistory<T> {
         this.Clear();
     }
     public void Add(bool isAdding, List<T> items) {
-        List<(bool, T)> e = new List<(bool, T)>();
+        List<(bool, T)> e = new();
         foreach (var i in items) {
             e.Add((isAdding, i));
         }
         this.Add(e);
     }
     public void Add(List<(bool, T)> items) {
-        Edits<T> e = new Edits<T>(items);
+        Edits<T> e = new(items);
         if (currentIndex == bufferSize) {
             RemoveFirst();
         }
@@ -69,7 +69,7 @@ public class EditHistory<T> {
         return history[currentIndex++];
     }
     public void Consolidate(int entries) { // consolidate the last n entries into one
-        Edits<T> e = new Edits<T>();
+        Edits<T> e = new();
         for (int i = 0; i < entries; i++) {
             var edits = this.history[currentIndex - 1];
             foreach (var edit in edits.items) {
@@ -80,7 +80,7 @@ public class EditHistory<T> {
         this.Add(e.items);
     }
     public void Clear() {
-        this.history = new List<Edits<T>>();
+        this.history = new();
         this.currentIndex = 0;
     }
     public void Print() {

@@ -147,12 +147,7 @@
                         </Border>
 
                         <Border Grid.Row="8" Grid.Column="1">
-                            <ComboBox x:Name="comboEnvironment" SelectionChanged="ComboEnvironment_SelectionChanged">
-                                <ComboBoxItem>Midgard</ComboBoxItem>
-                                <ComboBoxItem>Alfheim</ComboBoxItem>
-                                <ComboBoxItem>Nidavellir</ComboBoxItem>
-                                <ComboBoxItem>Asgard</ComboBoxItem>
-                            </ComboBox>
+                            <ComboBox x:Name="comboEnvironment" SelectionChanged="ComboEnvironment_SelectionChanged"/>
                         </Border>
 
                     </Grid>
