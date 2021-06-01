@@ -36,8 +36,8 @@ public class RagnarockMap {
         if (makeNew) {
             InitInfo();
             AddMap();
-            WriteMap(0);
-            WriteInfo();
+            //WriteMap(0);
+            //WriteInfo();
         } else {
             ReadInfo();
             ValidateInfo();
@@ -48,7 +48,14 @@ public class RagnarockMap {
         }
     }
 
-    // global operations
+    public void SaveToFile() {
+        for (int i = 0; i < numDifficulties; i++) {
+            WriteMap(i);
+        }
+        WriteInfo();
+    }
+
+    // info.dat operations
     public void ReadInfo() {
         infoStr = File.ReadAllText(PathOf("info.dat"));
     }

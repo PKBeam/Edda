@@ -1,6 +1,8 @@
 ﻿using System.Collections.Generic;
 
 namespace Constants {
+    using MediaColor = System.Windows.Media.Color;
+    using DrawingColor = System.Drawing.Color;
     public static class Program {
         public const string ProgramName = "Edda";
         public const string ProgramVersionNumber = "0.2.0";
@@ -29,8 +31,8 @@ namespace Constants {
             public const int    MaxDimension = 50000;
             public const double ThicknessWPF = 2;
             public const bool   UseGDI = false;
-            public static System.Windows.Media.Color ColourWPF => System.Windows.Media.Color.FromArgb(96, 0, 0, 255);
-            public static System.Drawing.Color ColourGDI => System.Drawing.Color.FromArgb(180, 0, 0, 255);
+            public static MediaColor ColourWPF => MediaColor.FromArgb(96, 0, 0, 255);
+            public static DrawingColor ColourGDI => DrawingColor.FromArgb(180, 0, 0, 255);
         }
     }
     public static class Audio {

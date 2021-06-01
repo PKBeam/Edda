@@ -17,8 +17,6 @@ using NAudio.CoreAudioApi;
 using NAudio.Wave;
 using NAudio.Wave.SampleProviders;
 using NAudio.Vorbis;
-using System.Reactive.Linq;
-using System.Globalization;
 
 namespace Edda {
     /// <summary>
@@ -81,7 +79,6 @@ namespace Edda {
         List<Note> currentDifficultyNotes;
 
         DoubleAnimation songPlayAnim;            // used for animating scroll when playing a song
-        bool songWasChanged;          // used for resetting scroll position on a new song load
         double prevScrollPercent;       // percentage of scroll progress before the scroll viewport was changed
 
         // variables used in the map editor
@@ -196,7 +193,7 @@ namespace Edda {
             rune34Highlight = BitmapGenerator("rune34highlight.png");
             runeXHighlight  = BitmapGenerator("runeXhighlight.png");
 
-            // load editor preview
+            // load editor preview note
             imgPreviewNote = new Image();
             imgPreviewNote.Source = rune1;
             imgPreviewNote.Opacity = Constants.Editor.PreviewNoteOpacity;
@@ -312,6 +309,7 @@ namespace Edda {
                 if (btnSongPlayer.IsEnabled) {
                     BtnSongPlayer_Click(null, null);
                 }
+                e.Handled = true;
             }
             // delete selected notes
             if (keyStr == "Delete") {
@@ -322,7 +320,7 @@ namespace Edda {
                 UnselectAllNotes();
             }
 
-            e.Handled = true;
+
             //Trace.WriteLine(keyStr);
             //Trace.WriteLine($"Row: {editorMouseGridRow} ({Math.Round(editorMouseGridRowFractional, 2)}), Col: {editorMouseGridCol}");
         }
@@ -337,6 +335,8 @@ namespace Edda {
         }
         private void BtnNewMap_Click(object sender, RoutedEventArgs e) {
 
+            PauseSong();
+
             // check if map already open
             if (beatMap != null) {
                 var res = MessageBox.Show("A map is already open. Creating a new map will close the existing map. Are you sure you want to continue?", "Warning", MessageBoxButton.YesNo);
@@ -344,7 +344,7 @@ namespace Edda {
                     return;
                 }
                 // save existing work before making a new map
-                beatMap.WriteInfo();
+                SaveBeatmap();
             }
 
             // select folder for map
@@ -370,19 +370,22 @@ namespace Edda {
             }
 
             beatMap = new RagnarockMap(d2.FileName, true);
+            currentDifficultyNotes.Clear();
 
             // select and load an audio file
             if (!SelectNewSong()) {
                 return;
             }
 
-            // save changes
-            beatMap.WriteInfo();
+            // save the map
+            SaveBeatmap();
 
             // open the newly created map
             InitUI();
         }
         private void BtnOpenMap_Click(object sender, RoutedEventArgs e) {
+
+            PauseSong();
 
             // select folder for map
             // TODO: this dialog is sometimes hangs, is there a better way to select a folder?
@@ -393,9 +396,6 @@ namespace Edda {
             if (d2.ShowDialog() != CommonFileDialogResult.Ok) {
                 return;
             }
-
-            // TODO: check folder has a valid map
-
             // try to load info
             try {
                 beatMap = new RagnarockMap(d2.FileName, false);
@@ -407,18 +407,11 @@ namespace Edda {
             }
         }
         private void BtnSaveMap_Click(object sender, RoutedEventArgs e) {
-            // TODO: update _lastEditedBy field 
-            beatMap.WriteInfo();
-            beatMap.SetNotesForMap(currentDifficulty, currentDifficultyNotes);
-            for (int i = 0; i < beatMap.numDifficulties; i++) {
-                beatMap.WriteMap(i);
-            }
+            SaveBeatmap();
         }
         private void BtnPickSong_Click(object sender, RoutedEventArgs e) {
-            if (SelectNewSong()) {
-                // TODO: clear generated preview?
-                InitUI();
-            }
+            PauseSong();
+            SelectNewSong();
         }
         private void BtnPickCover_Click(object sender, RoutedEventArgs e) {
             var d = new Microsoft.Win32.OpenFileDialog() { Filter = "JPEG Files|*.jpg;*.jpeg" };
@@ -455,6 +448,7 @@ namespace Edda {
             if (res != MessageBoxResult.Yes) {
                 return;
             }
+            PauseSong();
             beatMap.DeleteMap(currentDifficulty);
             SwitchDifficultyMap(Math.Min(currentDifficulty, beatMap.numDifficulties - 1));
             UpdateDifficultyButtonVisibility();
@@ -633,11 +627,11 @@ namespace Edda {
             beatMap.SetValue("_environmentName", env);
         }
         private void EditorGrid_SizeChanged(object sender, SizeChangedEventArgs e) {
-            if (songIsPlaying) {
-                PauseSong();
-            }
-            if (beatMap != null && e.WidthChanged) {
-                DrawEditorGrid();
+            // changing the width will change the size of the editor grid, so we need to update some things
+            if (e.WidthChanged) {
+                if (beatMap != null) {
+                    DrawEditorGrid();
+                }
             }
         }
         private void ScrollEditor_SizeChanged(object sender, SizeChangedEventArgs e) {
@@ -649,18 +643,12 @@ namespace Edda {
             var curr = scrollEditor.VerticalOffset;
             var range = scrollEditor.ScrollableHeight;
             var value = (1 - curr / range) * (sliderSongProgress.Maximum - sliderSongProgress.Minimum);
-            if (!songIsPlaying) {
-                sliderSongProgress.Value = Double.IsNaN(value) ? 0 : value;
-            }
+            sliderSongProgress.Value = Double.IsNaN(value) ? 0 : value;
 
             // try to keep the scroller at the same percentage scroll that it was before
             if (e.ExtentHeightChange != 0) {
-                if (songWasChanged) {
-                    songWasChanged = false;
-                } else {
-                    scrollEditor.ScrollToVerticalOffset((1 - prevScrollPercent) * scrollEditor.ScrollableHeight);
-                }
-                //Trace.Write($"time: {txtSongPosition.Text} curr: {scrollEditor.VerticalOffset} max: {scrollEditor.ScrollableHeight} change: {e.ExtentHeightChange}\n");
+                scrollEditor.ScrollToVerticalOffset((1 - prevScrollPercent) * scrollEditor.ScrollableHeight);
+                //Console.Write($"time: {txtSongPosition.Text} curr: {scrollEditor.VerticalOffset} max: {scrollEditor.ScrollableHeight} change: {e.ExtentHeightChange}\n");
             } else if (range != 0) {
                 prevScrollPercent = (1 - curr / range);
             }
@@ -813,18 +801,15 @@ namespace Edda {
 
             comboEnvironment.SelectedIndex = Constants.BeatmapDefaults.EnvironmentNames.IndexOf((string)beatMap.GetValue("_environmentName"));
 
-            // file info
-            txtSongFileName.Text = (string)beatMap.GetValue("_songFilename");
-
             if ((string)beatMap.GetValue("_coverImageFilename") != "") {
                 LoadCoverImage();
             } else {
                 ClearCoverImage();
             }
 
-            // song player
-            var duration = (int)songStream.TotalTime.TotalSeconds;
-            txtSongDuration.Text = $"{duration / 60}:{(duration % 60).ToString("D2")}";
+            //// song player
+            //var duration = (int)songStream.TotalTime.TotalSeconds;
+            //txtSongDuration.Text = $"{duration / 60}:{(duration % 60).ToString("D2")}";
 
             //checkGridSnap.IsChecked = editorSnapToGrid;
 
@@ -865,6 +850,10 @@ namespace Edda {
 
             UpdateEditorGridHeight();
             scrollEditor.ScrollToBottom();
+        }
+        private void SaveBeatmap() {
+            beatMap.SetNotesForMap(currentDifficulty, currentDifficultyNotes);
+            beatMap.SaveToFile();
         }
 
         // config file
@@ -932,6 +921,8 @@ namespace Edda {
             btnAddDifficulty.IsEnabled = (beatMap.numDifficulties < 3);
         }
         private void SwitchDifficultyMap(int indx, bool redraw = true) {
+            PauseSong();
+
             currentDifficulty = indx;
             currentDifficultyNotes = beatMap.GetNotesForMap(indx);
             editorHistory.Clear();
@@ -966,7 +957,7 @@ namespace Edda {
             }
             VorbisWaveReader vorbisStream;
             try {
-                vorbisStream = new NAudio.Vorbis.VorbisWaveReader(d.FileName);
+                vorbisStream = new VorbisWaveReader(d.FileName);
             } catch (Exception) {
                 MessageBox.Show("The .ogg file is corrupted.", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
                 return false;
@@ -987,22 +978,23 @@ namespace Edda {
         }
         private void LoadSong() {
 
-            // cleanup old players
-            UnloadSong();
-
             var songPath = beatMap.PathOf((string)beatMap.GetValue("_songFilename"));
             songStream = new VorbisWaveReader(songPath);
             songChannel = new SampleChannel(songStream);
-            songChannel.Volume = (float)sliderSongVol.Value;
+            //songChannel.Volume = (float)sliderSongVol.Value;
             songPlayer = new WasapiOut(AudioClientShareMode.Shared, Constants.Audio.WASAPILatencyTarget);
             songPlayer.Init(songChannel);
 
             // subscribe to playbackstopped
             songPlayer.PlaybackStopped += (sender, args) => { PauseSong(); };
+
+            // load UI
             sliderSongProgress.Minimum = 0;
             sliderSongProgress.Maximum = songStream.TotalTime.TotalSeconds * 1000;
             sliderSongProgress.Value = 0;
-            songWasChanged = true;
+            var duration = (int)songStream.TotalTime.TotalSeconds;
+            txtSongDuration.Text = $"{duration / 60}:{(duration % 60).ToString("D2")}";
+            txtSongFileName.Text = (string)beatMap.GetValue("_songFilename");
 
             awd = new AudioVisualiser_Float32(new VorbisWaveReader(songPath));
         }
@@ -1016,29 +1008,24 @@ namespace Edda {
         }
         private void PlaySong() {
             songIsPlaying = true;
+
+            // toggle button appearance
             imgPlayerButton.Source = BitmapGenerator("pauseButton.png");
-            // disable some UI elements for performance reasons
-            // song/note playback gets desynced if these are changed during playback
-            // TODO: fix this?
-            //checkGridSnap.IsEnabled = false;
+
+            // set seek position for song
+            songStream.CurrentTime = TimeSpan.FromMilliseconds(sliderSongProgress.Value);
+
+            // disable actions that would interrupt note scanning
             txtSongBPM.IsEnabled = false;
-            txtGridDivision.IsEnabled = false;
             txtGridOffset.IsEnabled = false;
-            txtGridSpacing.IsEnabled = false;
-            btnDeleteDifficulty.IsEnabled = false;
             btnChangeDifficulty0.IsEnabled = false;
             btnChangeDifficulty1.IsEnabled = false;
             btnChangeDifficulty2.IsEnabled = false;
-            btnAddDifficulty.IsEnabled = false;
-
-            songStream.CurrentTime = TimeSpan.FromMilliseconds(sliderSongProgress.Value);
-
-            // disable scrolling while playing
             scrollEditor.IsEnabled = false;
             sliderSongProgress.IsEnabled = false;
 
-            // disable editor features
-            EditorGrid.Children.Remove(imgPreviewNote);
+            // hide editor
+            imgPreviewNote.Opacity = 0;
 
             // animate for smooth scrolling 
             var remainingTimeSpan = songStream.TotalTime - songStream.CurrentTime;
@@ -1067,37 +1054,29 @@ namespace Edda {
             songPlayer.Play();
         }
         private void PauseSong() {
+            if (!songIsPlaying) {
+                return;
+            }
             songIsPlaying = false;
             imgPlayerButton.Source = BitmapGenerator("playButton.png");
 
-            // reset note scan
+            // stop note scaning
             noteScanTokenSource.Cancel();
             noteScanStopwatch.Reset();
 
-            // re-enable UI elements
-            //checkGridSnap.IsEnabled = true;
+            // re-enable actions that were disabled
             txtSongBPM.IsEnabled = true;
-            txtGridDivision.IsEnabled = true;
             txtGridOffset.IsEnabled = true;
-            txtGridSpacing.IsEnabled = true;
-            btnDeleteDifficulty.IsEnabled = true;
             EnableDifficultyButtons();
-            btnAddDifficulty.IsEnabled = true;
-
-            // enable scrolling while paused
             scrollEditor.IsEnabled = true;
             sliderSongProgress.IsEnabled = true;
+
+            // reset scroll animation
             songPlayAnim.BeginTime = null;
             sliderSongProgress.BeginAnimation(Slider.ValueProperty, null);
-            var curr = scrollEditor.VerticalOffset;
-            var range = scrollEditor.ScrollableHeight;
-            var value = (1 - curr / range) * (sliderSongProgress.Maximum - sliderSongProgress.Minimum);
-            sliderSongProgress.Value = value;
 
-            // enable editor features
-            if (!EditorGrid.Children.Contains(imgPreviewNote)) {
-                EditorGrid.Children.Add(imgPreviewNote);
-            }
+            // show editor
+            imgPreviewNote.Opacity = Constants.Editor.PreviewNoteOpacity;
 
             //Trace.WriteLine($"Slider is late by {Math.Round(songStream.CurrentTime.TotalMilliseconds - sliderSongProgress.Value, 2)}ms");
 
@@ -1106,13 +1085,14 @@ namespace Edda {
         private void ScanNoteIndex() {
             // calculate scan index for playing drum hits
             var seekBeat = (noteScanStopwatchOffset / 1000.0) * (currentBPM / 60.0);
-            noteScanIndex = 0;
+            var newNoteScanIndex = 0;
             foreach (var n in currentDifficultyNotes) {
                 if (n.Item1 >= seekBeat) {
                     break;
                 }
-                noteScanIndex++;
+                newNoteScanIndex++;
             }
+            noteScanIndex = newNoteScanIndex;
         }
         private void ScanForNotes(int startFrom, CancellationToken ct) {
             // NOTE: this function is called on a separate thread
@@ -1120,7 +1100,7 @@ namespace Edda {
             // scan notes while song is still playing
             var nextPollTime = Constants.Audio.NotePollRate;
             while (!ct.IsCancellationRequested) {
-                if (noteScanStopwatch.ElapsedMilliseconds + startFrom >= nextPollTime) {
+                if (noteScanStopwatch.ElapsedMilliseconds + startFrom >= nextPollTime) {              
                     PlayNotes();
                     nextPollTime += Constants.Audio.NotePollRate;
                 }
@@ -1343,8 +1323,10 @@ namespace Edda {
 
             EditorGrid.Children.Add(editorDragSelectBorder);
 
-            // rescan notes after drawing
-            ScanNoteIndex();
+            // rescan notes after drawing, unless notes are being played right now
+            if (!songIsPlaying) {
+                ScanNoteIndex();
+            }
 
             Trace.WriteLine($"INFO: Redrew editor grid in {(DateTime.Now - start).TotalSeconds} seconds");
         }

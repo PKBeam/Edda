@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Diagnostics;
 using System.Windows;
 using System.Windows.Media.Imaging;
 using System.Threading;
@@ -150,7 +149,7 @@ public class AudioVisualiser_Float32 {
         bmp.Render(dv);
         bmp.Freeze();
 
-        //Trace.WriteLine("Draw complete");
+        //Console.WriteLine("Draw complete");
         isDrawing = false;
 
         // program crashes with UCEERR_RENDERTHREADFAILURE if this isnt converted to a BitmapImage

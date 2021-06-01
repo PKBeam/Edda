@@ -1,5 +1,5 @@
-﻿using System.Collections.Generic;
-using System.Diagnostics;
+﻿using System;
+using System.Collections.Generic;
 
 public class Edits<T> {
     public List<(bool, T)> items;
@@ -26,7 +26,7 @@ public class Edits<T> {
         return outStr;
     }
     public void Print() {
-        Trace.WriteLine(this.ToString());
+        Console.WriteLine(this.ToString());
     }
 }
 
@@ -88,7 +88,7 @@ public class EditHistory<T> {
         foreach (Edits<T> e in history) {
             outStr += e.ToString();
         }
-        Trace.WriteLine(outStr);
+        Console.WriteLine(outStr);
     }
     private void RemoveFirst() {
         history.RemoveAt(0);
