@@ -132,7 +132,12 @@ namespace Edda {
 
             songIsPlaying = false;
 
-            string[] drumSounds = { "Resources/drum1.wav", "Resources/drum2.wav", "Resources/drum3.wav", "Resources/drum4.wav" };
+            string[] drumSounds = { 
+                "Resources/drum1.wav", 
+                "Resources/drum2.wav", 
+                "Resources/drum3.wav", 
+                "Resources/drum4.wav" 
+            };
             drummer = new NotePlayer(drumSounds, Constants.Audio.NotePlaybackStreams, Constants.Audio.WASAPILatencyTarget);
 
             // disable parts of UI, as no map is loaded
@@ -212,7 +217,7 @@ namespace Edda {
             // init environment combobox
             foreach (var name in Constants.BeatmapDefaults.EnvironmentNames) {
                 if (name == "DefaultEnvironment") {
-                    comboEnvironment.Items.Add(Constants.BeatmapDefaults.DefaultEnvironmentName);
+                    comboEnvironment.Items.Add(Constants.BeatmapDefaults.DefaultEnvironmentAlias);
                 } else {
                     comboEnvironment.Items.Add(name);
                 }
@@ -335,11 +340,9 @@ namespace Edda {
         }
         private void BtnNewMap_Click(object sender, RoutedEventArgs e) {
 
-            PauseSong();
-
             // check if map already open
             if (beatMap != null) {
-                var res = MessageBox.Show("A map is already open. Creating a new map will close the existing map. Are you sure you want to continue?", "Warning", MessageBoxButton.YesNo);
+                var res = MessageBox.Show("A map is already open. Creating a new map will close the existing map. Are you sure you want to continue?", "Warning", MessageBoxButton.YesNo, MessageBoxImage.Warning);
                 if (res != MessageBoxResult.Yes) {
                     return;
                 }
@@ -369,6 +372,7 @@ namespace Edda {
                 return;
             }
 
+            PauseSong();
             beatMap = new RagnarockMap(d2.FileName, true);
             currentDifficultyNotes.Clear();
 
@@ -385,8 +389,6 @@ namespace Edda {
         }
         private void BtnOpenMap_Click(object sender, RoutedEventArgs e) {
 
-            PauseSong();
-
             // select folder for map
             // TODO: this dialog is sometimes hangs, is there a better way to select a folder?
             var d2 = new CommonOpenFileDialog();
@@ -396,7 +398,9 @@ namespace Edda {
             if (d2.ShowDialog() != CommonFileDialogResult.Ok) {
                 return;
             }
+
             // try to load info
+            PauseSong();
             try {
                 beatMap = new RagnarockMap(d2.FileName, false);
                 LoadSong(); // song file
@@ -621,8 +625,8 @@ namespace Edda {
         }
         private void ComboEnvironment_SelectionChanged(object sender, SelectionChangedEventArgs e) {
             var env = (string)comboEnvironment.SelectedItem;
-            if (env == "DefaultEnvironment") {
-                env = Constants.BeatmapDefaults.DefaultEnvironmentName;
+            if (env == Constants.BeatmapDefaults.DefaultEnvironmentAlias) {
+                env = "DefaultEnvironment";
             }
             beatMap.SetValue("_environmentName", env);
         }
@@ -981,7 +985,6 @@ namespace Edda {
             var songPath = beatMap.PathOf((string)beatMap.GetValue("_songFilename"));
             songStream = new VorbisWaveReader(songPath);
             songChannel = new SampleChannel(songStream);
-            //songChannel.Volume = (float)sliderSongVol.Value;
             songPlayer = new WasapiOut(AudioClientShareMode.Shared, Constants.Audio.WASAPILatencyTarget);
             songPlayer.Init(songChannel);
 
@@ -997,6 +1000,7 @@ namespace Edda {
             txtSongFileName.Text = (string)beatMap.GetValue("_songFilename");
 
             awd = new AudioVisualiser_Float32(new VorbisWaveReader(songPath));
+            imgAudioWaveform.Source = null;
         }
         private void UnloadSong() {
             if (songStream != null) {
@@ -1461,19 +1465,16 @@ namespace Edda {
         private string UidGenerator(Note n) {
             return $"Note({n.Item1},{n.Item2})";
         }
-        private Uri PackUriGenerator(string fileName) {
-            return new Uri($"pack://application:,,,/resources/{fileName}");
-        }
         private BitmapImage BitmapImageForBeat(double beat, bool isHighlighted = false) {
             var fracBeat = beat - (int)beat;
             switch (Math.Round(fracBeat, 5)) {
-                case 0.00000: return (isHighlighted) ? rune1Highlight : rune1;
-                case 0.25000: return (isHighlighted) ? rune14Highlight : rune14;
-                case 0.33333: return (isHighlighted) ? rune13Highlight : rune13;
-                case 0.50000: return (isHighlighted) ? rune12Highlight : rune12;
-                case 0.66667: return (isHighlighted) ? rune23Highlight : rune23;
-                case 0.75000: return (isHighlighted) ? rune34Highlight : rune34;
-                default: return (isHighlighted) ? runeXHighlight : runeX;
+                case 0.00000: return isHighlighted ? rune1Highlight  : rune1;
+                case 0.25000: return isHighlighted ? rune14Highlight : rune14;
+                case 0.33333: return isHighlighted ? rune13Highlight : rune13;
+                case 0.50000: return isHighlighted ? rune12Highlight : rune12;
+                case 0.66667: return isHighlighted ? rune23Highlight : rune23;
+                case 0.75000: return isHighlighted ? rune34Highlight : rune34;
+                default:      return isHighlighted ? runeXHighlight  : runeX;
             }
         }
         private BitmapImage BitmapGenerator(Uri u) {
@@ -1485,8 +1486,8 @@ namespace Edda {
             b.Freeze();
             return b;
         }
-        private BitmapImage BitmapGenerator(string file) {
-            return BitmapGenerator(PackUriGenerator(file));
+        private BitmapImage BitmapGenerator(string resourceFile) {
+            return BitmapGenerator(new Uri($"pack://application:,,,/resources/{resourceFile}"));
         }
     }
 }
