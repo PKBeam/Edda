@@ -5,7 +5,7 @@ namespace Constants {
     using DrawingColor = System.Drawing.Color;
     public static class Program {
         public const string ProgramName          = "Edda";
-        public const string ProgramVersionNumber = "0.2.2";
+        public const string ProgramVersionNumber = "0.2.2.1";
         public const string SettingsFile         = "settings.txt";
     }
     public static class Editor {
