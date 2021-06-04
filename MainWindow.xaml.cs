@@ -76,7 +76,7 @@ namespace Edda {
 
         // store info about the currently selected difficulty
         int currentDifficulty;
-        List<Note> currentDifficultyNotes;
+        List<Note> currentDifficultyNotes = new List<Note>();
 
         DoubleAnimation songPlayAnim;            // used for animating scroll when playing a song
         double prevScrollPercent;       // percentage of scroll progress before the scroll viewport was changed
@@ -374,7 +374,6 @@ namespace Edda {
 
             PauseSong();
             beatMap = new RagnarockMap(d2.FileName, true);
-            currentDifficultyNotes.Clear();
 
             // select and load an audio file
             if (!SelectNewSong()) {
