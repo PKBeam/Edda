@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics;
 using System.Windows;
 using System.Windows.Media.Imaging;
 using System.Threading;
@@ -6,6 +7,7 @@ using System.Windows.Media;
 using System.IO;
 using NAudio.Wave;
 
+// NOTE: this class is unused, see VorbisWaveformVisualiser
 public class AudioVisualiser_Float32 {
 
     private CancellationTokenSource tokenSource;
@@ -30,16 +32,21 @@ public class AudioVisualiser_Float32 {
     }
     private BitmapSource Draw_GDI(double height, double width) {
         tokenSource.Cancel();
+        while (isDrawing) {
+            Thread.Sleep(100);
+        }
         RecreateTokens();
         token = tokenSource.Token;
-        while (isDrawing) { }
         return _Draw_GDI(token, height, width);
     }
     private BitmapSource Draw_WPF(double height, double width, double offsetStart = 0, double offsetEnd = 0) {
         tokenSource.Cancel();
+        while (isDrawing) {
+            Thread.Sleep(100);
+        }
         RecreateTokens();
         token = tokenSource.Token;
-        while (isDrawing) { }
+
         return _Draw_WPF(token, height, width, offsetStart, offsetEnd);
     }
 
@@ -107,13 +114,14 @@ public class AudioVisualiser_Float32 {
         Pen bluePen = new Pen(new SolidColorBrush(Constants.Editor.Waveform.ColourWPF), Constants.Editor.Waveform.ThicknessWPF);
         bluePen.Freeze();
 
-        int samplesPerPixel = (int)(reader.Length / (double)(height * bytesPerSample));
-        int bytesPerPixel = bytesPerSample * samplesPerPixel;
-        int bytesRead;
+        // TODO fix floating point rounding errors here
+        int bytesPerPixel = (int)(reader.Length/height);
+        int bytesRead = 0;
         byte[] waveData = new byte[bytesPerPixel];
         // draw each pixel of height
         for (int y = 0; y <= height; y++) {
             bytesRead = reader.Read(waveData, 0, bytesPerPixel);
+
             if (bytesRead == 0)
                 break;
             if (y < offsetStart) {
@@ -149,11 +157,11 @@ public class AudioVisualiser_Float32 {
         bmp.Render(dv);
         bmp.Freeze();
 
-        //Console.WriteLine("Draw complete");
+        //Trace.WriteLine($"{reader.Position}");
         isDrawing = false;
-
         // program crashes with UCEERR_RENDERTHREADFAILURE if this isnt converted to a BitmapImage
         // https://github.com/dotnet/wpf/issues/3100
+        RenderTargetToDisk(bmp);
         return RenderTargetToImage(bmp);
     }
 
@@ -178,6 +186,14 @@ public class AudioVisualiser_Float32 {
         bitmapImage.Freeze();
 
         return bitmapImage;
+    }
+    private static void RenderTargetToDisk(RenderTargetBitmap input) {
+        // https://stackoverflow.com/questions/13987408/convert-rendertargetbitmap-to-bitmapimage#13988871
+        var bitmapEncoder = new PngBitmapEncoder();
+        bitmapEncoder.Frames.Add(BitmapFrame.Create(input));
+
+        // Save the image to a location on the disk.
+        bitmapEncoder.Save(new System.IO.FileStream("out.png", System.IO.FileMode.Create));
     }
     private void RecreateTokens() {
         tokenSource = new CancellationTokenSource();

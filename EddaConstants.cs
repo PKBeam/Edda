@@ -5,7 +5,7 @@ namespace Constants {
     using DrawingColor = System.Drawing.Color;
     public static class Program {
         public const string ProgramName          = "Edda";
-        public const string ProgramVersionNumber = "0.2.2.1";
+        public const string ProgramVersionNumber = "0.2.2.2";
         public const string SettingsFile         = "settings.txt";
     }
     public static class Editor {
@@ -28,7 +28,7 @@ namespace Constants {
         // Waveform drawing
         public static class Waveform {
             public const double Width        = 0.6;
-            public const int    MaxDimension = 50000;
+            public const int    MaxDimension = 65535;
             public const double ThicknessWPF = 2;
             public const bool   UseGDI       = false;
             public static MediaColor ColourWPF => MediaColor.FromArgb(96, 0, 0, 255);

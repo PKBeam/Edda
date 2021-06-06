@@ -17,6 +17,7 @@ using NAudio.CoreAudioApi;
 using NAudio.Wave;
 using NAudio.Wave.SampleProviders;
 using NAudio.Vorbis;
+using System.Drawing.Imaging;
 
 namespace Edda {
     /// <summary>
@@ -88,7 +89,8 @@ namespace Edda {
 
         // -- for waveform drawing
         Image imgAudioWaveform;
-        AudioVisualiser_Float32 awd;
+        //AudioVisualiser_Float32 awd;
+        VorbisWaveformVisualiser audioWaveform;
         bool editorShowWaveform;
 
         // -- for note placement
@@ -128,6 +130,7 @@ namespace Edda {
         NotePlayer drummer;
 
         public MainWindow() {
+   
             InitializeComponent();
 
             songIsPlaying = false;
@@ -253,7 +256,7 @@ namespace Edda {
                 drummer.Dispose();
             }
         }
-        private void AppMainWindow_PreviewKeyDown(object sender, KeyEventArgs e) {
+        private void AppMainWindow_KeyDown(object sender, KeyEventArgs e) {
             var keyStr = e.Key.ToString();
             if (keyStr.EndsWith("Ctrl")) {
                 ctrlKeyDown = true;
@@ -309,13 +312,7 @@ namespace Edda {
                     MirrorSelection();
                 }
             }
-            // toggle media player
-            if (keyStr == "Space") {
-                if (btnSongPlayer.IsEnabled) {
-                    BtnSongPlayer_Click(null, null);
-                }
-                e.Handled = true;
-            }
+
             // delete selected notes
             if (keyStr == "Delete") {
                 RemoveNotes(editorSelectedNotes);
@@ -323,19 +320,31 @@ namespace Edda {
             // unselect all notes
             if (keyStr == "Escape") {
                 UnselectAllNotes();
+                Trace.WriteLine($"slider: {new TimeSpan(0, 0, 0, 0, (int)sliderSongProgress.Value)}");
+                Trace.WriteLine($"scroll: {scrollEditor.ScrollableHeight - scrollEditor.VerticalOffset}, {scrollEditor.ScrollableHeight}");
+                Trace.WriteLine($"song: {songStream.CurrentTime}");
             }
-
 
             //Trace.WriteLine(keyStr);
             //Trace.WriteLine($"Row: {editorMouseGridRow} ({Math.Round(editorMouseGridRowFractional, 2)}), Col: {editorMouseGridCol}");
         }
-        private void AppMainWindow_PreviewKeyUp(object sender, KeyEventArgs e) {
+        private void AppMainWindow_KeyUp(object sender, KeyEventArgs e) {
             var keyStr = e.Key.ToString();
             if (keyStr.EndsWith("Ctrl")) {
                 ctrlKeyDown = false;
             }
             if (keyStr.EndsWith("Shift")) {
                 shiftKeyDown = false;
+            }
+        }
+        private void AppMainWindow_PreviewKeyDown(object sender, KeyEventArgs e) {
+            var keyStr = e.Key.ToString();
+            // toggle media player
+            if (keyStr == "Space") {
+                if (btnSongPlayer.IsEnabled) {
+                    BtnSongPlayer_Click(null, null);
+                }
+                e.Handled = true;
             }
         }
         private void BtnNewMap_Click(object sender, RoutedEventArgs e) {
@@ -348,6 +357,10 @@ namespace Edda {
                 }
                 // save existing work before making a new map
                 SaveBeatmap();
+
+                // clear some stuff
+                PauseSong();
+                currentDifficultyNotes.Clear();
             }
 
             // select folder for map
@@ -372,7 +385,6 @@ namespace Edda {
                 return;
             }
 
-            PauseSong();
             beatMap = new RagnarockMap(d2.FileName, true);
 
             // select and load an audio file
@@ -388,6 +400,20 @@ namespace Edda {
         }
         private void BtnOpenMap_Click(object sender, RoutedEventArgs e) {
 
+            // check if map already open
+            if (beatMap != null) {
+                var res = MessageBox.Show("A map is already open. Opening a new map will close the existing map. Are you sure you want to continue?", "Warning", MessageBoxButton.YesNo, MessageBoxImage.Warning);
+                if (res != MessageBoxResult.Yes) {
+                    return;
+                }
+                // save existing work before making a new map
+                SaveBeatmap();
+
+                // clear some stuff
+                PauseSong();
+                currentDifficultyNotes.Clear();
+            }
+
             // select folder for map
             // TODO: this dialog is sometimes hangs, is there a better way to select a folder?
             var d2 = new CommonOpenFileDialog();
@@ -399,7 +425,6 @@ namespace Edda {
             }
 
             // try to load info
-            PauseSong();
             try {
                 beatMap = new RagnarockMap(d2.FileName, false);
                 LoadSong(); // song file
@@ -635,6 +660,8 @@ namespace Edda {
                 if (beatMap != null) {
                     DrawEditorGrid();
                 }
+            } else {
+                DrawEditorWaveform();
             }
         }
         private void ScrollEditor_SizeChanged(object sender, SizeChangedEventArgs e) {
@@ -731,7 +758,7 @@ namespace Edda {
             editorColStart = editorMouseGridCol;
             EditorGrid.CaptureMouse();
         }
-        private void ScrollEditor_MouseLeftButtonUp(object sender, MouseButtonEventArgs e) {
+        private void ScrollEditor_MouseLeftButtonUp(object sender, MouseButtonEventArgs e) { 
             if (editorIsDragging) {
                 editorDragSelectBorder.Visibility = Visibility.Hidden;
                 imgPreviewNote.Visibility = Visibility.Visible;
@@ -777,7 +804,8 @@ namespace Edda {
             editorMouseDown = false;
         }
         private void ScrollEditor_MouseRightButtonUp(object sender, MouseButtonEventArgs e) {
-            editorHistory.Print();
+
+            Trace.WriteLine($"{EditorGrid.ActualHeight - e.GetPosition(EditorGrid).Y - unitHeight/2}");
             // remove the note
             double row = (editorSnapToGrid) ? (editorMouseGridRow) : (editorMouseGridRowFractional);
             Note n = new Note(BeatForRow(row), editorMouseGridCol);
@@ -969,14 +997,22 @@ namespace Edda {
                 MessageBox.Show("Songs over 1 hour in duration are not supported.", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
                 return false;
             }
+
             UnloadSong();
+
+            // update beatmap data
             var songFile = System.IO.Path.GetFileName(d.FileName);
+            beatMap.SetValue("_songApproximativeDuration", (int)vorbisStream.TotalTime.TotalSeconds + 1);
+            beatMap.SetValue("_songFilename", songFile);
+            vorbisStream.Dispose();
+
+            // do file I/O
             var prevSongFile = (string)beatMap.GetValue("_songFilename");
             File.Delete(beatMap.PathOf(prevSongFile));
             File.Copy(d.FileName, beatMap.PathOf(songFile));
-            beatMap.SetValue("_songApproximativeDuration", (int)vorbisStream.TotalTime.TotalSeconds + 1);
-            beatMap.SetValue("_songFilename", songFile);
+
             LoadSong();
+
             return true;
         }
         private void LoadSong() {
@@ -998,7 +1034,8 @@ namespace Edda {
             txtSongDuration.Text = $"{duration / 60}:{(duration % 60).ToString("D2")}";
             txtSongFileName.Text = (string)beatMap.GetValue("_songFilename");
 
-            awd = new AudioVisualiser_Float32(new VorbisWaveReader(songPath));
+            audioWaveform = new VorbisWaveformVisualiser(new VorbisWaveReader(songPath));
+            //awd = new AudioVisualiser_Float32(new VorbisWaveReader(songPath));
             imgAudioWaveform.Source = null;
         }
         private void UnloadSong() {
@@ -1296,7 +1333,7 @@ namespace Edda {
             // resize editor grid height to fit scrollEditor height
             double beats = (currentBPM / 60) * songStream.TotalTime.TotalSeconds;
             EditorGrid.Height = beats * unitLength + scrollEditor.ActualHeight;
-
+            Trace.WriteLine($"song length: {beats * unitLength}");
             if (redraw) {
                 DrawEditorGrid();
             }
@@ -1348,14 +1385,15 @@ namespace Edda {
             EditorGrid.Children.Remove(imgAudioWaveform);
             imgAudioWaveform.Height = EditorGrid.Height - scrollEditor.ActualHeight;
             imgAudioWaveform.Width = EditorGrid.ActualWidth;
-            Canvas.SetBottom(imgAudioWaveform, unitLength / 2);
+            Canvas.SetBottom(imgAudioWaveform, unitHeight / 2);
             EditorGrid.Children.Insert(0, imgAudioWaveform);
         }
         private void CreateEditorWaveform(double height, double width) {
-            BitmapSource bmp = awd.Draw(height, width, Constants.Editor.Waveform.UseGDI);
+            BitmapSource bmp = audioWaveform.Draw(height, width); //awd.Draw(height, width, Constants.Editor.Waveform.UseGDI);
             if (bmp == null) {
                 return;
             }
+
             this.Dispatcher.Invoke(() => {
                 imgAudioWaveform.Source = bmp;
                 ResizeEditorWaveform();
@@ -1376,9 +1414,9 @@ namespace Edda {
                 l.X2 = EditorGrid.ActualWidth;
                 l.Y1 = offset;
                 l.Y2 = offset;
-                l.Stroke = (SolidColorBrush)(new BrushConverter().ConvertFrom(
+                l.Stroke = (SolidColorBrush)new BrushConverter().ConvertFrom(
                     (counter % editorGridDivision == 0) ? Constants.Editor.MajorGridlineColour : Constants.Editor.MinorGridlineColour)
-                );
+                ;
                 l.StrokeThickness = (counter % editorGridDivision == 0) ? Constants.Editor.MajorGridlineThickness : Constants.Editor.MinorGridlineThickness;
                 Canvas.SetBottom(l, offset);
                 EditorGrid.Children.Add(l);
@@ -1488,5 +1526,7 @@ namespace Edda {
         private BitmapImage BitmapGenerator(string resourceFile) {
             return BitmapGenerator(new Uri($"pack://application:,,,/resources/{resourceFile}"));
         }
+
+
     }
 }

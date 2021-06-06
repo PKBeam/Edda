@@ -4,7 +4,7 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         mc:Ignorable="d"
-        x:Name="AppMainWindow" Title="Edda" Height="780" Width="800" MinHeight="780" MinWidth="800" Closed="AppMainWindow_Closed" PreviewKeyDown="AppMainWindow_PreviewKeyDown" PreviewKeyUp="AppMainWindow_PreviewKeyUp">
+        x:Name="AppMainWindow" Title="Edda" Height="780" Width="800" MinHeight="780" MinWidth="800" Closed="AppMainWindow_Closed" KeyDown="AppMainWindow_KeyDown" PreviewKeyDown="AppMainWindow_PreviewKeyDown" KeyUp="AppMainWindow_KeyUp">
     <DockPanel>
         <Border DockPanel.Dock="Top" BorderBrush="{DynamicResource {x:Static SystemColors.ControlDarkDarkBrushKey}}" BorderThickness="0, 0, 0, 2">
             <Border.Background>
@@ -384,11 +384,28 @@
                         </LinearGradientBrush>
                     </Canvas.Background>
                 </Canvas>
-
+            </Grid>
+            <Grid VerticalAlignment="Bottom">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="3*" />
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="3*" />
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="3*" />
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="3*" />
+                    <ColumnDefinition Width="*" />
+                </Grid.ColumnDefinitions>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="*"/>
+                </Grid.RowDefinitions>
+                <Line Grid.ColumnSpan="9" Stroke="Navy" StrokeThickness="2" X2="{Binding ElementName=EditorPanel, Path=ActualWidth}"  VerticalAlignment="Center"/>                
                 <Image Grid.Column="1" Source="pack://application:,,,/Edda;component/resources/drum.png" Name="Drum1" VerticalAlignment="Bottom"/>
                 <Image Grid.Column="3" Source="pack://application:,,,/Edda;component/resources/drum.png" Name="Drum2" VerticalAlignment="Bottom"/>
                 <Image Grid.Column="5" Source="pack://application:,,,/Edda;component/resources/drum.png" Name="Drum3" VerticalAlignment="Bottom"/>
                 <Image Grid.Column="7" Source="pack://application:,,,/Edda;component/resources/drum.png" Name="Drum4" VerticalAlignment="Bottom"/>
+
             </Grid>
             <!-- Map Notes -->
             <ScrollViewer x:Name="scrollEditor" VerticalScrollBarVisibility="Hidden" CanContentScroll="False" ScrollChanged="ScrollEditor_ScrollChanged" PreviewMouseWheel="ScrollEditor_PreviewMouseWheel" SizeChanged="ScrollEditor_SizeChanged" MouseMove="ScrollEditor_MouseMove" MouseLeave="ScrollEditor_MouseLeave" MouseEnter="ScrollEditor_MouseEnter" MouseLeftButtonUp="ScrollEditor_MouseLeftButtonUp" MouseRightButtonUp="ScrollEditor_MouseRightButtonUp" PreviewMouseLeftButtonDown="ScrollEditor_PreviewMouseLeftButtonDown">
