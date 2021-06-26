@@ -288,11 +288,15 @@ namespace Edda {
 
                 // copy (Ctrl-C)
                 if (keyStr == "C") {
-                    CopyNotes();
+                    CopySelection();
+                }
+                // cut (Ctrl-X)
+                if (keyStr == "X") {
+                    CutSelection();
                 }
                 // paste (Ctrl-V)
                 if (keyStr == "V") {
-                    PasteNotes(BeatForRow(editorMouseGridRow));
+                    PasteClipboard(BeatForRow(editorMouseGridRow));
                 }
 
                 // undo (Ctrl-Z)
@@ -1247,14 +1251,17 @@ namespace Edda {
             AddNotes(new List<Note>() { n }, updateHistory);
         }
         private void RemoveNotes(List<Note> notes, bool updateHistory = true) {
-            foreach (Note n in notes) {
-                currentDifficultyNotes.Remove(n);
-            }
+
             // undraw the added notes
             UndrawEditorGridNotes(notes);
 
             if (updateHistory) {
                 editorHistory.Add(new EditList<Note>(false, notes));
+            }
+            // finally, unselect all removed notes
+            foreach (Note n in new List<Note>(notes)) {
+                currentDifficultyNotes.Remove(n);
+                UnselectNote(n);
             }
             editorHistory.Print();
         }
@@ -1307,12 +1314,18 @@ namespace Edda {
             }
             editorSelectedNotes.Clear();
         }
-        private void CopyNotes() {
+        private void CopySelection() {
             editorClipboard = new(editorSelectedNotes);
             editorClipboard.Sort(CompareNotes);
-
         }
-        private void PasteNotes(double beatOffset) {
+        private void CutSelection() {
+            CopySelection();
+            RemoveNotes(editorSelectedNotes);
+        }
+        private void PasteClipboard(double beatOffset) {
+            if (editorClipboard.Count == 0) {
+                return;
+            }
             // paste notes so that the first note lands on the given beat offset
             double offset = beatOffset - editorClipboard[0].beat;
             List<Note> notes = new List<Note>();
@@ -1326,11 +1339,10 @@ namespace Edda {
             foreach (var edit in e.items) {
                 if (edit.isAdd) {
                     AddNotes(edit.item, false);
-                    SelectNote(edit.item);
                 } else {
                     RemoveNotes(edit.item, false);
-                    UnselectNote(edit.item);
                 }
+                UnselectAllNotes();
             }
 
         }
