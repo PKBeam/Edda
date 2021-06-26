@@ -5,8 +5,8 @@ Edda is a map editor for the VR rhythm game [Ragnarock](https://www.ragnarock-vr
 It is mostly functional, but is still under development and has not been tested extensively.  
 Edda is only compatible with Windows operating systems.
 
-<details>
-  <summary>View screenshot (click to expand)</summary>
+<details open>
+  <summary>Edda screenshot (click to close)</summary>
   
   ![Screenshot of Edda](https://i.imgur.com/tLOFs4M.png)
 </details>
