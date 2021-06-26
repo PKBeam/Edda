@@ -8,14 +8,14 @@ using System.IO;
 using NAudio.Wave;
 
 // NOTE: this class is unused, see VorbisWaveformVisualiser
-public class AudioVisualiser_Float32 {
+public class AudioVisualiser {
 
     private CancellationTokenSource tokenSource;
     private CancellationToken token;
     private WaveStream reader;
     private bool isDrawing;
 
-    public AudioVisualiser_Float32(WaveStream reader) {
+    public AudioVisualiser(WaveStream reader) {
         RecreateTokens();
         this.reader = reader;
         this.isDrawing = false;

@@ -2,7 +2,7 @@
 using NAudio.Wave;
 using NAudio.CoreAudioApi;
 
-public class NotePlayer : IDisposable {
+public class DrumPlayer : IDisposable {
 
     int streams;
     int uniqueSamples;
@@ -11,7 +11,7 @@ public class NotePlayer : IDisposable {
     AudioFileReader[] noteStreams;
     WasapiOut[] notePlayers;
 
-    public NotePlayer(string[] filePaths, int streams, int desiredLatency) {
+    public DrumPlayer(string[] filePaths, int streams, int desiredLatency) {
         this.lastPlayedStream = 0;
         this.streams = streams;
         this.uniqueSamples = filePaths.Length;

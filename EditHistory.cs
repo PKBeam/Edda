@@ -1,53 +1,17 @@
 ﻿using System;
 using System.Collections.Generic;
 
-public class Edits<T> {
-    public List<(bool, T)> items;
-
-    public Edits<T> Inverted() {
-        var e = new List<(bool, T)>();
-        foreach (var i in items) {
-            e.Add((!i.Item1, i.Item2));
-        }
-        return new Edits<T>(e);
-    }
-    public Edits(List<(bool, T)> items) {
-        this.items = items;
-    }
-    public Edits() {
-        this.items = new List<(bool, T)>();
-    }
-    public override string ToString() {
-        var outStr = "[";
-        foreach ((bool, T) e in this.items) {
-            outStr += $"{(e.Item1 ? "+" : "-")}{e.Item2}";
-        }
-        outStr += "]";
-        return outStr;
-    }
-    public void Print() {
-        Console.WriteLine(this.ToString());
-    }
-}
-
 public class EditHistory<T> {
     private int bufferSize;
-    private List<Edits<T>> history;
+    private List<EditList<T>> history;
     private int currentIndex; // index of the edit item after the last action
 
     public EditHistory(int bufferSize) {
         this.bufferSize = bufferSize;
         this.Clear();
     }
-    public void Add(bool isAdding, List<T> items) {
-        List<(bool, T)> e = new();
-        foreach (var i in items) {
-            e.Add((isAdding, i));
-        }
-        this.Add(e);
-    }
-    public void Add(List<(bool, T)> items) {
-        Edits<T> e = new(items);
+    public void Add(EditList<T> edits) {
+        EditList<T> e = (EditList<T>)edits.Clone();
         if (currentIndex == bufferSize) {
             RemoveFirst();
         }
@@ -56,28 +20,29 @@ public class EditHistory<T> {
         // clear all of the "future" history
         history.RemoveRange(currentIndex, history.Count - currentIndex);
     }
-    public Edits<T> Undo() {
+
+    // returns the edits that need to be applied on the object being tracked
+    public EditList<T> Undo() {
         if (currentIndex == 0) {
-            return new Edits<T>();
+            return new EditList<T>();
         }
         return history[--currentIndex].Inverted();
     }
-    public Edits<T> Redo() {
+
+    // returns the edits that need to be applied on the object being tracked
+    public EditList<T> Redo() {
         if (currentIndex == history.Count) {
-            return new Edits<T>();
+            return new EditList<T>();
         }
         return history[currentIndex++];
     }
-    public void Consolidate(int entries) { // consolidate the last n entries into one
-        Edits<T> e = new();
-        for (int i = 0; i < entries; i++) {
-            var edits = this.history[currentIndex - 1];
-            foreach (var edit in edits.items) {
-                e.items.Add(edit);
-            }
+    public void Consolidate(int n) { // consolidate the last n entries into one
+        EditList<T> e = new();
+        for (int i = 0; i < n; i++) {
+            e.items.AddRange(history[currentIndex - 1].items);
             currentIndex--;
         }
-        this.Add(e.items);
+        this.Add(e);
     }
     public void Clear() {
         this.history = new();
@@ -85,7 +50,7 @@ public class EditHistory<T> {
     }
     public void Print() {
         var outStr = $"(Pos: {this.currentIndex})";
-        foreach (Edits<T> e in history) {
+        foreach (EditList<T> e in history) {
             outStr += e.ToString();
         }
         Console.WriteLine(outStr);

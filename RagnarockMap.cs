@@ -5,8 +5,6 @@ using System.IO;
 using System.Linq;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
-using Note = System.ValueTuple<double, int>;
-
 
 public class RagnarockMap {
 
@@ -401,7 +399,7 @@ public class RagnarockMap {
         foreach (JToken n in res) {
             double time = double.Parse((string)n["_time"], CultureInfo.InvariantCulture);
             int colIndex = int.Parse((string)n["_lineIndex"]);
-            output.Add((time, colIndex));
+            output.Add(new Note(time, colIndex));
         }
         return output;
     }
@@ -411,8 +409,8 @@ public class RagnarockMap {
         for (int i = 0; i < numNotes; i++) {
             var thisNote = notes[i];
             var thisNoteObj = new {
-                _time = thisNote.Item1,
-                _lineIndex = thisNote.Item2,
+                _time = thisNote.beat,
+                _lineIndex = thisNote.col,
                 _lineLayer = 1,
                 _type = 0,
                 _cutDirection = 1
