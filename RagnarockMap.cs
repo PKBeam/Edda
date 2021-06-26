@@ -524,4 +524,27 @@ public class RagnarockMap {
     public string PathOf(string f) {
         return Path.Combine(folderPath, f);
     }
+    public int GetMedalDistanceForMap(int indx, int medal) {
+        JArray info = (JArray)GetCustomValueForMap(indx, "_information");
+        string splitter = $"medal_{medal}=";
+        foreach (JToken t in info) {
+            string s = (string)t;
+            if (s.StartsWith(splitter)) {
+                return int.Parse(s.Split(splitter)[1]);
+            }
+        }
+        return 0;
+    }
+    public void SetMedalDistanceForMap(int indx, int medal, int dist) {
+        JArray info = (JArray)GetCustomValueForMap(indx, "_information");
+        string splitter = $"medal_{medal}=";
+        JToken insert = JToken.FromObject($"{splitter}{dist}");
+        for (int i = 0; i < info.Count; i++) {
+            if (((string)info[i]).StartsWith(splitter)) {
+                info[i] = insert;
+                return;
+            }
+        }
+        info.Add(insert);
+    }
 }

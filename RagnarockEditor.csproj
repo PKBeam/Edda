@@ -18,6 +18,9 @@
     <None Remove="Resources\drum2.wav" />
     <None Remove="Resources\drum3.wav" />
     <None Remove="Resources\drum4.wav" />
+    <None Remove="Resources\medalBronze.png" />
+    <None Remove="Resources\medalGold.png" />
+    <None Remove="Resources\medalSilver.png" />
     <None Remove="Resources\newMap.png" />
     <None Remove="Resources\openMap.png" />
     <None Remove="Resources\pauseButton.png" />
@@ -71,10 +74,11 @@
     <Resource Include="Resources\difficulty2.png" />
     <Resource Include="Resources\difficulty3.png" />
     <Resource Include="Resources\drum.png" />
+    <Resource Include="Resources\medalBronze.png" />
+    <Resource Include="Resources\medalGold.png" />
+    <Resource Include="Resources\medalSilver.png" />
     <Resource Include="Resources\newMap.png" />
-    <Resource Include="Resources\openMap.png">
-      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
-    </Resource>
+    <Resource Include="Resources\openMap.png" />
     <Resource Include="Resources\pauseButton.png" />
     <Resource Include="Resources\placeholder.png" />
     <Resource Include="Resources\playButton.png" />

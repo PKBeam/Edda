@@ -162,6 +162,9 @@ namespace Edda {
             checkGridSnap.IsEnabled = false;
             txtDifficultyNumber.IsEnabled = false;
             txtNoteSpeed.IsEnabled = false;
+            txtDistMedal0.IsEnabled = false;
+            txtDistMedal1.IsEnabled = false;
+            txtDistMedal2.IsEnabled = false;
             txtGridDivision.IsEnabled = false;
             txtGridOffset.IsEnabled = false;
             txtGridSpacing.IsEnabled = false;
@@ -257,6 +260,7 @@ namespace Edda {
             }
         }
         private void AppMainWindow_KeyDown(object sender, KeyEventArgs e) {
+
             var keyStr = e.Key.ToString();
             if (keyStr.EndsWith("Ctrl")) {
                 ctrlKeyDown = true;
@@ -320,11 +324,16 @@ namespace Edda {
             // unselect all notes
             if (keyStr == "Escape") {
                 UnselectAllNotes();
-                Trace.WriteLine($"slider: {new TimeSpan(0, 0, 0, 0, (int)sliderSongProgress.Value)}");
-                Trace.WriteLine($"scroll: {scrollEditor.ScrollableHeight - scrollEditor.VerticalOffset}, {scrollEditor.ScrollableHeight}");
-                Trace.WriteLine($"song: {songStream.CurrentTime}");
+                //Trace.WriteLine($"slider: {new TimeSpan(0, 0, 0, 0, (int)sliderSongProgress.Value)}");
+                //Trace.WriteLine($"scroll: {scrollEditor.ScrollableHeight - scrollEditor.VerticalOffset}, {scrollEditor.ScrollableHeight}");
+                //Trace.WriteLine($"song: {songStream.CurrentTime}");
             }
-
+            // play/pause song
+            if (keyStr == "Space") {
+                if (btnSongPlayer.IsEnabled) {
+                    BtnSongPlayer_Click(null, null);
+                }
+            }
             //Trace.WriteLine(keyStr);
             //Trace.WriteLine($"Row: {editorMouseGridRow} ({Math.Round(editorMouseGridRowFractional, 2)}), Col: {editorMouseGridCol}");
         }
@@ -335,16 +344,6 @@ namespace Edda {
             }
             if (keyStr.EndsWith("Shift")) {
                 shiftKeyDown = false;
-            }
-        }
-        private void AppMainWindow_PreviewKeyDown(object sender, KeyEventArgs e) {
-            var keyStr = e.Key.ToString();
-            // toggle media player
-            if (keyStr == "Space") {
-                if (btnSongPlayer.IsEnabled) {
-                    BtnSongPlayer_Click(null, null);
-                }
-                e.Handled = true;
             }
         }
         private void BtnNewMap_Click(object sender, RoutedEventArgs e) {
@@ -579,6 +578,15 @@ namespace Edda {
                 speed = prevSpeed;
             }
             txtNoteSpeed.Text = speed.ToString();
+        }
+        private void txtDistMedal0_LostFocus(object sender, RoutedEventArgs e) {
+            txtDistMedal0.Text = updateMedalDistance(0, txtDistMedal0.Text).ToString();
+        }
+        private void txtDistMedal1_LostFocus(object sender, RoutedEventArgs e) {
+            txtDistMedal1.Text = updateMedalDistance(1, txtDistMedal1.Text).ToString();
+        }
+        private void txtDistMedal2_LostFocus(object sender, RoutedEventArgs e) {
+            txtDistMedal2.Text = updateMedalDistance(2, txtDistMedal2.Text).ToString();
         }
         private void CheckGridSnap_Click(object sender, RoutedEventArgs e) {
             editorSnapToGrid = (checkGridSnap.IsChecked == true);
@@ -867,6 +875,9 @@ namespace Edda {
             checkGridSnap.IsEnabled = true;
             txtDifficultyNumber.IsEnabled = true;
             txtNoteSpeed.IsEnabled = true;
+            txtDistMedal0.IsEnabled = true;
+            txtDistMedal1.IsEnabled = true;
+            txtDistMedal2.IsEnabled = true;
             txtGridDivision.IsEnabled = true;
             txtGridOffset.IsEnabled = true;
             txtGridSpacing.IsEnabled = true;
@@ -960,6 +971,11 @@ namespace Edda {
 
             txtDifficultyNumber.Text = (string)beatMap.GetValueForMap(indx, "_difficultyRank");
             txtNoteSpeed.Text = (string)beatMap.GetValueForMap(indx, "_noteJumpMovementSpeed");
+
+            txtDistMedal0.Text = beatMap.GetMedalDistanceForMap(indx, 0).ToString();
+            txtDistMedal1.Text = beatMap.GetMedalDistanceForMap(indx, 1).ToString();
+            txtDistMedal2.Text = beatMap.GetMedalDistanceForMap(indx, 2).ToString();
+
             txtGridOffset.Text = (string)beatMap.GetCustomValueForMap(indx, "_editorOffset");
             txtGridSpacing.Text = (string)beatMap.GetCustomValueForMap(indx, "_editorGridSpacing");
             txtGridDivision.Text = (string)beatMap.GetCustomValueForMap(indx, "_editorGridDivision");
@@ -1502,6 +1518,17 @@ namespace Edda {
         private string UidGenerator(Note n) {
             return $"Note({n.Item1},{n.Item2})";
         }
+        private int updateMedalDistance(int medal, string strDist) {
+            int prevDist = (int)beatMap.GetMedalDistanceForMap(currentDifficulty, medal);
+            int dist;
+            if (int.TryParse(strDist, out dist) && dist >= 0) {
+                beatMap.SetMedalDistanceForMap(currentDifficulty, medal, dist);
+            } else {
+                MessageBox.Show($"The distance must be a non-negative integer.", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                dist = prevDist;
+            }
+            return dist;
+        }
         private BitmapImage BitmapImageForBeat(double beat, bool isHighlighted = false) {
             var fracBeat = beat - (int)beat;
             switch (Math.Round(fracBeat, 5)) {
@@ -1526,7 +1553,5 @@ namespace Edda {
         private BitmapImage BitmapGenerator(string resourceFile) {
             return BitmapGenerator(new Uri($"pack://application:,,,/resources/{resourceFile}"));
         }
-
-
     }
 }
