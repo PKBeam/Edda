@@ -6,7 +6,7 @@
         mc:Ignorable="d"
         x:Name="AppMainWindow" Title="Edda" Height="780" Width="800" MinHeight="780" MinWidth="800" Closed="AppMainWindow_Closed" KeyDown="AppMainWindow_KeyDown" KeyUp="AppMainWindow_KeyUp" PreviewKeyDown="AppMainWindow_PreviewKeyDown">
     <DockPanel>
-        <Border DockPanel.Dock="Top" BorderBrush="{DynamicResource {x:Static SystemColors.ControlDarkDarkBrushKey}}" BorderThickness="0, 0, 0, 2">
+        <Border DockPanel.Dock="Top" BorderBrush="{DynamicResource {x:Static SystemColors.ControlDarkDarkBrushKey}}" BorderThickness="0, 0, 0, 1">
             <Border.Background>
                 <LinearGradientBrush EndPoint="0.5,1" StartPoint="0.5,0">
                     <GradientStop Color="{DynamicResource {x:Static SystemColors.ControlDarkColorKey}}" Offset="1"/>
@@ -53,7 +53,7 @@
                 </StackPanel>
             </DockPanel>
         </Border>
-        <Border DockPanel.Dock="Bottom" BorderBrush="{DynamicResource {x:Static SystemColors.ControlDarkDarkBrushKey}}" BorderThickness="0, 2, 0, 0">
+        <Border DockPanel.Dock="Bottom" BorderBrush="{DynamicResource {x:Static SystemColors.ControlDarkDarkBrushKey}}" BorderThickness="0, 1, 0, 0">
             <Border.Background>
                 <LinearGradientBrush EndPoint="0.5,1" StartPoint="0.5,0">
                     <GradientStop Color="{DynamicResource {x:Static SystemColors.ControlLightColorKey}}"/>
@@ -71,7 +71,7 @@
                 <Slider x:Name="sliderSongProgress" Margin="10 15 10 15" VerticalAlignment="Center" IsMoveToPointEnabled="True" ValueChanged="SliderSongProgress_ValueChanged"/>
             </DockPanel>
         </Border>
-        <Border DockPanel.Dock="Left" BorderBrush="{DynamicResource {x:Static SystemColors.ControlDarkDarkBrushKey}}" BorderThickness="0, 0, 2, 0" Background="{DynamicResource {x:Static SystemColors.ControlDarkBrushKey}}">
+        <Border DockPanel.Dock="Left" BorderBrush="{DynamicResource {x:Static SystemColors.ControlDarkDarkBrushKey}}" BorderThickness="0, 0, 1, 0" Background="{DynamicResource {x:Static SystemColors.ControlDarkBrushKey}}">
             <ScrollViewer MinWidth="210" VerticalScrollBarVisibility="Auto">
                 <StackPanel Orientation="Vertical">
                     <Label Margin="5 0 0 5" FontWeight="Bold" FontSize="14">Map Settings</Label>
@@ -204,7 +204,7 @@
                 </StackPanel>
             </ScrollViewer>
         </Border>
-        <Border DockPanel.Dock="Right" BorderBrush="{DynamicResource {x:Static SystemColors.ControlDarkDarkBrushKey}}" BorderThickness="2, 0, 0, 0" Background="{DynamicResource {x:Static SystemColors.ControlDarkBrushKey}}">
+        <Border DockPanel.Dock="Right" BorderBrush="{DynamicResource {x:Static SystemColors.ControlDarkDarkBrushKey}}" BorderThickness="1, 0, 0, 0" Background="{DynamicResource {x:Static SystemColors.ControlDarkBrushKey}}">
             <ScrollViewer MinWidth="210" VerticalScrollBarVisibility="Auto">
                 <StackPanel Name="EditorInfoPanel" Orientation="Vertical">
                     <Label Margin="5 0 0 5" FontWeight="Bold" FontSize="14">Difficulty Settings</Label>
@@ -252,7 +252,7 @@
                         </Border>
 
                         <Border Grid.Row="3" Grid.Column="0">
-                            <TextBlock Padding="15 0 0 0" VerticalAlignment="Center">Bronze</TextBlock>
+                            <TextBlock Padding="10 0 0 0" VerticalAlignment="Center">Bronze</TextBlock>
                         </Border>
 
                         <Border Grid.Row="3" Grid.Column="1">
@@ -260,7 +260,7 @@
                         </Border>
 
                         <Border Grid.Row="4" Grid.Column="0">
-                            <TextBlock Padding="15 0 0 0" VerticalAlignment="Center">Silver</TextBlock>
+                            <TextBlock Padding="10 0 0 0" VerticalAlignment="Center">Silver</TextBlock>
                         </Border>
 
                         <Border Grid.Row="4" Grid.Column="1">
@@ -268,7 +268,7 @@
                         </Border>
 
                         <Border Grid.Row="5" Grid.Column="0">
-                            <TextBlock Padding="15 0 0 0" VerticalAlignment="Center">Gold</TextBlock>
+                            <TextBlock Padding="10 0 0 0" VerticalAlignment="Center">Gold</TextBlock>
                         </Border>
 
                         <Border Grid.Row="5" Grid.Column="1">
@@ -282,7 +282,7 @@
                         </Border>
 
                     </Grid>
-                    <Label Margin="5 0 0 5" FontWeight="Bold" FontSize="14">Editor Settings</Label>
+                    <Label Margin="5 5 0 5" FontWeight="Bold" FontSize="14">Editor Settings</Label>
                     <Grid Margin="10 0 5 0" VerticalAlignment="Center">
                         <Grid.Resources>
                             <Style TargetType="Border" >
@@ -450,11 +450,11 @@
                 <Grid.RowDefinitions>
                     <RowDefinition Height="*"/>
                 </Grid.RowDefinitions>
-                <Line Grid.ColumnSpan="9" Stroke="Navy" StrokeThickness="2" X2="{Binding ElementName=EditorPanel, Path=ActualWidth}"  VerticalAlignment="Center"/>                
-                <Image Grid.Column="1" Source="pack://application:,,,/Edda;component/resources/drum.png" Name="Drum1" VerticalAlignment="Bottom"/>
-                <Image Grid.Column="3" Source="pack://application:,,,/Edda;component/resources/drum.png" Name="Drum2" VerticalAlignment="Bottom"/>
-                <Image Grid.Column="5" Source="pack://application:,,,/Edda;component/resources/drum.png" Name="Drum3" VerticalAlignment="Bottom"/>
-                <Image Grid.Column="7" Source="pack://application:,,,/Edda;component/resources/drum.png" Name="Drum4" VerticalAlignment="Bottom"/>
+                <Line Grid.ColumnSpan="9" Stroke="Navy" StrokeThickness="2" X2="{Binding ElementName=EditorPanel, Path=ActualWidth}"  VerticalAlignment="Center"/>
+                <Image x:Name="Drum1" Grid.Column="1" Source="pack://application:,,,/Edda;component/resources/drum.png" VerticalAlignment="Bottom"/>
+                <Image x:Name="Drum2" Grid.Column="3" Source="pack://application:,,,/Edda;component/resources/drum.png" VerticalAlignment="Bottom"/>
+                <Image x:Name="Drum3" Grid.Column="5" Source="pack://application:,,,/Edda;component/resources/drum.png" VerticalAlignment="Bottom"/>
+                <Image x:Name="Drum4" Grid.Column="7" Source="pack://application:,,,/Edda;component/resources/drum.png" VerticalAlignment="Bottom"/>
 
             </Grid>
             <!-- Map Notes -->

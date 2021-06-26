@@ -324,12 +324,7 @@ namespace Edda {
                 //Trace.WriteLine($"scroll: {scrollEditor.ScrollableHeight - scrollEditor.VerticalOffset}, {scrollEditor.ScrollableHeight}");
                 //Trace.WriteLine($"song: {songStream.CurrentTime}");
             }
-            // play/pause song
-            if (keyStr == "Space") {
-                if (btnSongPlayer.IsEnabled) {
-                    BtnSongPlayer_Click(null, null);
-                }
-            }
+   
             //Trace.WriteLine(keyStr);
             //Trace.WriteLine($"Row: {editorMouseGridRow} ({Math.Round(editorMouseGridRowFractional, 2)}), Col: {editorMouseGridCol}");
         }
@@ -343,7 +338,9 @@ namespace Edda {
             }
         }
         private void AppMainWindow_PreviewKeyDown(object sender, KeyEventArgs e) {
-            // these need to be handled by tunnelling because scroll viewers intercept arrow key presses
+
+            // these need to be handled by tunnelling because some UIElements intercept these keys
+
             var keyStr = e.Key.ToString();
             if (shiftKeyDown) {
                 if (keyStr == "Up") {
@@ -374,6 +371,14 @@ namespace Edda {
                     TransformSelection(NoteTransforms.ColShift(1));
                     e.Handled = true;
                 }
+            }
+
+            // play/pause song
+            if (keyStr == "Space" && !(FocusManager.GetFocusedElement(this) is TextBox)) {
+                if (btnSongPlayer.IsEnabled) {
+                    BtnSongPlayer_Click(null, null);
+                }
+                e.Handled = true;
             }
         }
         private void BtnNewMap_Click(object sender, RoutedEventArgs e) {
@@ -627,13 +632,9 @@ namespace Edda {
             if (double.TryParse(txtGridOffset.Text, out offset)) {
                 if (offset != prevOffset) {
                     // resnap all notes
-                    var offsetDelta = offset - editorGridOffset;
-                    var beatOffset = currentBPM / 60 * offsetDelta;
-                    for (int i = 0; i < currentDifficultyNotes.Count; i++) {
-                        Note n = new Note();
-                        n.beat = currentDifficultyNotes[i].beat + beatOffset;
-                        n.col = currentDifficultyNotes[i].col;
-                        currentDifficultyNotes[i] = n;
+                    var dialogResult = MessageBox.Show("Resnap all currently placed notes to align with the new grid?\nThis cannot be undone.", "", MessageBoxButton.YesNo, MessageBoxImage.Warning);
+                    if (dialogResult == MessageBoxResult.Yes) {
+                        ResnapAllNotes(offset);
                     }
 
                     editorGridOffset = offset;
@@ -926,6 +927,7 @@ namespace Edda {
         private void SaveBeatmap() {
             beatMap.SetNotesForMap(currentDifficulty, currentDifficultyNotes);
             beatMap.SaveToFile();
+            MessageBox.Show($"Beatmap saved successfully.", "", MessageBoxButton.OK, MessageBoxImage.Information);
         }
 
         // config file
@@ -1324,8 +1326,10 @@ namespace Edda {
             foreach (var edit in e.items) {
                 if (edit.isAdd) {
                     AddNotes(edit.item, false);
+                    SelectNote(edit.item);
                 } else {
                     RemoveNotes(edit.item, false);
+                    UnselectNote(edit.item);
                 }
             }
 
@@ -1522,6 +1526,16 @@ namespace Edda {
         private double BeatForRow(double row) {
             double userOffsetBeat = currentBPM * editorGridOffset / 60;
             return row / (double)editorGridDivision + userOffsetBeat;
+        }
+        private void ResnapAllNotes(double newOffset) {
+            var offsetDelta = newOffset - editorGridOffset;
+            var beatOffset = currentBPM / 60 * offsetDelta;
+            for (int i = 0; i < currentDifficultyNotes.Count; i++) {
+                Note n = new Note();
+                n.beat = currentDifficultyNotes[i].beat + beatOffset;
+                n.col = currentDifficultyNotes[i].col;
+                currentDifficultyNotes[i] = n;
+            }
         }
         private void InsertSortedUnique(List<Note> notes, Note note) {
             // check which index to insert the new note at (keep everything in sorted order)
