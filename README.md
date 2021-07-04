@@ -1,61 +1,73 @@
 # Edda
 
-Edda is a map editor for the VR rhythm game [Ragnarock](https://www.ragnarock-vr.com/home) ([Steam page](https://store.steampowered.com/app/1345820/Ragnarock/)).  
-It is written in C# for Windows 10.
+Edda is a map editor for the VR rhythm game [Ragnarock](https://www.ragnarock-vr.com/home).  
 
-![Screenshot of Edda](https://i.imgur.com/cWQ3Aki.png)
+It is mostly functional, but is still under development and has not been tested extensively.  
+Edda is only compatible with Windows operating systems.
 
-Edda is mostly functional, but is still under development and has not been tested extensively.  
-Some things that you should be able to do are:
-- Edit/change the following:
-  - Song name
-  - Artist name
-  - Mapper name
-  - Song BPM
-  - Song start time offset
-  - In-game environment (e.g. Midgard, Alfheim, ...)
-  - Song file
-  - Cover image
-  - Map difficulties
-    - Difficulty level (1-10)
-    - Note jump speed  
-- Open existing Ragnarock maps and create new ones
-  - Listen to the entire map with audio and mapped drum hits
-     - Notes will be marked with the same rune that would appear in-game
-     - Change the relative volumes of the song and mapped notes
-  - Customise the editor grid
-    - Toggle grid snapping
-    - Change the beat division
-    - Add a global offset 
-      - this is not recommended - it causes incorrect runes to appear on notes
-    - Change the spacing of the grid
-    - Overlay the audio waveform of the song with the editor grid
-  - Add and delete notes
-  - Select multiple notes by dragging with the mouse
-  - Copy and paste selections
-  - Undo and redo edits
+<details open>
+  <summary>Edda screenshot (click to close)</summary>
+  
+  ![Screenshot of Edda](https://i.imgur.com/tLOFs4M.png)
+</details>
+
+## Features
+<details>
+  <summary>(click to expand)</summary>
+  
+  - Edit/change the following:
+    - Song name
+    - Artist name
+    - Mapper name
+    - Song BPM
+    - Song start time offset
+    - In-game environment (e.g. Midgard, Alfheim, ...)
+    - Song file
+    - Cover image
+    - Map difficulties
+      - Difficulty level (1-10)
+      - Medal distances
+      - Note jump speed  
+  - Open existing Ragnarock maps and create new ones
+    - Listen to the entire map with audio and mapped drum hits
+       - Notes will be marked with the same rune that would appear in-game
+       - Change the relative volumes of the song and mapped notes
+    - Customise the editor grid
+      - Toggle note placements snapping to grid
+      - Change the beat division
+      - Add a global offset 
+        - this is not recommended - it causes incorrect runes to appear on notes
+      - Change the spacing of the grid
+      - Overlay the audio waveform of the song with the editor grid
+    - Add and delete notes
+    - Select multiple notes by dragging with the mouse
+    - Operate on selected notes
+      - Cut, copy, paste
+      - Move up, down, left or right
+      - Mirror notes
+    - Undo and redo edits
+</details>
 
 ## Why make a new map editor?
 
 Although [MMA2](https://github.com/Shadnix-was-taken/MediocreMapper) is an excellent mapping tool for Beat Saber, it is not optimised for Ragnarock.  
-Beat Saber maps are far more complex than Ragnarock ones; thus MMA2 has too much unused utility when creating Ragnarock maps.  
-(e.g. Ragnarock maps are two-dimensional, so we don't need to render them in 3D!)
-
-A dedicated editor for Ragnarock could trim down the clutter, greatly improving the user experience for new mappers.
+Beat Saber maps are much more complex than Ragnarock ones, so MMA2 has too much unused utility when creating Ragnarock maps.  
+This creates lots of unnecessary clutter and affects the user experience, especially for new mappers.
 
 ## Usage
 
-Edda does not autosave maps yet. Don't forget to save frequently by clicking "Save Map" in the UI or using Ctrl-S.  
-Please also keep backups of any important maps, as bugs in Edda may cause map corruption.    
+Edda does not autosave maps yet. Don't forget to save your work often.  
+Please also keep backups of any important maps, as bugs may cause map corruption.  
 
 ### Creating a new map
 - Click "New Map".
 - Select an `.ogg` song to map.
-   - The song file must use the Vorbis codec.
-   - It is recommended that you trim the song so it begins on an integer beat.
+   - The song file must use the Vorbis codec 
+     - Opus files sometimes use `.ogg` but they are not supported!.
+   - It is recommended that you trim the song (e.g. in [Audacity](https://www.audacityteam.org/)) so it begins on an integer beat.
 - Select an empty folder.
   - The folder's name cannot have spaces or non-alphabetical characters.
-  - FOr reference, Ragnarock searches the directory `Documents/Ragnarock/CustomSongs` for folders containing maps.
+  - For reference, Ragnarock searches the directory `Documents/Ragnarock/CustomSongs` for folders containing maps.
 
 ### Opening an existing map
 - Click "Open Map".
@@ -63,6 +75,9 @@ Please also keep backups of any important maps, as bugs in Edda may cause map co
 
 ### Controls
 
+<details>
+  <summary>(click to expand)</summary>
+  
 #### Mouse
 - Click and drag to select multiple notes.
 - Left-click to place a new note or to select an existing note.
@@ -74,27 +89,32 @@ Please also keep backups of any important maps, as bugs in Edda may cause map co
 - Ctrl-O: Open Map
 - Ctrl-S: Save Map
 - Ctrl-C: Copy Selection
-- Ctrl-V: Paste Selection
+- Ctrl-X: Cut Selection
+- Ctrl-V: Paste Clipboard
   - Notes will be pasted on the same row the mouse is currently over.
 - Ctrl-M: Mirror Selection
 - Ctrl-Z: Undo Edit
 - Ctrl-Y: Redo Edit
   - (Ctrl-Shift-Z is also supported)
+  
+- Shift-Up: Move selection one gridline forwards
+- Shift-Down: Move selection one gridline backwards
+- Shift-Left: Move selection one column to the left
+- Shift-Right: Move selection one column to the left
+- Ctrl-Up: Move selection one beat forwards
+- Ctrl-Down: Move selection one beat backwards
 
 - Delete: Delete selected notes
 - Escape: Unselect all notes
 - Space: Play/pause song
+</details>
 
-### Adjusting audio latency
-There is a slight delay between the playback of the song and the playback of individual notes.  
-You can adjust this delay by opening `settings.txt` in the application folder and entering the `editorAudioLatency` in milliseconds (integer).  
-For example, `editorAudioLatency=5` or `editorAudioLatency=-40`. A blank value will use the default latency of -20 ms.
-
-## System requirements
-- Windows 10
-- A decent CPU (recommended)
-
+### Audio Latency
 Edda leverages [WASAPI](https://docs.microsoft.com/en-us/windows/win32/coreaudio/wasapi) to try and minimise audio latency between the song and any mapped drum hits.  
-Although WASAPI is fast, it requires more CPU power. Weak CPUs may experience crackling or popping.  
-It is recommended that you match the sample rate of your sound output and your song (preferably to 44.1 kHz), in order to eliminate latency from audio resampling.  
-(If you must use 48 kHz, resampling the `.wav` drum samples in the `Resources` folder to 48 kHz may help reduce latency.)  
+Although WASAPI is fast, it requires more CPU power than other APIs (weak CPUs may experience crackling or popping).  
+
+Because of how WASAPI works, it is recommended that you match the sample rate of your sound output and your song, in order to eliminate latency from audio resampling. Resampling to 44.1 kHz is preferred. If you must use 48 kHz, resampling the `.wav` drum samples in the `Resources` folder to 48 kHz may help reduce latency.  
+
+There is a slight delay between the playback of the song and the playback of individual notes.  
+You can adjust this delay by opening `settings.txt` in the application folder and entering the `editorAudioLatency` in integer milliseconds.  
+For example, `editorAudioLatency=5` or `editorAudioLatency=-40`. A blank value will use the default latency of -20 ms.
