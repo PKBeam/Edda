@@ -397,7 +397,7 @@ public class RagnarockMap {
         var res = obj["_notes"];
         List<Note> output = new List<Note>();
         foreach (JToken n in res) {
-            double time = double.Parse((string)n["_time"], CultureInfo.InvariantCulture);
+            double time = Helper.DoubleParseInvariant((string)n["_time"]);
             int colIndex = int.Parse((string)n["_lineIndex"]);
             output.Add(new Note(time, colIndex));
         }
@@ -540,9 +540,40 @@ public class RagnarockMap {
         for (int i = 0; i < info.Count; i++) {
             if (((string)info[i]).StartsWith(splitter)) {
                 info[i] = insert;
-                return;
+                break;
             }
         }
-        info.Add(insert);
+        SetCustomValueForMap(indx, "_information", info);
+    }
+
+    public List<BPMChange> GetBPMChangesForMap(int indx) {
+        List<BPMChange> BPMChanges = new List<BPMChange>();
+        var obj = JObject.Parse(difficultyMaps[indx]);
+        var res = obj["_customData"]["_BPMChanges"];
+        foreach (JToken bcObj in res) {
+            double beat = Helper.DoubleParseInvariant((string)bcObj["_time"]);
+            double bpm = Helper.DoubleParseInvariant((string)bcObj["_BPM"]);
+            // what happens if an incompatible grid division (>24) is passed in?
+            int gridDivision = int.Parse((string)bcObj["_beatsPerBar"]);
+            BPMChange bc = new BPMChange(beat, bpm, gridDivision);
+            BPMChanges.Add(bc);
+        }
+        return BPMChanges; 
+    }
+
+    public void SetBPMChangesForMap(int indx, List<BPMChange> BPMChanges) {
+        JArray bcArr = new JArray();
+        foreach (BPMChange bc in BPMChanges) {
+            bcArr.Add(JToken.FromObject(new {
+                _BPM = bc.BPM,
+                _time = bc.globalBeat,
+                _beatsPerBar = bc.gridDivision,
+                _metronomeOffset = bc.gridDivision // what does this field do???
+            }));
+        }
+
+        var thisMapStr = JObject.Parse(difficultyMaps[indx]);
+        thisMapStr["_customData"]["_BPMChanges"] = bcArr;
+        difficultyMaps[indx] = JsonConvert.SerializeObject(thisMapStr, Formatting.Indented);
     }
 }

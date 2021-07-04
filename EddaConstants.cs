@@ -21,7 +21,7 @@ namespace Constants {
         public const int    GridDivisionMax          = 12;
 
         // Editor functions
-        public const int    HistorySizeMax = 128; // actions
+        public const int    HistoryMaxSize = 128; // actions
         public const double PreviewNoteOpacity = 0.3; // percentage
         public const double DragInitThreshold = 10; // pixels
 

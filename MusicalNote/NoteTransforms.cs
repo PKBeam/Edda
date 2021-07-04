@@ -1,7 +1,11 @@
 ﻿using System;
 public static class NoteTransforms {
-	public static Note Mirror(Note n) {
-        return new Note(n.beat, 3 - n.col);
+	public static Func<Note, Note> Mirror() {
+        Func<Note, Note> f = n => {
+            return new Note(n.beat, 3 - n.col);
+        };
+        return f;
+        
     }
 
     // parametrised vertical shift
