@@ -25,7 +25,7 @@ namespace Edda {
         public WindowChangeBPM(MainWindow caller, List<BPMChange> BPMChanges) {
             InitializeComponent();
             this.caller = caller;
-            this.globalBPM = caller.currentBPM;
+            this.globalBPM = caller.globalBPM;
             this.BPMChanges = BPMChanges;
             dataBPMChange.ItemsSource = this.BPMChanges;
             lblGlobalBPM.Content = $"{Math.Round(globalBPM, 3)}";
@@ -53,15 +53,18 @@ namespace Edda {
                     }
                 // grid division
                 } else if (col == dataBPMChange.Columns[2].Header.ToString()) {
-                    if ((int)pendingEdit != pendingEdit || !Helper.RangeCheck(pendingEdit, 1, Constants.Editor.GridDivisionMax)) {
+                    if ((int)pendingEdit != pendingEdit || !Helper.DoubleRangeCheck(pendingEdit, 1, Constants.Editor.GridDivisionMax)) {
                         throw new Exception($"The grid division amount must be an integer from 1 to {Constants.Editor.GridDivisionMax}.");
                     }
                 }
-                  
             } catch (Exception ex) {
                 MessageBox.Show(ex.Message, "Error", MessageBoxButton.OK, MessageBoxImage.Error);
                 e.Cancel = true;
             }
+        }
+
+        private void dataBPMChange_CurrentCellChanged(object sender, EventArgs e) {
+            caller.DrawEditorGrid();
         }
     }
 }

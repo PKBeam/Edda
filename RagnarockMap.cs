@@ -163,7 +163,7 @@ public class RagnarockMap {
             // validate value
             if (i.Value == numericTypes) {
                 var val = Helper.DoubleParseInvariant((string)obj[i.Key]);
-                if (!Helper.RangeCheck(val, expectedValuesL1[i.Key].Item1, expectedValuesL1[i.Key].Item2)) {
+                if (!Helper.DoubleRangeCheck(val, expectedValuesL1[i.Key].Item1, expectedValuesL1[i.Key].Item2)) {
                     throw new Exception($"Bad value for key {i.Key}");
                 }
             }
@@ -193,7 +193,7 @@ public class RagnarockMap {
                             if (val < 1 || 10 < val) {
                                 throw new Exception($"Bad value for key {i.Key}");
                             }
-                        } else if (!Helper.RangeCheck(val, expectedValuesL3[i.Key].Item1, expectedValuesL3[i.Key].Item2)) {
+                        } else if (!Helper.DoubleRangeCheck(val, expectedValuesL3[i.Key].Item1, expectedValuesL3[i.Key].Item2)) {
                             throw new Exception($"Bad value for key {i.Key}");
                         }
                     }
@@ -294,7 +294,7 @@ public class RagnarockMap {
                         if ((int)val != val || val < 1 || Constants.Editor.GridDivisionMax < val) {
                             mapCustomData[i.Key] = defaultValues[i.Key];
                         }
-                    } else if (!Helper.RangeCheck(val, expectedValues[i.Key].Item1, expectedValues[i.Key].Item2)) {
+                    } else if (!Helper.DoubleRangeCheck(val, expectedValues[i.Key].Item1, expectedValues[i.Key].Item2)) {
                         mapCustomData[i.Key] = defaultValues[i.Key];
                     }
                 }

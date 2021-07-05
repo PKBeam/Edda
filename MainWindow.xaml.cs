@@ -43,14 +43,15 @@ namespace Edda {
             set { btnSongPlayer.Tag = (value == false) ? 0 : 1; }
             get { return (int)btnSongPlayer.Tag == 1; }
         }
-        public double currentBPM {
+        public double globalBPM {
             get { return Helper.DoubleParseInvariant((string)beatMap.GetValue("_beatsPerMinute")); }
         }
 
         // STATE VARIABLES
 
         public RagnarockMap beatMap;
-        List<BPMChange> BPMChanges;
+        List<double> gridLines;
+        List<BPMChange> bpmChanges;
         bool shiftKeyDown;
         bool ctrlKeyDown;
 
@@ -73,16 +74,16 @@ namespace Edda {
         bool editorShowWaveform;
 
         // -- for note placement
-        int editorMouseGridRow;
         int editorMouseGridCol;
-        double editorMouseGridRowFractional;
+        double editorMouseBeatUnsnapped;
+        double editorMouseBeatSnapped;
 
         // -- for drag select
         List<Note> editorSelectedNotes;
         Border editorDragSelectBorder;
         Point editorDragSelectStart;
-        double editorRowStart;
-        int editorColStart;
+        double editorSelBeatStart;
+        int editorSelColStart;
         bool editorIsDragging = false;
         bool editorMouseDown = false;
 
@@ -122,7 +123,8 @@ namespace Edda {
             };
             drummer = new DrumPlayer(drumSounds, Constants.Audio.NotePlaybackStreams, Constants.Audio.WASAPILatencyTarget);
            
-            BPMChanges = new List<BPMChange>();
+            bpmChanges = new List<BPMChange>();
+            gridLines = new List<double>();
 
             // disable parts of UI, as no map is loaded
             DisableUI();
@@ -236,7 +238,7 @@ namespace Edda {
                 }
                 // paste (Ctrl-V)
                 if (keyStr == "V") {
-                    PasteClipboard(BeatForRow(editorMouseGridRow));
+                    PasteClipboard(editorMouseBeatSnapped);
                 }
 
                 // undo (Ctrl-Z)
@@ -292,7 +294,7 @@ namespace Edda {
                     e.Handled = true;
                 }
                 if (keyStr == "Down") {
-                    TransformSelection(NoteTransforms.RowShift(BeatForRow(1)));
+                    TransformSelection(NoteTransforms.RowShift(BeatForRow(-1)));
                     e.Handled = true;
                 }
             }
@@ -518,7 +520,7 @@ namespace Edda {
         }
         private void BtnChangeBPM_Click(object sender, RoutedEventArgs e) {
 
-            var win = new WindowChangeBPM(this, BPMChanges);
+            var win = new WindowChangeBPM(this, bpmChanges);
             win.Show();
         }
         private void TxtSongOffset_LostFocus(object sender, RoutedEventArgs e) {
@@ -544,7 +546,7 @@ namespace Edda {
         private void TxtDifficultyNumber_LostFocus(object sender, RoutedEventArgs e) {
             int prevLevel = (int)beatMap.GetValueForMap(currentDifficulty, "_difficultyRank");
             int level;
-            if (int.TryParse(txtDifficultyNumber.Text, out level) && Helper.RangeCheck(level, 1, 10)) {
+            if (int.TryParse(txtDifficultyNumber.Text, out level) && Helper.DoubleRangeCheck(level, 1, 10)) {
                 beatMap.SetValueForMap(currentDifficulty, "_difficultyRank", level);
             } else {
                 MessageBox.Show($"The difficulty level must be an integer between 1 and 10.", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
@@ -615,7 +617,7 @@ namespace Edda {
             int prevDiv = int.Parse((string)beatMap.GetCustomValueForMap(currentDifficulty, "_editorGridDivision"));
             int div;
 
-            if (int.TryParse(txtGridDivision.Text, out div) && Helper.RangeCheck(div, 1, Constants.Editor.GridDivisionMax)) {
+            if (int.TryParse(txtGridDivision.Text, out div) && Helper.DoubleRangeCheck(div, 1, Constants.Editor.GridDivisionMax)) {
                 if (div != prevDiv) {
                     editorGridDivision = div;
                     beatMap.SetCustomValueForMap(currentDifficulty, "_editorGridDivision", div);
@@ -677,50 +679,38 @@ namespace Edda {
         }
         private void ScrollEditor_MouseMove(object sender, MouseEventArgs e) {
 
-            // calculate vertical element
-            double userOffsetBeat = editorGridOffset * currentBPM / 60;
+            // calculate beat
+            double userOffsetBeat = editorGridOffset * globalBPM / 60;
             double userOffset = userOffsetBeat * unitLength;
             var mousePos = EditorGrid.ActualHeight - e.GetPosition(EditorGrid).Y - unitHeight / 2;
             double gridLength = unitLength / (double)editorGridDivision;
-            // check if mouse position would correspond to a negative beat index
-            if (mousePos < 0) {
-                editorMouseGridRowFractional = -userOffset / gridLength;
-                editorMouseGridRow = (int)editorMouseGridRowFractional; // round towards infinity; otherwise this lands on a negative beat
+            // check if mouse position would correspond to a negative row index
+            if (mousePos < userOffset) {
+                editorMouseBeatUnsnapped = 0;
+                editorMouseBeatSnapped = 0;
             } else {
-                editorMouseGridRowFractional = (mousePos - userOffset) / gridLength;
-                editorMouseGridRow = (int)Math.Round(editorMouseGridRowFractional, MidpointRounding.AwayFromZero);
+                editorMouseBeatUnsnapped = (mousePos - userOffset) / unitLength;
+                int indx1 = -gridLines.BinarySearch(editorMouseBeatUnsnapped) - 1;
+                int indx2 = Math.Max(0, indx1 - 1);             
+                editorMouseBeatSnapped = (gridLines[indx1] - editorMouseBeatUnsnapped) < (editorMouseBeatUnsnapped - gridLines[indx2]) ? gridLines[indx1] : gridLines[indx2];
             }
 
-            // calculate horizontal element
-            var mouseX = e.GetPosition(EditorGrid).X / unitSubLength;
-            if (0 <= mouseX && mouseX <= 4.5) {
-                editorMouseGridCol = 0;
-            } else if (4.5 <= mouseX && mouseX <= 8.5) {
-                editorMouseGridCol = 1;
-            } else if (8.5 <= mouseX && mouseX <= 12.5) {
-                editorMouseGridCol = 2;
-            } else if (12.5 <= mouseX && mouseX <= 17.0) {
-                editorMouseGridCol = 3;
-            }
-
-            // place preview note
-            if (editorSnapToGrid) {
-                Canvas.SetBottom(imgPreviewNote, gridLength * editorMouseGridRow + userOffset);
-            } else {
-                Canvas.SetBottom(imgPreviewNote, Math.Max(mousePos, 0));
-            }
+            // calculate column
+            editorMouseGridCol = ColFromPos(e.GetPosition(EditorGrid).X);
+           
             double noteX = (1 + 4 * editorMouseGridCol) * unitSubLength;
 
             // for some reason Canvas.SetLeft(0) doesn't correspond to the leftmost of the canvas, so we need to do some unknown adjustment to line it up
             var unknownNoteXAdjustment = (unitLength / unitLengthUnscaled - 1) * unitLengthUnscaled / 2;
 
-            double beat = editorMouseGridRow / (double)editorGridDivision + userOffsetBeat;
-            double beatUnsnapped = editorMouseGridRowFractional / (double)editorGridDivision + userOffsetBeat;
-            imgPreviewNote.Source = Helper.BitmapImageForBeat(editorSnapToGrid ? beat : beatUnsnapped);
+            // place preview note
+            Canvas.SetBottom(imgPreviewNote, editorSnapToGrid ? (editorMouseBeatSnapped * gridLength * editorGridDivision + userOffset) : Math.Max(mousePos, userOffset));
+            // TODO: what runes should be used with variable BPM?
+            imgPreviewNote.Source = Helper.BitmapImageForBeat(userOffsetBeat + (editorSnapToGrid ? editorMouseBeatSnapped : editorMouseBeatUnsnapped));
             Canvas.SetLeft(imgPreviewNote, noteX - unknownNoteXAdjustment);
             
              // update beat display
-            lblSelectedBeat.Content = $"Global Beat: {Math.Round(beat, 3)} ({Math.Round(beatUnsnapped, 3)})";
+            lblSelectedBeat.Content = $"Global Beat: {Math.Round(editorMouseBeatSnapped, 3)} ({Math.Round(editorMouseBeatUnsnapped, 3)})";
 
             // calculate drag stuff
             if (editorIsDragging) {
@@ -746,8 +736,8 @@ namespace Edda {
         private void ScrollEditor_PreviewMouseLeftButtonDown(object sender, MouseButtonEventArgs e) {
             editorMouseDown = true;
             editorDragSelectStart = e.GetPosition(EditorGrid);
-            editorRowStart = editorMouseGridRowFractional;
-            editorColStart = editorMouseGridCol;
+            editorSelBeatStart = editorMouseBeatUnsnapped;
+            editorSelColStart = editorMouseGridCol;
             EditorGrid.CaptureMouse();
         }
         private void ScrollEditor_MouseLeftButtonUp(object sender, MouseButtonEventArgs e) { 
@@ -756,15 +746,15 @@ namespace Edda {
                 imgPreviewNote.Visibility = Visibility.Visible;
                 // calculate new selections
                 List<Note> newSelection = new List<Note>();
-                double startBeat = BeatForRow(editorRowStart);
-                double endBeat = BeatForRow(editorMouseGridRowFractional);
+                double startBeat = editorSelBeatStart;
+                double endBeat = editorMouseBeatUnsnapped;
                 foreach (Note n in currentDifficultyNotes) {
                     // minor optimisation
                     if (n.beat > Math.Max(startBeat, endBeat)) {
                         break;
                     }
                     // check range
-                    if (Helper.RangeCheck(n.beat, startBeat, endBeat) && Helper.RangeCheck(n.col, editorColStart, editorMouseGridCol)) {
+                    if (Helper.DoubleRangeCheck(n.beat, startBeat, endBeat) && Helper.DoubleRangeCheck(n.col, editorSelColStart, editorMouseGridCol)) {
                         newSelection.Add(n);
                     }
                 }
@@ -773,8 +763,8 @@ namespace Edda {
                 //Trace.WriteLine($"Row: {editorMouseGridRow} ({Math.Round(editorMouseGridRowFractional, 2)}), Col: {editorMouseGridCol}, Beat: {beat} ({beatFractional})");
 
                 // create the note
-                double row = (editorSnapToGrid) ? (editorMouseGridRow) : (editorMouseGridRowFractional);
-                Note n = new Note(BeatForRow(row), editorMouseGridCol);
+                double beat = editorSnapToGrid ? editorMouseBeatSnapped : editorMouseBeatUnsnapped;
+                Note n = new Note(beat, editorMouseGridCol);
 
                 if (currentDifficultyNotes.Contains(n)) {
                     if (shiftKeyDown) {
@@ -799,8 +789,8 @@ namespace Edda {
 
             Trace.WriteLine($"{EditorGrid.ActualHeight - e.GetPosition(EditorGrid).Y - unitHeight/2}");
             // remove the note
-            double row = (editorSnapToGrid) ? (editorMouseGridRow) : (editorMouseGridRowFractional);
-            Note n = new Note(BeatForRow(row), editorMouseGridCol);
+            double beat = editorSnapToGrid ? editorMouseBeatSnapped : editorMouseBeatUnsnapped;
+            Note n = new Note(beat, editorMouseGridCol);
             if (currentDifficultyNotes.Contains(n)) {
                 RemoveNotes(n);
             } else {
@@ -913,7 +903,7 @@ namespace Edda {
             scrollEditor.IsEnabled = false;
         }
         private void SaveBeatmap() {
-            beatMap.SetBPMChangesForMap(currentDifficulty, BPMChanges);
+            beatMap.SetBPMChangesForMap(currentDifficulty, bpmChanges);
             beatMap.SetNotesForMap(currentDifficulty, currentDifficultyNotes);
             beatMap.SaveToFile();
             MessageBox.Show($"Beatmap saved successfully.", "", MessageBoxButton.OK, MessageBoxImage.Information);
@@ -990,7 +980,7 @@ namespace Edda {
             currentDifficultyNotes = beatMap.GetNotesForMap(indx);
             editorHistory.Clear();
 
-            BPMChanges = beatMap.GetBPMChangesForMap(indx);
+            bpmChanges = beatMap.GetBPMChangesForMap(indx);
 
             txtDifficultyNumber.Text = (string)beatMap.GetValueForMap(indx, "_difficultyRank");
             txtNoteSpeed.Text = (string)beatMap.GetValueForMap(indx, "_noteJumpMovementSpeed");
@@ -1163,7 +1153,7 @@ namespace Edda {
         }
         private void ScanNoteIndex() {
             // calculate scan index for playing drum hits
-            var seekBeat = (noteScanStopwatchOffset / 1000.0) * (currentBPM / 60.0);
+            var seekBeat = (noteScanStopwatchOffset / 1000.0) * (globalBPM / 60.0);
             var newNoteScanIndex = 0;
             foreach (var n in currentDifficultyNotes) {
                 if (n.beat >= seekBeat) {
@@ -1189,7 +1179,7 @@ namespace Edda {
             var currentTime = noteScanStopwatch.ElapsedMilliseconds + noteScanStopwatchOffset;
             // check if we started past the last note in the song
             if (noteScanIndex < currentDifficultyNotes.Count) {
-                var noteTime = 60000 * currentDifficultyNotes[noteScanIndex].beat / currentBPM;
+                var noteTime = 60000 * currentDifficultyNotes[noteScanIndex].beat / globalBPM;
                 var drumHits = 0;
 
                 // check if any notes were missed
@@ -1197,7 +1187,7 @@ namespace Edda {
                     Trace.WriteLine($"WARNING: A note was played late during playback. (Delta: {Math.Round(currentTime - noteTime, 2)})");
                     drumHits++;
                     noteScanIndex++;
-                    noteTime = 60000 * currentDifficultyNotes[noteScanIndex].beat / currentBPM;
+                    noteTime = 60000 * currentDifficultyNotes[noteScanIndex].beat / globalBPM;
                 }
 
                 // check if we need to play any notes
@@ -1209,7 +1199,7 @@ namespace Edda {
                     if (noteScanIndex >= currentDifficultyNotes.Count) {
                         break;
                     }
-                    noteTime = 60000 * currentDifficultyNotes[noteScanIndex].beat / currentBPM;
+                    noteTime = 60000 * currentDifficultyNotes[noteScanIndex].beat / globalBPM;
                 }
 
                 // play all pending drum hits
@@ -1385,14 +1375,14 @@ namespace Edda {
             }
 
             // resize editor grid height to fit scrollEditor height
-            double beats = (currentBPM / 60) * songStream.TotalTime.TotalSeconds;
+            double beats = globalBPM / 60 * songStream.TotalTime.TotalSeconds;
             EditorGrid.Height = beats * unitLength + scrollEditor.ActualHeight;
-            Trace.WriteLine($"song length: {beats * unitLength}");
+
             if (redraw) {
                 DrawEditorGrid();
             }
         }
-        private void DrawEditorGrid() {
+        public void DrawEditorGrid() {
 
             DateTime start = DateTime.Now;
 
@@ -1454,28 +1444,56 @@ namespace Edda {
             });
         }
         private void DrawEditorGridLines() {
-            // calculate grid offset: default is 
-            double offsetBeats = currentBPM * editorGridOffset / 60;
-
-            //            default                  user specified
-            var offset = (unitHeight / 2) + (offsetBeats * unitLength);
-
-            // draw gridlines
-            int counter = 0;
-            while (offset <= EditorGrid.Height) {
+            // helper function for creating gridlines
+            Line makeGridLine(double offset, bool isMajor = false) {
                 var l = new Line();
                 l.X1 = 0;
                 l.X2 = EditorGrid.ActualWidth;
                 l.Y1 = offset;
                 l.Y2 = offset;
                 l.Stroke = (SolidColorBrush)new BrushConverter().ConvertFrom(
-                    (counter % editorGridDivision == 0) ? Constants.Editor.MajorGridlineColour : Constants.Editor.MinorGridlineColour)
+                    isMajor ? Constants.Editor.MajorGridlineColour : Constants.Editor.MinorGridlineColour)
                 ;
-                l.StrokeThickness = (counter % editorGridDivision == 0) ? Constants.Editor.MajorGridlineThickness : Constants.Editor.MinorGridlineThickness;
-                Canvas.SetBottom(l, offset);
+                l.StrokeThickness = isMajor ? Constants.Editor.MajorGridlineThickness : Constants.Editor.MinorGridlineThickness;
+                Canvas.SetBottom(l, offset + unitHeight / 2);
+                return l;
+            }
+
+            gridLines.Clear();
+
+            // calculate grid offset
+            double userOffset = editorGridOffset * globalBPM / 60 * unitLength;
+
+            // the position to place gridlines, starting at the user-specified grid offset
+            var offset = userOffset;
+
+            var localBPM = globalBPM;
+            var localGridDiv = editorGridDivision;
+
+            // draw gridlines
+            int counter = 0;
+            int bpmChangeCounter = 0;
+            while (offset <= EditorGrid.Height) {
+
+                // add new gridline
+                var l = makeGridLine(offset, counter % localGridDiv == 0);
                 EditorGrid.Children.Add(l);
-                offset += unitLength / editorGridDivision;
+                gridLines.Add((offset - userOffset)/unitLength);
+
+                offset += globalBPM/localBPM * unitLength / localGridDiv;
                 counter++;
+
+                // check for BPM change
+                if (bpmChangeCounter < bpmChanges.Count && Helper.DoubleApproxGreaterEqual((offset - userOffset)/ unitLength, bpmChanges[bpmChangeCounter].globalBeat)) {
+                    BPMChange next = bpmChanges[bpmChangeCounter];
+
+                    offset = next.globalBeat * unitLength + userOffset;
+                    localBPM = next.BPM;
+                    localGridDiv = next.gridDivision;
+
+                    bpmChangeCounter++;
+                    counter = 0;
+                }           
             }
         }
         private void DrawEditorGridNotes(List<Note> notes) {
@@ -1523,12 +1541,12 @@ namespace Edda {
 
         // helper functions
         private double BeatForRow(double row) {
-            double userOffsetBeat = currentBPM * editorGridOffset / 60;
+            double userOffsetBeat = globalBPM * editorGridOffset / 60;
             return row / (double)editorGridDivision + userOffsetBeat;
         }
         private void ResnapAllNotes(double newOffset) {
             var offsetDelta = newOffset - editorGridOffset;
-            var beatOffset = currentBPM / 60 * offsetDelta;
+            var beatOffset = globalBPM / 60 * offsetDelta;
             for (int i = 0; i < currentDifficultyNotes.Count; i++) {
                 Note n = new Note();
                 n.beat = currentDifficultyNotes[i].beat + beatOffset;
@@ -1546,6 +1564,21 @@ namespace Edda {
                 dist = prevDist;
             }
             return dist;
+        }
+        private int ColFromPos(double pos) {
+            // calculate horizontal element
+            var subLength = pos / unitSubLength;
+            int res = -1;
+            if (0 <= subLength && subLength <= 4.5) {
+                res = 0;
+            } else if (4.5 <= subLength && subLength <= 8.5) {
+                res = 1;
+            } else if (8.5 <= subLength && subLength <= 12.5) {
+                res = 2;
+            } else if (12.5 <= subLength && subLength <= 17.0) {
+                res = 3;
+            }
+            return res;
         }
     }
 }

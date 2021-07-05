@@ -24,7 +24,7 @@ public static class NoteTransforms {
     public static Func<Note, Note> ColShift(int offset) {
         Func<Note, Note> f = n => {
             int newCol = n.col + offset;
-            if (Helper.RangeCheck(newCol, 0, 3)) {
+            if (Helper.DoubleRangeCheck(newCol, 0, 3)) {
                 return new Note(n.beat, newCol);
             }
             return null;
