@@ -4,8 +4,8 @@ namespace Constants {
     using MediaColor = System.Windows.Media.Color;
     using DrawingColor = System.Drawing.Color;
     public static class Program {
-        public const string ProgramName          = "Edda";
-        public const string ProgramVersionNumber = "0.3.0b1";
+        public const string Name          = "Edda";
+        public const string VersionNumber = "0.3.0b1";
         public const string SettingsFile         = "settings.txt";
     }
     public static class Editor {

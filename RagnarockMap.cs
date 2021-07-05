@@ -47,6 +47,7 @@ public class RagnarockMap {
     }
 
     public void SaveToFile() {
+        UpdateEddaVersion();
         for (int i = 0; i < numDifficulties; i++) {
             WriteMap(i);
         }
@@ -92,9 +93,9 @@ public class RagnarockMap {
                 _contributors = new List<object>(),
                 _editors = new {
                     Edda = new {
-                        version = Constants.Program.ProgramVersionNumber,
+                        version = Constants.Program.VersionNumber,
                     },
-                    _lastEditedBy = Constants.Program.ProgramName,
+                    _lastEditedBy = Constants.Program.Name,
                 },
             },
             _difficultyBeatmapSets = new[] {
@@ -212,7 +213,7 @@ public class RagnarockMap {
                 _contributors = new List<object>(),
                 _editors = new {
                     Edda = new {
-                        version = Constants.Program.ProgramVersionNumber,
+                        version = Constants.Program.VersionNumber,
                     },
                     _lastEditedBy = "Edda"
                 },
@@ -226,14 +227,14 @@ public class RagnarockMap {
         if (customData["_editors"]?.Type != JTokenType.Object) {
             var editorsObject = new {
                 Edda = new {
-                    version = Constants.Program.ProgramVersionNumber,
+                    version = Constants.Program.VersionNumber,
                 },
                 _lastEditedBy = "Edda"
             };
             customData["_editors"] = JToken.FromObject(editorsObject);
         }
         if (customData["_editors"]["Edda"]?.Type != JTokenType.Object) {
-            customData["_editors"]["Edda"] = JToken.FromObject(new { version = Constants.Program.ProgramVersionNumber });
+            customData["_editors"]["Edda"] = JToken.FromObject(new { version = Constants.Program.VersionNumber });
         }
         //if (customData["_editors"]["_lastEditedBy"]?.Type != JTokenType.String) {
         customData["_editors"]["_lastEditedBy"] = JToken.FromObject("Edda");
@@ -301,6 +302,11 @@ public class RagnarockMap {
             }
         }
 
+        infoStr = JsonConvert.SerializeObject(obj, Formatting.Indented);
+    }
+    private void UpdateEddaVersion() {
+        var obj = JObject.Parse(infoStr);
+        obj["_customData"]["_editors"]["Edda"]["version"] = Constants.Program.VersionNumber;
         infoStr = JsonConvert.SerializeObject(obj, Formatting.Indented);
     }
 
