@@ -4,16 +4,16 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         mc:Ignorable="d"
-        x:Name="AppMainWindow" Title="Edda" Height="780" Width="800" MinHeight="780" MinWidth="800" Closed="AppMainWindow_Closed" KeyDown="AppMainWindow_KeyDown" KeyUp="AppMainWindow_KeyUp" PreviewKeyDown="AppMainWindow_PreviewKeyDown">
+        x:Name="AppMainWindow" Title="Edda" Height="800" Width="800" MinHeight="800" MinWidth="800" Closed="AppMainWindow_Closed" KeyDown="AppMainWindow_KeyDown" KeyUp="AppMainWindow_KeyUp" PreviewKeyDown="AppMainWindow_PreviewKeyDown">
     <DockPanel>
-        <Border DockPanel.Dock="Top" BorderBrush="{DynamicResource {x:Static SystemColors.ControlDarkDarkBrushKey}}" BorderThickness="0, 0, 0, 1">
+        <Border DockPanel.Dock="Top" Name="TopPanel" BorderBrush="{DynamicResource {x:Static SystemColors.ControlDarkDarkBrushKey}}" BorderThickness="0, 0, 0, 1">
             <Border.Background>
                 <LinearGradientBrush EndPoint="0.5,1" StartPoint="0.5,0">
                     <GradientStop Color="{DynamicResource {x:Static SystemColors.ControlDarkColorKey}}" Offset="1"/>
                     <GradientStop Color="{DynamicResource {x:Static SystemColors.ControlLightColorKey}}" Offset="0"/>
                 </LinearGradientBrush>
             </Border.Background>
-            <DockPanel  Name="TopPanel">
+            <DockPanel>
                 <StackPanel DockPanel.Dock="Left" Orientation="Horizontal">
                     <StackPanel Margin="10 10 0 10">
                         <Button x:Name="btnNewMap" Width="50" Height="50" Click="BtnNewMap_Click">
@@ -34,23 +34,7 @@
                         <TextBlock Margin="0 3 0 0" FontSize="12" HorizontalAlignment="Center">Save Map</TextBlock>
                     </StackPanel>
                 </StackPanel>
-                <StackPanel DockPanel.Dock="Right" Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Center">
-                    <Button x:Name="btnAddDifficulty"  Height="50" FontSize="16" Click="BtnAddDifficulty_Click" VerticalAlignment="Top" Padding="1,0,1,4">+</Button>
-                    <StackPanel Orientation="Vertical">
-                        <StackPanel x:Name="DifficultyChangePanel" Margin="10 0 10 0" Orientation="Horizontal">
-                            <Button x:Name="btnChangeDifficulty0" Width="50" Height="50" Click="BtnChangeDifficulty0_Click">
-                                <Image Source="pack://application:,,,/Edda;component/resources/difficulty1.png"/>
-                            </Button>
-                            <Button x:Name="btnChangeDifficulty1" Margin="5 0 0 0"  Width="50" Height="50" Click="BtnChangeDifficulty1_Click">
-                                <Image Source="pack://application:,,,/Edda;component/resources/difficulty2.png"/>
-                            </Button>
-                            <Button x:Name="btnChangeDifficulty2" Margin="5 0 0 0" Width="50" Height="50" Click="BtnChangeDifficulty2_Click">
-                                <Image Source="pack://application:,,,/Edda;component/resources/difficulty3.png"/>
-                            </Button>
-                        </StackPanel>
-                        <TextBlock Margin="0 3 0 0" HorizontalAlignment="Center">Change Difficulty</TextBlock>
-                    </StackPanel>
-                </StackPanel>
+                
             </DockPanel>
         </Border>
         <Border DockPanel.Dock="Bottom" BorderBrush="{DynamicResource {x:Static SystemColors.ControlDarkDarkBrushKey}}" BorderThickness="0, 1, 0, 0">
@@ -72,8 +56,8 @@
             </DockPanel>
         </Border>
         <Border DockPanel.Dock="Left" BorderBrush="{DynamicResource {x:Static SystemColors.ControlDarkDarkBrushKey}}" BorderThickness="0, 0, 1, 0" Background="{DynamicResource {x:Static SystemColors.ControlDarkBrushKey}}">
-            <ScrollViewer MinWidth="210" VerticalScrollBarVisibility="Auto">
-                <StackPanel Orientation="Vertical">
+            <ScrollViewer MinWidth="220" VerticalScrollBarVisibility="Auto">
+                <StackPanel Name="LeftPanel" Orientation="Vertical">
                     <Label Margin="5 0 0 5" FontWeight="Bold" FontSize="14">Map Settings</Label>
                     <Grid Margin="10 0 5 0" VerticalAlignment="Center">
                         <Grid.Resources>
@@ -121,39 +105,39 @@
                             <TextBox x:Name="txtMapperName" TextChanged="TxtMapperName_TextChanged"/>
                         </Border>
 
-                        <Border Grid.Row="3" Grid.Column="0" Margin="0 5 0 0"/>
-
-                        <Border Grid.Row="4" Grid.Column="0">
-                            <TextBlock>Song BPM</TextBlock>
+                        <Border Grid.Row="3" Grid.Column="0">
+                            <TextBlock VerticalAlignment="Center">Environment</TextBlock>
                         </Border>
 
-                        <Border Grid.Row="4" Grid.Column="1">
+                        <Border Grid.Row="3" Grid.Column="1">
+                            <ComboBox x:Name="comboEnvironment" SelectionChanged="ComboEnvironment_SelectionChanged"/>
+                        </Border>
+
+                        <Border Grid.Row="4" Grid.Column="0" Grid.ColumnSpan="2">
+                            <TextBlock VerticalAlignment="Center" FontWeight="Bold" FontSize="12">Global Song Settings</TextBlock>
+                        </Border>
+
+                        <Border Grid.Row="5" Grid.Column="0">
+                            <TextBlock Padding="10 0 0 0">Song BPM</TextBlock>
+                        </Border>
+
+                        <Border Grid.Row="5" Grid.Column="1">
                             <StackPanel Orientation="Horizontal">
                                 <TextBox x:Name="txtSongBPM" Grid.Row="0" Grid.Column="1" LostFocus="TxtSongBPM_LostFocus" Width="85"/>
                                 <Button x:Name="btnChangeBPM" Width="20" Height="Auto" Click="BtnChangeBPM_Click" Margin="5 0 0 0">...</Button>
                             </StackPanel>
                         </Border>
 
-                        <Border Grid.Row="5" Grid.Column="0">
-                            <TextBlock>Song Offset</TextBlock>
+                        <Border Grid.Row="6" Grid.Column="0">
+                            <TextBlock Padding="10 0 0 0">Song Offset</TextBlock>
                         </Border>
 
-                        <Border Grid.Row="5" Grid.Column="1">
+                        <Border Grid.Row="6" Grid.Column="1">
                             <TextBox x:Name="txtSongOffset" Grid.Row="0" Grid.Column="1" LostFocus="TxtSongOffset_LostFocus" />
                         </Border>
 
-
-                        <Border Grid.Row="7" Grid.Column="0" Margin="0 5 0 0"/>
-
-                        <Border Grid.Row="8" Grid.Column="0">
-                            <TextBlock VerticalAlignment="Center">Environment</TextBlock>
-                        </Border>
-
-                        <Border Grid.Row="8" Grid.Column="1">
-                            <ComboBox x:Name="comboEnvironment" SelectionChanged="ComboEnvironment_SelectionChanged"/>
-                        </Border>
-
                     </Grid>
+                    <Line X1="0" X2="{Binding ElementName=LeftPanel, Path=ActualWidth}" Margin="0 10 0 0" StrokeThickness="1" Stroke="{DynamicResource {x:Static SystemColors.ControlDarkDarkBrushKey}}" HorizontalAlignment="Center"></Line>
                     <Label Margin="5 5 0 0" FontWeight="Bold" FontSize="14">File Info</Label>
                     <Grid Margin="10 0 5 0" VerticalAlignment="Center">
                         <Grid.Resources>
@@ -206,11 +190,35 @@
             </ScrollViewer>
         </Border>
         <Border DockPanel.Dock="Right" BorderBrush="{DynamicResource {x:Static SystemColors.ControlDarkDarkBrushKey}}" BorderThickness="1, 0, 0, 0" Background="{DynamicResource {x:Static SystemColors.ControlDarkBrushKey}}">
-            <DockPanel>
-                <ScrollViewer DockPanel.Dock="Top" MinWidth="210" VerticalScrollBarVisibility="Auto">
+            <DockPanel >
+                <Border DockPanel.Dock="Bottom" Height="25" VerticalAlignment="Bottom" BorderBrush="{DynamicResource {x:Static SystemColors.ControlDarkDarkBrushKey}}" BorderThickness="0, 1, 0, 0">
+                    <Label x:Name="lblSelectedBeat" FontSize="11" FontWeight="Bold" Padding="5 4 0 0"></Label>
+                </Border>
+                <ScrollViewer MinWidth="220"  VerticalScrollBarVisibility="Auto">
                     <StackPanel Name="EditorInfoPanel" Orientation="Vertical">
+
                         <Label Margin="5 0 0 5" FontWeight="Bold" FontSize="14">Difficulty Settings</Label>
-                        <Grid Margin="10 0 5 0" VerticalAlignment="Center">
+                        <StackPanel Orientation="Vertical" HorizontalAlignment="Center">
+                            <StackPanel x:Name="DifficultyChangePanel" Orientation="Horizontal">
+                                <Button x:Name="btnChangeDifficulty0" Width="60" Height="40" Click="BtnChangeDifficulty0_Click">
+                                    <Image Source="pack://application:,,,/Edda;component/resources/difficulty1.png"/>
+                                </Button>
+                                <Button x:Name="btnChangeDifficulty1" Width="60" Height="40" Margin="5 0 0 0" Click="BtnChangeDifficulty1_Click">
+                                    <Image Source="pack://application:,,,/Edda;component/resources/difficulty2.png"/>
+                                </Button>
+                                <Button x:Name="btnChangeDifficulty2" Width="60" Height="40" Margin="5 0 0 0" Click="BtnChangeDifficulty2_Click">
+                                    <Image Source="pack://application:,,,/Edda;component/resources/difficulty3.png"/>
+                                </Button>
+                            </StackPanel>
+
+                        </StackPanel>
+                        <StackPanel Orientation="Horizontal" Margin="0 10 0 5" HorizontalAlignment="Center">
+                            <Button x:Name="btnAddDifficulty" Width="92.5" Margin="0 0 5 0" VerticalAlignment="Top" Click="BtnAddDifficulty_Click">Add</Button>
+                            <Button x:Name="btnDeleteDifficulty" Width="92.5" VerticalAlignment="Top" Click="BtnDeleteDifficulty_Click">Delete</Button>
+                        </StackPanel>
+                        <Line X1="0" X2="190" Margin="0 10 0 5" StrokeThickness="1" Stroke="{DynamicResource {x:Static SystemColors.ControlDarkDarkBrushKey}}" HorizontalAlignment="Center"></Line>
+
+                        <Grid Margin="10 5 5 0" VerticalAlignment="Center">
                             <Grid.Resources>
                                 <Style TargetType="Border" >
                                     <Setter Property="Padding" Value="5,5,5,5" />
@@ -277,14 +285,10 @@
                                 <TextBox x:Name="txtDistMedal2" LostFocus="txtDistMedal2_LostFocus"/>
                             </Border>
 
-                            <Border Grid.Row="6" Grid.Column="0" Margin="0 5 0 0"/>
-
-                            <Border Grid.Row="7" Grid.Column="1">
-                                <Button x:Name="btnDeleteDifficulty" Click="BtnDeleteDifficulty_Click">Delete Difficulty</Button>
-                            </Border>
-
                         </Grid>
-                        <Label Margin="5 5 0 5" FontWeight="Bold" FontSize="14">Editor Settings</Label>
+
+                        <Line X1="0" X2="{Binding ElementName=EditorInfoPanel, Path=ActualWidth}" Margin="0 10 0 5" StrokeThickness="1" Stroke="{DynamicResource {x:Static SystemColors.ControlDarkDarkBrushKey}}" HorizontalAlignment="Center"></Line>
+                        <Label Margin="5 0 0 5" FontWeight="Bold" FontSize="14">Editor Settings</Label>
                         <Grid Margin="10 0 5 0" VerticalAlignment="Center">
                             <Grid.Resources>
                                 <Style TargetType="Border" >
@@ -383,9 +387,6 @@
                         </Grid>
                     </StackPanel>
                 </ScrollViewer>
-                <Border DockPanel.Dock="Bottom" Height="25" VerticalAlignment="Bottom" BorderBrush="{DynamicResource {x:Static SystemColors.ControlDarkDarkBrushKey}}" BorderThickness="0, 1, 0, 0">
-                    <Label x:Name="lblSelectedBeat" FontSize="11" FontWeight="Bold" Padding="5 4 0 0"></Label>
-                </Border>
             </DockPanel>
         </Border>
         <Grid Grid.Column="0" Name="EditorPanel" MinWidth="300">

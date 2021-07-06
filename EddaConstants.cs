@@ -6,7 +6,7 @@ namespace Constants {
     public static class Program {
         public const string Name          = "Edda";
         public const string VersionNumber = "0.3.0b1";
-        public const string SettingsFile         = "settings.txt";
+        public const string SettingsFile  = "settings.txt";
     }
     public static class Editor {
         // Grid drawing
@@ -21,9 +21,9 @@ namespace Constants {
         public const int    GridDivisionMax          = 12;
 
         // Editor functions
-        public const int    HistoryMaxSize = 128; // actions
-        public const double PreviewNoteOpacity = 0.3; // percentage
-        public const double DragInitThreshold = 10; // pixels
+        public const int    HistoryMaxSize     = 128;  // actions
+        public const double PreviewNoteOpacity = 0.30; // percentage of 1.0
+        public const double DragInitThreshold  = 10;   // pixels
 
         // Waveform drawing
         public static class Waveform {
@@ -31,7 +31,7 @@ namespace Constants {
             public const int    MaxDimension = 65535;
             public const double ThicknessWPF = 2;
             public const bool   UseGDI       = false;
-            public static MediaColor ColourWPF => MediaColor.FromArgb(96, 0, 0, 255);
+            public static MediaColor   ColourWPF => MediaColor.FromArgb(96, 0, 0, 255);
             public static DrawingColor ColourGDI => DrawingColor.FromArgb(180, 0, 0, 255);
         }
     }
@@ -48,13 +48,13 @@ namespace Constants {
         public const double NoteDetectionDelta  = 15;  // ms
     }
     public static class BeatmapDefaults {
-        public const double BeatsPerMinute = 120;
-        public const string SongFilename = "song.ogg";
-        public const int    Shuffle = 0;
-        public const double ShufflePeriod = 0.5;
+        public const double BeatsPerMinute            = 120;
+        public const string SongFilename              = "song.ogg";
+        public const int    Shuffle                   = 0;           // what do
+        public const double ShufflePeriod             = 0.5;         // these do??
         public const string BeatmapCharacteristicName = "Standard";
-        public const double NoteJumpMovementSpeed = 15;
-        public static List<string> DifficultyNames => new() { "Easy", "Normal", "Hard" };
+        public const double NoteJumpMovementSpeed     = 15;
+        public static List<string> DifficultyNames  => new() { "Easy", "Normal", "Hard" };
         public static List<string> EnvironmentNames => new() { "DefaultEnvironment", "Alfheim", "Nidavellir", "Asgard" };
         public const string DefaultEnvironmentAlias = "Midgard";
     }

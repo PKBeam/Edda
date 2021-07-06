@@ -307,6 +307,7 @@ public class RagnarockMap {
     private void UpdateEddaVersion() {
         var obj = JObject.Parse(infoStr);
         obj["_customData"]["_editors"]["Edda"]["version"] = Constants.Program.VersionNumber;
+        obj["_customData"]["_editors"]["_lastEditedBy"] = Constants.Program.Name;
         infoStr = JsonConvert.SerializeObject(obj, Formatting.Indented);
     }
 
@@ -551,7 +552,6 @@ public class RagnarockMap {
         }
         SetCustomValueForMap(indx, "_information", info);
     }
-
     public List<BPMChange> GetBPMChangesForMap(int indx) {
         List<BPMChange> BPMChanges = new List<BPMChange>();
         var obj = JObject.Parse(difficultyMaps[indx]);
@@ -566,7 +566,6 @@ public class RagnarockMap {
         }
         return BPMChanges; 
     }
-
     public void SetBPMChangesForMap(int indx, List<BPMChange> BPMChanges) {
         JArray bcArr = new JArray();
         foreach (BPMChange bc in BPMChanges) {
