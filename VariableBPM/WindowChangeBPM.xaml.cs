@@ -36,6 +36,9 @@ namespace Edda {
         }
 
         private void dataBPMChange_CellEditEnding(object sender, DataGridCellEditEndingEventArgs e) {
+            if (e.EditAction == DataGridEditAction.Cancel) {
+                return;
+            }
             string col = e.Column.Header.ToString();
             string pendingEditText = ((TextBox)e.EditingElement).Text;
             // data validation
@@ -57,9 +60,10 @@ namespace Edda {
                         throw new Exception($"The grid division amount must be an integer from 1 to {Constants.Editor.GridDivisionMax}.");
                     }
                 }
+                
             } catch (Exception ex) {
                 MessageBox.Show(ex.Message, "Error", MessageBoxButton.OK, MessageBoxImage.Error);
-                e.Cancel = true;
+                dataBPMChange.CancelEdit();
             }
         }
 

@@ -41,7 +41,7 @@ namespace Edda {
         }
         bool songIsPlaying {
             set { btnSongPlayer.Tag = (value == false) ? 0 : 1; }
-            get { return (int)btnSongPlayer.Tag == 1; }
+            get { return btnSongPlayer.Tag != null && (int)btnSongPlayer.Tag == 1; }
         }
         public double globalBPM {
             get { return Helper.DoubleParseInvariant((string)beatMap.GetValue("_beatsPerMinute")); }
@@ -50,8 +50,8 @@ namespace Edda {
         // STATE VARIABLES
 
         public RagnarockMap beatMap;
-        List<double> gridLines;
-        List<BPMChange> bpmChanges;
+        List<double> gridLines = new List<double>();
+        List<BPMChange> bpmChanges = new List<BPMChange>();
         bool shiftKeyDown;
         bool ctrlKeyDown;
 
@@ -60,18 +60,18 @@ namespace Edda {
         List<Note> currentDifficultyNotes = new List<Note>();
 
         DoubleAnimation songPlayAnim;            // used for animating scroll when playing a song
-        double prevScrollPercent;       // percentage of scroll progress before the scroll viewport was changed
+        double prevScrollPercent = 0;       // percentage of scroll progress before the scroll viewport was changed
 
         // variables used in the map editor
-        Image imgPreviewNote;
-        List<Note> editorClipboard;
-        EditHistory<Note> editorHistory;
+        Image imgPreviewNote = new();
+        List<Note> editorClipboard = new();
+        EditHistory<Note> editorHistory = new(Constants.Editor.HistoryMaxSize);
 
         // -- for waveform drawing
-        Image imgAudioWaveform;
+        Image imgAudioWaveform = new();
         //AudioVisualiser_Float32 awd;
         VorbisWaveformVisualiser audioWaveform;
-        bool editorShowWaveform;
+        bool editorShowWaveform = false;
 
         // -- for note placement
         int editorMouseGridCol;
@@ -79,8 +79,8 @@ namespace Edda {
         double editorMouseBeatSnapped;
 
         // -- for drag select
-        List<Note> editorSelectedNotes;
-        Border editorDragSelectBorder;
+        List<Note> editorSelectedNotes = new();
+        Border editorDragSelectBorder = new();
         Point editorDragSelectStart;
         double editorSelBeatStart;
         int editorSelColStart;
@@ -110,62 +110,23 @@ namespace Edda {
         DrumPlayer drummer;
 
         public MainWindow() {
-   
+
             InitializeComponent();
-
-            songIsPlaying = false;
-
-            string[] drumSounds = { 
-                "Resources/drum1.wav", 
-                "Resources/drum2.wav", 
-                "Resources/drum3.wav", 
-                "Resources/drum4.wav" 
-            };
-            drummer = new DrumPlayer(drumSounds, Constants.Audio.NotePlaybackStreams, Constants.Audio.WASAPILatencyTarget);
-           
-            bpmChanges = new List<BPMChange>();
-            gridLines = new List<double>();
+            InitDrummer("drum");
 
             // disable parts of UI, as no map is loaded
             DisableUI();
 
-            checkGridSnap.IsChecked = editorSnapToGrid;
-            checkWaveform.IsChecked = editorShowWaveform;
-
             LoadConfigFile();
 
             // init border
-            editorDragSelectBorder = new Border();
-            editorDragSelectBorder.BorderBrush = Brushes.Black;
-            editorDragSelectBorder.BorderThickness = new Thickness(2);
-            editorDragSelectBorder.Background = Brushes.LightBlue;
-            editorDragSelectBorder.Opacity = 0.5;
-            editorDragSelectBorder.Visibility = Visibility.Hidden;
+            InitDragSelectBorder();
 
             // load editor preview note
-            imgPreviewNote = new Image();
-            imgPreviewNote.Source = Helper.BitmapImageForBeat(0);
-            imgPreviewNote.Opacity = Constants.Editor.PreviewNoteOpacity;
-            imgPreviewNote.Width = unitLength;
-            imgPreviewNote.Height = unitHeight;
-            EditorGrid.Children.Add(imgPreviewNote);
-
-            // load audio waveform
-            imgAudioWaveform = new Image();
-
-            // init editor stuff
-            editorHistory = new(Constants.Editor.HistoryMaxSize);
-            editorClipboard = new();
-            editorSelectedNotes = new();
+            InitPreviewNote();
 
             // init environment combobox
-            foreach (var name in Constants.BeatmapDefaults.EnvironmentNames) {
-                if (name == "DefaultEnvironment") {
-                    comboEnvironment.Items.Add(Constants.BeatmapDefaults.DefaultEnvironmentAlias);
-                } else {
-                    comboEnvironment.Items.Add(name);
-                }
-            }
+            InitComboEnvironment();
 
 
             // TODO: properly debounce grid redrawing on resize
@@ -179,6 +140,7 @@ namespace Edda {
             //);
 
         }
+
 
         // UI bindings
         private void AppMainWindow_Closed(object sender, EventArgs e) {
@@ -638,11 +600,11 @@ namespace Edda {
             }
         }
         private void ComboEnvironment_SelectionChanged(object sender, SelectionChangedEventArgs e) {
-            var env = (string)comboEnvironment.SelectedItem;
-            if (env == Constants.BeatmapDefaults.DefaultEnvironmentAlias) {
-                env = "DefaultEnvironment";
-            }
-            beatMap.SetValue("_environmentName", env);
+            //var env = (string)comboEnvironment.SelectedItem;
+            //if (env == Constants.BeatmapDefaults.DefaultEnvironmentAlias) {
+            //    env = "DefaultEnvironment";
+            //}
+            beatMap.SetValue("_environmentName", (string)comboEnvironment.SelectedItem);
         }
         private void EditorGrid_SizeChanged(object sender, SizeChangedEventArgs e) {
             // changing the width will change the size of the editor grid, so we need to update some things
@@ -912,7 +874,8 @@ namespace Edda {
         // config file
         private void InitConfigFile() {
             string[] fields = {
-                "editorAudioLatency="
+                $"editorAudioLatency={Constants.DefaultConfig.AudioLatency}",
+                $"drumSampleFile={Constants.DefaultConfig.DrumSampleFile}"
             };
             File.WriteAllLines("settings.txt", fields);
         }
@@ -920,21 +883,28 @@ namespace Edda {
             if (File.Exists(Constants.Program.SettingsFile)) {
                 string[] lines = File.ReadAllLines(Constants.Program.SettingsFile);
                 foreach (var line in lines) {
+                    string value = line.Split("=")[1];
+
                     // load editorAudioLatency
                     if (line.StartsWith("editorAudioLatency")) {
                         int latency;
-                        if (!int.TryParse(line.Split("=")[1], out latency)) {
-                            Trace.WriteLine("INFO: using default editor audio latency");
-                            editorAudioLatency = Constants.Audio.DefaultSongNoteLatency;
-                        } else {
-                            Trace.WriteLine($"INFO: using user editor audio latency ({latency}ms)");
-                            editorAudioLatency = latency;
+                        if (!int.TryParse(value, out latency)) {
+                            latency = Constants.DefaultConfig.AudioLatency;
+                        } 
+                        editorAudioLatency = latency;
+                    }
+
+                    if (line.StartsWith("drumSampleFile")) {
+                        try {
+                            InitDrummer(value);
+                        } catch {
+                            InitDrummer(Constants.DefaultConfig.DrumSampleFile);
                         }
                     }
                 }
             } else {
                 InitConfigFile();
-                editorAudioLatency = Constants.Audio.DefaultSongNoteLatency;
+                LoadConfigFile();
             }
         }
 
@@ -1540,6 +1510,31 @@ namespace Edda {
         }
 
         // helper functions
+        private void InitComboEnvironment() {
+            foreach (var name in Constants.BeatmapDefaults.EnvironmentNames) {
+                //if (name == "DefaultEnvironment") {
+                //    comboEnvironment.Items.Add(Constants.BeatmapDefaults.DefaultEnvironmentAlias);
+                //} else {
+                comboEnvironment.Items.Add(name);
+                //}
+            }
+        }
+        private void InitDragSelectBorder() {
+            editorDragSelectBorder.BorderBrush = Brushes.Black;
+            editorDragSelectBorder.BorderThickness = new Thickness(2);
+            editorDragSelectBorder.Background = Brushes.LightBlue;
+            editorDragSelectBorder.Opacity = 0.5;
+            editorDragSelectBorder.Visibility = Visibility.Hidden;
+        }
+        private void InitPreviewNote() {
+            imgPreviewNote.Opacity = 0;
+            imgPreviewNote.Width = unitLength;
+            imgPreviewNote.Height = unitHeight;
+            EditorGrid.Children.Add(imgPreviewNote);
+        }
+        private void InitDrummer(string basePath) {
+            drummer = new DrumPlayer(basePath, Constants.Audio.NotePlaybackStreams, Constants.Audio.WASAPILatencyTarget);
+        }
         private double BeatForRow(double row) {
             double userOffsetBeat = globalBPM * editorGridOffset / 60;
             return row / (double)editorGridDivision + userOffsetBeat;

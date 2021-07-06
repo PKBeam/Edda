@@ -342,7 +342,7 @@
 
                             <Border Grid.Row="3" Grid.Column="1">
                                 <StackPanel Orientation="Horizontal">
-                                    <CheckBox x:Name="checkGridSnap" VerticalAlignment="Center" Click="CheckGridSnap_Click"></CheckBox>
+                                    <CheckBox x:Name="checkGridSnap" VerticalAlignment="Center" Click="CheckGridSnap_Click" IsChecked="True"></CheckBox>
                                 </StackPanel>
                             </Border>
 

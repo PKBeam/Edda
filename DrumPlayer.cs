@@ -1,6 +1,7 @@
 ﻿using System;
 using NAudio.Wave;
 using NAudio.CoreAudioApi;
+using System.IO;
 
 public class DrumPlayer : IDisposable {
 
@@ -11,15 +12,23 @@ public class DrumPlayer : IDisposable {
     AudioFileReader[] noteStreams;
     WasapiOut[] notePlayers;
 
-    public DrumPlayer(string[] filePaths, int streams, int desiredLatency) {
+    public DrumPlayer(string basePath, int streams, int desiredLatency) {
         this.lastPlayedStream = 0;
         this.streams = streams;
-        this.uniqueSamples = filePaths.Length;
+
+        this.uniqueSamples = 0;
+        while (File.Exists(GetFilePath(basePath, this.uniqueSamples + 1))) {
+            this.uniqueSamples++;
+        }
+        if (uniqueSamples < 1) {
+            throw new FileNotFoundException();
+        }
+
         noteStreams = new AudioFileReader[streams];
         notePlayers = new WasapiOut[streams];
         lastPlayedTimes = new DateTime[streams];
         for (int i = 0; i < streams; i++) {
-            noteStreams[i] = new AudioFileReader(filePaths[streams % uniqueSamples]);
+            noteStreams[i] = new AudioFileReader(GetFilePath(basePath, (i % uniqueSamples) + 1));
             noteStreams[i].Volume = Constants.Audio.DefaultNoteVolume;
             notePlayers[i] = new WasapiOut(AudioClientShareMode.Shared, desiredLatency);
             notePlayers[i].Init(noteStreams[i]);
@@ -59,5 +68,8 @@ public class DrumPlayer : IDisposable {
             noteStreams[i].Dispose();
             notePlayers[i].Dispose();
         }
+    }
+    private string GetFilePath(string basePath, int sampleNumber) {
+        return $"Resources/{basePath}{sampleNumber}.wav";
     }
 }

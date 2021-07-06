@@ -8,6 +8,10 @@ namespace Constants {
         public const string VersionNumber = "0.3.0b1";
         public const string SettingsFile  = "settings.txt";
     }
+    public static class DefaultConfig {
+        public const int    AudioLatency   = -20; // ms
+        public const string DrumSampleFile = "drum";
+    }
     public static class Editor {
         // Grid drawing
         public const double DefaultGridSpacing       = 1;
@@ -41,7 +45,6 @@ namespace Constants {
         public const float  DefaultNoteVolume = 1.0f;
         // Latencies        
         public const int    WASAPILatencyTarget    = 100; // ms
-        public const int    DefaultSongNoteLatency = -20; // ms
         // Note Playback    
         public const int    NotePlaybackStreams = 16;
         public const int    NotePollRate        = 15;  // ms
@@ -55,7 +58,7 @@ namespace Constants {
         public const string BeatmapCharacteristicName = "Standard";
         public const double NoteJumpMovementSpeed     = 15;
         public static List<string> DifficultyNames  => new() { "Easy", "Normal", "Hard" };
-        public static List<string> EnvironmentNames => new() { "DefaultEnvironment", "Alfheim", "Nidavellir", "Asgard" };
-        public const string DefaultEnvironmentAlias = "Midgard";
+        public static List<string> EnvironmentNames => new() { "Midgard", "Alfheim", "Nidavellir", "Asgard" };
+        //public const string DefaultEnvironmentAlias = "Midgard";
     }
 }
