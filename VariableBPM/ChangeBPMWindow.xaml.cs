@@ -16,13 +16,13 @@ namespace Edda {
     /// <summary>
     /// Interaction logic for WindowChangeBPM.xaml
     /// </summary>
-    public partial class WindowChangeBPM : Window {
+    public partial class ChangeBPMWindow : Window {
 
         MainWindow caller;
         double globalBPM;
         List<BPMChange> BPMChanges;
 
-        public WindowChangeBPM(MainWindow caller, List<BPMChange> BPMChanges) {
+        public ChangeBPMWindow(MainWindow caller, List<BPMChange> BPMChanges) {
             InitializeComponent();
             this.caller = caller;
             this.globalBPM = caller.globalBPM;
@@ -56,8 +56,8 @@ namespace Edda {
                     }
                 // grid division
                 } else if (col == dataBPMChange.Columns[2].Header.ToString()) {
-                    if ((int)pendingEdit != pendingEdit || !Helper.DoubleRangeCheck(pendingEdit, 1, Constants.Editor.GridDivisionMax)) {
-                        throw new Exception($"The grid division amount must be an integer from 1 to {Constants.Editor.GridDivisionMax}.");
+                    if ((int)pendingEdit != pendingEdit || !Helper.DoubleRangeCheck(pendingEdit, 1, Const.Editor.GridDivisionMax)) {
+                        throw new Exception($"The grid division amount must be an integer from 1 to {Const.Editor.GridDivisionMax}.");
                     }
                 }
                 

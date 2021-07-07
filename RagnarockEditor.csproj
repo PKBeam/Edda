@@ -10,14 +10,18 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <None Remove="Resources\bassdrum1.wav" />
+    <None Remove="Resources\bassdrum2.wav" />
+    <None Remove="Resources\bassdrum3.wav" />
+    <None Remove="Resources\bassdrum4.wav" />
     <None Remove="Resources\difficulty1.png" />
     <None Remove="Resources\difficulty2.png" />
     <None Remove="Resources\difficulty3.png" />
     <None Remove="Resources\drum.png" />
-    <None Remove="Resources\drum1.wav" />
-    <None Remove="Resources\drum2.wav" />
-    <None Remove="Resources\drum3.wav" />
-    <None Remove="Resources\drum4.wav" />
+    <None Remove="Resources\hihat1.wav" />
+    <None Remove="Resources\hihat2.wav" />
+    <None Remove="Resources\hihat3.wav" />
+    <None Remove="Resources\hihat4.wav" />
     <None Remove="Resources\medalBronze.png" />
     <None Remove="Resources\medalGold.png" />
     <None Remove="Resources\medalSilver.png" />
@@ -43,6 +47,7 @@
     <None Remove="Resources\runeX.png" />
     <None Remove="Resources\runeXhighlight.png" />
     <None Remove="Resources\saveMap.png" />
+    <None Remove="Resources\settings.png" />
     <None Remove="Resources\waterTexture.png" />
     <None Remove="Resources\waterTextureSmall.png" />
   </ItemGroup>
@@ -58,22 +63,34 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Content Include="Resources\drum1.wav">
+    <Content Include="Resources\bassdrum1.wav">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
-    <Content Include="Resources\drum2.wav">
+    <Content Include="Resources\bassdrum2.wav">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
-    <Content Include="Resources\drum3.wav">
+    <Content Include="Resources\bassdrum3.wav">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
-    <Content Include="Resources\drum4.wav">
+    <Content Include="Resources\bassdrum4.wav">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
     <Resource Include="Resources\difficulty1.png" />
     <Resource Include="Resources\difficulty2.png" />
     <Resource Include="Resources\difficulty3.png" />
     <Resource Include="Resources\drum.png" />
+    <Content Include="Resources\hihat1.wav">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Resources\hihat2.wav">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Resources\hihat3.wav">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Resources\hihat4.wav">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
     <Resource Include="Resources\medalBronze.png" />
     <Resource Include="Resources\medalGold.png" />
     <Resource Include="Resources\medalSilver.png" />
@@ -99,6 +116,7 @@
     <Resource Include="Resources\runeX.png" />
     <Resource Include="Resources\runeXhighlight.png" />
     <Resource Include="Resources\saveMap.png" />
+    <Resource Include="Resources\settings.png" />
     <Resource Include="Resources\waterTexture.png" />
     <Resource Include="Resources\waterTextureSmall.png" />
   </ItemGroup>

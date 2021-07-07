@@ -23,8 +23,8 @@ public class AudioVisualiser {
 
     public BitmapSource Draw(double height, double width, bool useGDI = false, double offsetStart = 0, double offsetEnd = 0) {
         var largest = Math.Max(height, width);
-        if (largest > Constants.Editor.Waveform.MaxDimension) {
-            double scale = Constants.Editor.Waveform.MaxDimension / largest;
+        if (largest > Const.Editor.Waveform.MaxDimension) {
+            double scale = Const.Editor.Waveform.MaxDimension / largest;
             height *= scale;
             width *= scale;
         }
@@ -61,7 +61,7 @@ public class AudioVisualiser {
         System.Drawing.Graphics graphics = System.Drawing.Graphics.FromImage(bitmap);
         graphics.SmoothingMode = System.Drawing.Drawing2D.SmoothingMode.HighSpeed;
         graphics.Clear(System.Drawing.Color.Transparent);
-        System.Drawing.Pen bluePen = new System.Drawing.Pen(Constants.Editor.Waveform.ColourGDI);
+        System.Drawing.Pen bluePen = new System.Drawing.Pen(Const.Editor.Waveform.ColourGDI);
 
         int samplesPerPixel = (int)(reader.Length / (double)(height * bytesPerSample));
         int bytesPerPixel = bytesPerSample * samplesPerPixel;
@@ -111,7 +111,7 @@ public class AudioVisualiser {
         int bytesPerSample = reader.WaveFormat.BitsPerSample / 8 * reader.WaveFormat.Channels;
         DrawingVisual dv = new DrawingVisual();
         DrawingContext dc = dv.RenderOpen();
-        Pen bluePen = new Pen(new SolidColorBrush(Constants.Editor.Waveform.ColourWPF), Constants.Editor.Waveform.ThicknessWPF);
+        Pen bluePen = new Pen(new SolidColorBrush(Const.Editor.Waveform.ColourWPF), Const.Editor.Waveform.ThicknessWPF);
         bluePen.Freeze();
 
         // TODO fix floating point rounding errors here
