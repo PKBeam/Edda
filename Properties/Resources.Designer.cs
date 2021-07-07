@@ -71,6 +71,42 @@ namespace Edda.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized resource of type System.IO.UnmanagedMemoryStream similar to System.IO.MemoryStream.
+        /// </summary>
+        internal static System.IO.UnmanagedMemoryStream bassdrum1 {
+            get {
+                return ResourceManager.GetStream("bassdrum1", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.IO.UnmanagedMemoryStream similar to System.IO.MemoryStream.
+        /// </summary>
+        internal static System.IO.UnmanagedMemoryStream bassdrum2 {
+            get {
+                return ResourceManager.GetStream("bassdrum2", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.IO.UnmanagedMemoryStream similar to System.IO.MemoryStream.
+        /// </summary>
+        internal static System.IO.UnmanagedMemoryStream bassdrum3 {
+            get {
+                return ResourceManager.GetStream("bassdrum3", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.IO.UnmanagedMemoryStream similar to System.IO.MemoryStream.
+        /// </summary>
+        internal static System.IO.UnmanagedMemoryStream bassdrum4 {
+            get {
+                return ResourceManager.GetStream("bassdrum4", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized resource of type System.Drawing.Bitmap.
         /// </summary>
         internal static System.Drawing.Bitmap difficulty1 {
@@ -113,36 +149,36 @@ namespace Edda.Properties {
         /// <summary>
         ///   Looks up a localized resource of type System.IO.UnmanagedMemoryStream similar to System.IO.MemoryStream.
         /// </summary>
-        internal static System.IO.UnmanagedMemoryStream drum1 {
+        internal static System.IO.UnmanagedMemoryStream hihat1 {
             get {
-                return ResourceManager.GetStream("drum1", resourceCulture);
+                return ResourceManager.GetStream("hihat1", resourceCulture);
             }
         }
         
         /// <summary>
         ///   Looks up a localized resource of type System.IO.UnmanagedMemoryStream similar to System.IO.MemoryStream.
         /// </summary>
-        internal static System.IO.UnmanagedMemoryStream drum2 {
+        internal static System.IO.UnmanagedMemoryStream hihat2 {
             get {
-                return ResourceManager.GetStream("drum2", resourceCulture);
+                return ResourceManager.GetStream("hihat2", resourceCulture);
             }
         }
         
         /// <summary>
         ///   Looks up a localized resource of type System.IO.UnmanagedMemoryStream similar to System.IO.MemoryStream.
         /// </summary>
-        internal static System.IO.UnmanagedMemoryStream drum3 {
+        internal static System.IO.UnmanagedMemoryStream hihat3 {
             get {
-                return ResourceManager.GetStream("drum3", resourceCulture);
+                return ResourceManager.GetStream("hihat3", resourceCulture);
             }
         }
         
         /// <summary>
         ///   Looks up a localized resource of type System.IO.UnmanagedMemoryStream similar to System.IO.MemoryStream.
         /// </summary>
-        internal static System.IO.UnmanagedMemoryStream drum4 {
+        internal static System.IO.UnmanagedMemoryStream hihat4 {
             get {
-                return ResourceManager.GetStream("drum4", resourceCulture);
+                return ResourceManager.GetStream("hihat4", resourceCulture);
             }
         }
         
@@ -382,6 +418,16 @@ namespace Edda.Properties {
         internal static System.Drawing.Bitmap saveMap {
             get {
                 object obj = ResourceManager.GetObject("saveMap", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Drawing.Bitmap.
+        /// </summary>
+        internal static System.Drawing.Bitmap settings {
+            get {
+                object obj = ResourceManager.GetObject("settings", resourceCulture);
                 return ((System.Drawing.Bitmap)(obj));
             }
         }

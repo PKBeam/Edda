@@ -121,6 +121,18 @@
   <data name="AppIcon" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\AppIcon.ico;System.Drawing.Icon, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
+  <data name="bassdrum1" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\bassdrum1.wav;System.IO.MemoryStream, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="bassdrum2" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\bassdrum2.wav;System.IO.MemoryStream, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="bassdrum3" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\bassdrum3.wav;System.IO.MemoryStream, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="bassdrum4" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\bassdrum4.wav;System.IO.MemoryStream, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
   <data name="difficulty1" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\difficulty1.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
@@ -133,17 +145,17 @@
   <data name="drum" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\drum.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
-  <data name="drum1" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\Resources\drum1.wav;System.IO.MemoryStream, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  <data name="hihat1" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\hihat1.wav;System.IO.MemoryStream, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>
-  <data name="drum2" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\Resources\drum2.wav;System.IO.MemoryStream, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  <data name="hihat2" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\hihat2.wav;System.IO.MemoryStream, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>
-  <data name="drum3" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\Resources\drum3.wav;System.IO.MemoryStream, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  <data name="hihat3" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\hihat3.wav;System.IO.MemoryStream, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>
-  <data name="drum4" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\Resources\drum4.wav;System.IO.MemoryStream, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  <data name="hihat4" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\hihat4.wav;System.IO.MemoryStream, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>
   <data name="icon" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\icon.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
@@ -216,6 +228,9 @@
   </data>
   <data name="saveMap" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\saveMap.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="settings" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\settings.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
   <data name="waterTexture" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\waterTexture.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>

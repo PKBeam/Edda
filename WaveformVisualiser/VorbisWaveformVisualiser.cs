@@ -26,8 +26,8 @@ public class VorbisWaveformVisualiser {
 		}
 		RecreateTokens();
 		var largest = Math.Max(height, width);
-		if (largest > Constants.Editor.Waveform.MaxDimension) {
-			double scale = Constants.Editor.Waveform.MaxDimension / largest;
+		if (largest > Const.Editor.Waveform.MaxDimension) {
+			double scale = Const.Editor.Waveform.MaxDimension / largest;
 			height *= scale;
 			width *= scale;
 		}
@@ -38,7 +38,7 @@ public class VorbisWaveformVisualiser {
 		reader.Position = 0;
 		DrawingVisual dv = new DrawingVisual();
 		using (DrawingContext dc = dv.RenderOpen()) {
-			Pen bluePen = new Pen(new SolidColorBrush(Constants.Editor.Waveform.ColourWPF), Constants.Editor.Waveform.ThicknessWPF);
+			Pen bluePen = new Pen(new SolidColorBrush(Const.Editor.Waveform.ColourWPF), Const.Editor.Waveform.ThicknessWPF);
 			bluePen.Freeze();
 
 			int channels = reader.WaveFormat.Channels;

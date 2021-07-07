@@ -28,8 +28,9 @@ public class DrumPlayer : IDisposable {
         notePlayers = new WasapiOut[streams];
         lastPlayedTimes = new DateTime[streams];
         for (int i = 0; i < streams; i++) {
-            noteStreams[i] = new AudioFileReader(GetFilePath(basePath, (i % uniqueSamples) + 1));
-            noteStreams[i].Volume = Constants.Audio.DefaultNoteVolume;
+            noteStreams[i] = new AudioFileReader(GetFilePath(basePath, (i % uniqueSamples) + 1)) {
+                Volume = Const.Audio.DefaultNoteVolume
+            };
             notePlayers[i] = new WasapiOut(AudioClientShareMode.Shared, desiredLatency);
             notePlayers[i].Init(noteStreams[i]);
         }
@@ -70,6 +71,6 @@ public class DrumPlayer : IDisposable {
         }
     }
     private string GetFilePath(string basePath, int sampleNumber) {
-        return $"Resources/{basePath}{sampleNumber}.wav";
+        return $"{Const.Program.ResourcesPath}{basePath}{sampleNumber}.wav";
     }
 }
