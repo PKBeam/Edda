@@ -1,14 +1,13 @@
 # Edda
 
-Edda is a map editor for the VR rhythm game [Ragnarock](https://www.ragnarock-vr.com/home).  
+Edda is a beatmap editor for the VR rhythm game [Ragnarock](https://www.ragnarock-vr.com/home).  
 
-It is mostly functional, but is still under development and has not been tested extensively.  
-Edda is only compatible with Windows operating systems.
+It is still under development and has not been tested extensively, but most features should work well.  
 
 <details open>
   <summary>Edda screenshot (click to close)</summary>
-  
-  ![Screenshot of Edda](https://i.imgur.com/tLOFs4M.png)
+
+  ![Screenshot of Edda](https://i.imgur.com/4DliaJ7.png)
 </details>
 
 ## Features
@@ -30,8 +29,10 @@ Edda is only compatible with Windows operating systems.
       - Note jump speed  
   - Open existing Ragnarock maps and create new ones
     - Listen to the entire map with audio and mapped drum hits
+       - Customise the note playback sound
        - Notes will be marked with the same rune that would appear in-game
        - Change the relative volumes of the song and mapped notes
+    - Variable BPM support
     - Customise the editor grid
       - Toggle note placements snapping to grid
       - Change the beat division
@@ -46,6 +47,8 @@ Edda is only compatible with Windows operating systems.
       - Move up, down, left or right
       - Mirror notes
     - Undo and redo edits
+  - In-built BPM finding tool
+    - Press a key to a song's beat to automatically calculate its BPM
 </details>
 
 ## Why make a new map editor?
@@ -109,12 +112,16 @@ Please also keep backups of any important maps, as bugs may cause map corruption
 - Space: Play/pause song
 </details>
 
+### Note Playback
+You can customise the note playback sounds!  
+The default sound is a bass drum, but a hi-hat sample is also provided (you can choose between them in the Settings menu).  
+To use your own samples, place files with names of the form `file1.wav`, `file2.wav`, ... in Edda's `Resources/` folder (both `.wav` and `.mp3` files are supported.)  
+It is recommended to provide at least two distinct samples for a natural sound.  
+
 ### Audio Latency
 Edda leverages [WASAPI](https://docs.microsoft.com/en-us/windows/win32/coreaudio/wasapi) to try and minimise audio latency between the song and any mapped drum hits.  
 Although WASAPI is fast, it requires more CPU power than other APIs (weak CPUs may experience crackling or popping).  
 
-Because of how WASAPI works, it is recommended that you match the sample rate of your sound output and your song, in order to eliminate latency from audio resampling. Resampling to 44.1 kHz is preferred. If you must use 48 kHz, resampling the `.wav` drum samples in the `Resources` folder to 48 kHz may help reduce latency.  
+Because of how WASAPI works, it is recommended that you match the sample rate of your sound output and your song, in order to eliminate latency from audio resampling. Resampling to 44.1 kHz is preferred. If you must use 48 kHz, you may be able to reduce latency by using 48 kHz files for the note playback sounds.  
 
-There is a slight delay between the playback of the song and the playback of individual notes.  
-You can adjust this delay by opening `settings.txt` in the application folder and entering the `editorAudioLatency` in integer milliseconds.  
-For example, `editorAudioLatency=5` or `editorAudioLatency=-40`. A blank value will use the default latency of -20 ms.
+There is a slight delay between the playback of the song and the playback of individual notes. You can adjust this delay in the Settings menu.  
