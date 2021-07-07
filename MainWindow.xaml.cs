@@ -56,11 +56,6 @@ namespace Edda {
         bool shiftKeyDown;
         bool ctrlKeyDown;
 
-        // windows
-        ChangeBPMWindow cbpmWin;
-        SettingsWindow setWin;
-        BPMCalcWindow bcWin;
-
         // store info about the currently selected difficulty
         public int currentDifficulty;
         List<Note> currentDifficultyNotes = new List<Note>();
@@ -1063,6 +1058,7 @@ namespace Edda {
 
             // disable actions that would interrupt note scanning
             txtSongBPM.IsEnabled = false;
+            btnChangeBPM.IsEnabled = false;
             txtGridOffset.IsEnabled = false;
             btnChangeDifficulty0.IsEnabled = false;
             btnChangeDifficulty1.IsEnabled = false;
@@ -1112,6 +1108,7 @@ namespace Edda {
 
             // re-enable actions that were disabled
             txtSongBPM.IsEnabled = true;
+            btnChangeBPM.IsEnabled = true;
             txtGridOffset.IsEnabled = true;
             EnableDifficultyButtons();
             scrollEditor.IsEnabled = true;
