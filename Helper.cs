@@ -1,6 +1,9 @@
-﻿using System;
+﻿using Edda;
+using System;
 using System.Collections.Generic;
 using System.Globalization;
+using System.Linq;
+using System.Windows;
 using System.Windows.Media.Imaging;
 
 public class Helper {
@@ -20,6 +23,13 @@ public class Helper {
         double lower = Math.Min(x, y);
         double higher = Math.Max(x, y);
         return lower <= a && a <= higher;
+    }
+    public static Window GetFirstWindow<T>() where T : Window {
+        var wins = Application.Current.Windows.OfType<T>();
+        if (wins.Any()) {
+            return wins.First();
+        }
+        return null;       
     }
     public static void InsertSortedUnique(List<Note> notes, Note note) {
         // check which index to insert the new note at (keep everything in sorted order)

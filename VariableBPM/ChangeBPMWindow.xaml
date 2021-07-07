@@ -5,7 +5,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:Edda"
         mc:Ignorable="d"
-        Title="Variable BPM Settings" Height="360" MinHeight="360" Width="300" MinWidth="300" d:DesignHeight="343.605">
+        Title="Variable BPM Settings" Height="370" Width="300" ResizeMode="NoResize" d:DesignHeight="343.605">
     <Grid Background="{DynamicResource {x:Static SystemColors.ControlDarkBrushKey}}">
         <StackPanel Margin="15">
             <StackPanel Orientation="Horizontal">
@@ -20,7 +20,7 @@
                     <DataGridTextColumn Header="Grid Division" Binding="{Binding gridDivision}" Width="*"/>
                 </DataGrid.Columns>
             </DataGrid>
-            <Button x:Name="btnExit" Width="60" Margin="0 15 0 0" HorizontalAlignment="Right" Click="btnExit_Click">Exit</Button>
+            <Button x:Name="btnExit" Width="60" Margin="0 20 0 0" HorizontalAlignment="Right" Click="btnExit_Click">Exit</Button>
         </StackPanel>
     </Grid>
     

@@ -25,6 +25,7 @@
     <None Remove="Resources\medalBronze.png" />
     <None Remove="Resources\medalGold.png" />
     <None Remove="Resources\medalSilver.png" />
+    <None Remove="Resources\musicNote.png" />
     <None Remove="Resources\newMap.png" />
     <None Remove="Resources\openMap.png" />
     <None Remove="Resources\pauseButton.png" />
@@ -94,6 +95,7 @@
     <Resource Include="Resources\medalBronze.png" />
     <Resource Include="Resources\medalGold.png" />
     <Resource Include="Resources\medalSilver.png" />
+    <Resource Include="Resources\musicNote.png" />
     <Resource Include="Resources\newMap.png" />
     <Resource Include="Resources\openMap.png" />
     <Resource Include="Resources\pauseButton.png" />

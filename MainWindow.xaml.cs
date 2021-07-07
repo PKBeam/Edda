@@ -56,6 +56,11 @@ namespace Edda {
         bool shiftKeyDown;
         bool ctrlKeyDown;
 
+        // windows
+        ChangeBPMWindow cbpmWin;
+        SettingsWindow setWin;
+        BPMCalcWindow bcWin;
+
         // store info about the currently selected difficulty
         public int currentDifficulty;
         List<Note> currentDifficultyNotes = new List<Note>();
@@ -158,6 +163,7 @@ namespace Edda {
             if (drummer != null) {
                 drummer.Dispose();
             }
+            Application.Current.Shutdown();
         }
         private void AppMainWindow_KeyDown(object sender, KeyEventArgs e) {
 
@@ -379,9 +385,21 @@ namespace Edda {
         private void BtnSaveMap_Click(object sender, RoutedEventArgs e) {
             SaveBeatmap();
         }
+        private void BtnBPMFinder_Click(object sender, RoutedEventArgs e) {
+            var win = Helper.GetFirstWindow<BPMCalcWindow>();
+            if (win == null) {
+                new BPMCalcWindow().Show();
+            } else {
+                win.Focus();
+            }
+        }
         private void BtnSettings_Click(object sender, RoutedEventArgs e) {
-            var win = new SettingsWindow(this, userSettings);
-            win.Show();
+            var win = Helper.GetFirstWindow<SettingsWindow>();
+            if (win == null) {
+                new SettingsWindow(this, userSettings).Show();
+            } else {
+                win.Focus();
+            }
         }
         private void BtnPickSong_Click(object sender, RoutedEventArgs e) {
             PauseSong();
@@ -485,8 +503,12 @@ namespace Edda {
 
         }
         private void BtnChangeBPM_Click(object sender, RoutedEventArgs e) {
-            var win = new ChangeBPMWindow(this, bpmChanges);
-            win.Show();
+            var win = Helper.GetFirstWindow<ChangeBPMWindow>();
+            if (win == null) {
+                new ChangeBPMWindow(this, bpmChanges).Show();
+            } else {
+                win.Focus();
+            }
         }
         private void TxtSongOffset_LostFocus(object sender, RoutedEventArgs e) {
             double offset;
@@ -530,13 +552,13 @@ namespace Edda {
             }
             txtNoteSpeed.Text = speed.ToString();
         }
-        private void txtDistMedal0_LostFocus(object sender, RoutedEventArgs e) {
+        private void TxtDistMedal0_LostFocus(object sender, RoutedEventArgs e) {
             txtDistMedal0.Text = UpdateMedalDistance(0, txtDistMedal0.Text).ToString();
         }
-        private void txtDistMedal1_LostFocus(object sender, RoutedEventArgs e) {
+        private void TxtDistMedal1_LostFocus(object sender, RoutedEventArgs e) {
             txtDistMedal1.Text = UpdateMedalDistance(1, txtDistMedal1.Text).ToString();
         }
-        private void txtDistMedal2_LostFocus(object sender, RoutedEventArgs e) {
+        private void TxtDistMedal2_LostFocus(object sender, RoutedEventArgs e) {
             txtDistMedal2.Text = UpdateMedalDistance(2, txtDistMedal2.Text).ToString();
         }
         private void CheckGridSnap_Click(object sender, RoutedEventArgs e) {
