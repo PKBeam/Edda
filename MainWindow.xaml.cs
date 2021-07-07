@@ -431,7 +431,7 @@ namespace Edda {
             SwitchDifficultyMap(beatMap.numDifficulties - 1);
         }
         private void BtnDeleteDifficulty_Click(object sender, RoutedEventArgs e) {
-            var res = MessageBox.Show("Are you sure you want to delete this difficulty? This cannot be undone.", "Warning", MessageBoxButton.YesNo);
+            var res = MessageBox.Show("Are you sure you want to delete this difficulty? This cannot be undone.", "Warning", MessageBoxButton.YesNo, MessageBoxImage.Warning);
             if (res != MessageBoxResult.Yes) {
                 return;
             }
@@ -903,8 +903,8 @@ namespace Edda {
             try {
                 InitDrummer(userSettings.GetValueForKey(Const.UserSettings.DrumSampleFile));
             } catch {
-                userSettings.SetValueForKey(Const.UserSettings.DrumSampleFile, Const.DefaultUserSettings.DrumSampleFiles[0]);
-                InitDrummer(Const.DefaultUserSettings.DrumSampleFiles[0]);
+                userSettings.SetValueForKey(Const.UserSettings.DrumSampleFile, Const.DefaultUserSettings.DrumSampleFile);
+                InitDrummer(Const.DefaultUserSettings.DrumSampleFile);
             }
 
             userSettings.Write();
@@ -916,6 +916,8 @@ namespace Edda {
             BitmapImage b = Helper.BitmapGenerator(new Uri(beatMap.PathOf(fileName)));
             imgCover.Source = b;
             txtCoverFileName.Text = fileName;
+
+            borderImgCover.BorderThickness = new(2);
         }
         private void ClearCoverImage() {
             imgCover.Source = null;

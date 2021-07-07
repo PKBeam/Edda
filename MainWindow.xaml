@@ -168,6 +168,8 @@
                             <RowDefinition Height="*" />
                             <RowDefinition Height="*" />
                             <RowDefinition Height="*" />
+                            <RowDefinition Height="*" />
+                            <RowDefinition Height="*" />
                         </Grid.RowDefinitions>
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="*" />
@@ -196,10 +198,13 @@
                             </StackPanel>
                         </Border>
 
-                        <Border Grid.Row="6" Grid.ColumnSpan="2">
-                            <Image Margin="0 5 0 0" x:Name="imgCover" Width="175"/>
-                        </Border>
+                        <Border Grid.Row="6" Grid.Column="0" Margin="0 5 0 0"/>
 
+                        <Border Grid.Row="7" Grid.ColumnSpan="2" Padding="0">
+                            <Border x:Name="borderImgCover" BorderBrush="{DynamicResource {x:Static SystemColors.ControlDarkDarkBrushKey}}" Padding="0" Height="175" Width="175" BorderThickness="0">
+                                <Image Margin="0" x:Name="imgCover" Width="175"/>
+                            </Border>
+                        </Border>
                     </Grid>
                 </StackPanel>
             </ScrollViewer>

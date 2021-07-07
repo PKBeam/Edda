@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Data;
-using System.Windows.Documents;
+using System.Diagnostics;
 using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
@@ -25,6 +25,7 @@ namespace Edda {
             this.caller = caller;
             this.userSettings = userSettings;
             InitComboDrumSample();
+            lblProgramName.Content = $"Edda v{Const.Program.VersionNumber}";
             txtAudioLatency.Text = userSettings.GetValueForKey(Const.UserSettings.EditorAudioLatency);
         }
 
@@ -68,8 +69,15 @@ namespace Edda {
             caller.LoadSettingsFile();
         }
 
-        private void btnSave_Click(object sender, RoutedEventArgs e) {
+        private void BtnSave_Click(object sender, RoutedEventArgs e) {
             Close();
+        }
+
+        private void LblRepoLink_MouseDown(object sender, MouseButtonEventArgs e) {
+            Process proc = new Process();
+            proc.StartInfo.UseShellExecute = true;
+            proc.StartInfo.FileName = Const.Program.RepositoryURL;
+            proc.Start();
         }
     }
 }

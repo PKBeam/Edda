@@ -22,6 +22,7 @@
     <None Remove="Resources\hihat2.wav" />
     <None Remove="Resources\hihat3.wav" />
     <None Remove="Resources\hihat4.wav" />
+    <None Remove="Resources\icon.png" />
     <None Remove="Resources\medalBronze.png" />
     <None Remove="Resources\medalGold.png" />
     <None Remove="Resources\medalSilver.png" />
@@ -92,6 +93,7 @@
     <Content Include="Resources\hihat4.wav">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
+    <Resource Include="Resources\icon.png" />
     <Resource Include="Resources\medalBronze.png" />
     <Resource Include="Resources\medalGold.png" />
     <Resource Include="Resources\medalSilver.png" />

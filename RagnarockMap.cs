@@ -74,7 +74,7 @@ public class RagnarockMap {
     private void InitInfo() {
         // init info.dat json
         var infoDat = new {
-            _version = "1",
+            _version = "1", // what is this for?
             _songName = "",
             _songSubName = "",                              // unused?
             _songAuthorName = "",
@@ -371,6 +371,7 @@ public class RagnarockMap {
         };
         var mapStr = JsonConvert.SerializeObject(mapDat, Formatting.Indented);
         difficultyMaps[numDifficulties - 1] = mapStr;
+        WriteMap(numDifficulties - 1);
     }
     public void ReadMap(int indx) {
         var filename = (string)GetValueForMap(indx, "_beatmapFilename");

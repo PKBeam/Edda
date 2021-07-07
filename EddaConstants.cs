@@ -5,13 +5,14 @@ namespace Const {
     using DrawingColor = System.Drawing.Color;
     public static class Program {
         public const string Name          = "Edda";
+        public const string RepositoryURL = "https://github.com/PKBeam/Edda";
         public const string VersionNumber = "0.3.0b2";
         public const string SettingsFile  = "settings.txt";
         public const string ResourcesPath = "Resources/";
     }
     public static class DefaultUserSettings {
         public const int AudioLatency = -20; // ms
-        public static List<string> DrumSampleFiles => new() { "bassdrum", "hihat" };
+        public const string DrumSampleFile = "bassdrum";
     }
 
     public static class UserSettings {
