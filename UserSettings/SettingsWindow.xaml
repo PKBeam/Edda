@@ -5,7 +5,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:Edda"
         mc:Ignorable="d"
-        Title="User Settings" Name="Window" Width="260" Height="250" ResizeMode="NoResize" Background="{DynamicResource {x:Static SystemColors.ControlDarkBrushKey}}">
+        Title="Settings" Name="Window" Width="260" Height="250" ResizeMode="NoResize" Background="{DynamicResource {x:Static SystemColors.ControlDarkBrushKey}}">
     <Grid>
         <DockPanel>
             
@@ -71,7 +71,7 @@
                     </Border>
 
                     <Border Grid.Row="1" Grid.Column="0">
-                        <TextBlock VerticalAlignment="Center">Drum Sample</TextBlock>
+                        <TextBlock VerticalAlignment="Center">Playback Sound</TextBlock>
                     </Border>
 
                     <Border Grid.Row="1" Grid.Column="1">

@@ -99,6 +99,9 @@ Please also keep backups of any important maps, as bugs may cause map corruption
 - Ctrl-Z: Undo Edit
 - Ctrl-Y: Redo Edit
   - (Ctrl-Shift-Z is also supported)
+
+- Ctrl-[: Toggle left dock
+- Ctrl-]: Toggle right dock
   
 - Shift-Up: Move selection one gridline forwards
 - Shift-Down: Move selection one gridline backwards

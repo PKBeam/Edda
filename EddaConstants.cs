@@ -6,7 +6,7 @@ namespace Const {
     public static class Program {
         public const string Name          = "Edda";
         public const string RepositoryURL = "https://github.com/PKBeam/Edda";
-        public const string VersionNumber = "0.3.0b2";
+        public const string VersionNumber = "0.3.0b3";
         public const string SettingsFile  = "settings.txt";
         public const string ResourcesPath = "Resources/";
     }

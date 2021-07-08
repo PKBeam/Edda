@@ -162,72 +162,81 @@ namespace Edda {
         }
         private void AppMainWindow_KeyDown(object sender, KeyEventArgs e) {
 
-            var keyStr = e.Key.ToString();
-            if (keyStr.EndsWith("Ctrl")) {
+            if (e.Key == Key.LeftCtrl || e.Key == Key.RightCtrl) {
                 ctrlKeyDown = true;
             }
-            if (keyStr.EndsWith("Shift")) {
+            if (e.Key == Key.LeftShift || e.Key == Key.RightShift) {
                 shiftKeyDown = true;
             }
 
             // ctrl shortcuts
             if (ctrlKeyDown) {
                 // new map (Ctrl-N)
-                if (keyStr == "N") {
+                if (e.Key == Key.N) {
                     if (btnNewMap.IsEnabled) {
                         BtnNewMap_Click(null, null);
                     }
                 }
                 // open map (Ctrl-O)
-                if (keyStr == "O") {
+                if (e.Key == Key.O) {
                     if (btnOpenMap.IsEnabled) {
                         BtnOpenMap_Click(null, null);
                     }
                 }
                 // save map (Ctrl-S)
-                if (keyStr == "S") {
+                if (e.Key == Key.S) {
                     if (btnSaveMap.IsEnabled) {
                         BtnSaveMap_Click(null, null);
                     }
                 }
 
                 // copy (Ctrl-C)
-                if (keyStr == "C") {
+                if (e.Key == Key.C) {
                     CopySelection();
                 }
                 // cut (Ctrl-X)
-                if (keyStr == "X") {
+                if (e.Key == Key.X) {
                     CutSelection();
                 }
                 // paste (Ctrl-V)
-                if (keyStr == "V") {
+                if (e.Key == Key.V) {
                     PasteClipboard(editorMouseBeatSnapped);
                 }
 
                 // undo (Ctrl-Z)
-                if (keyStr == "Z") {
+                if (e.Key == Key.Z) {
                     EditList<Note> edit = editorHistory.Undo();
                     ApplyEdit(edit);
                 }
                 // redo (Ctrl-Y, Ctrl-Shift-Z)
-                if ((keyStr == "Y") ||
-                    (keyStr == "Z" && shiftKeyDown)) {
+                if ((e.Key == Key.Y) ||
+                    (e.Key == Key.Z && shiftKeyDown)) {
                     EditList<Note> edit = editorHistory.Redo();
                     ApplyEdit(edit);
                 }
 
                 // mirror selected notes (Ctrl-M)
-                if (keyStr == "M") {
+                if (e.Key == Key.M) {
                     TransformSelection(NoteTransforms.Mirror());
+                }
+
+                // toggle left dock (Ctrl-[)
+                if (e.Key == Key.OemOpenBrackets) {
+                    ToggleLeftDock();
+                }
+
+                // toggle right dock (Ctrl-])
+                if (e.Key == Key.OemCloseBrackets) {
+                    ToggleRightDock();
                 }
             }
 
             // delete selected notes
-            if (keyStr == "Delete") {
+            if (e.Key == Key.Delete) {
                 RemoveNotes(editorSelectedNotes);
             }
             // unselect all notes
-            if (keyStr == "Escape") {
+            if (e.Key == Key.Escape) {
                 UnselectAllNotes();
                 //Trace.WriteLine($"slider: {new TimeSpan(0, 0, 0, 0, (int)sliderSongProgress.Value)}");
                 //Trace.WriteLine($"scroll: {scrollEditor.ScrollableHeight - scrollEditor.VerticalOffset}, {scrollEditor.ScrollableHeight}");
@@ -238,11 +247,10 @@ namespace Edda {
             //Trace.WriteLine($"Row: {editorMouseGridRow} ({Math.Round(editorMouseGridRowFractional, 2)}), Col: {editorMouseGridCol}");
         }
         private void AppMainWindow_KeyUp(object sender, KeyEventArgs e) {
-            var keyStr = e.Key.ToString();
-            if (keyStr.EndsWith("Ctrl")) {
+            if (e.Key == Key.LeftCtrl || e.Key == Key.RightCtrl) {
                 ctrlKeyDown = false;
             }
-            if (keyStr.EndsWith("Shift")) {
+            if (e.Key == Key.LeftShift || e.Key == Key.RightShift) {
                 shiftKeyDown = false;
             }
         }
@@ -345,13 +353,11 @@ namespace Edda {
 
             // check if map already open
             if (beatMap != null) {
-                var res = MessageBox.Show("A map is already open. Opening a new map will close the existing map. Are you sure you want to continue?", "Warning", MessageBoxButton.YesNo, MessageBoxImage.Warning);
-                if (res != MessageBoxResult.Yes) {
-                    return;
+                var res = MessageBox.Show("Save the currently opened map?", "Warning", MessageBoxButton.YesNo, MessageBoxImage.Warning);
+                if (res == MessageBoxResult.Yes) {
+                    // save existing work before making a new map
+                    SaveBeatmap();
                 }
-                // save existing work before making a new map
-                SaveBeatmap();
-
                 // clear some stuff
                 PauseSong();
                 currentDifficultyNotes.Clear();
@@ -687,8 +693,9 @@ namespace Edda {
 
             // place preview note
             Canvas.SetBottom(imgPreviewNote, editorSnapToGrid ? (editorMouseBeatSnapped * gridLength * editorGridDivision + userOffset) : Math.Max(mousePos, userOffset));
+            
             // TODO: what runes should be used with variable BPM?
-            imgPreviewNote.Source = Helper.BitmapImageForBeat(userOffsetBeat + (editorSnapToGrid ? editorMouseBeatSnapped : editorMouseBeatUnsnapped));
+            imgPreviewNote.Source = RuneForBeat(userOffsetBeat + (editorSnapToGrid ? editorMouseBeatSnapped : editorMouseBeatUnsnapped));
             Canvas.SetLeft(imgPreviewNote, noteX - unknownNoteXAdjustment);
             
              // update beat display
@@ -889,6 +896,28 @@ namespace Edda {
             beatMap.SetNotesForMap(currentDifficulty, currentDifficultyNotes);
             beatMap.SaveToFile();
             MessageBox.Show($"Beatmap saved successfully.", "", MessageBoxButton.OK, MessageBoxImage.Information);
+        }
+        private void ToggleLeftDock() {
+            if (borderLeftDock.Visibility == Visibility.Collapsed) {
+                borderLeftDock.Visibility = Visibility.Visible;
+                this.Width += borderLeftDock.ActualWidth;
+                this.MinWidth += borderLeftDock.MinWidth;
+            } else {
+                this.Width -= borderLeftDock.ActualWidth;
+                this.MinWidth -= borderLeftDock.MinWidth;
+                borderLeftDock.Visibility = Visibility.Collapsed;
+            }
+        }
+        private void ToggleRightDock() {
+            if (borderRightDock.Visibility == Visibility.Collapsed) {
+                borderRightDock.Visibility = Visibility.Visible;
+                this.Width += borderRightDock.ActualWidth;
+                this.MinWidth += borderRightDock.MinWidth;
+            } else {
+                this.Width -= borderRightDock.ActualWidth;
+                this.MinWidth -= borderRightDock.MinWidth;
+                borderRightDock.Visibility = Visibility.Collapsed;
+            }
         }
 
         // config file
@@ -1228,7 +1257,7 @@ namespace Edda {
             foreach (UIElement e in EditorGrid.Children) {
                 if (e.Uid == Helper.UidGenerator(n)) {
                     var img = (Image)e;
-                    img.Source = Helper.BitmapImageForBeat(n.beat, true);
+                    img.Source = RuneForBeat(n.beat, true);
                 }
             }
         }
@@ -1249,7 +1278,7 @@ namespace Edda {
             foreach (UIElement e in EditorGrid.Children) {
                 if (e.Uid == Helper.UidGenerator(n)) {
                     var img = (Image)e;
-                    img.Source = Helper.BitmapImageForBeat(n.beat);
+                    img.Source = RuneForBeat(n.beat);
                 }
             }
         }
@@ -1261,7 +1290,7 @@ namespace Edda {
                 foreach (UIElement e in EditorGrid.Children) {
                     if (e.Uid == Helper.UidGenerator(n)) {
                         var img = (Image)e;
-                        img.Source = Helper.BitmapImageForBeat(n.beat);
+                        img.Source = RuneForBeat(n.beat);
                     }
                 }
             }
@@ -1487,7 +1516,7 @@ namespace Edda {
                 var noteXOffset = (1 + 4 * n.col) * unitSubLength;
 
                 // find which beat fraction this note lies on
-                img.Source = Helper.BitmapImageForBeat(n.beat);
+                img.Source = RuneForBeat(n.beat);
 
                 // this assumes there are no duplicate notes given to us
                 img.Uid = Helper.UidGenerator(n);
@@ -1580,6 +1609,20 @@ namespace Edda {
                 res = 3;
             }
             return res;
+        }
+        private BitmapImage RuneForBeat(double beat, bool highlight = false) {
+            // find most recent BPM change
+            double recentBPMChange = 0;
+            foreach (var bc in bpmChanges) {
+                if (bc.globalBeat <= beat) {
+                    recentBPMChange = bc.globalBeat;
+                } else {
+                    break;
+                }
+            }
+            double bpmNormalised = beat - recentBPMChange;
+            bpmNormalised = bpmNormalised - (int)bpmNormalised;
+            return Helper.BitmapImageForBeat(bpmNormalised, highlight);
         }
     }
 }

@@ -4,7 +4,7 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         mc:Ignorable="d"
-        x:Name="AppMainWindow" Title="Edda" Height="800" Width="800" MinHeight="800" MinWidth="800" Closed="AppMainWindow_Closed" KeyDown="AppMainWindow_KeyDown" KeyUp="AppMainWindow_KeyUp" PreviewKeyDown="AppMainWindow_PreviewKeyDown">
+        x:Name="AppMainWindow" Title="Edda" Height="820" Width="800" MinWidth="800" Closed="AppMainWindow_Closed" KeyDown="AppMainWindow_KeyDown" KeyUp="AppMainWindow_KeyUp" PreviewKeyDown="AppMainWindow_PreviewKeyDown">
     <DockPanel>
         <Border DockPanel.Dock="Top" Name="TopPanel" BorderBrush="{DynamicResource {x:Static SystemColors.ControlDarkDarkBrushKey}}" BorderThickness="0, 0, 0, 1">
             <Border.Background>
@@ -70,8 +70,8 @@
                 <Slider x:Name="sliderSongProgress" Margin="10 15 10 15" VerticalAlignment="Center" IsMoveToPointEnabled="True" ValueChanged="SliderSongProgress_ValueChanged"/>
             </DockPanel>
         </Border>
-        <Border DockPanel.Dock="Left" BorderBrush="{DynamicResource {x:Static SystemColors.ControlDarkDarkBrushKey}}" BorderThickness="0, 0, 1, 0" Background="{DynamicResource {x:Static SystemColors.ControlDarkBrushKey}}">
-            <ScrollViewer MinWidth="220" VerticalScrollBarVisibility="Auto">
+        <Border x:Name="borderLeftDock" DockPanel.Dock="Left" Width="225" MinWidth="225" BorderBrush="{DynamicResource {x:Static SystemColors.ControlDarkDarkBrushKey}}" BorderThickness="0, 0, 1, 0" Background="{DynamicResource {x:Static SystemColors.ControlDarkBrushKey}}">
+            <ScrollViewer VerticalScrollBarVisibility="Auto">
                 <StackPanel Name="LeftPanel" Orientation="Vertical">
                     <Label Margin="5 0 0 5" FontWeight="Bold" FontSize="14">Map Settings</Label>
                     <Grid Margin="10 0 5 0" VerticalAlignment="Center">
@@ -182,7 +182,7 @@
 
                         <Border Grid.Row="0" Grid.Column="1">
                             <StackPanel Orientation="Horizontal">
-                                <TextBlock x:Name="txtSongFileName" Width="90" Grid.Row="0" Grid.Column="1" VerticalAlignment="Center" FontStyle="Italic">N/A</TextBlock>
+                                <TextBlock x:Name="txtSongFileName" Width="90" Grid.Row="0" Grid.Column="1" VerticalAlignment="Center" FontStyle="Italic" TextWrapping="WrapWithOverflow">N/A</TextBlock>
                                 <Button x:Name="btnPickSong" Width="20" Height="Auto" Click="BtnPickSong_Click">...</Button>
                             </StackPanel>
                         </Border>
@@ -209,12 +209,12 @@
                 </StackPanel>
             </ScrollViewer>
         </Border>
-        <Border DockPanel.Dock="Right" BorderBrush="{DynamicResource {x:Static SystemColors.ControlDarkDarkBrushKey}}" BorderThickness="1, 0, 0, 0" Background="{DynamicResource {x:Static SystemColors.ControlDarkBrushKey}}">
-            <DockPanel >
+        <Border x:Name="borderRightDock" DockPanel.Dock="Right" Width="225" MinWidth="225" BorderBrush="{DynamicResource {x:Static SystemColors.ControlDarkDarkBrushKey}}" BorderThickness="1, 0, 0, 0" Background="{DynamicResource {x:Static SystemColors.ControlDarkBrushKey}}">
+            <DockPanel>
                 <Border DockPanel.Dock="Bottom" Height="25" VerticalAlignment="Bottom" BorderBrush="{DynamicResource {x:Static SystemColors.ControlDarkDarkBrushKey}}" BorderThickness="0, 1, 0, 0">
                     <Label x:Name="lblSelectedBeat" FontSize="11" FontWeight="Bold" Padding="5 4 0 0"></Label>
                 </Border>
-                <ScrollViewer MinWidth="220"  VerticalScrollBarVisibility="Auto">
+                <ScrollViewer VerticalScrollBarVisibility="Auto">
                     <StackPanel Name="EditorInfoPanel" Orientation="Vertical">
 
                         <Label Margin="5 0 0 5" FontWeight="Bold" FontSize="14">Difficulty Settings</Label>

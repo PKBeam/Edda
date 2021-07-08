@@ -33,7 +33,7 @@ namespace Edda {
         private void BtnReset_Click(object sender, RoutedEventArgs e) {
             // reset variables
             lblAvgBPM.Content = 0;
-            lblMedBPM.Content = 0;
+            //lblMedBPM.Content = 0;
             prevTime = 0;
             numInputs = 0;
             lblInputCounter.Content = numInputs;
@@ -74,6 +74,7 @@ namespace Edda {
             // calculate mean
             double avgInterval = intervalSamples.Sum() / (double)intervalSamples.Count;
 
+            /*
             // calculate median
             double medInterval;
             if (numSamples % 2 == 1) { // middle element exists
@@ -81,9 +82,9 @@ namespace Edda {
             } else { // take average of two middle elements
                 medInterval = 0.5 * (intervalSamples[numSamples / 2] + intervalSamples[numSamples / 2 - 1]);
             }
-
+            */
             lblAvgBPM.Content = (60000 / avgInterval).ToString("0.00");
-            lblMedBPM.Content = (60000 / medInterval).ToString("0.00");
+            //lblMedBPM.Content = (60000 / medInterval).ToString("0.00");
         }
     }
 }

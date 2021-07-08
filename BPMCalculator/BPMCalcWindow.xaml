@@ -5,7 +5,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:Edda"
         mc:Ignorable="d"
-        Title="BPM Finder" Height="300" Width="220" ResizeMode="NoResize" Background="{DynamicResource {x:Static SystemColors.ControlDarkBrushKey}}" KeyDown="Window_KeyDown">
+        Title="BPM Finder" Height="250" Width="220" ResizeMode="NoResize" Background="{DynamicResource {x:Static SystemColors.ControlDarkBrushKey}}" KeyDown="Window_KeyDown">
     <Grid>
         <DockPanel>
             <Border DockPanel.Dock="Top" BorderBrush="{DynamicResource {x:Static SystemColors.ControlDarkDarkBrushKey}}" BorderThickness="0, 0, 0, 1">
@@ -36,18 +36,20 @@
 
             <Border BorderBrush="{DynamicResource {x:Static SystemColors.ControlDarkDarkBrushKey}}" BorderThickness="0">
                 <StackPanel Margin="5" VerticalAlignment="Center">
-                    <Label Padding="0" HorizontalAlignment="Center">Average</Label>
+                    <Label Padding="0" FontSize="14" HorizontalAlignment="Center">Average</Label>
                     <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
-                        <Label x:Name="lblAvgBPM" Padding="0" FontSize="24" FontWeight="Bold">0</Label>
-                        <Label FontSize="16" Padding="3 0 0 3" VerticalAlignment="Bottom">BPM</Label>
+                        <Label x:Name="lblAvgBPM" Padding="0" FontSize="36" FontWeight="Bold">0</Label>
+                        <Label FontSize="14" Padding="5 0 0 6" VerticalAlignment="Bottom">BPM</Label>
                     </StackPanel>
-                    <StackPanel Margin="0 25 0 0">
+                    <!--
+                    <StackPanel Visibility="Collapsed" Margin="0 25 0 0">
                         <Label Padding="0" HorizontalAlignment="Center">Median</Label>
                         <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
                             <Label x:Name="lblMedBPM" Padding="0" FontSize="24" FontWeight="Bold">0</Label>
                             <Label FontSize="16" Padding="3 0 0 3" VerticalAlignment="Bottom">BPM</Label>
                         </StackPanel>
                     </StackPanel>
+                    -->
                 </StackPanel>
             </Border>
         </DockPanel>
