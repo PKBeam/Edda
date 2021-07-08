@@ -1,6 +1,6 @@
 ﻿using System;
 
-public class Note: IComparable {
+public class Note: IComparable, IEquatable<Note> {
 	public double beat;
 	public int col;
 	public Note(double beat, int col) {
@@ -14,7 +14,7 @@ public class Note: IComparable {
             throw new Exception();
         }
         Note m = this;
-        if (m.beat == n.beat && m.col == n.col) {
+        if (m.Equals(n)) {
             return 0;
         }
         if (m.beat > n.beat) {
@@ -24,5 +24,9 @@ public class Note: IComparable {
             return 1;
         }
         return -1;
+    }
+
+    public bool Equals(Note n) {
+        return n.beat == this.beat && n.col == this.col;
     }
 }

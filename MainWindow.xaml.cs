@@ -776,7 +776,6 @@ namespace Edda {
         }
         private void ScrollEditor_MouseRightButtonUp(object sender, MouseButtonEventArgs e) {
 
-            Trace.WriteLine($"{EditorGrid.ActualHeight - e.GetPosition(EditorGrid).Y - unitHeight/2}");
             // remove the note
             double beat = editorSnapToGrid ? editorMouseBeatSnapped : editorMouseBeatUnsnapped;
             Note n = new Note(beat, editorMouseGridCol);
