@@ -545,11 +545,21 @@ public class RagnarockMap {
         JArray info = (JArray)GetCustomValueForMap(indx, "_information");
         string splitter = $"medal_{medal}=";
         JToken insert = JToken.FromObject($"{splitter}{dist}");
+        bool found = false;
         for (int i = 0; i < info.Count; i++) {
             if (((string)info[i]).StartsWith(splitter)) {
-                info[i] = insert;
+                found = true;
+                if (dist == 0) {
+                    info.RemoveAt(i);
+                } else {
+                    info[i] = insert;
+                }
+                
                 break;
             }
+        }
+        if (!found && dist != 0) {
+            info.Add(insert);
         }
         SetCustomValueForMap(indx, "_information", info);
     }

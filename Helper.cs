@@ -16,6 +16,9 @@ public class Helper {
     public static bool DoubleApproxGreaterEqual(double x, double y) {
         return x - y >= -threshold;
     }
+    public static bool DoubleApproxGreater(double x, double y) {
+        return x - y > -threshold;
+    }
     public static bool DoubleApproxEqual(double x, double y) {
         return Math.Abs(x - y) <= threshold;
     }
@@ -47,8 +50,9 @@ public class Helper {
         }
         notes.Add(note);
     }
+    // TODO figure out a better way than this
     public static string UidGenerator(Note n) {
-        return $"Note({n.beat},{n.col})";
+        return $"Note({Math.Round(n.beat, 4)},{n.col})";
     }
     public static BitmapImage BitmapGenerator(Uri u) {
         var b = new BitmapImage();

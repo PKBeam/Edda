@@ -777,7 +777,7 @@ namespace Edda {
         private void ScrollEditor_MouseRightButtonUp(object sender, MouseButtonEventArgs e) {
 
             // remove the note
-            double beat = editorSnapToGrid ? editorMouseBeatSnapped : editorMouseBeatUnsnapped;
+             double beat = editorSnapToGrid ? editorMouseBeatSnapped : editorMouseBeatUnsnapped;
             Note n = new Note(beat, editorMouseGridCol);
             if (currentDifficultyNotes.Contains(n)) {
                 RemoveNotes(n);
@@ -1160,7 +1160,7 @@ namespace Edda {
             var seekBeat = (noteScanStopwatchOffset / 1000.0) * (globalBPM / 60.0);
             var newNoteScanIndex = 0;
             foreach (var n in currentDifficultyNotes) {
-                if (n.beat >= seekBeat) {
+                if (Helper.DoubleApproxGreaterEqual(n.beat, seekBeat)) {
                     break;
                 }
                 newNoteScanIndex++;
