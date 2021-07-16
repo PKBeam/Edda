@@ -16,7 +16,9 @@ Edda is only officially supported on Windows 10.
 
 Go to the [Releases](https://github.com/PKBeam/Edda/releases/latest) section and download the appropriate `.zip` package.
 - The `NoRuntime` package requires the [.NET 5.0 runtime](https://dotnet.microsoft.com/download/dotnet/5.0/runtime) to be installed.
-- IF you do not have this runtime installed, you should download the larger `.zip` file.
+- If you do not have this runtime installed, you should download the larger `.zip` file.
+
+If you're having issues with opening files, check your antivirus!
 
 ## Features
 <details>
