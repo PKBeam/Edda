@@ -18,7 +18,7 @@ Go to the [Releases](https://github.com/PKBeam/Edda/releases/latest) section and
 - The `NoRuntime` package requires the [.NET 5.0 runtime](https://dotnet.microsoft.com/download/dotnet/5.0/runtime) to be installed.
 - If you do not have this runtime installed, you should download the larger `.zip` file.
 
-If you're having issues with opening files, check your antivirus!
+If you're having issues, make sure to check that antivirus settings or lack of administrator privileges aren't interfering with the program.
 
 ## Features
 <details>
