@@ -10,6 +10,16 @@ It is still under development and has not been tested extensively, but most feat
   ![Screenshot of Edda](https://i.imgur.com/4DliaJ7.png)
 </details>
 
+## Installation
+
+Edda is only officially supported on Windows 10.  
+
+Go to the [Releases](https://github.com/PKBeam/Edda/releases/latest) section and download the appropriate `.zip` package.
+- The `NoRuntime` package requires the [.NET 5.0 runtime](https://dotnet.microsoft.com/download/dotnet/5.0/runtime) to be installed.
+- If you do not have this runtime installed, you should download the larger `.zip` file.
+
+If you're having issues, make sure to check that antivirus settings or lack of administrator privileges aren't interfering with the program.
+
 ## Features
 <details>
   <summary>(click to expand)</summary>
