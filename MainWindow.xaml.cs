@@ -43,9 +43,9 @@ namespace Edda {
             set { btnSongPlayer.Tag = (value == false) ? 0 : 1; }
             get { return btnSongPlayer.Tag != null && (int)btnSongPlayer.Tag == 1; }
         }
-        public double globalBPM {
+        public double globalBPM;/* {
             get { return Helper.DoubleParseInvariant((string)beatMap.GetValue("_beatsPerMinute")); }
-        }
+        }*/
 
         // STATE VARIABLES
 
@@ -407,22 +407,7 @@ namespace Edda {
             SelectNewSong();
         }
         private void BtnPickCover_Click(object sender, RoutedEventArgs e) {
-            var d = new Microsoft.Win32.OpenFileDialog() { Filter = "JPEG Files|*.jpg;*.jpeg" };
-            d.Title = "Select a song to map";
-
-            if (d.ShowDialog() != true) {
-                return;
-            }
-
-            imgCover.Source = null;
-
-            if (File.Exists(beatMap.PathOf("cover.jpg"))) {
-                File.Delete(beatMap.PathOf("cover.jpg"));
-            }
-
-            File.Copy(d.FileName, beatMap.PathOf("cover.jpg"));
-            beatMap.SetValue("_coverImageFilename", "cover.jpg");
-            LoadCoverImage();
+            SelectNewCoverImage();
         }
         private void BtnSongPlayer_Click(object sender, RoutedEventArgs e) {
             if (!songIsPlaying) {
@@ -490,10 +475,11 @@ namespace Edda {
         }
         private void TxtSongBPM_LostFocus(object sender, RoutedEventArgs e) {
             double BPM;
-            double prevBPM = Helper.DoubleParseInvariant((string)beatMap.GetValue("_beatsPerMinute"));
+            double prevBPM = globalBPM;
             if (double.TryParse(txtSongBPM.Text, out BPM)) {
                 if (BPM != prevBPM) {
                     beatMap.SetValue("_beatsPerMinute", BPM);
+                    globalBPM = BPM;
                     UpdateEditorGridHeight();
                 }
             } else {
@@ -798,6 +784,8 @@ namespace Edda {
             txtMapperName.Text = (string)beatMap.GetValue("_levelAuthorName");
             txtSongBPM.Text    = (string)beatMap.GetValue("_beatsPerMinute");
             txtSongOffset.Text = (string)beatMap.GetValue("_songTimeOffset");
+            
+            globalBPM = Helper.DoubleParseInvariant((string)beatMap.GetValue("_beatsPerMinute"));
 
             comboEnvironment.SelectedIndex = Const.BeatmapDefaults.EnvironmentNames.IndexOf((string)beatMap.GetValue("_environmentName"));
 
@@ -939,6 +927,27 @@ namespace Edda {
         }
 
         // manage cover image
+        private void SelectNewCoverImage() {
+            var d = new Microsoft.Win32.OpenFileDialog() { Filter = "JPEG Files|*.jpg;*.jpeg" };
+            d.Title = "Select a song to map";
+
+            if (d.ShowDialog() != true) {
+                return;
+            }
+
+            imgCover.Source = null;
+
+            string prevPath = beatMap.PathOf((string)beatMap.GetValue("_coverImageFilename"));
+            string newFile = System.IO.Path.GetFileName(d.FileName);
+
+            if (File.Exists(prevPath)) {
+                File.Delete(prevPath);
+            }
+
+            File.Copy(d.FileName, beatMap.PathOf(newFile));
+            beatMap.SetValue("_coverImageFilename", newFile);
+            LoadCoverImage();
+        }
         private void LoadCoverImage() {
             var fileName = (string)beatMap.GetValue("_coverImageFilename");
             BitmapImage b = Helper.BitmapGenerator(new Uri(beatMap.PathOf(fileName)));
@@ -1084,7 +1093,11 @@ namespace Edda {
             imgPlayerButton.Source = Helper.BitmapGenerator("pauseButton.png");
 
             // set seek position for song
-            songStream.CurrentTime = TimeSpan.FromMilliseconds(sliderSongProgress.Value);
+            try {
+                songStream.CurrentTime = TimeSpan.FromMilliseconds(sliderSongProgress.Value);
+            } catch {
+                songStream.CurrentTime = TimeSpan.Zero;
+            }
 
             // disable actions that would interrupt note scanning
             txtSongBPM.IsEnabled = false;
@@ -1612,16 +1625,19 @@ namespace Edda {
         private BitmapImage RuneForBeat(double beat, bool highlight = false) {
             // find most recent BPM change
             double recentBPMChange = 0;
+            double recentBPM = globalBPM;
             foreach (var bc in bpmChanges) {
-                if (bc.globalBeat <= beat) {
+                if (Helper.DoubleApproxGreaterEqual(beat, bc.globalBeat)) {
                     recentBPMChange = bc.globalBeat;
+                    recentBPM = bc.BPM;
                 } else {
                     break;
                 }
             }
-            double bpmNormalised = beat - recentBPMChange;
-            bpmNormalised = bpmNormalised - (int)bpmNormalised;
-            return Helper.BitmapImageForBeat(bpmNormalised, highlight);
+            double beatNormalised = beat - recentBPMChange;
+            beatNormalised /= globalBPM / recentBPM;
+            beatNormalised -= (int)beatNormalised;
+            return Helper.BitmapImageForBeat(beatNormalised, highlight);
         }
     }
 }
