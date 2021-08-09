@@ -192,6 +192,11 @@ namespace Edda {
                     }
                 }
 
+                // select all (Ctrl-A)
+                if (e.Key == Key.A) {
+                    mapEditor.SelectNewNotes(mapEditor.notes);
+                }
+
                 // copy (Ctrl-C)
                 if (e.Key == Key.C) {
                     mapEditor.CopySelection();

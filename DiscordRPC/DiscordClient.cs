@@ -1,11 +1,6 @@
-﻿
-using DiscordRPC;
+﻿using System;
 using Edda;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using DiscordRPC;
 
 public class DiscordClient {
 	MainWindow parent;
