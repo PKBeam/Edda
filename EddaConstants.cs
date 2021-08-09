@@ -18,6 +18,7 @@ namespace Const {
     public static class UserSettings {
         public const string EditorAudioLatency = "editorAudioLatency";
         public const string DrumSampleFile     = "drumSampleFile";
+        public const string EnableDiscordRPC = "enableDiscordRPC";
     }
     public static class Editor {
         // Grid drawing
@@ -67,5 +68,11 @@ namespace Const {
         public static List<string> DifficultyNames  => new() { "Easy", "Normal", "Hard" };
         public static List<string> EnvironmentNames => new() { "Midgard", "Alfheim", "Nidavellir", "Asgard", "Muspelheim" };
         //public const string DefaultEnvironmentAlias = "Midgard";
+    }
+
+    public static class DiscordRPC {
+        public const string AppID = "874090300207951932";
+        public const string PubKey = "c2710c1d8cd4d9a2a9460cd63e048781d32a3a08b171153c5898a6fe0ddb8e76";
+        public const string IconKey = "icon";
     }
 }

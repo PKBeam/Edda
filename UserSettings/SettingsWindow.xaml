@@ -5,7 +5,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:Edda"
         mc:Ignorable="d"
-        Title="Settings" Name="Window" Width="260" Height="250" ResizeMode="NoResize" Background="{DynamicResource {x:Static SystemColors.ControlDarkBrushKey}}">
+        Title="Settings" Name="Window" Width="260" Height="300" ResizeMode="NoResize" Background="{DynamicResource {x:Static SystemColors.ControlDarkBrushKey}}">
     <Grid>
         <DockPanel>
             
@@ -76,6 +76,37 @@
 
                     <Border Grid.Row="1" Grid.Column="1">
                         <ComboBox x:Name="comboDrumSample" SelectionChanged="ComboDrumSample_SelectionChanged" VerticalAlignment="Center"/>
+                    </Border>
+                </Grid>
+                <Label Padding="10 5" FontWeight="Bold" FontSize="14">Discord Integration</Label>
+                <Grid Margin="15 0 5 0" VerticalAlignment="Center">
+                    <Grid.Resources>
+                        <Style TargetType="Border" >
+                            <Setter Property="Padding" Value="5,5,5,5" />
+                        </Style>
+                    </Grid.Resources>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="*" />
+                        <RowDefinition Height="*" />
+                        <RowDefinition Height="*" />
+                        <RowDefinition Height="*" />
+                        <RowDefinition Height="*" />
+                        <RowDefinition Height="*" />
+                        <RowDefinition Height="*" />
+                        <RowDefinition Height="*" />
+                        <RowDefinition Height="*" />
+                    </Grid.RowDefinitions>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="100" />
+                        <ColumnDefinition Width="110" />
+                    </Grid.ColumnDefinitions>
+
+                    <Border Grid.Row="0" Grid.Column="0">
+                        <TextBlock VerticalAlignment="Center">Show in Discord</TextBlock>
+                    </Border>
+
+                    <Border Grid.Row="0" Grid.Column="1">
+                        <CheckBox x:Name="checkDiscord" Click="CheckDiscord_Click"/>
                     </Border>
                 </Grid>
             </StackPanel>

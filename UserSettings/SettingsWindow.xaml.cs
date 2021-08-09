@@ -27,6 +27,7 @@ namespace Edda {
             InitComboDrumSample();
             lblProgramName.Content = $"Edda v{Const.Program.VersionNumber}";
             txtAudioLatency.Text = userSettings.GetValueForKey(Const.UserSettings.EditorAudioLatency);
+            checkDiscord.IsChecked = userSettings.GetValueForKey(Const.UserSettings.EnableDiscordRPC) == "true";
         }
 
         private void TxtAudioLatency_LostFocus(object sender, RoutedEventArgs e) {
@@ -78,6 +79,13 @@ namespace Edda {
             proc.StartInfo.UseShellExecute = true;
             proc.StartInfo.FileName = Const.Program.RepositoryURL;
             proc.Start();
+        }
+
+        private void CheckDiscord_Click(object sender, RoutedEventArgs e) {
+            bool newStatus = checkDiscord.IsChecked ?? false;
+            userSettings.SetValueForKey(Const.UserSettings.EnableDiscordRPC, $"{newStatus}");
+            UpdateSettings();
+            caller.SetDiscordRPC(newStatus);
         }
     }
 }

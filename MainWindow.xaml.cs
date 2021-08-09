@@ -43,6 +43,19 @@ namespace Edda {
             set { btnSongPlayer.Tag = (value == false) ? 0 : 1; }
             get { return btnSongPlayer.Tag != null && (int)btnSongPlayer.Tag == 1; }
         }
+        public string mapName {
+            get {
+                return (string)beatMap?.GetValue("_songName");
+            }
+        }
+        public int mapNoteCount {
+            get {
+                if (mapEditor == null || mapEditor.notes == null) {
+                    return 0;
+                }
+                return mapEditor.notes.Count;
+            }
+        }
         
         // STATE VARIABLES
 
@@ -63,6 +76,9 @@ namespace Edda {
 
         DoubleAnimation songPlayAnim;            // used for animating scroll when playing a song
         double prevScrollPercent = 0;       // percentage of scroll progress before the scroll viewport was changed
+
+        // Discord RPC
+        DiscordClient discordClient;
 
         // variables used in the map editor
 
@@ -121,6 +137,8 @@ namespace Edda {
             // init environment combobox
             InitComboEnvironment();
 
+            discordClient = new DiscordClient(this);
+            SetDiscordRPC(userSettings.GetValueForKey(Const.UserSettings.EnableDiscordRPC) == "true");
 
             // TODO: properly debounce grid redrawing on resize
             //Observable
@@ -137,17 +155,11 @@ namespace Edda {
         // UI bindings
         private void AppMainWindow_Closed(object sender, EventArgs e) {
             Trace.WriteLine("Closing window...");
-            noteScanner.Stop();
-            if (songPlayer != null) {
-                songPlayer.Stop();
-                songPlayer.Dispose();
-            }
-            if (songStream != null) {
-                songStream.Dispose();
-            }
-            if (drummer != null) {
-                drummer.Dispose();
-            }
+            noteScanner?.Stop();
+            songPlayer?.Stop();
+            songPlayer?.Dispose();
+            songStream?.Dispose();
+            drummer?.Dispose();
             Application.Current.Shutdown();
         }
         private void AppMainWindow_KeyDown(object sender, KeyEventArgs e) {
@@ -366,6 +378,7 @@ namespace Edda {
                 beatMap = new RagnarockMap(d2.FileName, false);
                 LoadSong(); // song file
                 InitUI(); // cover image file
+                discordClient.SetPresence();
             } catch (Exception ex) {
                 MessageBox.Show($"An error occured while opening the map:\n{ex.Message}.", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
                 return;
@@ -913,7 +926,20 @@ namespace Edda {
                 InitDrummer(Const.DefaultUserSettings.DrumSampleFile);
             }
 
+            if (userSettings.GetValueForKey(Const.UserSettings.EnableDiscordRPC) == null) {
+                userSettings.SetValueForKey(Const.UserSettings.EnableDiscordRPC, "true");
+            }
+
             userSettings.Write();
+        }
+
+        // Discord RPC
+        public void SetDiscordRPC(bool enable) {
+            if (enable) {
+                discordClient.Enable();
+            } else {
+                discordClient.Disable();
+            }
         }
 
         // manage cover image
@@ -974,7 +1000,6 @@ namespace Edda {
             btnDeleteDifficulty.IsEnabled = (beatMap.numDifficulties > 1);
             btnAddDifficulty.IsEnabled = (beatMap.numDifficulties < 3);
         }
-
         private void SwitchDifficultyMap(int indx, bool redraw = true) {
             PauseSong();
 
@@ -1067,7 +1092,7 @@ namespace Edda {
             sliderSongProgress.Maximum = songStream.TotalTime.TotalSeconds * 1000;
             sliderSongProgress.Value = 0;
             var duration = (int)songStream.TotalTime.TotalSeconds;
-            txtSongDuration.Text = $"{duration / 60}:{(duration % 60).ToString("D2")}";
+            txtSongDuration.Text = $"{duration / 60}:{duration % 60:D2}";
             txtSongFileName.Text = (string)beatMap.GetValue("_songFilename");
 
             audioWaveform = new VorbisWaveformVisualiser(new VorbisWaveReader(songPath));
