@@ -12,13 +12,18 @@ It is still under development and has not been tested extensively, but most feat
 
 ## Installation
 
-Edda is only officially supported on Windows 10.  
+### Requirements
+- Windows 10  
+- a CPU with good single-threaded performance (recommended for low latency audio playback)
+- a high refresh rate monitor (recommended for smooth animations)
 
 Go to the [Releases](https://github.com/PKBeam/Edda/releases/latest) section and download the appropriate `.zip` package.
 - The `NoRuntime` package requires the [.NET 5.0 runtime](https://dotnet.microsoft.com/download/dotnet/5.0/runtime) to be installed.
 - If you do not have this runtime installed, you should download the larger `.zip` file.
 
-If you're having issues, make sure to check that antivirus settings or lack of administrator privileges aren't interfering with the program.
+If you're having issues, make sure to check the following:
+- antivirus
+- permissions on your install folder  
 
 ## Features
 <details>
