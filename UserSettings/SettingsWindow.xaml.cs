@@ -20,6 +20,7 @@ namespace Edda {
     public partial class SettingsWindow : Window {
         MainWindow caller;
         UserSettings userSettings;
+        bool doneInit = false;
         public SettingsWindow(MainWindow caller, UserSettings userSettings) {
             InitializeComponent();
             this.caller = caller;
@@ -27,7 +28,9 @@ namespace Edda {
             InitComboDrumSample();
             lblProgramName.Content = $"Edda v{Const.Program.VersionNumber}";
             txtAudioLatency.Text = userSettings.GetValueForKey(Const.UserSettings.EditorAudioLatency);
-            checkDiscord.IsChecked = userSettings.GetValueForKey(Const.UserSettings.EnableDiscordRPC) == "true";
+            checkDiscord.IsChecked = userSettings.GetBoolForKey(Const.UserSettings.EnableDiscordRPC);
+            CheckAutosave.IsChecked = userSettings.GetBoolForKey(Const.UserSettings.EnableAutosave);
+            doneInit = true;
         }
 
         private void TxtAudioLatency_LostFocus(object sender, RoutedEventArgs e) {
@@ -43,12 +46,12 @@ namespace Edda {
             }
             txtAudioLatency.Text = latency.ToString();
         }
-
         private void ComboDrumSample_SelectionChanged(object sender, SelectionChangedEventArgs e) {
             userSettings.SetValueForKey(Const.UserSettings.DrumSampleFile, comboDrumSample.SelectedItem.ToString());
-            UpdateSettings();
+            if (doneInit) {
+                UpdateSettings();
+            }
         }
-
         private void InitComboDrumSample() {
             string selectedSampleFile = userSettings.GetValueForKey(Const.UserSettings.DrumSampleFile);
             var files = Directory.GetFiles(Const.Program.ResourcesPath);
@@ -64,28 +67,29 @@ namespace Edda {
                 }
             }
         }
-
-        private void UpdateSettings() {
-            userSettings.Write();
-            caller.LoadSettingsFile();
-        }
-
-        private void BtnSave_Click(object sender, RoutedEventArgs e) {
-            Close();
-        }
-
         private void LblRepoLink_MouseDown(object sender, MouseButtonEventArgs e) {
             Process proc = new Process();
             proc.StartInfo.UseShellExecute = true;
             proc.StartInfo.FileName = Const.Program.RepositoryURL;
             proc.Start();
         }
-
         private void CheckDiscord_Click(object sender, RoutedEventArgs e) {
             bool newStatus = checkDiscord.IsChecked ?? false;
-            userSettings.SetValueForKey(Const.UserSettings.EnableDiscordRPC, $"{newStatus}");
+            userSettings.SetValueForKey(Const.UserSettings.EnableDiscordRPC, newStatus);
             UpdateSettings();
-            caller.SetDiscordRPC(newStatus);
+        }
+        private void CheckAutosave_Click(object sender, RoutedEventArgs e) {
+            bool newStatus = CheckAutosave.IsChecked ?? false;
+            userSettings.SetValueForKey(Const.UserSettings.EnableAutosave, newStatus);
+            UpdateSettings();
+        }
+        private void BtnSave_Click(object sender, RoutedEventArgs e) {
+            Close();
+        }
+
+        private void UpdateSettings() {
+            userSettings.Write();
+            caller.LoadSettingsFile();
         }
     }
 }

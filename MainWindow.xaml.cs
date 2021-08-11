@@ -28,16 +28,16 @@ namespace Edda {
 
         // COMPUTED PROPERTIES
         double unitLength {
-            get { return Drum1.ActualWidth * editorGridSpacing; }
+            get { return DrumCol.ActualWidth * editorGridSpacing; }
         }
         double unitLengthUnscaled {
-            get { return Drum1.ActualWidth; }
+            get { return DrumCol.ActualWidth; }
         }
         double unitSubLength {
-            get { return Drum1.ActualWidth / 3; }
+            get { return DrumCol.ActualWidth / 3; }
         }
         double unitHeight {
-            get { return Drum1.ActualHeight; }
+            get { return DrumRow.ActualHeight; }
         }
         bool songIsPlaying {
             set { btnSongPlayer.Tag = (value == false) ? 0 : 1; }
@@ -61,6 +61,7 @@ namespace Edda {
 
         public RagnarockMap beatMap;
         public double globalBPM;
+        System.Timers.Timer autosaveTimer;
         UserSettings userSettings;
         List<double> gridLines = new List<double>();
         List<BPMChange> bpmChanges = new List<BPMChange>();
@@ -124,8 +125,15 @@ namespace Edda {
             InitializeComponent();
 
             // disable parts of UI, as no map is loaded
+            imgSaved.Opacity = 0;
             DisableUI();
 
+            autosaveTimer = new System.Timers.Timer(1000 * Const.Editor.AutosaveInterval);
+            autosaveTimer.Enabled = false;
+            autosaveTimer.Elapsed += (source, e) => { 
+                SaveBeatmap(false); 
+            };
+            discordClient = new DiscordClient(this);
             LoadSettingsFile();
 
             // init border
@@ -137,9 +145,6 @@ namespace Edda {
             // init environment combobox
             InitComboEnvironment();
 
-            discordClient = new DiscordClient(this);
-            SetDiscordRPC(userSettings.GetValueForKey(Const.UserSettings.EnableDiscordRPC) == "true");
-
             // TODO: properly debounce grid redrawing on resize
             //Observable
             //.FromEventPattern<SizeChangedEventArgs>(EditorGrid, nameof(Canvas.SizeChanged))
@@ -150,6 +155,7 @@ namespace Edda {
             //    )
             //);
 
+  
         }
 
         // UI bindings
@@ -194,35 +200,35 @@ namespace Edda {
 
                 // select all (Ctrl-A)
                 if (e.Key == Key.A) {
-                    mapEditor.SelectNewNotes(mapEditor.notes);
+                    mapEditor?.SelectNewNotes(mapEditor.notes);
                 }
 
                 // copy (Ctrl-C)
                 if (e.Key == Key.C) {
-                    mapEditor.CopySelection();
+                    mapEditor?.CopySelection();
                 }
                 // cut (Ctrl-X)
                 if (e.Key == Key.X) {
-                    mapEditor.CutSelection();
+                    mapEditor?.CutSelection();
                 }
                 // paste (Ctrl-V)
                 if (e.Key == Key.V) {
-                    mapEditor.PasteClipboard(editorMouseBeatSnapped);
+                    mapEditor?.PasteClipboard(editorMouseBeatSnapped);
                 }
 
                 // undo (Ctrl-Z)
                 if (e.Key == Key.Z) {
-                    mapEditor.Undo();
+                    mapEditor?.Undo();
                 }
                 // redo (Ctrl-Y, Ctrl-Shift-Z)
                 if ((e.Key == Key.Y) ||
                     (e.Key == Key.Z && shiftKeyDown)) {
-                    mapEditor.Redo();
+                    mapEditor?.Redo();
                 }
 
                 // mirror selected notes (Ctrl-M)
                 if (e.Key == Key.M) {
-                    mapEditor.TransformSelection(NoteTransforms.Mirror());
+                    mapEditor?.TransformSelection(NoteTransforms.Mirror());
                 }
 
                 // toggle left dock (Ctrl-[)
@@ -238,14 +244,15 @@ namespace Edda {
 
             // delete selected notes
             if (e.Key == Key.Delete) {
-                mapEditor.RemoveSelectedNotes();
+                mapEditor?.RemoveSelectedNotes();
             }
             // unselect all notes
             if (e.Key == Key.Escape) {
-                mapEditor.UnselectAllNotes();
+                mapEditor?.UnselectAllNotes();
                 //Trace.WriteLine($"slider: {new TimeSpan(0, 0, 0, 0, (int)sliderSongProgress.Value)}");
                 //Trace.WriteLine($"scroll: {scrollEditor.ScrollableHeight - scrollEditor.VerticalOffset}, {scrollEditor.ScrollableHeight}");
                 //Trace.WriteLine($"song: {songStream.CurrentTime}");
+                AnimateDrum(1);
             }
    
             //Trace.WriteLine(keyStr);
@@ -266,31 +273,31 @@ namespace Edda {
             var keyStr = e.Key.ToString();
             if (shiftKeyDown) {
                 if (keyStr == "Up") {
-                    mapEditor.TransformSelection(NoteTransforms.RowShift(BeatForRow(1)));
+                    mapEditor?.TransformSelection(NoteTransforms.RowShift(BeatForRow(1)));
                     e.Handled = true;
                 }
                 if (keyStr == "Down") {
-                    mapEditor.TransformSelection(NoteTransforms.RowShift(BeatForRow(-1)));
+                    mapEditor?.TransformSelection(NoteTransforms.RowShift(BeatForRow(-1)));
                     e.Handled = true;
                 }
             }
             if (ctrlKeyDown) {
                 if (keyStr == "Up") {
-                    mapEditor.TransformSelection(NoteTransforms.RowShift(BeatForRow(editorGridDivision)));
+                    mapEditor?.TransformSelection(NoteTransforms.RowShift(BeatForRow(editorGridDivision)));
                     e.Handled = true;
                 }
                 if (keyStr == "Down") {
-                    mapEditor.TransformSelection(NoteTransforms.RowShift(BeatForRow(-editorGridDivision)));
+                    mapEditor?.TransformSelection(NoteTransforms.RowShift(BeatForRow(-editorGridDivision)));
                     e.Handled = true;
                 }
             }
             if (shiftKeyDown || ctrlKeyDown) {
                 if (keyStr == "Left") {
-                    mapEditor.TransformSelection(NoteTransforms.ColShift(-1));
+                    mapEditor?.TransformSelection(NoteTransforms.ColShift(-1));
                     e.Handled = true;
                 }
                 if (keyStr == "Right") {
-                    mapEditor.TransformSelection(NoteTransforms.ColShift(1));
+                    mapEditor?.TransformSelection(NoteTransforms.ColShift(1));
                     e.Handled = true;
                 }
             }
@@ -307,13 +314,11 @@ namespace Edda {
 
             // check if map already open
             if (beatMap != null) {
-                var res = MessageBox.Show("A map is already open. Creating a new map will close the existing map. Are you sure you want to continue?", "Warning", MessageBoxButton.YesNo, MessageBoxImage.Warning);
-                if (res != MessageBoxResult.Yes) {
-                    return;
+                var res = MessageBox.Show("Do you want to save the map that is currently open?", "Warning", MessageBoxButton.YesNo, MessageBoxImage.Warning);
+                if (res == MessageBoxResult.Yes) {
+                    SaveBeatmap(false);
                 }
-                // save existing work before making a new map
-                SaveBeatmap();
-
+                
                 // clear some stuff
                 PauseSong();
                 currentDifficultyNotes.Clear();
@@ -349,7 +354,7 @@ namespace Edda {
             }
 
             // save the map
-            SaveBeatmap();
+            SaveBeatmap(false);
 
             // open the newly created map
             InitUI();
@@ -361,7 +366,7 @@ namespace Edda {
                 var res = MessageBox.Show("Save the currently opened map?", "Warning", MessageBoxButton.YesNo, MessageBoxImage.Warning);
                 if (res == MessageBoxResult.Yes) {
                     // save existing work before making a new map
-                    SaveBeatmap();
+                    SaveBeatmap(false);
                 }
                 // clear some stuff
                 PauseSong();
@@ -390,7 +395,7 @@ namespace Edda {
             }
         }
         private void BtnSaveMap_Click(object sender, RoutedEventArgs e) {
-            SaveBeatmap();
+            SaveBeatmap(true);
         }
         private void BtnBPMFinder_Click(object sender, RoutedEventArgs e) {
             var win = Helper.GetFirstWindow<BPMCalcWindow>();
@@ -896,11 +901,30 @@ namespace Edda {
             sliderSongProgress.IsEnabled = false;
             scrollEditor.IsEnabled = false;
         }
-        private void SaveBeatmap() {
+        private void SaveBeatmap(bool notify) {
+            if (beatMap == null) {
+                return;
+            }
             beatMap.SetBPMChangesForMap(currentDifficulty, bpmChanges);
             beatMap.SetNotesForMap(currentDifficulty, currentDifficultyNotes);
             beatMap.SaveToFile();
-            MessageBox.Show($"Beatmap saved successfully.", "", MessageBoxButton.OK, MessageBoxImage.Information);
+            if (notify) {
+                MessageBox.Show($"Beatmap saved successfully.", "", MessageBoxButton.OK, MessageBoxImage.Information);
+            } else {
+                this.Dispatcher.Invoke(() => {
+                    imgSaved.Opacity = 1;
+                    var saveAnim = new DoubleAnimation();
+                    saveAnim.From = 1;
+                    saveAnim.To = 0;
+                    saveAnim.Duration = new Duration(new TimeSpan(0, 0, 5));
+                    Storyboard.SetTargetProperty(saveAnim, new PropertyPath("(Image.Opacity)"));
+                    Storyboard.SetTargetName(saveAnim, "imgSaved");
+
+                    var st = new Storyboard();
+                    st.Children.Add(saveAnim);
+                    st.Begin(this, true);
+                });
+            }
         }
         private void ToggleLeftDock() {
             if (borderLeftDock.Visibility == Visibility.Collapsed) {
@@ -942,14 +966,21 @@ namespace Edda {
             }
 
             if (userSettings.GetValueForKey(Const.UserSettings.EnableDiscordRPC) == null) {
-                userSettings.SetValueForKey(Const.UserSettings.EnableDiscordRPC, "true");
+                userSettings.SetValueForKey(Const.UserSettings.EnableDiscordRPC, true);
             }
+            SetDiscordRPC(userSettings.GetBoolForKey(Const.UserSettings.EnableDiscordRPC));
+
+            if (userSettings.GetValueForKey(Const.UserSettings.EnableAutosave) == null) {
+                userSettings.SetValueForKey(Const.UserSettings.EnableAutosave, true);
+            }
+            autosaveTimer.Enabled = userSettings.GetBoolForKey(Const.UserSettings.EnableAutosave);
 
             userSettings.Write();
         }
 
         // Discord RPC
         public void SetDiscordRPC(bool enable) {
+            Trace.WriteLine($"Discord enable: {enable}");
             if (enable) {
                 discordClient.Enable();
             } else {
@@ -1021,7 +1052,7 @@ namespace Edda {
             currentDifficulty = indx;
             currentDifficultyNotes = beatMap.GetNotesForMap(indx);
 
-            noteScanner = new NoteScanner(globalBPM, currentDifficultyNotes, drummer);
+            noteScanner = new NoteScanner(this, globalBPM, currentDifficultyNotes, drummer);
             if (mapEditors[indx] != null) {
                 mapEditor = new MapEditor(this, currentDifficultyNotes, editorClipboard);
             } else { // need to use the same pointer to currentDifficultyNotes as the NoteScanner
@@ -1193,7 +1224,60 @@ namespace Edda {
 
             songPlayer.Pause();
         }
-        
+        private void AnimateDrum(int num) {
+            if (!Helper.DoubleRangeCheck(num, 0, 3)) {
+                return;
+            }
+            var duration = new Duration(new TimeSpan(0, 0, 0, 0, Const.Editor.DrumHitDuration));
+
+            var heightAnim = new DoubleAnimation();
+            heightAnim.From = DrumRow.ActualHeight;
+            heightAnim.To = DrumRow.ActualHeight * Const.Editor.DrumHitScaleFactor;
+            heightAnim.Duration = duration;
+            heightAnim.AutoReverse = true;
+            Storyboard.SetTargetProperty(heightAnim, new PropertyPath("(Image.Height)"));
+            Storyboard.SetTargetName(heightAnim, $"Drum{num}");
+
+            var widthAnim = new DoubleAnimation();
+            widthAnim.From = DrumCol.ActualWidth;
+            widthAnim.To = DrumCol.ActualWidth * Const.Editor.DrumHitScaleFactor;
+            widthAnim.Duration = duration;
+            widthAnim.AutoReverse = true;
+            Storyboard.SetTargetProperty(widthAnim, new PropertyPath("(Image.Width)"));
+            Storyboard.SetTargetName(widthAnim, $"Drum{num}");
+
+            var heightStackAnim = new DoubleAnimation();
+            heightStackAnim.From = 0;
+            heightStackAnim.To = DrumRow.ActualHeight * (1 - Const.Editor.DrumHitScaleFactor) / 2;
+            heightStackAnim.Duration = duration;
+            heightStackAnim.AutoReverse = true;
+            Storyboard.SetTargetProperty(heightStackAnim, new PropertyPath("(StackPanel.Height)"));
+            Storyboard.SetTargetName(heightStackAnim, $"DrumStack{num}");
+
+            var st = new Storyboard();
+            st.Children.Add(heightAnim);
+            st.Children.Add(widthAnim);
+            st.Children.Add(heightStackAnim);
+            st.Begin(this, true);
+        }
+        internal void AnimateNote(Note n) {
+            var duration = new Duration(new TimeSpan(0, 0, 0, 0, Const.Editor.DrumHitDuration));
+
+            var opacityAnim = new DoubleAnimation();
+            opacityAnim.From = 1;
+            opacityAnim.To = 0;
+            opacityAnim.Duration = duration;
+            opacityAnim.AutoReverse = true;
+            Storyboard.SetTargetProperty(opacityAnim, new PropertyPath("(Image.Opacity)"));
+            Storyboard.SetTargetName(opacityAnim, Helper.NameGenerator(n));
+
+            var st = new Storyboard();
+            st.Children.Add(opacityAnim);
+            st.Begin(this, true);
+
+            AnimateDrum(n.col);
+        }
+
         // drawing functions for the editor grid
         private void CalculateDrawRange() {
             if (scrollEditor.ScrollableHeight == 0) {
@@ -1355,6 +1439,10 @@ namespace Edda {
 
                 // this assumes there are no duplicate notes given to us
                 img.Uid = Helper.UidGenerator(n);
+                if (FindName(Helper.NameGenerator(n)) != null) {
+                    UnregisterName(Helper.NameGenerator(n));
+                }
+                RegisterName(Helper.NameGenerator(n), img);
 
                 Canvas.SetBottom(img, noteHeight);
                 Canvas.SetLeft(img, noteXOffset);

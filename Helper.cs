@@ -56,6 +56,9 @@ public class Helper {
     public static string UidGenerator(Note n) {
         return $"Note({Math.Round(n.beat, 4)},{n.col})";
     }
+    public static string NameGenerator(Note n) {
+        return "N" + n.GetHashCode().ToString();
+    }
     public static BitmapImage BitmapGenerator(Uri u) {
         var b = new BitmapImage();
         b.BeginInit();

@@ -19,6 +19,7 @@ namespace Const {
         public const string EditorAudioLatency = "editorAudioLatency";
         public const string DrumSampleFile     = "drumSampleFile";
         public const string EnableDiscordRPC   = "enableDiscordRPC";
+        public const string EnableAutosave     = "enableAutosave";
     }
     public static class Editor {
         // Grid drawing
@@ -32,10 +33,15 @@ namespace Const {
         public const double MinorGridlineThickness   = 1.5;
         public const int    GridDivisionMax          = 64;
 
+        // Animation Properties
+        public const double DrumHitScaleFactor = 0.75; // percentage of 1.0
+        public const int    DrumHitDuration    = 100; // ms
+
         // Editor functions
-        public const int    HistoryMaxSize     = 128;  // actions
+        public const int    HistoryMaxSize     = 128; // actions
         public const double PreviewNoteOpacity = 0.30; // percentage of 1.0
-        public const double DragInitThreshold  = 10;   // pixels
+        public const double DragInitThreshold  = 10; // pixels
+        public const int    AutosaveInterval   = 30; // seconds
 
         // Waveform drawing
         public static class Waveform {

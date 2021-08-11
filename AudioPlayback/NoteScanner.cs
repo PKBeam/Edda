@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Threading;
 using System.Threading.Tasks;
+using Edda;
 
 public class NoteScanner {
     int noteScanIndex;
@@ -14,13 +15,15 @@ public class NoteScanner {
     double bpm;
     public List<Note> notes;
 
+    MainWindow caller;
     DrumPlayer drummer;
 
-    public NoteScanner(double bpm, List<Note> notes, DrumPlayer drummer) {
+    public NoteScanner(MainWindow caller, double bpm, List<Note> notes, DrumPlayer drummer) {
         this.bpm = bpm;
         this.notes = notes;
         this.drummer = drummer;
         this.noteScanStopwatch = new Stopwatch();
+        this.caller = caller;
     }
 
     public void Start(int millisecStart) {
@@ -68,6 +71,8 @@ public class NoteScanner {
     private void ScanNotes() {
         var currentTime = noteScanStopwatch.ElapsedMilliseconds + noteScanStopwatchOffset;
         // check if we started past the last note in the song
+        var noteCols = new List<int>();
+        var notesPlayed = new List<Note>();
         if (noteScanIndex < notes.Count) {
             var noteTime = 60000 * notes[noteScanIndex].beat / bpm;
             var drumHits = 0;
@@ -75,7 +80,10 @@ public class NoteScanner {
             // check if any notes were missed
             while (currentTime - noteTime >= Const.Audio.NoteDetectionDelta && noteScanIndex < notes.Count - 1) {
                 Trace.WriteLine($"WARNING: A note was played late during playback. (Delta: {Math.Round(currentTime - noteTime, 2)})");
+                
                 drumHits++;
+                noteCols.Add(notes[noteScanIndex].col);
+                notesPlayed.Add(notes[noteScanIndex]);
                 noteScanIndex++;
                 noteTime = 60000 * notes[noteScanIndex].beat / bpm;
             }
@@ -85,6 +93,8 @@ public class NoteScanner {
                 //Trace.WriteLine($"Played note at beat {selectedDifficultyNotes[noteScanIndex].Item1}");
 
                 drumHits++;
+                noteCols.Add(notes[noteScanIndex].col);
+                notesPlayed.Add(notes[noteScanIndex]);
                 noteScanIndex++;
                 if (noteScanIndex >= notes.Count) {
                     break;
@@ -95,6 +105,17 @@ public class NoteScanner {
             // play all pending drum hits
             if (drummer.PlayDrum(drumHits) == false) {
                 Trace.WriteLine("WARNING: Drummer skipped a drum hit");
+            }
+
+            //foreach (int c in noteCols) {
+            //    caller.Dispatcher.Invoke(() => {
+            //        caller.AnimateDrum(c);
+            //    });
+            //}
+            foreach (Note n in notesPlayed) {
+                caller.Dispatcher.Invoke(() => {
+                    caller.AnimateNote(n);
+                });
             }
         }
     }

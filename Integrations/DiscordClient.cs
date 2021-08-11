@@ -6,7 +6,7 @@ public class DiscordClient {
 	MainWindow parent;
     DiscordRpcClient client;
 	DateTime startTime;
-	bool enabled;
+	bool enabled = false;
 	public DiscordClient(MainWindow parent) {
 		this.parent = parent;
 		UpdateStartTime();
@@ -48,7 +48,9 @@ public class DiscordClient {
 		SetPresence();
 	}
 	private void DeinitClient() {
-		client.Deinitialize();
-		client = null;
+		if (client != null) {
+			client.Deinitialize();
+			client = null;
+		}
 	}
 }

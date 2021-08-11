@@ -24,6 +24,14 @@ public class UserSettings {
         }
         return null;
     }
+    public bool GetBoolForKey(string key) {
+        foreach (var line in fileLines) {
+            if (line.StartsWith(key)) {
+                return line.Split("=")[1] == "True";
+            }
+        }
+        return false;
+    }
     public void SetValueForKey(string key, string value) {
         string newLine = $"{key}={value}";
         foreach (var line in fileLines) {
@@ -36,6 +44,9 @@ public class UserSettings {
         fileLines.Add(newLine);
     }
     public void SetValueForKey(string key, double value) {
+        SetValueForKey(key, value.ToString());
+    }
+    public void SetValueForKey(string key, bool value) {
         SetValueForKey(key, value.ToString());
     }
     public void Write() {

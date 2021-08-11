@@ -54,6 +54,7 @@
     <None Remove="Resources\runeXhighlight.png" />
     <None Remove="Resources\saveMap.png" />
     <None Remove="Resources\settings.png" />
+    <None Remove="Resources\tick.png" />
     <None Remove="Resources\waterTexture.png" />
     <None Remove="Resources\waterTextureSmall.png" />
   </ItemGroup>
@@ -124,6 +125,7 @@
     <Resource Include="Resources\runeXhighlight.png" />
     <Resource Include="Resources\saveMap.png" />
     <Resource Include="Resources\settings.png" />
+    <Resource Include="Resources\tick.png" />
     <Resource Include="Resources\waterTexture.png" />
     <Resource Include="Resources\waterTextureSmall.png" />
   </ItemGroup>
