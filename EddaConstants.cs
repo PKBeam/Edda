@@ -37,7 +37,7 @@ namespace Const {
 
         // Animation Properties
         public const double DrumHitScaleFactor = 0.75; // percentage of 1.0
-        public const int    DrumHitDuration    = 100; // ms
+        public const int    DrumHitDuration    = 150; // ms
 
         // Editor functions
         public const int    HistoryMaxSize     = 128; // actions

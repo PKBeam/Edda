@@ -260,7 +260,7 @@ namespace Edda {
                 
             }
 
-            if (e.Key == Key.D1 || e.Key == Key.D2 ||e.Key == Key.D3 || e.Key == Key.D4) {
+            if (e.Key == Key.D1 || e.Key == Key.D2 || e.Key == Key.D3 || e.Key == Key.D4) {
                 int col = e.Key - Key.D1;
                 double mouseInput = editorSnapToGrid ? editorMouseBeatSnapped : editorMouseBeatUnsnapped;
                 double defaultInput = BeatForPosition(scrollEditor.VerticalOffset + scrollEditor.ActualHeight - unitLengthUnscaled / 2, editorSnapToGrid);
@@ -1260,26 +1260,23 @@ namespace Edda {
             var duration = new Duration(new TimeSpan(0, 0, 0, 0, Const.Editor.DrumHitDuration));
 
             var heightAnim = new DoubleAnimation();
-            heightAnim.From = DrumRow.ActualHeight;
-            heightAnim.To = DrumRow.ActualHeight * Const.Editor.DrumHitScaleFactor;
+            heightAnim.From = DrumRow.ActualHeight * Const.Editor.DrumHitScaleFactor;
+            heightAnim.To = DrumRow.ActualHeight;
             heightAnim.Duration = duration;
-            heightAnim.AutoReverse = true;
             Storyboard.SetTargetProperty(heightAnim, new PropertyPath("(Image.Height)"));
             Storyboard.SetTargetName(heightAnim, $"Drum{num}");
 
             var widthAnim = new DoubleAnimation();
-            widthAnim.From = DrumCol.ActualWidth;
-            widthAnim.To = DrumCol.ActualWidth * Const.Editor.DrumHitScaleFactor;
+            widthAnim.From = DrumCol.ActualWidth * Const.Editor.DrumHitScaleFactor;
+            widthAnim.To = DrumCol.ActualWidth;
             widthAnim.Duration = duration;
-            widthAnim.AutoReverse = true;
             Storyboard.SetTargetProperty(widthAnim, new PropertyPath("(Image.Width)"));
             Storyboard.SetTargetName(widthAnim, $"Drum{num}");
 
             var heightStackAnim = new DoubleAnimation();
-            heightStackAnim.From = 0;
-            heightStackAnim.To = DrumRow.ActualHeight * (1 - Const.Editor.DrumHitScaleFactor) / 2;
+            heightStackAnim.From = DrumRow.ActualHeight * (1 - Const.Editor.DrumHitScaleFactor) / 2;
+            heightStackAnim.To = 0;
             heightStackAnim.Duration = duration;
-            heightStackAnim.AutoReverse = true;
             Storyboard.SetTargetProperty(heightStackAnim, new PropertyPath("(StackPanel.Height)"));
             Storyboard.SetTargetName(heightStackAnim, $"DrumStack{num}");
 
@@ -1293,10 +1290,9 @@ namespace Edda {
             var duration = new Duration(new TimeSpan(0, 0, 0, 0, Const.Editor.DrumHitDuration));
 
             var opacityAnim = new DoubleAnimation();
-            opacityAnim.From = 1;
-            opacityAnim.To = 0;
+            opacityAnim.From = 0;
+            opacityAnim.To = 1;
             opacityAnim.Duration = duration;
-            opacityAnim.AutoReverse = true;
             Storyboard.SetTargetProperty(opacityAnim, new PropertyPath("(Image.Opacity)"));
             Storyboard.SetTargetName(opacityAnim, Helper.NameGenerator(n));
 

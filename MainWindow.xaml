@@ -185,7 +185,7 @@
                         </Grid.RowDefinitions>
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="*" />
-                            <ColumnDefinition Width="120" />
+                            <ColumnDefinition Width="150" />
                         </Grid.ColumnDefinitions>
 
                         <Border Grid.Row="0" Grid.Column="0">
@@ -194,27 +194,29 @@
 
                         <Border Grid.Row="0" Grid.Column="1">
                             <StackPanel Orientation="Horizontal">
-                                <TextBlock x:Name="txtSongFileName" Width="90" Grid.Row="0" Grid.Column="1" VerticalAlignment="Center" FontStyle="Italic" TextWrapping="WrapWithOverflow">N/A</TextBlock>
+                                <TextBlock x:Name="txtSongFileName" Margin="0 0 5 0" Width="115" TextAlignment="Right" Grid.Row="0" Grid.Column="1" VerticalAlignment="Center" FontStyle="Italic" TextWrapping="WrapWithOverflow">N/A</TextBlock>
                                 <Button x:Name="btnPickSong" Width="20" Height="Auto" Click="BtnPickSong_Click">...</Button>
                             </StackPanel>
                         </Border>
 
-                        <Border Grid.Row="1" Grid.Column="1">
-                            <Button x:Name="btnMakePreview" Height="Auto" Click="BtnMakePreview_Click">Create Preview</Button>
+                        <Border Grid.Row="1" Grid.ColumnSpan="2" HorizontalAlignment="Right">
+                            <Button x:Name="btnMakePreview" Width="125" Height="Auto" Click="BtnMakePreview_Click">Create Song Preview</Button>
                         </Border>
 
+                        <Border Grid.Row="2" Grid.Column="0" Margin="0 5 0 0"/>
+
                         <Border Grid.Row="5" Grid.Column="0">
-                            <TextBlock VerticalAlignment="Center">Cover Image</TextBlock>
+                            <TextBlock VerticalAlignment="Center">Image</TextBlock>
                         </Border>
 
                         <Border Grid.Row="5" Grid.Column="1">
                             <StackPanel Orientation="Horizontal">
-                                <TextBlock x:Name="txtCoverFileName" Width="90" Grid.Row="0" Grid.Column="1" VerticalAlignment="Center" FontStyle="Italic">N/A</TextBlock>
+                                <TextBlock x:Name="txtCoverFileName" Margin="0 0 5 0" Width="115" TextAlignment="Right" Grid.Row="0" Grid.Column="1" VerticalAlignment="Center" FontStyle="Italic">N/A</TextBlock>
                                 <Button x:Name="btnPickCover" Width="20" Height="Auto" Click="BtnPickCover_Click">...</Button>
                             </StackPanel>
                         </Border>
 
-                        <Border Grid.Row="6" Grid.Column="0" Margin="0 5 0 0"/>
+                        <Border Grid.Row="6" Grid.Column="0"/>
 
                         <Border Grid.Row="7" Grid.ColumnSpan="2" Padding="0">
                             <Border x:Name="borderImgCover" BorderBrush="{DynamicResource {x:Static SystemColors.ControlDarkDarkBrushKey}}" Padding="0" Height="175" Width="175" BorderThickness="0">
@@ -427,95 +429,97 @@
             </DockPanel>
         </Border>
         <Grid Grid.Column="0" Name="EditorPanel" MinWidth="300">
-            <!-- Static Renders -->
-            <Grid VerticalAlignment="Bottom">
-                <Grid.Background>
-                    <ImageBrush ImageSource="/Resources/waterTexture.png" TileMode="Tile" ViewportUnits="Absolute" Viewport="0,0,256,256"/>
-                </Grid.Background>
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="*" />
-                    <ColumnDefinition Width="3*" />
-                    <ColumnDefinition Width="*" />
-                    <ColumnDefinition Width="3*" />
-                    <ColumnDefinition Width="*" />
-                    <ColumnDefinition Width="3*" />
-                    <ColumnDefinition Width="*" />
-                    <ColumnDefinition Width="3*" />
-                    <ColumnDefinition Width="*" />
-                </Grid.ColumnDefinitions>
-                <Grid.RowDefinitions>
-                    <RowDefinition Height="*"/>
-                </Grid.RowDefinitions>
-                <Canvas Grid.Column="1" Height="{Binding ElementName=EditorPanel, Path=ActualHeight}" Width="{Binding ElementName=DrumCol, Path=ActualWidth}">
-                    <Canvas.Background>
-                        <LinearGradientBrush EndPoint="0.5,1" StartPoint="0.5,0">
-                            <GradientStop Color="#40000000" Offset="1"/>
-                            <GradientStop Color="#00000000" Offset="0"/>
-                        </LinearGradientBrush>
-                    </Canvas.Background>
-                </Canvas>
-                <Canvas Grid.Column="3" Height="{Binding ElementName=EditorPanel, Path=ActualHeight}" Width="{Binding ElementName=DrumCol, Path=ActualWidth}">
-                    <Canvas.Background>
-                        <LinearGradientBrush EndPoint="0.5,1" StartPoint="0.5,0">
-                            <GradientStop Color="#40000000" Offset="1"/>
-                            <GradientStop Color="#00000000" Offset="0"/>
-                        </LinearGradientBrush>
-                    </Canvas.Background>
-                </Canvas>
-                <Canvas Grid.Column="5" Height="{Binding ElementName=EditorPanel, Path=ActualHeight}" Width="{Binding ElementName=DrumCol, Path=ActualWidth}">
-                    <Canvas.Background>
-                        <LinearGradientBrush EndPoint="0.5,1" StartPoint="0.5,0">
-                            <GradientStop Color="#40000000" Offset="1"/>
-                            <GradientStop Color="#00000000" Offset="0"/>
-                        </LinearGradientBrush>
-                    </Canvas.Background>
-                </Canvas>
-                <Canvas Grid.Column="7" Height="{Binding ElementName=EditorPanel, Path=ActualHeight}" Width="{Binding ElementName=DrumCol, Path=ActualWidth}">
-                    <Canvas.Background>
-                        <LinearGradientBrush EndPoint="0.5,1" StartPoint="0.5,0">
-                            <GradientStop Color="#40000000" Offset="1"/>
-                            <GradientStop Color="#00000000" Offset="0"/>
-                        </LinearGradientBrush>
-                    </Canvas.Background>
-                </Canvas>
-            </Grid>
-            <Grid VerticalAlignment="Bottom">
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="*" />
-                    <ColumnDefinition x:Name="DrumCol" Width="3*" />
-                    <ColumnDefinition Width="*" />
-                    <ColumnDefinition Width="3*" />
-                    <ColumnDefinition Width="*" />
-                    <ColumnDefinition Width="3*" />
-                    <ColumnDefinition Width="*" />
-                    <ColumnDefinition Width="3*" />
-                    <ColumnDefinition Width="*" />
-                </Grid.ColumnDefinitions>
-                <Grid.RowDefinitions>
-                    <RowDefinition x:Name="DrumRow" Height="*"/>
-                </Grid.RowDefinitions>
-                <Line x:Name="lineBeatScan" Grid.ColumnSpan="9" Stroke="Navy" StrokeThickness="2" X2="{Binding ElementName=EditorPanel, Path=ActualWidth}"  VerticalAlignment="Center"/>
-                <StackPanel Grid.Column="1">
-                    <StackPanel x:Name="DrumStack0" />
-                    <Image x:Name="Drum0"  Source="pack://application:,,,/Edda;component/resources/drum.png" VerticalAlignment="Bottom"/>
-                </StackPanel>
-                <StackPanel Grid.Column="3">
-                    <StackPanel x:Name="DrumStack1"/>
-                    <Image x:Name="Drum1" Source="pack://application:,,,/Edda;component/resources/drum.png" VerticalAlignment="Bottom"/>
-                </StackPanel>
-                <StackPanel Grid.Column="5">
-                    <StackPanel x:Name="DrumStack2"/>
-                    <Image x:Name="Drum2" Source="pack://application:,,,/Edda;component/resources/drum.png" VerticalAlignment="Bottom"/>
-                </StackPanel>
-                <StackPanel Grid.Column="7">
-                    <StackPanel x:Name="DrumStack3"/>
-                    <Image x:Name="Drum3" Source="pack://application:,,,/Edda;component/resources/drum.png" VerticalAlignment="Bottom"/>
-                </StackPanel>
-            </Grid>
-            <!-- Map Notes -->
-            <ScrollViewer x:Name="scrollEditor" VerticalScrollBarVisibility="Hidden" CanContentScroll="False" ScrollChanged="ScrollEditor_ScrollChanged" PreviewMouseWheel="ScrollEditor_PreviewMouseWheel" SizeChanged="ScrollEditor_SizeChanged" MouseMove="ScrollEditor_MouseMove" MouseLeave="ScrollEditor_MouseLeave" MouseEnter="ScrollEditor_MouseEnter" MouseLeftButtonUp="ScrollEditor_MouseLeftButtonUp" MouseRightButtonUp="ScrollEditor_MouseRightButtonUp" PreviewMouseLeftButtonDown="ScrollEditor_PreviewMouseLeftButtonDown">
+            <Grid.Background>
+                <ImageBrush ImageSource="/Resources/waterTexture.png" TileMode="Tile" ViewportUnits="Absolute" Viewport="0,0,256,256"/>
+            </Grid.Background>
+            <Grid MaxWidth="600">
+                <!-- Static Renders -->
+                <Grid VerticalAlignment="Bottom" Background="#0A000000">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"  />
+                        <ColumnDefinition Width="3*" />
+                        <ColumnDefinition Width="*"  />
+                        <ColumnDefinition Width="3*" />
+                        <ColumnDefinition Width="*"  />
+                        <ColumnDefinition Width="3*" />
+                        <ColumnDefinition Width="*"  />
+                        <ColumnDefinition Width="3*" />
+                        <ColumnDefinition Width="*"  />
+                    </Grid.ColumnDefinitions>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="*"/>
+                    </Grid.RowDefinitions>
+                    <Canvas Grid.Column="1" Height="{Binding ElementName=EditorPanel, Path=ActualHeight}" Width="{Binding ElementName=DrumColStack, Path=ActualWidth}">
+                        <Canvas.Background>
+                            <LinearGradientBrush EndPoint="0.5,1" StartPoint="0.5,0">
+                                <GradientStop Color="#40000000" Offset="1"/>
+                                <GradientStop Color="#00000000" Offset="0"/>
+                            </LinearGradientBrush>
+                        </Canvas.Background>
+                    </Canvas>
+                    <Canvas Grid.Column="3" Height="{Binding ElementName=EditorPanel, Path=ActualHeight}" Width="{Binding ElementName=DrumColStack, Path=ActualWidth}">
+                        <Canvas.Background>
+                            <LinearGradientBrush EndPoint="0.5,1" StartPoint="0.5,0">
+                                <GradientStop Color="#40000000" Offset="1"/>
+                                <GradientStop Color="#00000000" Offset="0"/>
+                            </LinearGradientBrush>
+                        </Canvas.Background>
+                    </Canvas>
+                    <Canvas Grid.Column="5" Height="{Binding ElementName=EditorPanel, Path=ActualHeight}" Width="{Binding ElementName=DrumColStack, Path=ActualWidth}">
+                        <Canvas.Background>
+                            <LinearGradientBrush EndPoint="0.5,1" StartPoint="0.5,0">
+                                <GradientStop Color="#40000000" Offset="1"/>
+                                <GradientStop Color="#00000000" Offset="0"/>
+                            </LinearGradientBrush>
+                        </Canvas.Background>
+                    </Canvas>
+                    <Canvas Grid.Column="7" Height="{Binding ElementName=EditorPanel, Path=ActualHeight}" Width="{Binding ElementName=DrumColStack, Path=ActualWidth}">
+                        <Canvas.Background>
+                            <LinearGradientBrush EndPoint="0.5,1" StartPoint="0.5,0">
+                                <GradientStop Color="#40000000" Offset="1"/>
+                                <GradientStop Color="#00000000" Offset="0"/>
+                            </LinearGradientBrush>
+                        </Canvas.Background>
+                    </Canvas>
+                </Grid>
+                <Grid VerticalAlignment="Bottom">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition x:Name="DrumCol" Width="3*" />
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="3*" />
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="3*" />
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="3*" />
+                        <ColumnDefinition Width="*" />
+                    </Grid.ColumnDefinitions>
+                    <Grid.RowDefinitions>
+                        <RowDefinition x:Name="DrumRow" Height="*"/>
+                    </Grid.RowDefinitions>
+                    <Line x:Name="lineBeatScan" Grid.ColumnSpan="9" Stroke="Navy" StrokeThickness="2" X2="{Binding ElementName=EditorPanel, Path=ActualWidth}"  VerticalAlignment="Center"/>
+                    <StackPanel x:Name="DrumColStack" Grid.Column="1">
+                        <StackPanel x:Name="DrumStack0" />
+                        <Image x:Name="Drum0"  Source="pack://application:,,,/Edda;component/resources/drum.png" VerticalAlignment="Bottom"/>
+                    </StackPanel>
+                    <StackPanel Grid.Column="3">
+                        <StackPanel x:Name="DrumStack1"/>
+                        <Image x:Name="Drum1" Source="pack://application:,,,/Edda;component/resources/drum.png" VerticalAlignment="Bottom"/>
+                    </StackPanel>
+                    <StackPanel Grid.Column="5">
+                        <StackPanel x:Name="DrumStack2"/>
+                        <Image x:Name="Drum2" Source="pack://application:,,,/Edda;component/resources/drum.png" VerticalAlignment="Bottom"/>
+                    </StackPanel>
+                    <StackPanel Grid.Column="7">
+                        <StackPanel x:Name="DrumStack3"/>
+                        <Image x:Name="Drum3" Source="pack://application:,,,/Edda;component/resources/drum.png" VerticalAlignment="Bottom"/>
+                    </StackPanel>
+                </Grid>
+                <!-- Map Notes -->
+                <ScrollViewer x:Name="scrollEditor" VerticalScrollBarVisibility="Hidden" CanContentScroll="False" ScrollChanged="ScrollEditor_ScrollChanged" PreviewMouseWheel="ScrollEditor_PreviewMouseWheel" SizeChanged="ScrollEditor_SizeChanged" MouseMove="ScrollEditor_MouseMove" MouseLeave="ScrollEditor_MouseLeave" MouseEnter="ScrollEditor_MouseEnter" MouseLeftButtonUp="ScrollEditor_MouseLeftButtonUp" MouseRightButtonUp="ScrollEditor_MouseRightButtonUp" PreviewMouseLeftButtonDown="ScrollEditor_PreviewMouseLeftButtonDown">
                 <Canvas x:Name="EditorGrid" SizeChanged="EditorGrid_SizeChanged"/>
             </ScrollViewer>
+            </Grid>
         </Grid>
     </DockPanel>
 </Window>
