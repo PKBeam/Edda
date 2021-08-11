@@ -70,7 +70,8 @@ namespace Edda {
 
         // store info about the currently selected difficulty
         public int currentDifficulty;
-        List<Note> currentDifficultyNotes = new List<Note>();
+        List<Note> currentDifficultyNotes = new();
+        List<Note> pendingNotes = new(); // notes added in while song is playing
         MapEditor[] mapEditors = new MapEditor[3];
         MapEditor mapEditor;
         List<Note> editorClipboard = new();
@@ -170,6 +171,10 @@ namespace Edda {
         }
         private void AppMainWindow_KeyDown(object sender, KeyEventArgs e) {
 
+            /*=====================*
+             |  GENERAL SHORTCUTS  |
+             *=====================*/
+
             if (e.Key == Key.LeftCtrl || e.Key == Key.RightCtrl) {
                 ctrlKeyDown = true;
             }
@@ -198,39 +203,6 @@ namespace Edda {
                     }
                 }
 
-                // select all (Ctrl-A)
-                if (e.Key == Key.A) {
-                    mapEditor?.SelectNewNotes(mapEditor.notes);
-                }
-
-                // copy (Ctrl-C)
-                if (e.Key == Key.C) {
-                    mapEditor?.CopySelection();
-                }
-                // cut (Ctrl-X)
-                if (e.Key == Key.X) {
-                    mapEditor?.CutSelection();
-                }
-                // paste (Ctrl-V)
-                if (e.Key == Key.V) {
-                    mapEditor?.PasteClipboard(editorMouseBeatSnapped);
-                }
-
-                // undo (Ctrl-Z)
-                if (e.Key == Key.Z) {
-                    mapEditor?.Undo();
-                }
-                // redo (Ctrl-Y, Ctrl-Shift-Z)
-                if ((e.Key == Key.Y) ||
-                    (e.Key == Key.Z && shiftKeyDown)) {
-                    mapEditor?.Redo();
-                }
-
-                // mirror selected notes (Ctrl-M)
-                if (e.Key == Key.M) {
-                    mapEditor?.TransformSelection(NoteTransforms.Mirror());
-                }
-
                 // toggle left dock (Ctrl-[)
                 if (e.Key == Key.OemOpenBrackets) {
                     ToggleLeftDock();
@@ -242,21 +214,70 @@ namespace Edda {
                 }
             }
 
+            /*====================*
+             |  EDITOR SHORTCUTS  |
+             *====================*/
+
+            if (mapEditor == null) {
+                return;
+            }
+
+            // ctrl shortcuts
+            if (ctrlKeyDown) {
+                // select all (Ctrl-A)
+                if (e.Key == Key.A) {
+                    mapEditor.SelectNewNotes(mapEditor.notes);
+                }
+
+                // copy (Ctrl-C)
+                if (e.Key == Key.C) {
+                    mapEditor.CopySelection();
+                }
+                // cut (Ctrl-X)
+                if (e.Key == Key.X) {
+                    mapEditor.CutSelection();
+                }
+                // paste (Ctrl-V)
+                if (e.Key == Key.V) {
+                    mapEditor.PasteClipboard(editorMouseBeatSnapped);
+                }
+
+                // undo (Ctrl-Z)
+                if (e.Key == Key.Z) {
+                    mapEditor.Undo();
+                }
+                // redo (Ctrl-Y, Ctrl-Shift-Z)
+                if ((e.Key == Key.Y) ||
+                    (e.Key == Key.Z && shiftKeyDown)) {
+                    mapEditor.Redo();
+                }
+
+                // mirror selected notes (Ctrl-M)
+                if (e.Key == Key.M) {
+                    mapEditor.TransformSelection(NoteTransforms.Mirror());
+                }
+
+                
+            }
+
+            if (e.Key == Key.D1 || e.Key == Key.D2 ||e.Key == Key.D3 || e.Key == Key.D4) {
+                int col = e.Key - Key.D1;
+                double mouseInput = editorSnapToGrid ? editorMouseBeatSnapped : editorMouseBeatUnsnapped;
+                double defaultInput = BeatForPosition(scrollEditor.VerticalOffset + scrollEditor.ActualHeight - unitLengthUnscaled / 2, editorSnapToGrid);
+                Note n = new Note(songIsPlaying ? defaultInput : mouseInput, col);
+                mapEditor.AddNotes(n);
+                drummer.PlayDrum(1);
+            }
+
             // delete selected notes
             if (e.Key == Key.Delete) {
-                mapEditor?.RemoveSelectedNotes();
+                mapEditor.RemoveSelectedNotes();
             }
             // unselect all notes
             if (e.Key == Key.Escape) {
-                mapEditor?.UnselectAllNotes();
-                //Trace.WriteLine($"slider: {new TimeSpan(0, 0, 0, 0, (int)sliderSongProgress.Value)}");
-                //Trace.WriteLine($"scroll: {scrollEditor.ScrollableHeight - scrollEditor.VerticalOffset}, {scrollEditor.ScrollableHeight}");
-                //Trace.WriteLine($"song: {songStream.CurrentTime}");
-                AnimateDrum(1);
+                mapEditor.UnselectAllNotes();
             }
-   
-            //Trace.WriteLine(keyStr);
-            //Trace.WriteLine($"Row: {editorMouseGridRow} ({Math.Round(editorMouseGridRowFractional, 2)}), Col: {editorMouseGridCol}");
+
         }
         private void AppMainWindow_KeyUp(object sender, KeyEventArgs e) {
             if (e.Key == Key.LeftCtrl || e.Key == Key.RightCtrl) {
@@ -270,34 +291,42 @@ namespace Edda {
 
             // these need to be handled by tunnelling because some UIElements intercept these keys
 
+            /*====================*
+             |  EDITOR SHORTCUTS  |
+             *====================*/
+
+            if (mapEditor == null) {
+                return;
+            }
+
             var keyStr = e.Key.ToString();
             if (shiftKeyDown) {
                 if (keyStr == "Up") {
-                    mapEditor?.TransformSelection(NoteTransforms.RowShift(BeatForRow(1)));
+                    mapEditor.TransformSelection(NoteTransforms.RowShift(BeatForRow(1)));
                     e.Handled = true;
                 }
                 if (keyStr == "Down") {
-                    mapEditor?.TransformSelection(NoteTransforms.RowShift(BeatForRow(-1)));
+                    mapEditor.TransformSelection(NoteTransforms.RowShift(BeatForRow(-1)));
                     e.Handled = true;
                 }
             }
             if (ctrlKeyDown) {
                 if (keyStr == "Up") {
-                    mapEditor?.TransformSelection(NoteTransforms.RowShift(BeatForRow(editorGridDivision)));
+                    mapEditor.TransformSelection(NoteTransforms.RowShift(BeatForRow(editorGridDivision)));
                     e.Handled = true;
                 }
                 if (keyStr == "Down") {
-                    mapEditor?.TransformSelection(NoteTransforms.RowShift(BeatForRow(-editorGridDivision)));
+                    mapEditor.TransformSelection(NoteTransforms.RowShift(BeatForRow(-editorGridDivision)));
                     e.Handled = true;
                 }
             }
             if (shiftKeyDown || ctrlKeyDown) {
                 if (keyStr == "Left") {
-                    mapEditor?.TransformSelection(NoteTransforms.ColShift(-1));
+                    mapEditor.TransformSelection(NoteTransforms.ColShift(-1));
                     e.Handled = true;
                 }
                 if (keyStr == "Right") {
-                    mapEditor?.TransformSelection(NoteTransforms.ColShift(1));
+                    mapEditor.TransformSelection(NoteTransforms.ColShift(1));
                     e.Handled = true;
                 }
             }
@@ -675,28 +704,29 @@ namespace Edda {
         private void ScrollEditor_MouseMove(object sender, MouseEventArgs e) {
 
             // calculate beat
-            double userOffsetBeat = editorGridOffset * globalBPM / 60;
-            double userOffset = userOffsetBeat * unitLength;
-            var mousePos = EditorGrid.ActualHeight - e.GetPosition(EditorGrid).Y - unitHeight / 2;
-            double gridLength = unitLength / (double)editorGridDivision;
-            // check if mouse position would correspond to a negative row index
-            if (mousePos < userOffset) {
-                editorMouseBeatUnsnapped = 0;
-                editorMouseBeatSnapped = 0;
-            } else {
-                editorMouseBeatUnsnapped = (mousePos - userOffset) / unitLength;
-                int indx1 = -gridLines.BinarySearch(editorMouseBeatUnsnapped) - 1;
-                int indx2 = Math.Max(0, indx1 - 1);             
-                editorMouseBeatSnapped = (gridLines[indx1] - editorMouseBeatUnsnapped) < (editorMouseBeatUnsnapped - gridLines[indx2]) ? gridLines[indx1] : gridLines[indx2];
-            }
+            //// check if mouse position would correspond to a negative row index
+            //if (mousePos < userOffset) {
+            //    editorMouseBeatUnsnapped = 0;
+            //    editorMouseBeatSnapped = 0;
+            //} else {
+            //    editorMouseBeatUnsnapped = (mousePos - userOffset) / unitLength;
+            //    int indx1 = -gridLines.BinarySearch(editorMouseBeatUnsnapped) - 1;
+            //    int indx2 = Math.Max(0, indx1 - 1);             
+            //    editorMouseBeatSnapped = (gridLines[indx1] - editorMouseBeatUnsnapped) < (editorMouseBeatUnsnapped - gridLines[indx2]) ? gridLines[indx1] : gridLines[indx2];
+            //}
+            editorMouseBeatSnapped   = BeatForPosition(e.GetPosition(EditorGrid).Y, true);
+            editorMouseBeatUnsnapped = BeatForPosition(e.GetPosition(EditorGrid).Y, false);
 
             // calculate column
             editorMouseGridCol = ColFromPos(e.GetPosition(EditorGrid).X);
-           
             double noteX = (1 + 4 * editorMouseGridCol) * unitSubLength;
-
             // for some reason Canvas.SetLeft(0) doesn't correspond to the leftmost of the canvas, so we need to do some unknown adjustment to line it up
             var unknownNoteXAdjustment = (unitLength / unitLengthUnscaled - 1) * unitLengthUnscaled / 2;
+
+            double userOffsetBeat = editorGridOffset * globalBPM / 60;
+            double userOffset = userOffsetBeat * unitLength;
+            var mousePos = EditorGrid.ActualHeight - e.GetPosition(EditorGrid).Y - unitHeight / 2;
+            double gridLength = unitLength / editorGridDivision;
 
             // place preview note
             Canvas.SetBottom(imgPreviewNote, editorSnapToGrid ? (editorMouseBeatSnapped * gridLength * editorGridDivision + userOffset) : Math.Max(mousePos, userOffset));
@@ -966,12 +996,12 @@ namespace Edda {
             }
 
             if (userSettings.GetValueForKey(Const.UserSettings.EnableDiscordRPC) == null) {
-                userSettings.SetValueForKey(Const.UserSettings.EnableDiscordRPC, true);
+                userSettings.SetValueForKey(Const.UserSettings.EnableDiscordRPC, Const.DefaultUserSettings.EnableDiscordRPC);
             }
             SetDiscordRPC(userSettings.GetBoolForKey(Const.UserSettings.EnableDiscordRPC));
 
             if (userSettings.GetValueForKey(Const.UserSettings.EnableAutosave) == null) {
-                userSettings.SetValueForKey(Const.UserSettings.EnableAutosave, true);
+                userSettings.SetValueForKey(Const.UserSettings.EnableAutosave, Const.DefaultUserSettings.EnableAutosave);
             }
             autosaveTimer.Enabled = userSettings.GetBoolForKey(Const.UserSettings.EnableAutosave);
 
@@ -980,7 +1010,6 @@ namespace Edda {
 
         // Discord RPC
         public void SetDiscordRPC(bool enable) {
-            Trace.WriteLine($"Discord enable: {enable}");
             if (enable) {
                 discordClient.Enable();
             } else {
@@ -1190,7 +1219,7 @@ namespace Edda {
             //Timeline.SetDesiredFrameRate(songPlayAnim, animationFramerate);
             sliderSongProgress.BeginAnimation(Slider.ValueProperty, songPlayAnim);
 
-            noteScanner.Start((int)(sliderSongProgress.Value - editorAudioLatency));
+            noteScanner.Start((int)(sliderSongProgress.Value - editorAudioLatency), new List<Note>(currentDifficultyNotes));
 
             // play song
             songPlayer.Play();
@@ -1518,6 +1547,22 @@ namespace Edda {
         }
         private void InitDrummer(string basePath) {
             drummer = new DrumPlayer(basePath, Const.Audio.NotePlaybackStreams, Const.Audio.WASAPILatencyTarget);
+        }
+        private double BeatForPosition(double position, bool snap) {
+            double userOffsetBeat = editorGridOffset * globalBPM / 60;
+            double userOffset = userOffsetBeat * unitLength;
+            var pos = EditorGrid.ActualHeight - position - unitHeight / 2;
+            double gridLength = unitLength / editorGridDivision;
+            // check if mouse position would correspond to a negative row index
+            double snapped = 0;
+            double unsnapped = 0;
+            if (pos >= userOffset) {
+                unsnapped = (pos - userOffset) / unitLength;
+                int indx1 = -gridLines.BinarySearch(unsnapped) - 1;
+                int indx2 = Math.Max(0, indx1 - 1);
+                snapped = (gridLines[indx1] - unsnapped) < (unsnapped - gridLines[indx2]) ? gridLines[indx1] : gridLines[indx2];
+            }
+            return snap ? snapped : unsnapped;
         }
         private double BeatForRow(double row) {
             double userOffsetBeat = globalBPM * editorGridOffset / 60;

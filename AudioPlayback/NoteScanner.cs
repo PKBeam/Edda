@@ -26,7 +26,8 @@ public class NoteScanner {
         this.caller = caller;
     }
 
-    public void Start(int millisecStart) {
+    public void Start(int millisecStart, List<Note> notes) {
+        this.notes = notes;
         noteScanStopwatchOffset = millisecStart; // set user audio delay
         SetScanStart();
 
@@ -37,7 +38,6 @@ public class NoteScanner {
 
         noteScanStopwatch.Start();
     }
-
     public void Stop() {
         if (noteScanTokenSource != null) {
             noteScanTokenSource.Cancel();

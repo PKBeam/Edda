@@ -11,8 +11,10 @@ namespace Const {
         public const string ResourcesPath = "Resources/";
     }
     public static class DefaultUserSettings {
-        public const int AudioLatency = -20; // ms
+        public const int AudioLatency      = -20; // ms
         public const string DrumSampleFile = "bassdrum";
+        public const bool EnableDiscordRPC = true;
+        public const bool EnableAutosave   = true;
     }
 
     public static class UserSettings {
