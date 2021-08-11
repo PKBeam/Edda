@@ -187,6 +187,10 @@
                             </StackPanel>
                         </Border>
 
+                        <Border Grid.Row="1" Grid.Column="1">
+                            <Button x:Name="btnMakePreview" Height="Auto" Click="BtnMakePreview_Click">Create Preview</Button>
+                        </Border>
+
                         <Border Grid.Row="5" Grid.Column="0">
                             <TextBlock VerticalAlignment="Center">Cover Image</TextBlock>
                         </Border>

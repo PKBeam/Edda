@@ -18,7 +18,7 @@ namespace Const {
     public static class UserSettings {
         public const string EditorAudioLatency = "editorAudioLatency";
         public const string DrumSampleFile     = "drumSampleFile";
-        public const string EnableDiscordRPC = "enableDiscordRPC";
+        public const string EnableDiscordRPC   = "enableDiscordRPC";
     }
     public static class Editor {
         // Grid drawing
@@ -30,7 +30,7 @@ namespace Const {
         public const string MinorGridlineColour      = "#555555";
         public const double MajorGridlineThickness   = 2;
         public const double MinorGridlineThickness   = 1.5;
-        public const int    GridDivisionMax          = 12;
+        public const int    GridDivisionMax          = 64;
 
         // Editor functions
         public const int    HistoryMaxSize     = 128;  // actions
@@ -57,6 +57,9 @@ namespace Const {
         public const int    NotePlaybackStreams = 16;
         public const int    NotePollRate        = 15;  // ms
         public const double NoteDetectionDelta  = 15;  // ms
+
+        public const int    MaxPreviewLength    = 15; // sec
+        public const int    DefaultPreviewFade  = 3; // sec
     }
     public static class BeatmapDefaults {
         public const double BeatsPerMinute            = 120;

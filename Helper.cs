@@ -1,7 +1,9 @@
 ﻿using Edda;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Globalization;
+using System.IO;
 using System.Linq;
 using System.Windows;
 using System.Windows.Media.Imaging;
@@ -89,5 +91,19 @@ public class Helper {
             runeStr = "34";
         }
         return BitmapGenerator($"rune{runeStr}{(isHighlighted ? "highlight" : "")}.png");
+    }
+
+    public static void FFmpeg(string dir, string arg) {
+        string path = Path.Combine(Path.GetTempPath(), "ffmpeg_temp.exe");
+        File.WriteAllBytes(path, Edda.Properties.Resources.ffmpeg);
+        
+        var p = Process.Start(path, arg);
+        p.WaitForExit();
+
+        try {
+            File.Delete(path);
+        } catch {
+            // ???
+        }
     }
 }

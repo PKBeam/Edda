@@ -412,6 +412,14 @@ namespace Edda {
             PauseSong();
             SelectNewSong();
         }
+        private void BtnMakePreview_Click(object sender, RoutedEventArgs e) {
+            var win = Helper.GetFirstWindow<SongPreviewWindow>();
+            if (win == null) {
+                new SongPreviewWindow(beatMap.GetPath(), beatMap.PathOf((string)beatMap.GetValue("_songFilename"))).Show();
+            } else {
+                win.Focus();
+            }
+        }
         private void BtnPickCover_Click(object sender, RoutedEventArgs e) {
             SelectNewCoverImage();
         }
@@ -836,6 +844,7 @@ namespace Edda {
             txtSongOffset.IsEnabled = true;
             comboEnvironment.IsEnabled = true;
             btnPickSong.IsEnabled = true;
+            btnMakePreview.IsEnabled = true;
             btnPickCover.IsEnabled = true;
             sliderSongVol.IsEnabled = true;
             sliderDrumVol.IsEnabled = true;
@@ -868,6 +877,7 @@ namespace Edda {
             txtSongOffset.IsEnabled = false;
             comboEnvironment.IsEnabled = false;
             btnPickSong.IsEnabled = false;
+            btnMakePreview.IsEnabled = false;
             btnPickCover.IsEnabled = false;
             sliderSongVol.IsEnabled = false;
             sliderDrumVol.IsEnabled = false;

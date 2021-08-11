@@ -530,6 +530,9 @@ public class RagnarockMap {
     public string PathOf(string f) {
         return Path.Combine(folderPath, f);
     }
+    public string GetPath() {
+        return folderPath;
+    }
     public int GetMedalDistanceForMap(int indx, int medal) {
         JArray info = (JArray)GetCustomValueForMap(indx, "_information");
         string splitter = $"medal_{medal}=";
