@@ -35,7 +35,7 @@ public class VorbisWaveformVisualiser {
 	}
 	private BitmapImage _Draw(double height, double width, CancellationToken ct) {
 		isDrawing = true;
-		reader.Position = 0;
+		 reader.Position = 0;
 		DrawingVisual dv = new DrawingVisual();
 		using (DrawingContext dc = dv.RenderOpen()) {
 			Pen bluePen = new Pen(new SolidColorBrush(Const.Editor.Waveform.ColourWPF), Const.Editor.Waveform.ThicknessWPF);
@@ -68,8 +68,9 @@ public class VorbisWaveformVisualiser {
 				}
 
 				var samples = new List<float>(buffer);
-				float lowPercent = (samples.Min() + 1) / 2;
-				float highPercent = (samples.Max() + 1) / 2;
+				samples.Sort();
+				float lowPercent = (samples[(int)((samples.Count - 1) * 0.05)] + 1) / 2;
+				float highPercent = (samples[(int)((samples.Count - 1) * 0.95)] + 1) / 2;
 				float lowValue = (float)width * lowPercent;
 				float highValue = (float)width * highPercent;
 				dc.DrawLine(

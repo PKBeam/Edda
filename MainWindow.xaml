@@ -71,16 +71,19 @@
                     <GradientStop Color="{DynamicResource {x:Static SystemColors.ControlDarkColorKey}}" Offset="1"/>
                 </LinearGradientBrush>
             </Border.Background>
-            <DockPanel Width="{Binding ElementName=TopPanel, Path=ActualWidth}" HorizontalAlignment="Center" VerticalAlignment="Center">
-                <StackPanel DockPanel.Dock="Left" Margin="10 0 0 0" Orientation="Horizontal">
-                    <Button x:Name="btnSongPlayer" Width="30" Height="30" Margin="0 0 10 0" Click="BtnSongPlayer_Click">
-                        <Image x:Name="imgPlayerButton" Source="pack://application:,,,/Edda;component/resources/playButton.png"/>
-                    </Button>
-                    <TextBlock x:Name="txtSongPosition" FontSize="16" VerticalAlignment="Center">0:00</TextBlock>
-                </StackPanel>
-                <TextBlock DockPanel.Dock="Right" Margin="0 0 15 0" x:Name="txtSongDuration" FontSize="16" VerticalAlignment="Center">0:00</TextBlock>
-                <Slider x:Name="sliderSongProgress" Margin="10 15 10 15" VerticalAlignment="Center" IsMoveToPointEnabled="True" ValueChanged="SliderSongProgress_ValueChanged"/>
-            </DockPanel>
+            <StackPanel>
+                <DockPanel Width="{Binding ElementName=TopPanel, Path=ActualWidth}" HorizontalAlignment="Center" VerticalAlignment="Center">
+                    <StackPanel DockPanel.Dock="Left" Margin="10 0 0 0" Orientation="Horizontal">
+                        <Button x:Name="btnSongPlayer" Width="30" Height="30" Margin="0 0 10 0" Click="BtnSongPlayer_Click">
+                            <Image x:Name="imgPlayerButton" Source="pack://application:,,,/Edda;component/resources/playButton.png"/>
+                        </Button>
+                        <TextBlock x:Name="txtSongPosition" FontSize="16" VerticalAlignment="Center">0:00</TextBlock>
+                    </StackPanel>
+                    <TextBlock DockPanel.Dock="Right" Margin="0 0 15 0" x:Name="txtSongDuration" FontSize="16" VerticalAlignment="Center">0:00</TextBlock>
+                    <Slider x:Name="sliderSongProgress" Margin="10 15 10 15" VerticalAlignment="Center" IsMoveToPointEnabled="True" ValueChanged="SliderSongProgress_ValueChanged"/>
+                </DockPanel>
+                <Image x:Name="imgWaveformHorizontal"></Image>
+            </StackPanel>
         </Border>
         <Border x:Name="borderLeftDock" DockPanel.Dock="Left" Width="225" MinWidth="225" BorderBrush="{DynamicResource {x:Static SystemColors.ControlDarkDarkBrushKey}}" BorderThickness="0, 0, 1, 0" Background="{DynamicResource {x:Static SystemColors.ControlDarkBrushKey}}">
             <ScrollViewer VerticalScrollBarVisibility="Auto">
@@ -428,13 +431,25 @@
                 </ScrollViewer>
             </DockPanel>
         </Border>
-        <Grid Grid.Column="0" Name="EditorPanel" MinWidth="300">
+        <Grid Name="EditorPanel" MinWidth="300">
             <Grid.Background>
                 <ImageBrush ImageSource="/Resources/waterTexture.png" TileMode="Tile" ViewportUnits="Absolute" Viewport="0,0,256,256"/>
             </Grid.Background>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="5*"/>
+                <ColumnDefinition x:Name="colWaveformVertical" Width="*" MaxWidth="100"/>
+            </Grid.ColumnDefinitions>
+            <Border x:Name="borderNavWaveform" Grid.Column="1" BorderBrush="{DynamicResource {x:Static SystemColors.ControlDarkDarkBrushKey}}" BorderThickness="1 0 0 0" Background="#20000000" SizeChanged="BorderNavWaveform_SizeChanged" MouseMove="BorderNavWaveform_MouseMove" MouseEnter="BorderNavWaveform_MouseEnter" MouseLeave="BorderNavWaveform_MouseLeave" MouseDown="BorderNavWaveform_MouseDown" MouseUp="BorderNavWaveform_MouseUp">
+                <Grid>
+                    <Image x:Name="imgWaveformVertical"></Image>
+                    <Line x:Name="lineSongMouseover" Stroke="SkyBlue" StrokeThickness="1" X2="{Binding ElementName=borderNavWaveform, Path=ActualWidth}"></Line>
+                    <Line x:Name="lineSongProgress" Stroke="Navy" StrokeThickness="1" X2="{Binding ElementName=borderNavWaveform, Path=ActualWidth}" />
+                </Grid>
+            </Border>
             <Grid MaxWidth="600">
+
                 <!-- Static Renders -->
-                <Grid VerticalAlignment="Bottom" Background="#0A000000">
+                <Grid Background="#0A000000">
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="*"  />
                         <ColumnDefinition Width="3*" />
@@ -517,8 +532,9 @@
                 </Grid>
                 <!-- Map Notes -->
                 <ScrollViewer x:Name="scrollEditor" VerticalScrollBarVisibility="Hidden" CanContentScroll="False" ScrollChanged="ScrollEditor_ScrollChanged" PreviewMouseWheel="ScrollEditor_PreviewMouseWheel" SizeChanged="ScrollEditor_SizeChanged" MouseMove="ScrollEditor_MouseMove" MouseLeave="ScrollEditor_MouseLeave" MouseEnter="ScrollEditor_MouseEnter" MouseLeftButtonUp="ScrollEditor_MouseLeftButtonUp" MouseRightButtonUp="ScrollEditor_MouseRightButtonUp" PreviewMouseLeftButtonDown="ScrollEditor_PreviewMouseLeftButtonDown">
-                <Canvas x:Name="EditorGrid" SizeChanged="EditorGrid_SizeChanged"/>
-            </ScrollViewer>
+                    <Canvas x:Name="EditorGrid" SizeChanged="EditorGrid_SizeChanged"/>
+                </ScrollViewer>
+
             </Grid>
         </Grid>
     </DockPanel>

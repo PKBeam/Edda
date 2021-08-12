@@ -14,13 +14,15 @@ It is still under development and has not been tested extensively, but most feat
 
 ### Requirements
 - Windows 10  
-- a CPU with good single-threaded performance (recommended for low latency audio playback)
-- a high refresh rate monitor (recommended for smooth animations)
+- *Recommended*: a CPU with good single-threaded performance (for low latency audio playback)
+- *Recommended*: a high refresh rate monitor (for smooth animations)
 
+### Downloading
 Go to the [Releases](https://github.com/PKBeam/Edda/releases/latest) section and download the appropriate `.zip` package.
 - The `NoRuntime` package requires the [.NET 5.0 runtime](https://dotnet.microsoft.com/download/dotnet/5.0/runtime) to be installed.
 - If you do not have this runtime installed, you should download the larger `.zip` file.
 
+### Troubleshooting
 If you're having issues, make sure to check the following:
 - antivirus
 - permissions on your install folder  

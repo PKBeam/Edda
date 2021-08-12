@@ -87,6 +87,7 @@ namespace Edda {
         // -- for waveform drawing
         Image imgAudioWaveform = new();
         VorbisWaveformVisualiser audioWaveform;
+        VorbisWaveformVisualiser navWaveform;
         bool editorShowWaveform = false;
 
         // -- for note placement
@@ -102,6 +103,7 @@ namespace Edda {
         int editorSelColStart;
         bool editorIsDragging = false;
         bool editorMouseDown = false;
+        bool navMouseDown = false;
 
         // -- for grid drawing
         bool editorSnapToGrid = true;
@@ -517,6 +519,10 @@ namespace Edda {
             var offset = (1 - percentage) * scrollEditor.ScrollableHeight;
             scrollEditor.ScrollToVerticalOffset(offset);
 
+            var newLineY = borderNavWaveform.ActualHeight * (1 - percentage);
+            lineSongProgress.Y1 = newLineY;
+            lineSongProgress.Y2 = newLineY;
+
             // play drum hits
             //if (songIsPlaying) {
             //    //Trace.WriteLine($"Slider: {sliderSongProgress.Value}ms");
@@ -677,6 +683,33 @@ namespace Edda {
             } else if (beatMap != null){
                 DrawEditorWaveform();
             }
+        }
+        private void BorderNavWaveform_SizeChanged(object sender, SizeChangedEventArgs e) {
+            if (beatMap != null && e.PreviousSize != e.NewSize) {
+                DrawEditorNavWaveform();
+            }
+        }
+        private void BorderNavWaveform_MouseDown(object sender, MouseButtonEventArgs e) {
+            navMouseDown = true;
+        }
+        private void BorderNavWaveform_MouseUp(object sender, MouseButtonEventArgs e) {
+            navMouseDown = false;
+            sliderSongProgress.Value = sliderSongProgress.Maximum * (1 - lineSongMouseover.Y1 / borderNavWaveform.ActualHeight);
+        }
+        private void BorderNavWaveform_MouseMove(object sender, MouseEventArgs e) {
+            var mouseY = e.GetPosition(borderNavWaveform).Y;
+            lineSongMouseover.Y1 = mouseY;
+            lineSongMouseover.Y2 = mouseY;
+            if (navMouseDown) {
+                sliderSongProgress.Value = sliderSongProgress.Maximum * (1 - mouseY / borderNavWaveform.ActualHeight);
+            }
+        }
+        private void BorderNavWaveform_MouseEnter(object sender, MouseEventArgs e) {
+            lineSongMouseover.Opacity = 1;
+        }
+        private void BorderNavWaveform_MouseLeave(object sender, MouseEventArgs e) {
+            lineSongMouseover.Opacity = 0;
+            navMouseDown = false;
         }
         private void ScrollEditor_SizeChanged(object sender, SizeChangedEventArgs e) {
             // TODO: redraw only gridlines
@@ -847,6 +880,9 @@ namespace Edda {
             //txtSongDuration.Text = $"{duration / 60}:{(duration % 60).ToString("D2")}";
 
             //checkGridSnap.IsChecked = editorSnapToGrid;
+          
+            lineSongProgress.Y1 = borderNavWaveform.ActualHeight;
+            lineSongProgress.Y2 = borderNavWaveform.ActualHeight;
 
             sliderSongVol.Value = Const.Audio.DefaultSongVolume;
             sliderDrumVol.Value = Const.Audio.DefaultNoteVolume;
@@ -863,6 +899,7 @@ namespace Edda {
 
             UpdateEditorGridHeight();
             scrollEditor.ScrollToBottom();
+            DrawEditorNavWaveform();
         }
         private void EnableUI() {
             btnSaveMap.IsEnabled = true;
@@ -897,6 +934,7 @@ namespace Edda {
             btnSongPlayer.IsEnabled = true;
             sliderSongProgress.IsEnabled = true;
             scrollEditor.IsEnabled = true;
+            borderNavWaveform.IsEnabled = true;
         }
         private void DisableUI() {
             btnSaveMap.IsEnabled = false;
@@ -930,6 +968,7 @@ namespace Edda {
             btnSongPlayer.IsEnabled = false;
             sliderSongProgress.IsEnabled = false;
             scrollEditor.IsEnabled = false;
+            borderNavWaveform.IsEnabled = false;
         }
         private void SaveBeatmap(bool notify) {
             if (beatMap == null) {
@@ -1171,6 +1210,7 @@ namespace Edda {
             txtSongFileName.Text = (string)beatMap.GetValue("_songFilename");
 
             audioWaveform = new VorbisWaveformVisualiser(new VorbisWaveReader(songPath));
+            navWaveform = new VorbisWaveformVisualiser(new VorbisWaveReader(songPath));
             //awd = new AudioVisualiser_Float32(new VorbisWaveReader(songPath));
             imgAudioWaveform.Source = null;
         }
@@ -1383,13 +1423,21 @@ namespace Edda {
         }
         private void CreateEditorWaveform(double height, double width) {
             BitmapSource bmp = audioWaveform.Draw(height, width); //awd.Draw(height, width, Constants.Editor.Waveform.UseGDI);
-            if (bmp == null) {
-                return;
+            if (bmp != null) {
+                this.Dispatcher.Invoke(() => {
+                    imgAudioWaveform.Source = bmp;
+                    ResizeEditorWaveform();
+                });
             }
-
-            this.Dispatcher.Invoke(() => {
-                imgAudioWaveform.Source = bmp;
-                ResizeEditorWaveform();
+        }
+        private void DrawEditorNavWaveform() {
+            Task.Run(() => {
+                BitmapSource bmp = navWaveform.Draw(EditorPanel.ActualHeight, colWaveformVertical.ActualWidth);
+                if (bmp != null) {
+                    this.Dispatcher.Invoke(() => {
+                        imgWaveformVertical.Source = bmp;
+                    });
+                }
             });
         }
         private void DrawEditorGridLines() {
@@ -1632,5 +1680,6 @@ namespace Edda {
             beatNormalised -= (int)beatNormalised;
             return Helper.BitmapImageForBeat(beatNormalised, highlight);
         }
+
     }
 }
