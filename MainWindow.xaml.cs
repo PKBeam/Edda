@@ -544,8 +544,23 @@ namespace Edda {
             double prevBPM = globalBPM;
             if (double.TryParse(txtSongBPM.Text, out BPM)) {
                 if (BPM != prevBPM) {
+                    var result = MessageBox.Show("Would you like to convert all BPM changes and notes so that they remain at the same time?", "", MessageBoxButton.YesNoCancel, MessageBoxImage.Question);
+
+                    if (result == MessageBoxResult.Cancel) {
+                        txtSongBPM.Text = prevBPM.ToString();
+                        return;
+                    } else if (result == MessageBoxResult.Yes) {
+                        foreach (var bc in bpmChanges) {
+                            bc.globalBeat *= BPM / prevBPM;
+                        }
+                        foreach (var n in currentDifficultyNotes) {
+                            n.beat *= BPM / prevBPM;
+                        }
+                    }
                     beatMap.SetValue("_beatsPerMinute", BPM);
                     globalBPM = BPM;
+                    noteScanner.bpm = BPM;
+                    
                     UpdateEditorGridHeight();
                 }
             } else {
@@ -553,8 +568,6 @@ namespace Edda {
                 BPM = prevBPM;
             }
             txtSongBPM.Text = BPM.ToString();
-            noteScanner.bpm = BPM;
-
         }
         private void BtnChangeBPM_Click(object sender, RoutedEventArgs e) {
             var win = Helper.GetFirstWindow<ChangeBPMWindow>();
