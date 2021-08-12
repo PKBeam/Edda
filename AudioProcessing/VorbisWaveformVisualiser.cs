@@ -31,7 +31,13 @@ public class VorbisWaveformVisualiser {
 			height *= scale;
 			width *= scale;
 		}
-		return _Draw(height, width, tokenSource.Token);
+		BitmapImage b = null;
+		try {
+			b = _Draw(height, width, tokenSource.Token);
+		} catch (Exception ex) {
+			// ... ?
+        }
+		return b;
 	}
 	private BitmapImage _Draw(double height, double width, CancellationToken ct) {
 		isDrawing = true;
@@ -69,8 +75,8 @@ public class VorbisWaveformVisualiser {
 
 				var samples = new List<float>(buffer);
 				samples.Sort();
-				float lowPercent = (samples[(int)((samples.Count - 1) * 0.05)] + 1) / 2;
-				float highPercent = (samples[(int)((samples.Count - 1) * 0.95)] + 1) / 2;
+				float lowPercent = (samples[(int)((samples.Count - 1) * (1 - Const.Editor.Waveform.SampleMaxPercentile))] + 1) / 2;
+				float highPercent = (samples[(int)((samples.Count - 1) * Const.Editor.Waveform.SampleMaxPercentile)] + 1) / 2;
 				float lowValue = (float)width * lowPercent;
 				float highValue = (float)width * highPercent;
 				dc.DrawLine(

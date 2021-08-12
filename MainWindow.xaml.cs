@@ -130,6 +130,7 @@ namespace Edda {
 
             // disable parts of UI, as no map is loaded
             imgSaved.Opacity = 0;
+            imgWaveformVertical.Opacity = Const.Editor.NavWaveformOpacity;
             lineSongMouseover.Opacity = 0;
             lineSongProgress.Y1 = borderNavWaveform.ActualHeight;
             lineSongProgress.Y2 = borderNavWaveform.ActualHeight;
@@ -1576,6 +1577,7 @@ namespace Edda {
         }
         internal void DrawBookmarks() {
             canvasBookmarks.Children.Clear();
+            canvasBookmarkLabels.Children.Clear();
             foreach (Bookmark b in bookmarks) {
                 var l = new Line();
                 l.X1 = 0;

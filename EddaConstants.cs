@@ -7,7 +7,7 @@ namespace Const {
     public static class Program {
         public const string Name          = "Edda";
         public const string RepositoryURL = "https://github.com/PKBeam/Edda";
-        public const string VersionNumber = "0.3.0";
+        public const string VersionNumber = "0.4.0b1";
         public const string SettingsFile  = "settings.txt";
         public const string ResourcesPath = "Resources/";
     }
@@ -47,6 +47,7 @@ namespace Const {
         public const int    AutosaveInterval   = 30; // seconds
 
         // Bookmarks
+        public const double NavWaveformOpacity = 0.75;
         public static class Bookmark {
             public static string Colour => Colors.SkyBlue.ToString();
             public static string NameColour => Colors.SkyBlue.ToString();
@@ -60,7 +61,8 @@ namespace Const {
 
         // Waveform drawing
         public static class Waveform {
-            public const double Width        = 0.6;
+            public const double SampleMaxPercentile = 0.95;
+            public const double Width        = 0.75;
             public const int    MaxDimension = 65535;
             public const double ThicknessWPF = 2;
             public const bool   UseGDI       = false;

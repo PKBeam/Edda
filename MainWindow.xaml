@@ -418,7 +418,7 @@
                             <Border Grid.Row="7" Grid.Column="0" Margin="0 5 0 0"/>
 
                             <Border Grid.Row="8" Grid.Column="0">
-                                <TextBlock VerticalAlignment="Center">Waveform</TextBlock>
+                                <TextBlock VerticalAlignment="Bottom">Big Waveform</TextBlock>
                             </Border>
 
                             <Border Grid.Row="8" Grid.Column="1">
