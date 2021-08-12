@@ -276,7 +276,9 @@ namespace Edda {
             }
 
             if ((e.Key == Key.D1 || e.Key == Key.D2 || e.Key == Key.D3 || e.Key == Key.D4) &&
-                (songIsPlaying || imgPreviewNote.Opacity > 0)) {
+                (songIsPlaying || imgPreviewNote.Opacity > 0) &&
+                    !(FocusManager.GetFocusedElement(this) is TextBox)){
+                
                 int col = e.Key - Key.D1;
                 double mouseInput = editorSnapToGrid ? editorMouseBeatSnapped : editorMouseBeatUnsnapped;
                 double defaultInput = BeatForPosition(scrollEditor.VerticalOffset + scrollEditor.ActualHeight - unitLengthUnscaled / 2, editorSnapToGrid);
