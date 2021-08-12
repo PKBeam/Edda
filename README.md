@@ -1,13 +1,17 @@
 # Edda
 
+<img src="https://img.shields.io/github/downloads/PKBeam/Edda/total"> <img src="https://img.shields.io/github/downloads/PKBeam/Edda/latest/total">
+
 Edda is a beatmap editor for the VR rhythm game [Ragnarock](https://www.ragnarock-vr.com/home).  
 
 It is still under development and has not been tested extensively, but most features should work well.  
 
+If you have suggestions or bug reports, feel free to make a new issue on GitHub or come over to the [Ragnacustoms](https://ragnacustoms.com/) Discord server to discuss it.
+
 <details open>
   <summary>Edda screenshot (click to close)</summary>
 
-  ![Screenshot of Edda](https://i.imgur.com/4DliaJ7.png)
+  ![Screenshot of Edda](https://i.imgur.com/Zt5228E.png)
 </details>
 
 ## Installation
@@ -44,10 +48,10 @@ If you're having issues, make sure to check the following:
       - Difficulty level (1-10)
       - Medal distances
       - Note jump speed  
-  - Open existing Ragnarock maps and create new ones
+  - Edit existing Ragnarock maps or create new ones
     - Listen to the entire map with audio and mapped drum hits
        - Customise the note playback sound
-       - Notes will be marked with the same rune that would appear in-game
+       - Notes are marked with the same rune that would appear in-game
        - Change the relative volumes of the song and mapped notes
     - Variable BPM support
     - Customise the editor grid
@@ -64,6 +68,7 @@ If you're having issues, make sure to check the following:
       - Move up, down, left or right
       - Mirror notes
     - Undo and redo edits
+    - Create bookmarks for easy navigation
   - In-built BPM finding tool
     - Press a key to a song's beat to automatically calculate its BPM
 </details>
@@ -82,9 +87,10 @@ Please also keep backups of any important maps, as bugs may cause map corruption
 ### Creating a new map
 - Click "New Map".
 - Select an `.ogg` song to map.
-   - The song file must use the Vorbis codec 
-     - Opus files sometimes use `.ogg` but they are not supported!.
-   - It is recommended that you trim the song (e.g. in [Audacity](https://www.audacityteam.org/)) so it begins on an integer beat.
+   - The song file must use the Vorbis codec. Opus files sometimes use `.ogg` but they are not supported!.
+   - It is recommended that you either:
+     - trim the song (e.g. in [Audacity](https://www.audacityteam.org/)) so it begins on an integer beat, or  
+     - use the variable BPM feature and place a BPM change at the start of the song.
 - Select an empty folder.
   - The folder's name cannot have spaces or non-alphabetical characters.
   - For reference, Ragnarock searches the directory `Documents/Ragnarock/CustomSongs` for folders containing maps.
@@ -103,11 +109,15 @@ Please also keep backups of any important maps, as bugs may cause map corruption
 - Left-click to place a new note or to select an existing note.
 - Shift + Left-click to add a note to the selection.
 - Right-click to remove a note or to clear the selection.
+  
+- Double-click a bookmark to rename it.
+- Right-click a bookmark to delete it.
 
 #### Keyboard
 - Ctrl-N: New Map
 - Ctrl-O: Open Map
 - Ctrl-S: Save Map
+- Ctrl-A: Select All
 - Ctrl-C: Copy Selection
 - Ctrl-X: Cut Selection
 - Ctrl-V: Paste Clipboard
@@ -116,6 +126,9 @@ Please also keep backups of any important maps, as bugs may cause map corruption
 - Ctrl-Z: Undo Edit
 - Ctrl-Y: Redo Edit
   - (Ctrl-Shift-Z is also supported)
+- Ctrl-B: Add Bookmark
+  - The location of the bookmark is based on your mouse position.
+  - You can add a bookmark using either the central mapping area or the navigational waveform on the right.
 
 - Ctrl-[: Toggle left dock
 - Ctrl-]: Toggle right dock
