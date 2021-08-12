@@ -95,7 +95,15 @@ public class Helper {
         }
         return BitmapGenerator($"rune{runeStr}{(isHighlighted ? "highlight" : "")}.png");
     }
+    public static string TimeFormat(int seconds) {
+        int min = seconds / 60;
+        int sec = seconds % 60;
 
+        return $"{min}:{sec:D2}";
+    }
+    public static string TimeFormat(double seconds) {
+        return TimeFormat((int)seconds);
+    }
     public static void FFmpeg(string dir, string arg) {
         string path = Path.Combine(Path.GetTempPath(), "ffmpeg_temp.exe");
         File.WriteAllBytes(path, Edda.Properties.Resources.ffmpeg);

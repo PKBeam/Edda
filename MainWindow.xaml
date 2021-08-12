@@ -439,15 +439,17 @@
                 <ColumnDefinition Width="5*"/>
                 <ColumnDefinition x:Name="colWaveformVertical" Width="*" MaxWidth="100"/>
             </Grid.ColumnDefinitions>
-            <Border x:Name="borderNavWaveform" Grid.Column="1" BorderBrush="{DynamicResource {x:Static SystemColors.ControlDarkDarkBrushKey}}" BorderThickness="1 0 0 0" Background="#20000000" SizeChanged="BorderNavWaveform_SizeChanged" MouseMove="BorderNavWaveform_MouseMove" MouseEnter="BorderNavWaveform_MouseEnter" MouseLeave="BorderNavWaveform_MouseLeave" MouseDown="BorderNavWaveform_MouseDown" MouseUp="BorderNavWaveform_MouseUp">
+            <Border x:Name="borderNavWaveform" Grid.Column="1" BorderBrush="{DynamicResource {x:Static SystemColors.ControlDarkDarkBrushKey}}" BorderThickness="1 0 0 0" Background="#20000000" SizeChanged="BorderNavWaveform_SizeChanged" MouseMove="BorderNavWaveform_MouseMove" MouseEnter="BorderNavWaveform_MouseEnter" MouseLeave="BorderNavWaveform_MouseLeave" MouseLeftButtonDown="BorderNavWaveform_MouseLeftButtonDown" MouseLeftButtonUp="BorderNavWaveform_MouseLeftButtonUp">
                 <Grid>
                     <Image x:Name="imgWaveformVertical"></Image>
                     <Line x:Name="lineSongMouseover" Stroke="SkyBlue" StrokeThickness="1" X2="{Binding ElementName=borderNavWaveform, Path=ActualWidth}"></Line>
+                    <Canvas x:Name="canvasBookmarks"/>
                     <Line x:Name="lineSongProgress" Stroke="Navy" StrokeThickness="1" X2="{Binding ElementName=borderNavWaveform, Path=ActualWidth}" />
+                    <Canvas x:Name="canvasBookmarkLabels"/>
+                    <Canvas x:Name="canvasNavInputBox"/>
                 </Grid>
             </Border>
             <Grid MaxWidth="600">
-
                 <!-- Static Renders -->
                 <Grid Background="#0A000000">
                     <Grid.ColumnDefinitions>

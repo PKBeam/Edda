@@ -35,7 +35,7 @@ public class VorbisWaveformVisualiser {
 	}
 	private BitmapImage _Draw(double height, double width, CancellationToken ct) {
 		isDrawing = true;
-		 reader.Position = 0;
+	    reader.Position = 0;
 		DrawingVisual dv = new DrawingVisual();
 		using (DrawingContext dc = dv.RenderOpen()) {
 			Pen bluePen = new Pen(new SolidColorBrush(Const.Editor.Waveform.ColourWPF), Const.Editor.Waveform.ThicknessWPF);

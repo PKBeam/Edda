@@ -63,8 +63,9 @@ namespace Edda {
         public double globalBPM;
         System.Timers.Timer autosaveTimer;
         UserSettings userSettings;
-        List<double> gridLines = new List<double>();
-        List<BPMChange> bpmChanges = new List<BPMChange>();
+        List<double> gridLines = new();
+        List<BPMChange> bpmChanges = new();
+        List<Bookmark> bookmarks = new();
         bool shiftKeyDown;
         bool ctrlKeyDown;
 
@@ -129,12 +130,15 @@ namespace Edda {
 
             // disable parts of UI, as no map is loaded
             imgSaved.Opacity = 0;
+            lineSongMouseover.Opacity = 0;
+            lineSongProgress.Y1 = borderNavWaveform.ActualHeight;
+            lineSongProgress.Y2 = borderNavWaveform.ActualHeight;
             DisableUI();
 
             autosaveTimer = new System.Timers.Timer(1000 * Const.Editor.AutosaveInterval);
             autosaveTimer.Enabled = false;
-            autosaveTimer.Elapsed += (source, e) => { 
-                SaveBeatmap(false); 
+            autosaveTimer.Elapsed += (source, e) => {
+                SaveBeatmap(false);
             };
             discordClient = new DiscordClient(this);
             LoadSettingsFile();
@@ -157,8 +161,6 @@ namespace Edda {
             //        EditorGrid_SizeChanged(eventPattern.Sender, eventPattern.EventArgs)
             //    )
             //);
-
-  
         }
 
         // UI bindings
@@ -259,10 +261,21 @@ namespace Edda {
                     mapEditor.TransformSelection(NoteTransforms.Mirror());
                 }
 
+                // add bookmark (Ctrl-B)
+                if (e.Key == Key.B) {
+                    double beat = BeatForPosition(scrollEditor.VerticalOffset + scrollEditor.ActualHeight - unitLengthUnscaled / 2, editorSnapToGrid);
+                    if (imgPreviewNote.Opacity > 0) {
+                        beat = editorSnapToGrid ? editorMouseBeatSnapped : editorMouseBeatUnsnapped;
+                    } else if (lineSongMouseover.Opacity > 0) {
+                        beat = globalBPM * sliderSongProgress.Maximum / 60000 * (1 - lineSongMouseover.Y1/borderNavWaveform.ActualHeight);
+                    }
+                    mapEditor.AddBookmark(new Bookmark(beat, "New"));
+                }
                 
             }
 
-            if (e.Key == Key.D1 || e.Key == Key.D2 || e.Key == Key.D3 || e.Key == Key.D4) {
+            if ((e.Key == Key.D1 || e.Key == Key.D2 || e.Key == Key.D3 || e.Key == Key.D4) &&
+                (songIsPlaying || imgPreviewNote.Opacity > 0)) {
                 int col = e.Key - Key.D1;
                 double mouseInput = editorSnapToGrid ? editorMouseBeatSnapped : editorMouseBeatUnsnapped;
                 double defaultInput = BeatForPosition(scrollEditor.VerticalOffset + scrollEditor.ActualHeight - unitLengthUnscaled / 2, editorSnapToGrid);
@@ -508,11 +521,7 @@ namespace Edda {
         private void SliderSongProgress_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e) {
 
             // update song seek time text box
-            var seek = (int)(sliderSongProgress.Value / 1000.0);
-            int min = seek / 60;
-            int sec = seek % 60;
-
-            txtSongPosition.Text = $"{min}:{sec.ToString("D2")}";
+            txtSongPosition.Text = Helper.TimeFormat((int)(sliderSongProgress.Value / 1000.0));
 
             // update vertical scrollbar
             var percentage = sliderSongProgress.Value / sliderSongProgress.Maximum;
@@ -687,22 +696,27 @@ namespace Edda {
         private void BorderNavWaveform_SizeChanged(object sender, SizeChangedEventArgs e) {
             if (beatMap != null && e.PreviousSize != e.NewSize) {
                 DrawEditorNavWaveform();
+                DrawBookmarks();
             }
         }
-        private void BorderNavWaveform_MouseDown(object sender, MouseButtonEventArgs e) {
+        private void BorderNavWaveform_MouseLeftButtonDown(object sender, MouseButtonEventArgs e) {
             navMouseDown = true;
-        }
-        private void BorderNavWaveform_MouseUp(object sender, MouseButtonEventArgs e) {
-            navMouseDown = false;
             sliderSongProgress.Value = sliderSongProgress.Maximum * (1 - lineSongMouseover.Y1 / borderNavWaveform.ActualHeight);
+            Keyboard.ClearFocus();
+            Keyboard.Focus(this);
+        }
+        private void BorderNavWaveform_MouseLeftButtonUp(object sender, MouseButtonEventArgs e) {
+            navMouseDown = false;
         }
         private void BorderNavWaveform_MouseMove(object sender, MouseEventArgs e) {
             var mouseY = e.GetPosition(borderNavWaveform).Y;
+            var mouseTime = sliderSongProgress.Maximum * (1 - mouseY / borderNavWaveform.ActualHeight);
             lineSongMouseover.Y1 = mouseY;
             lineSongMouseover.Y2 = mouseY;
             if (navMouseDown) {
-                sliderSongProgress.Value = sliderSongProgress.Maximum * (1 - mouseY / borderNavWaveform.ActualHeight);
+                sliderSongProgress.Value = mouseTime;
             }
+            lblSelectedBeat.Content = $"Time: {Helper.TimeFormat(mouseTime / 1000)}, Global Beat: {Math.Round(mouseTime / 60000 * globalBPM, 3)}";
         }
         private void BorderNavWaveform_MouseEnter(object sender, MouseEventArgs e) {
             lineSongMouseover.Opacity = 1;
@@ -737,16 +751,6 @@ namespace Edda {
         private void ScrollEditor_MouseMove(object sender, MouseEventArgs e) {
 
             // calculate beat
-            //// check if mouse position would correspond to a negative row index
-            //if (mousePos < userOffset) {
-            //    editorMouseBeatUnsnapped = 0;
-            //    editorMouseBeatSnapped = 0;
-            //} else {
-            //    editorMouseBeatUnsnapped = (mousePos - userOffset) / unitLength;
-            //    int indx1 = -gridLines.BinarySearch(editorMouseBeatUnsnapped) - 1;
-            //    int indx2 = Math.Max(0, indx1 - 1);             
-            //    editorMouseBeatSnapped = (gridLines[indx1] - editorMouseBeatUnsnapped) < (editorMouseBeatUnsnapped - gridLines[indx2]) ? gridLines[indx1] : gridLines[indx2];
-            //}
             editorMouseBeatSnapped   = BeatForPosition(e.GetPosition(EditorGrid).Y, true);
             editorMouseBeatUnsnapped = BeatForPosition(e.GetPosition(EditorGrid).Y, false);
 
@@ -769,7 +773,7 @@ namespace Edda {
             Canvas.SetLeft(imgPreviewNote, noteX - unknownNoteXAdjustment);
             
              // update beat display
-            lblSelectedBeat.Content = $"Global Beat: {Math.Round(editorMouseBeatSnapped, 3)} ({Math.Round(editorMouseBeatUnsnapped, 3)})";
+            lblSelectedBeat.Content = $"Time: {Helper.TimeFormat(editorMouseBeatSnapped * 60 / globalBPM)}, Global Beat: {Math.Round(editorMouseBeatSnapped, 3)} ({Math.Round(editorMouseBeatUnsnapped, 3)})";
 
             // calculate drag stuff
             if (editorIsDragging) {
@@ -888,7 +892,7 @@ namespace Edda {
             sliderDrumVol.Value = Const.Audio.DefaultNoteVolume;
 
             for (int i = 0; i < beatMap.numDifficulties; i++) {
-                mapEditors[i] = new MapEditor(this, beatMap.GetNotesForMap(i), editorClipboard);
+                mapEditors[i] = new MapEditor(this, beatMap.GetBookmarksForMap(i), beatMap.GetNotesForMap(i), editorClipboard);
             }
 
             // enable UI parts
@@ -975,6 +979,7 @@ namespace Edda {
                 return;
             }
             beatMap.SetBPMChangesForMap(currentDifficulty, bpmChanges);
+            beatMap.SetBookmarksForMap(currentDifficulty, bookmarks);
             beatMap.SetNotesForMap(currentDifficulty, currentDifficultyNotes);
             beatMap.SaveToFile();
             if (notify) {
@@ -1119,14 +1124,16 @@ namespace Edda {
 
             currentDifficulty = indx;
             currentDifficultyNotes = beatMap.GetNotesForMap(indx);
+            bookmarks = beatMap.GetBookmarksForMap(indx);
 
             noteScanner = new NoteScanner(this, globalBPM, currentDifficultyNotes, drummer);
             if (mapEditors[indx] != null) {
-                mapEditor = new MapEditor(this, currentDifficultyNotes, editorClipboard);
+                mapEditor = new MapEditor(this, bookmarks, currentDifficultyNotes, editorClipboard);
             } else { // need to use the same pointer to currentDifficultyNotes as the NoteScanner
-                mapEditor = new MapEditor(mapEditors[indx], currentDifficultyNotes);
+                mapEditor = new MapEditor(mapEditors[indx], bookmarks, currentDifficultyNotes);
             }
             bpmChanges = beatMap.GetBPMChangesForMap(indx);
+            
 
             txtDifficultyNumber.Text = (string)beatMap.GetValueForMap(indx, "_difficultyRank");
             txtNoteSpeed.Text = (string)beatMap.GetValueForMap(indx, "_noteJumpMovementSpeed");
@@ -1145,6 +1152,7 @@ namespace Edda {
             editorGridOffset = Helper.DoubleParseInvariant(txtGridOffset.Text);
 
             EnableDifficultyButtons();
+            DrawBookmarks();
             if (redraw) {
                 DrawEditorGrid();
             }
@@ -1205,8 +1213,7 @@ namespace Edda {
             sliderSongProgress.Minimum = 0;
             sliderSongProgress.Maximum = songStream.TotalTime.TotalSeconds * 1000;
             sliderSongProgress.Value = 0;
-            var duration = (int)songStream.TotalTime.TotalSeconds;
-            txtSongDuration.Text = $"{duration / 60}:{duration % 60:D2}";
+            txtSongDuration.Text = Helper.TimeFormat((int)songStream.TotalTime.TotalSeconds);
             txtSongFileName.Text = (string)beatMap.GetValue("_songFilename");
 
             audioWaveform = new VorbisWaveformVisualiser(new VorbisWaveReader(songPath));
@@ -1244,6 +1251,7 @@ namespace Edda {
             btnChangeDifficulty2.IsEnabled = false;
             scrollEditor.IsEnabled = false;
             sliderSongProgress.IsEnabled = false;
+            borderNavWaveform.IsEnabled = false;
 
             // hide editor
             imgPreviewNote.Opacity = 0;
@@ -1281,6 +1289,7 @@ namespace Edda {
             EnableDifficultyButtons();
             scrollEditor.IsEnabled = true;
             sliderSongProgress.IsEnabled = true;
+            borderNavWaveform.IsEnabled = true;
 
             // reset scroll animation
             songPlayAnim.BeginTime = null;
@@ -1565,6 +1574,68 @@ namespace Edda {
         internal void UnhighlightEditorNotes(Note n) {
             UnhighlightEditorNotes(new List<Note>() { n });
         }
+        internal void DrawBookmarks() {
+            canvasBookmarks.Children.Clear();
+            foreach (Bookmark b in bookmarks) {
+                var l = new Line();
+                l.X1 = 0;
+                l.X2 = borderNavWaveform.ActualWidth;
+                var offset = borderNavWaveform.ActualHeight * (1 - 60000 * b.beat/(globalBPM * sliderSongProgress.Maximum));
+                l.Y1 = offset;
+                l.Y2 = offset;
+                l.Stroke = (SolidColorBrush)new BrushConverter().ConvertFrom(Const.Editor.Bookmark.Colour);
+                l.StrokeThickness = Const.Editor.Bookmark.Thickness;
+
+                var txtBlock = new Label();
+                txtBlock.Foreground = (SolidColorBrush)new BrushConverter().ConvertFrom(Const.Editor.Bookmark.NameColour);
+                
+                txtBlock.Content = b.name;
+                txtBlock.FontSize = Const.Editor.Bookmark.NameSize;
+                txtBlock.Padding = new Thickness(Const.Editor.Bookmark.NamePadding);
+                txtBlock.FontWeight = FontWeights.Bold;
+                txtBlock.Opacity = Const.Editor.Bookmark.Opacity;
+                //txtBlock.IsReadOnly = true;
+                txtBlock.Cursor = Cursors.Arrow;
+                Canvas.SetBottom(txtBlock, borderNavWaveform.ActualHeight - offset);
+                txtBlock.MouseLeftButtonDown += new MouseButtonEventHandler((src, e) => {
+                    e.Handled = true;
+                });
+                txtBlock.MouseLeftButtonUp += new MouseButtonEventHandler((src, e) => {
+                    sliderSongProgress.Value = b.beat / globalBPM * 60000;
+                    navMouseDown = false;
+                    e.Handled = true;
+                });
+                txtBlock.MouseRightButtonDown += new MouseButtonEventHandler((src, e) => {
+                    var res = MessageBox.Show("Are you sure you want to delete this bookmark?", "Confirm Bookmark Deletion", MessageBoxButton.YesNoCancel, MessageBoxImage.Warning);
+                    if (res == MessageBoxResult.Yes) {
+                        mapEditor.RemoveBookmark(b);
+                    }
+                });
+                txtBlock.MouseDoubleClick += new MouseButtonEventHandler((src, e) => {
+                    var txtBox = new TextBox();  
+                    txtBox.Text = b.name;
+                    txtBox.FontSize = Const.Editor.Bookmark.NameSize;
+                    Canvas.SetBottom(txtBox, borderNavWaveform.ActualHeight - offset);
+                    txtBox.LostKeyboardFocus += new KeyboardFocusChangedEventHandler((src, e) => {
+                        mapEditor.RenameBookmark(b, txtBox.Text);
+                        canvasNavInputBox.Children.Remove(txtBox);
+                    });
+                    txtBox.KeyDown += new KeyEventHandler((src, e) => {
+                        if (e.Key == Key.Escape || e.Key == Key.Enter) {
+                            Keyboard.ClearFocus();
+                        }
+                    });
+
+                    canvasNavInputBox.Children.Add(txtBox);
+                    txtBox.Focus();
+                    txtBox.SelectAll();
+                    
+                    e.Handled = true;
+                });
+                canvasBookmarks.Children.Add(l);
+                canvasBookmarkLabels.Children.Add(txtBlock);
+            }
+        }
 
         // helper functions
         private void InitComboEnvironment() {
@@ -1680,6 +1751,5 @@ namespace Edda {
             beatNormalised -= (int)beatNormalised;
             return Helper.BitmapImageForBeat(beatNormalised, highlight);
         }
-
     }
 }

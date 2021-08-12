@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Windows.Media;
 
 namespace Const {
     using MediaColor = System.Windows.Media.Color;
@@ -44,6 +45,18 @@ namespace Const {
         public const double PreviewNoteOpacity = 0.30; // percentage of 1.0
         public const double DragInitThreshold  = 10; // pixels
         public const int    AutosaveInterval   = 30; // seconds
+
+        // Bookmarks
+        public static class Bookmark {
+            public static string Colour => Colors.SkyBlue.ToString();
+            public static string NameColour => Colors.SkyBlue.ToString();
+            public static string BackgroundColour => Colors.SkyBlue.ToString();
+            public const double Thickness = 1.0;
+            public const double NameSize = 9;
+            public const double NamePadding = 1;
+            public const double Opacity = 1;
+        }
+        
 
         // Waveform drawing
         public static class Waveform {

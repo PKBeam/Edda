@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using Edda;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
@@ -593,6 +594,31 @@ public class RagnarockMap {
 
         var thisMapStr = JObject.Parse(difficultyMaps[indx]);
         thisMapStr["_customData"]["_BPMChanges"] = bcArr;
+        difficultyMaps[indx] = JsonConvert.SerializeObject(thisMapStr, Formatting.Indented);
+    }
+    public List<Bookmark> GetBookmarksForMap(int indx) {
+        List<Bookmark> bookmarks = new List<Bookmark>();
+        var obj = JObject.Parse(difficultyMaps[indx]);
+        var res = obj["_customData"]["_bookmarks"];
+        foreach (JToken bcObj in res) {
+            double beat = Helper.DoubleParseInvariant((string)bcObj["_time"]);
+            string name = (string)bcObj["_name"];
+            Bookmark b = new Bookmark(beat, name);
+            bookmarks.Add(b);
+        }
+        return bookmarks;
+    }
+    public void SetBookmarksForMap(int indx, List<Bookmark> bookmarks) {
+        JArray bArr = new JArray();
+        foreach (Bookmark b in bookmarks) {
+            bArr.Add(JToken.FromObject(new {
+                _time = b.beat,
+                _name = b.name
+            })); ;
+        }
+
+        var thisMapStr = JObject.Parse(difficultyMaps[indx]);
+        thisMapStr["_customData"]["_bookmarks"] = bArr;
         difficultyMaps[indx] = JsonConvert.SerializeObject(thisMapStr, Formatting.Indented);
     }
 }
