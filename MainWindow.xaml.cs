@@ -270,7 +270,7 @@ namespace Edda {
                     } else if (lineSongMouseover.Opacity > 0) {
                         beat = globalBPM * sliderSongProgress.Maximum / 60000 * (1 - lineSongMouseover.Y1/borderNavWaveform.ActualHeight);
                     }
-                    mapEditor.AddBookmark(new Bookmark(beat, "New"));
+                    mapEditor.AddBookmark(new Bookmark(beat, Const.Editor.Bookmark.DefaultName));
                 }
                 
             }
@@ -553,6 +553,7 @@ namespace Edda {
                 BPM = prevBPM;
             }
             txtSongBPM.Text = BPM.ToString();
+            noteScanner.bpm = BPM;
 
         }
         private void BtnChangeBPM_Click(object sender, RoutedEventArgs e) {

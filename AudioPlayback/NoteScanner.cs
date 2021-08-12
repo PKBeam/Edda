@@ -12,7 +12,7 @@ public class NoteScanner {
     CancellationTokenSource noteScanTokenSource;
     CancellationToken noteScanToken;
 
-    double bpm;
+    public double bpm { get; set; }
     public List<Note> notes;
 
     MainWindow caller;

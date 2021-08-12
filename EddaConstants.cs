@@ -49,6 +49,7 @@ namespace Const {
         // Bookmarks
         public const double NavWaveformOpacity = 0.75;
         public static class Bookmark {
+            public static string DefaultName = "Bookmark";
             public static string Colour => Colors.SkyBlue.ToString();
             public static string NameColour => Colors.SkyBlue.ToString();
             public static string BackgroundColour => Colors.SkyBlue.ToString();
