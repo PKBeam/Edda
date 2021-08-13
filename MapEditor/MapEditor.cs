@@ -10,24 +10,18 @@ public class MapEditor {
     MainWindow parent;
     public List<Note> notes;
     public List<Bookmark> bookmarks;
+    public List<BPMChange> bpmChanges;
     List<Note> clipboard;
     List<Note> selectedNotes;
     EditHistory<Note> editorHistory;
-    public MapEditor(MainWindow parent, List<Bookmark> bookmarks, List<Note> notes, List<Note> clipboard) {
+    public MapEditor(MainWindow parent, List<Note> notes, List<BPMChange> bpmChanges, List<Bookmark> bookmarks, List<Note> clipboard) {
         this.parent = parent;
+        this.bpmChanges = bpmChanges;
         this.bookmarks = bookmarks;
         this.notes = notes;
         this.clipboard = clipboard;
         this.selectedNotes = new();
         this.editorHistory = new(Const.Editor.HistoryMaxSize);
-    }
-    public MapEditor(MapEditor noteEditor, List<Bookmark> bookmarks, List<Note> notes) {
-        this.parent = noteEditor.parent;
-        this.bookmarks = bookmarks;
-        this.notes = notes;
-        this.clipboard = noteEditor.clipboard;
-        this.selectedNotes = new();
-        this.editorHistory = noteEditor.editorHistory;
     }
     public void AddBookmark(Bookmark b) {
         bookmarks.Add(b);

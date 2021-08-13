@@ -64,15 +64,11 @@ namespace Edda {
         System.Timers.Timer autosaveTimer;
         UserSettings userSettings;
         List<double> gridLines = new();
-        List<BPMChange> bpmChanges = new();
-        List<Bookmark> bookmarks = new();
         bool shiftKeyDown;
         bool ctrlKeyDown;
 
         // store info about the currently selected difficulty
         public int currentDifficulty;
-        List<Note> currentDifficultyNotes = new();
-        List<Note> pendingNotes = new(); // notes added in while song is playing
         MapEditor[] mapEditors = new MapEditor[3];
         MapEditor mapEditor;
         List<Note> editorClipboard = new();
@@ -367,7 +363,7 @@ namespace Edda {
                 
                 // clear some stuff
                 PauseSong();
-                currentDifficultyNotes.Clear();
+                mapEditor.notes.Clear();
             }
 
             // select folder for map
@@ -416,7 +412,7 @@ namespace Edda {
                 }
                 // clear some stuff
                 PauseSong();
-                currentDifficultyNotes.Clear();
+                mapEditor.notes.Clear();
             }
 
             // select folder for map
@@ -559,7 +555,7 @@ namespace Edda {
                         txtSongBPM.Text = prevBPM.ToString();
                         return;
                     } else if (result == MessageBoxResult.Yes) {
-                        foreach (var bc in bpmChanges) {
+                        foreach (var bc in mapEditor.bpmChanges) {
                             bc.globalBeat *= BPM / prevBPM;
                         }
                         foreach (var n in mapEditor.notes) {
@@ -581,7 +577,7 @@ namespace Edda {
         private void BtnChangeBPM_Click(object sender, RoutedEventArgs e) {
             var win = Helper.GetFirstWindow<ChangeBPMWindow>();
             if (win == null) {
-                new ChangeBPMWindow(this, bpmChanges).Show();
+                new ChangeBPMWindow(this, mapEditor.bpmChanges).Show();
             } else {
                 win.Focus();
             }
@@ -989,8 +985,8 @@ namespace Edda {
             if (beatMap == null) {
                 return;
             }
-            beatMap.SetBPMChangesForMap(currentDifficulty, bpmChanges);
-            beatMap.SetBookmarksForMap(currentDifficulty, bookmarks);
+            beatMap.SetBPMChangesForMap(currentDifficulty, mapEditor.bpmChanges);
+            beatMap.SetBookmarksForMap(currentDifficulty, mapEditor.bookmarks);
             beatMap.SetNotesForMap(currentDifficulty, mapEditor.notes);
             beatMap.SaveToFile();
             this.Dispatcher.Invoke(() => {
@@ -1135,14 +1131,11 @@ namespace Edda {
 
             if (savePrevious) {
                 beatMap.SetNotesForMap(currentDifficulty, mapEditor.notes);
-                beatMap.SetBookmarksForMap(currentDifficulty, bookmarks);
-                beatMap.SetBPMChangesForMap(currentDifficulty, bpmChanges);
+                beatMap.SetBookmarksForMap(currentDifficulty, mapEditor.bookmarks);
+                beatMap.SetBPMChangesForMap(currentDifficulty, mapEditor.bpmChanges);
             }
 
             currentDifficulty = indx;
-            currentDifficultyNotes = beatMap.GetNotesForMap(indx);
-            bookmarks = beatMap.GetBookmarksForMap(indx);
-            bpmChanges = beatMap.GetBPMChangesForMap(indx);
 
             //if (mapEditors[indx] != null) {
             //    mapEditor = new MapEditor(this, bookmarks, currentDifficultyNotes, editorClipboard);
@@ -1151,7 +1144,7 @@ namespace Edda {
             //    mapEditor = mapEditors[indx];
             //}
             if (mapEditors[indx] == null) {
-                mapEditors[indx] = new MapEditor(this, bookmarks, beatMap.GetNotesForMap(indx), editorClipboard);
+                mapEditors[indx] = new MapEditor(this, beatMap.GetNotesForMap(indx), beatMap.GetBPMChangesForMap(indx), beatMap.GetBookmarksForMap(indx), editorClipboard);
             }
             mapEditor = mapEditors[indx];
             noteScanner = new NoteScanner(this, globalBPM, drummer);
@@ -1534,8 +1527,8 @@ namespace Edda {
                 counter++;
 
                 // check for BPM change
-                if (bpmChangeCounter < bpmChanges.Count && Helper.DoubleApproxGreaterEqual((offset - userOffset)/ unitLength, bpmChanges[bpmChangeCounter].globalBeat)) {
-                    BPMChange next = bpmChanges[bpmChangeCounter];
+                if (bpmChangeCounter < mapEditor.bpmChanges.Count && Helper.DoubleApproxGreaterEqual((offset - userOffset)/ unitLength, mapEditor.bpmChanges[bpmChangeCounter].globalBeat)) {
+                    BPMChange next = mapEditor.bpmChanges[bpmChangeCounter];
 
                     offset = next.globalBeat * unitLength + userOffset;
                     localBPM = next.BPM;
@@ -1621,7 +1614,7 @@ namespace Edda {
         internal void DrawBookmarks() {
             canvasBookmarks.Children.Clear();
             canvasBookmarkLabels.Children.Clear();
-            foreach (Bookmark b in bookmarks) {
+            foreach (Bookmark b in mapEditor.bookmarks) {
                 var l = new Line();
                 l.X1 = 0;
                 l.X2 = borderNavWaveform.ActualWidth;
@@ -1783,7 +1776,7 @@ namespace Edda {
             // find most recent BPM change
             double recentBPMChange = 0;
             double recentBPM = globalBPM;
-            foreach (var bc in bpmChanges) {
+            foreach (var bc in mapEditor.bpmChanges) {
                 if (Helper.DoubleApproxGreaterEqual(beat, bc.globalBeat)) {
                     recentBPMChange = bc.globalBeat;
                     recentBPM = bc.BPM;
