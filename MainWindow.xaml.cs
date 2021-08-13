@@ -292,6 +292,7 @@ namespace Edda {
             // unselect all notes
             if (e.Key == Key.Escape) {
                 mapEditor.UnselectAllNotes();
+                SortDifficultyMaps();
             }
 
         }
@@ -488,8 +489,10 @@ namespace Edda {
         private void BtnAddDifficulty_Click(object sender, RoutedEventArgs e) {
             PauseSong();
             beatMap.AddMap();
-            UpdateDifficultyButtonVisibility();
-            SwitchDifficultyMap(beatMap.numDifficulties - 1);
+            //UpdateDifficultyButtonVisibility();
+            //SwitchDifficultyMap(beatMap.numDifficulties - 1);
+
+            SortDifficultyMaps();
         }
         private void BtnDeleteDifficulty_Click(object sender, RoutedEventArgs e) {
             var res = MessageBox.Show("Are you sure you want to delete this difficulty? This cannot be undone.", "Warning", MessageBoxButton.YesNo, MessageBoxImage.Warning);
@@ -608,11 +611,14 @@ namespace Edda {
             int level;
             if (int.TryParse(txtDifficultyNumber.Text, out level) && Helper.DoubleRangeCheck(level, 1, 10)) {
                 beatMap.SetValueForMap(currentDifficulty, "_difficultyRank", level);
+                txtDifficultyNumber.Text = level.ToString();
+                SortDifficultyMaps();
             } else {
                 MessageBox.Show($"The difficulty level must be an integer between 1 and 10.", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
                 level = prevLevel;
+                txtDifficultyNumber.Text = level.ToString();
             }
-            txtDifficultyNumber.Text = level.ToString();
+            
         }
         private void TxtNoteSpeed_LostFocus(object sender, RoutedEventArgs e) {
             double prevSpeed = int.Parse((string)beatMap.GetValueForMap(currentDifficulty, "_noteJumpMovementSpeed"));
@@ -1173,7 +1179,34 @@ namespace Edda {
                 DrawEditorGrid();
             }
         }
+        private void SortDifficultyMaps() {
+            // bubble sort
+            bool swap;
+            do {
+                swap = false;
+                for (int i = 0; i < beatMap.numDifficulties - 1; i++) {
+                    int lowDiff = (int)beatMap.GetValueForMap(i, "_difficultyRank");
+                    int highDiff = (int)beatMap.GetValueForMap(i + 1, "_difficultyRank");
+                    if (lowDiff > highDiff) {
+                        SwapDifficultyMaps(i, i + 1);
+                        swap = true;
+                    }
+                }
+            } while (swap);
+        }
+        private void SwapDifficultyMaps(int i, int j) {
+            var temp = mapEditors[i];
+            mapEditors[i] = mapEditors[j];
+            mapEditors[j] = temp;
 
+            beatMap.SwapMaps(i, j);
+            if (currentDifficulty == i) {
+                SwitchDifficultyMap(j);
+            } else if (currentDifficulty == j) {
+                SwitchDifficultyMap(i);
+            }
+            EnableDifficultyButtons();
+        }
         // song/note playback
         private bool SelectNewSong() {
             // select audio file

@@ -399,7 +399,26 @@ public class RagnarockMap {
         infoStr = JsonConvert.SerializeObject(obj, Formatting.Indented);
         RenameMaps();
         WriteInfo();
-        //writeDifficultyMap(indx);
+    }
+    public void SwapMaps(int i, int j) {
+        if (i == j) {
+            return;
+        }
+
+        var temp = difficultyMaps[i];
+        difficultyMaps[i] = difficultyMaps[j];
+        difficultyMaps[j] = temp;
+
+        var obj = JObject.Parse(infoStr);
+        var beatmaps = (JArray)obj["_difficultyBeatmapSets"][0]["_difficultyBeatmaps"];
+        
+        var tempMap = beatmaps[i];
+        beatmaps[i] = beatmaps[j];
+        beatmaps[j] = tempMap;
+
+        infoStr = JsonConvert.SerializeObject(obj, Formatting.Indented);
+        RenameMaps();
+        WriteInfo();
     }
     public List<Note> GetNotesForMap(int indx) {
         var obj = JObject.Parse(difficultyMaps[indx]);
