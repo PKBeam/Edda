@@ -288,7 +288,6 @@ namespace Edda {
             // unselect all notes
             if (e.Key == Key.Escape) {
                 mapEditor.UnselectAllNotes();
-                SortDifficultyMaps();
             }
 
         }
@@ -485,9 +484,8 @@ namespace Edda {
         private void BtnAddDifficulty_Click(object sender, RoutedEventArgs e) {
             PauseSong();
             beatMap.AddMap();
-            //UpdateDifficultyButtonVisibility();
-            //SwitchDifficultyMap(beatMap.numDifficulties - 1);
-
+            SwitchDifficultyMap(beatMap.numDifficulties - 1);
+            UpdateDifficultyButtonVisibility();
             SortDifficultyMaps();
         }
         private void BtnDeleteDifficulty_Click(object sender, RoutedEventArgs e) {
@@ -1200,6 +1198,7 @@ namespace Edda {
             }
             EnableDifficultyButtons();
         }
+
         // song/note playback
         private bool SelectNewSong() {
             // select audio file
