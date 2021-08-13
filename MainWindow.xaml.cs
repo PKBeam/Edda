@@ -132,14 +132,12 @@ namespace Edda {
             imgSaved.Opacity = 0;
             imgWaveformVertical.Opacity = Const.Editor.NavWaveformOpacity;
             lineSongMouseover.Opacity = 0;
-            lineSongProgress.Y1 = borderNavWaveform.ActualHeight;
-            lineSongProgress.Y2 = borderNavWaveform.ActualHeight;
             DisableUI();
 
             autosaveTimer = new System.Timers.Timer(1000 * Const.Editor.AutosaveInterval);
             autosaveTimer.Enabled = false;
             autosaveTimer.Elapsed += (source, e) => {
-                SaveBeatmap(false);
+                SaveBeatmap();
             };
             discordClient = new DiscordClient(this);
             LoadSettingsFile();
@@ -363,7 +361,7 @@ namespace Edda {
             if (beatMap != null) {
                 var res = MessageBox.Show("Do you want to save the map that is currently open?", "Warning", MessageBoxButton.YesNo, MessageBoxImage.Warning);
                 if (res == MessageBoxResult.Yes) {
-                    SaveBeatmap(false);
+                    SaveBeatmap();
                 }
                 
                 // clear some stuff
@@ -401,7 +399,7 @@ namespace Edda {
             }
 
             // save the map
-            SaveBeatmap(false);
+            SaveBeatmap();
 
             // open the newly created map
             InitUI();
@@ -413,7 +411,7 @@ namespace Edda {
                 var res = MessageBox.Show("Save the currently opened map?", "Warning", MessageBoxButton.YesNo, MessageBoxImage.Warning);
                 if (res == MessageBoxResult.Yes) {
                     // save existing work before making a new map
-                    SaveBeatmap(false);
+                    SaveBeatmap();
                 }
                 // clear some stuff
                 PauseSong();
@@ -434,15 +432,20 @@ namespace Edda {
             try {
                 beatMap = new RagnarockMap(d2.FileName, false);
                 LoadSong(); // song file
+                LoadCoverImage();
                 InitUI(); // cover image file
-                discordClient.SetPresence();
             } catch (Exception ex) {
+                beatMap = null;
+                txtSongFileName.Text = "N/A";
+                txtCoverFileName.Text = "N/A";
+
                 MessageBox.Show($"An error occured while opening the map:\n{ex.Message}.", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
                 return;
             }
+            discordClient.SetPresence();
         }
         private void BtnSaveMap_Click(object sender, RoutedEventArgs e) {
-            SaveBeatmap(true);
+            SaveBeatmap();
         }
         private void BtnBPMFinder_Click(object sender, RoutedEventArgs e) {
             var win = Helper.GetFirstWindow<BPMCalcWindow>();
@@ -494,23 +497,24 @@ namespace Edda {
                 return;
             }
             PauseSong();
+            
+            for (int i = currentDifficulty; i < mapEditors.Length - 1; i++) {
+                mapEditors[i] = mapEditors[i + 1];
+            }
+            mapEditors[mapEditors.Length - 1] = null;
+
             beatMap.DeleteMap(currentDifficulty);
-            mapEditors[currentDifficulty] = null;
-            SwitchDifficultyMap(Math.Min(currentDifficulty, beatMap.numDifficulties - 1));
+            SwitchDifficultyMap(Math.Min(currentDifficulty, beatMap.numDifficulties - 1), false);
+
             UpdateDifficultyButtonVisibility();
         }
         private void BtnChangeDifficulty0_Click(object sender, RoutedEventArgs e) {
-            // save previous work to buffer before switching
-            // note: this does NOT save to file
-            beatMap.SetNotesForMap(currentDifficulty, currentDifficultyNotes);
             SwitchDifficultyMap(0);
         }
         private void BtnChangeDifficulty1_Click(object sender, RoutedEventArgs e) {
-            beatMap.SetNotesForMap(currentDifficulty, currentDifficultyNotes);
             SwitchDifficultyMap(1);
         }
         private void BtnChangeDifficulty2_Click(object sender, RoutedEventArgs e) {
-            beatMap.SetNotesForMap(currentDifficulty, currentDifficultyNotes);
             SwitchDifficultyMap(2);
         }
         private void SliderSongVol_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e) {
@@ -555,7 +559,7 @@ namespace Edda {
                         foreach (var bc in bpmChanges) {
                             bc.globalBeat *= BPM / prevBPM;
                         }
-                        foreach (var n in currentDifficultyNotes) {
+                        foreach (var n in mapEditor.notes) {
                             n.beat *= BPM / prevBPM;
                         }
                     }
@@ -828,7 +832,7 @@ namespace Edda {
                 List<Note> newSelection = new List<Note>();
                 double startBeat = editorSelBeatStart;
                 double endBeat = editorMouseBeatUnsnapped;
-                foreach (Note n in currentDifficultyNotes) {
+                foreach (Note n in mapEditor.notes) {
                     // minor optimisation
                     if (n.beat > Math.Max(startBeat, endBeat)) {
                         break;
@@ -846,7 +850,7 @@ namespace Edda {
                 double beat = editorSnapToGrid ? editorMouseBeatSnapped : editorMouseBeatUnsnapped;
                 Note n = new Note(beat, editorMouseGridCol);
 
-                if (currentDifficultyNotes.Contains(n)) {
+                if (mapEditor.notes.Contains(n)) {
                     if (shiftKeyDown) {
                         mapEditor.ToggleSelection(n);
                     } else {
@@ -866,7 +870,7 @@ namespace Edda {
             // remove the note
              double beat = editorSnapToGrid ? editorMouseBeatSnapped : editorMouseBeatUnsnapped;
             Note n = new Note(beat, editorMouseGridCol);
-            if (currentDifficultyNotes.Contains(n)) {
+            if (mapEditor.notes.Contains(n)) {
                 mapEditor.RemoveNotes(n);
             } else {
                 mapEditor.UnselectAllNotes();
@@ -879,6 +883,12 @@ namespace Edda {
             currentDifficulty = 0;
             prevScrollPercent = 0;
 
+            lineSongProgress.Y1 = borderNavWaveform.ActualHeight;
+            lineSongProgress.Y2 = borderNavWaveform.ActualHeight;
+
+            sliderSongVol.Value = Const.Audio.DefaultSongVolume;
+            sliderDrumVol.Value = Const.Audio.DefaultNoteVolume;
+
             // map settings
             txtSongName.Text   = (string)beatMap.GetValue("_songName");
             txtArtistName.Text = (string)beatMap.GetValue("_songAuthorName");
@@ -890,33 +900,11 @@ namespace Edda {
 
             comboEnvironment.SelectedIndex = Const.BeatmapDefaults.EnvironmentNames.IndexOf((string)beatMap.GetValue("_environmentName"));
 
-            if ((string)beatMap.GetValue("_coverImageFilename") != "") {
-                LoadCoverImage();
-            } else {
-                ClearCoverImage();
-            }
-
-            //// song player
-            //var duration = (int)songStream.TotalTime.TotalSeconds;
-            //txtSongDuration.Text = $"{duration / 60}:{(duration % 60).ToString("D2")}";
-
-            //checkGridSnap.IsChecked = editorSnapToGrid;
-          
-            lineSongProgress.Y1 = borderNavWaveform.ActualHeight;
-            lineSongProgress.Y2 = borderNavWaveform.ActualHeight;
-
-            sliderSongVol.Value = Const.Audio.DefaultSongVolume;
-            sliderDrumVol.Value = Const.Audio.DefaultNoteVolume;
-
-            for (int i = 0; i < beatMap.numDifficulties; i++) {
-                mapEditors[i] = new MapEditor(this, beatMap.GetBookmarksForMap(i), beatMap.GetNotesForMap(i), editorClipboard);
-            }
+            // init difficulty-specific UI 
+            SwitchDifficultyMap(0, false, false);
 
             // enable UI parts
             EnableUI();
-
-            // init difficulty-specific UI 
-            SwitchDifficultyMap(currentDifficulty, false);
 
             UpdateEditorGridHeight();
             scrollEditor.ScrollToBottom();
@@ -991,31 +979,27 @@ namespace Edda {
             scrollEditor.IsEnabled = false;
             borderNavWaveform.IsEnabled = false;
         }
-        private void SaveBeatmap(bool notify) {
+        private void SaveBeatmap() {
             if (beatMap == null) {
                 return;
             }
             beatMap.SetBPMChangesForMap(currentDifficulty, bpmChanges);
             beatMap.SetBookmarksForMap(currentDifficulty, bookmarks);
-            beatMap.SetNotesForMap(currentDifficulty, currentDifficultyNotes);
+            beatMap.SetNotesForMap(currentDifficulty, mapEditor.notes);
             beatMap.SaveToFile();
-            if (notify) {
-                MessageBox.Show($"Beatmap saved successfully.", "", MessageBoxButton.OK, MessageBoxImage.Information);
-            } else {
-                this.Dispatcher.Invoke(() => {
-                    imgSaved.Opacity = 1;
-                    var saveAnim = new DoubleAnimation();
-                    saveAnim.From = 1;
-                    saveAnim.To = 0;
-                    saveAnim.Duration = new Duration(new TimeSpan(0, 0, 5));
-                    Storyboard.SetTargetProperty(saveAnim, new PropertyPath("(Image.Opacity)"));
-                    Storyboard.SetTargetName(saveAnim, "imgSaved");
+            this.Dispatcher.Invoke(() => {
+                imgSaved.Opacity = 1;
+                var saveAnim = new DoubleAnimation();
+                saveAnim.From = 1;
+                saveAnim.To = 0;
+                saveAnim.Duration = new Duration(new TimeSpan(0, 0, 5));
+                Storyboard.SetTargetProperty(saveAnim, new PropertyPath("(Image.Opacity)"));
+                Storyboard.SetTargetName(saveAnim, "imgSaved");
 
-                    var st = new Storyboard();
-                    st.Children.Add(saveAnim);
-                    st.Begin(this, true);
-                });
-            }
+                var st = new Storyboard();
+                st.Children.Add(saveAnim);
+                st.Begin(this, true);
+            });
         }
         private void ToggleLeftDock() {
             if (borderLeftDock.Visibility == Visibility.Collapsed) {
@@ -1092,25 +1076,29 @@ namespace Edda {
             string prevPath = beatMap.PathOf((string)beatMap.GetValue("_coverImageFilename"));
             string newFile = System.IO.Path.GetFileName(d.FileName);
 
-            if (File.Exists(prevPath)) {
-                File.Delete(prevPath);
-            }
+            if (prevPath != beatMap.PathOf(newFile)) {
+                if (File.Exists(prevPath)) {
+                    File.Delete(prevPath);
+                }
 
-            File.Copy(d.FileName, beatMap.PathOf(newFile));
-            beatMap.SetValue("_coverImageFilename", newFile);
+                File.Copy(d.FileName, beatMap.PathOf(newFile));
+                beatMap.SetValue("_coverImageFilename", newFile);
+                SaveBeatmap();
+            }
             LoadCoverImage();
         }
         private void LoadCoverImage() {
             var fileName = (string)beatMap.GetValue("_coverImageFilename");
-            BitmapImage b = Helper.BitmapGenerator(new Uri(beatMap.PathOf(fileName)));
-            imgCover.Source = b;
-            txtCoverFileName.Text = fileName;
-
-            borderImgCover.BorderThickness = new(2);
-        }
-        private void ClearCoverImage() {
-            imgCover.Source = null;
-            txtCoverFileName.Text = "N/A";
+            if (fileName == "") {
+                imgCover.Source = null;
+                txtCoverFileName.Text = "N/A";
+                borderImgCover.BorderThickness = new(0);
+            } else {
+                BitmapImage b = Helper.BitmapGenerator(new Uri(beatMap.PathOf(fileName)));
+                imgCover.Source = b;
+                txtCoverFileName.Text = fileName;
+                borderImgCover.BorderThickness = new(2);
+            }
         }
 
         // manage difficulties
@@ -1136,21 +1124,32 @@ namespace Edda {
             btnDeleteDifficulty.IsEnabled = (beatMap.numDifficulties > 1);
             btnAddDifficulty.IsEnabled = (beatMap.numDifficulties < 3);
         }
-        private void SwitchDifficultyMap(int indx, bool redraw = true) {
+        private void SwitchDifficultyMap(int indx, bool savePrevious = true, bool redraw = true) {
             PauseSong();
+
+            if (savePrevious) {
+                beatMap.SetNotesForMap(currentDifficulty, mapEditor.notes);
+                beatMap.SetBookmarksForMap(currentDifficulty, bookmarks);
+                beatMap.SetBPMChangesForMap(currentDifficulty, bpmChanges);
+            }
 
             currentDifficulty = indx;
             currentDifficultyNotes = beatMap.GetNotesForMap(indx);
             bookmarks = beatMap.GetBookmarksForMap(indx);
-
-            noteScanner = new NoteScanner(this, globalBPM, currentDifficultyNotes, drummer);
-            if (mapEditors[indx] != null) {
-                mapEditor = new MapEditor(this, bookmarks, currentDifficultyNotes, editorClipboard);
-            } else { // need to use the same pointer to currentDifficultyNotes as the NoteScanner
-                mapEditor = new MapEditor(mapEditors[indx], bookmarks, currentDifficultyNotes);
-            }
             bpmChanges = beatMap.GetBPMChangesForMap(indx);
-            
+
+            //if (mapEditors[indx] != null) {
+            //    mapEditor = new MapEditor(this, bookmarks, currentDifficultyNotes, editorClipboard);
+            //} else { // need to use the same pointer to currentDifficultyNotes as the NoteScanner
+            //    mapEditors[indx] = new MapEditor(mapEditors[prevDiff], bookmarks, currentDifficultyNotes);
+            //    mapEditor = mapEditors[indx];
+            //}
+            if (mapEditors[indx] == null) {
+                mapEditors[indx] = new MapEditor(this, bookmarks, beatMap.GetNotesForMap(indx), editorClipboard);
+            }
+            mapEditor = mapEditors[indx];
+            noteScanner = new NoteScanner(this, globalBPM, drummer);
+
 
             txtDifficultyNumber.Text = (string)beatMap.GetValueForMap(indx, "_difficultyRank");
             txtNoteSpeed.Text = (string)beatMap.GetValueForMap(indx, "_noteJumpMovementSpeed");
@@ -1284,7 +1283,7 @@ namespace Edda {
             //Timeline.SetDesiredFrameRate(songPlayAnim, animationFramerate);
             sliderSongProgress.BeginAnimation(Slider.ValueProperty, songPlayAnim);
 
-            noteScanner.Start((int)(sliderSongProgress.Value - editorAudioLatency), new List<Note>(currentDifficultyNotes));
+            noteScanner.Start((int)(sliderSongProgress.Value - editorAudioLatency), new List<Note>(mapEditor.notes));
 
             // play song
             songPlayer.Play();
@@ -1413,7 +1412,7 @@ namespace Edda {
 
             DrawEditorGridLines();
 
-            DrawEditorNotes(currentDifficultyNotes);
+            DrawEditorNotes(mapEditor.notes);
 
             // change editor preview note size
             imgPreviewNote.Width = unitLength;
@@ -1421,11 +1420,6 @@ namespace Edda {
             EditorGrid.Children.Add(imgPreviewNote);
 
             EditorGrid.Children.Add(editorDragSelectBorder);
-
-            // rescan notes after drawing, unless notes are being played right now
-            if (!songIsPlaying) {
-                noteScanner.SetScanStart();
-            }
 
             Trace.WriteLine($"INFO: Redrew editor grid in {(DateTime.Now - start).TotalSeconds} seconds");
         }
@@ -1704,11 +1698,11 @@ namespace Edda {
         private void ResnapAllNotes(double newOffset) {
             var offsetDelta = newOffset - editorGridOffset;
             var beatOffset = globalBPM / 60 * offsetDelta;
-            for (int i = 0; i < currentDifficultyNotes.Count; i++) {
+            for (int i = 0; i < mapEditor.notes.Count; i++) {
                 Note n = new Note();
-                n.beat = currentDifficultyNotes[i].beat + beatOffset;
-                n.col = currentDifficultyNotes[i].col;
-                currentDifficultyNotes[i] = n;
+                n.beat = mapEditor.notes[i].beat + beatOffset;
+                n.col = mapEditor.notes[i].col;
+                mapEditor.notes[i] = n;
             }
             // invalidate selections
             mapEditor.UnselectAllNotes();

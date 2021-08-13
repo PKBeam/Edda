@@ -18,9 +18,8 @@ public class NoteScanner {
     MainWindow caller;
     DrumPlayer drummer;
 
-    public NoteScanner(MainWindow caller, double bpm, List<Note> notes, DrumPlayer drummer) {
+    public NoteScanner(MainWindow caller, double bpm, DrumPlayer drummer) {
         this.bpm = bpm;
-        this.notes = notes;
         this.drummer = drummer;
         this.noteScanStopwatch = new Stopwatch();
         this.caller = caller;
@@ -44,7 +43,7 @@ public class NoteScanner {
         }
         noteScanStopwatch.Reset();
     }
-    public void SetScanStart() {
+    private void SetScanStart() {
         // calculate scan index for playing drum hits
         var seekBeat = noteScanStopwatchOffset * bpm / 60000;
         var newNoteScanIndex = 0;

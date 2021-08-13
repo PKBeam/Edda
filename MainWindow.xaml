@@ -203,7 +203,7 @@
                         </Border>
 
                         <Border Grid.Row="1" Grid.ColumnSpan="2" HorizontalAlignment="Right">
-                            <Button x:Name="btnMakePreview" Width="125" Height="Auto" Click="BtnMakePreview_Click">Create Song Preview</Button>
+                            <Button x:Name="btnMakePreview" Width="100" Height="20" Click="BtnMakePreview_Click" VerticalAlignment="Top">Create Preview</Button>
                         </Border>
 
                         <Border Grid.Row="2" Grid.Column="0" Margin="0 5 0 0"/>
