@@ -8,11 +8,8 @@ It is still under development and has not been tested extensively, but most feat
 
 If you have suggestions or bug reports, feel free to make a new issue on GitHub or come over to the [Ragnacustoms](https://ragnacustoms.com/) Discord server to discuss it.
 
-<details open>
-  <summary>Edda screenshot (click to close)</summary>
-
-  ![Screenshot of Edda](https://i.imgur.com/Zt5228E.png)
-</details>
+  <p align="center"><img height="800" src="https://i.imgur.com/Zt5228E.png"></p>
+  
 
 ## Installation
 
