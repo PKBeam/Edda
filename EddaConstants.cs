@@ -10,12 +10,14 @@ namespace Const {
         public const string VersionNumber = "0.4.0b2";
         public const string SettingsFile  = "settings.txt";
         public const string ResourcesPath = "Resources/";
+        public const string BackupPath    = "backups";
+        public const int    MaxBackups    = 5;
     }
     public static class DefaultUserSettings {
-        public const int AudioLatency      = -20; // ms
-        public const string DrumSampleFile = "bassdrum";
-        public const bool EnableDiscordRPC = true;
-        public const bool EnableAutosave   = true;
+        public const int    AudioLatency     = -20; // ms
+        public const string DrumSampleFile   = "bassdrum";
+        public const bool   EnableDiscordRPC = true;
+        public const bool   EnableAutosave   = true;
     }
 
     public static class UserSettings {
@@ -50,8 +52,8 @@ namespace Const {
         public const double NavWaveformOpacity = 0.75;
         public static class Bookmark {
             public static string DefaultName = "Bookmark";
-            public static string Colour => Colors.SkyBlue.ToString();
-            public static string NameColour => Colors.SkyBlue.ToString();
+            public static string Colour           => Colors.SkyBlue.ToString();
+            public static string NameColour       => Colors.SkyBlue.ToString();
             public static string BackgroundColour => Colors.SkyBlue.ToString();
             public const double Thickness = 1.0;
             public const double NameSize = 9;

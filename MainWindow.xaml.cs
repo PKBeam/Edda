@@ -441,7 +441,8 @@ namespace Edda {
             discordClient.SetPresence();
         }
         private void BtnSaveMap_Click(object sender, RoutedEventArgs e) {
-            SaveBeatmap();
+            BackupAndSaveBeatmap();
+            //SaveBeatmap();
         }
         private void BtnBPMFinder_Click(object sender, RoutedEventArgs e) {
             var win = Helper.GetFirstWindow<BPMCalcWindow>();
@@ -1001,6 +1002,49 @@ namespace Edda {
                 st.Begin(this, true);
             });
         }
+        private void BackupAndSaveBeatmap() {
+
+            string GetBackupPath(int i, string fileName, bool create=true) {
+                string backupSubFolder = System.IO.Path.Combine(beatMap.PathOf(Const.Program.BackupPath), $"backup{i}");
+                if (!Directory.Exists(backupSubFolder) && create) {
+                    Directory.CreateDirectory(backupSubFolder);
+                }
+                return System.IO.Path.Combine(backupSubFolder, $"{fileName}.dat");
+            }
+
+            // create backup directory if it doesnt exist
+            if (!Directory.Exists(beatMap.PathOf(Const.Program.BackupPath))) {
+                Directory.CreateDirectory(beatMap.PathOf(Const.Program.BackupPath));
+            }
+
+            List<string> files = new(Const.BeatmapDefaults.DifficultyNames);
+            files.Add("info");
+
+            // shift backup files
+            for (int i = Const.Program.MaxBackups - 1; i > 0; i--) {
+                foreach (var diffName in files) {
+                    string oldSavePath = GetBackupPath(i, diffName, false);
+                    if (File.Exists(oldSavePath)) {
+                        string newSavePath = GetBackupPath(i + 1, diffName);
+                        File.Move(oldSavePath, newSavePath, true);
+                    }
+                }
+            }
+
+            // save beatmap
+            SaveBeatmap();
+
+            // make new backup file
+            foreach (var diffName in files) {
+                string recentSavePath = beatMap.PathOf($"{diffName}.dat");
+                string backupPath = GetBackupPath(1, diffName);
+                if (File.Exists(recentSavePath)) {
+                    File.Copy(recentSavePath, backupPath);
+                }
+            }
+
+            // delete unused backup folders
+        }
         private void ToggleLeftDock() {
             if (borderLeftDock.Visibility == Visibility.Collapsed) {
                 borderLeftDock.Visibility = Visibility.Visible;
@@ -1222,16 +1266,22 @@ namespace Edda {
                 return false;
             }
 
-            UnloadSong();
+            // check for same file
+            var songFile = System.IO.Path.GetFileName(d.FileName);
+            var prevSongFile = (string)beatMap.GetValue("_songFilename");
+            if (songFile == beatMap.PathOf(prevSongFile)) {
+                return false;
+            }
 
             // update beatmap data
-            var songFile = System.IO.Path.GetFileName(d.FileName);
+            UnloadSong();
             beatMap.SetValue("_songApproximativeDuration", (int)vorbisStream.TotalTime.TotalSeconds + 1);
             beatMap.SetValue("_songFilename", songFile);
+            SaveBeatmap();
             vorbisStream.Dispose();
 
             // do file I/O
-            var prevSongFile = (string)beatMap.GetValue("_songFilename");
+            
             File.Delete(beatMap.PathOf(prevSongFile));
             File.Copy(d.FileName, beatMap.PathOf(songFile));
 
