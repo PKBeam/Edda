@@ -749,7 +749,7 @@ namespace Edda {
                 if (beatMap != null) {
                     DrawEditorGrid();
                 }
-            } else if (beatMap != null) {
+            } else if (beatMap != null && editorShowWaveform) {
                 DrawEditorWaveform();
             }
         }
@@ -1520,14 +1520,10 @@ namespace Edda {
             ResizeEditorWaveform();
             double height = EditorGrid.Height - scrollEditor.ActualHeight;
             double width = EditorGrid.ActualWidth * Const.Editor.Waveform.Width;
-            Task.Run(() => {
-                CreateEditorWaveform(height, width);
-            });
+            CreateEditorWaveform(height, width);
         }
         private void ResizeEditorWaveform() {
-            if (!editorShowWaveform) {
-                return;
-            }
+            
             EditorGrid.Children.Remove(imgAudioWaveform);
             imgAudioWaveform.Height = EditorGrid.Height - scrollEditor.ActualHeight;
             imgAudioWaveform.Width = EditorGrid.ActualWidth;
@@ -1535,13 +1531,15 @@ namespace Edda {
             EditorGrid.Children.Insert(0, imgAudioWaveform);
         }
         private void CreateEditorWaveform(double height, double width) {
-            BitmapSource bmp = audioWaveform.Draw(height, width); //awd.Draw(height, width, Constants.Editor.Waveform.UseGDI);
-            if (bmp != null) {
-                this.Dispatcher.Invoke(() => {
-                    imgAudioWaveform.Source = bmp;
-                    ResizeEditorWaveform();
-                });
-            }
+            Task.Run(() => {
+                BitmapSource bmp = audioWaveform.Draw(height, width); //awd.Draw(height, width, Constants.Editor.Waveform.UseGDI);
+                if (bmp != null && editorShowWaveform) {
+                    this.Dispatcher.Invoke(() => {
+                        imgAudioWaveform.Source = bmp;
+                        ResizeEditorWaveform();
+                    });
+                }
+            });
         }
         private void DrawEditorNavWaveform() {
             Task.Run(() => {
