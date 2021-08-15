@@ -105,6 +105,8 @@ public class Helper {
         return TimeFormat((int)seconds);
     }
     public static void FFmpeg(string dir, string arg) {
+        // uses a custom-built version of ffmpeg with ONLY libvorbis support
+        // (cuts down on filesize a lot)
         string path = Path.Combine(Path.GetTempPath(), "ffmpeg_temp.exe");
         File.WriteAllBytes(path, Edda.Properties.Resources.ffmpeg);
         
