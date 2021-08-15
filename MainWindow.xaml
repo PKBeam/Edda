@@ -439,9 +439,9 @@
                 <ColumnDefinition Width="5*"/>
                 <ColumnDefinition x:Name="colWaveformVertical" Width="*" MaxWidth="100"/>
             </Grid.ColumnDefinitions>
-            <Border x:Name="borderNavWaveform" Grid.Column="1" BorderBrush="{DynamicResource {x:Static SystemColors.ControlDarkDarkBrushKey}}" BorderThickness="1 0 0 0" Background="#20000000" SizeChanged="BorderNavWaveform_SizeChanged" MouseMove="BorderNavWaveform_MouseMove" MouseEnter="BorderNavWaveform_MouseEnter" MouseLeave="BorderNavWaveform_MouseLeave" MouseLeftButtonDown="BorderNavWaveform_MouseLeftButtonDown" MouseLeftButtonUp="BorderNavWaveform_MouseLeftButtonUp">
+            <Border x:Name="borderNavWaveform" Grid.Column="1" BorderBrush="{DynamicResource {x:Static SystemColors.ControlDarkDarkBrushKey}}" BorderThickness="1 0 0 0" Background="#20000000" MouseMove="BorderNavWaveform_MouseMove" MouseEnter="BorderNavWaveform_MouseEnter" MouseLeave="BorderNavWaveform_MouseLeave" MouseLeftButtonDown="BorderNavWaveform_MouseLeftButtonDown" MouseLeftButtonUp="BorderNavWaveform_MouseLeftButtonUp">
                 <Grid>
-                    <Image x:Name="imgWaveformVertical"></Image>
+                    <Image x:Name="imgWaveformVertical" Width="{Binding ElementName=borderNavWaveform, Path=ActualWidth}"/>
                     <Line x:Name="lineSongMouseover" Stroke="SkyBlue" StrokeThickness="1" X2="{Binding ElementName=borderNavWaveform, Path=ActualWidth}"></Line>
                     <Canvas x:Name="canvasBookmarks"/>
                     <Line x:Name="lineSongProgress" Stroke="Navy" StrokeThickness="1" X2="{Binding ElementName=borderNavWaveform, Path=ActualWidth}" />
@@ -533,8 +533,8 @@
                     </StackPanel>
                 </Grid>
                 <!-- Map Notes -->
-                <ScrollViewer x:Name="scrollEditor" VerticalScrollBarVisibility="Hidden" CanContentScroll="False" ScrollChanged="ScrollEditor_ScrollChanged" PreviewMouseWheel="ScrollEditor_PreviewMouseWheel" SizeChanged="ScrollEditor_SizeChanged" MouseMove="ScrollEditor_MouseMove" MouseLeave="ScrollEditor_MouseLeave" MouseEnter="ScrollEditor_MouseEnter" MouseLeftButtonUp="ScrollEditor_MouseLeftButtonUp" MouseRightButtonUp="ScrollEditor_MouseRightButtonUp" PreviewMouseLeftButtonDown="ScrollEditor_PreviewMouseLeftButtonDown">
-                    <Canvas x:Name="EditorGrid" SizeChanged="EditorGrid_SizeChanged"/>
+                <ScrollViewer x:Name="scrollEditor" VerticalScrollBarVisibility="Hidden" CanContentScroll="False" ScrollChanged="ScrollEditor_ScrollChanged" PreviewMouseWheel="ScrollEditor_PreviewMouseWheel" MouseMove="ScrollEditor_MouseMove" MouseLeave="ScrollEditor_MouseLeave" MouseEnter="ScrollEditor_MouseEnter" MouseLeftButtonUp="ScrollEditor_MouseLeftButtonUp" MouseRightButtonUp="ScrollEditor_MouseRightButtonUp" PreviewMouseLeftButtonDown="ScrollEditor_PreviewMouseLeftButtonDown">
+                    <Canvas x:Name="EditorGrid"/>
                 </ScrollViewer>
 
             </Grid>

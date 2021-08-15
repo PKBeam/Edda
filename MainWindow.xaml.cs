@@ -18,6 +18,7 @@ using NAudio.Wave;
 using NAudio.Wave.SampleProviders;
 using NAudio.Vorbis;
 using System.Drawing.Imaging;
+using System.Reactive.Linq;
 /// <summary>
 /// Interaction logic for MainWindow.xaml
 /// </summary>
@@ -147,15 +148,24 @@ namespace Edda {
             // init environment combobox
             InitComboEnvironment();
 
-            // TODO: properly debounce grid redrawing on resize
-            //Observable
-            //.FromEventPattern<SizeChangedEventArgs>(EditorGrid, nameof(Canvas.SizeChanged))
-            //.Throttle(TimeSpan.FromMilliseconds(gridRedrawInterval))
-            //.Subscribe(eventPattern => 
-            //    AppMainWindow.Dispatcher.Invoke(() => 
-            //        EditorGrid_SizeChanged(eventPattern.Sender, eventPattern.EventArgs)
-            //    )
-            //);
+            //debounce grid redrawing on resize
+            Observable
+            .FromEventPattern<SizeChangedEventArgs>(scrollEditor, nameof(SizeChanged))
+            .Throttle(TimeSpan.FromMilliseconds(Const.Editor.DrawDebounceInterval))
+            .Subscribe(eventPattern => 
+                AppMainWindow.Dispatcher.Invoke(() =>
+                    ScrollEditor_SizeChanged(eventPattern.Sender, eventPattern.EventArgs)
+                )
+            );
+
+            Observable
+            .FromEventPattern<SizeChangedEventArgs>(borderNavWaveform, nameof(SizeChanged))
+            .Throttle(TimeSpan.FromMilliseconds(Const.Editor.DrawDebounceInterval))
+            .Subscribe(eventPattern =>
+                AppMainWindow.Dispatcher.Invoke(() =>
+                    BorderNavWaveform_SizeChanged(eventPattern.Sender, eventPattern.EventArgs)
+                )
+            );
         }
 
         // UI bindings
@@ -701,18 +711,8 @@ namespace Edda {
             //}
             beatMap.SetValue("_environmentName", (string)comboEnvironment.SelectedItem);
         }
-        private void EditorGrid_SizeChanged(object sender, SizeChangedEventArgs e) {
-            // changing the width will change the size of the editor grid, so we need to update some things
-            if (e.WidthChanged) {
-                if (beatMap != null) {
-                    DrawEditorGrid();
-                }
-            } else if (beatMap != null){
-                DrawEditorWaveform();
-            }
-        }
         private void BorderNavWaveform_SizeChanged(object sender, SizeChangedEventArgs e) {
-            if (beatMap != null && e.PreviousSize != e.NewSize) {
+            if (beatMap != null) {
                 DrawEditorNavWaveform();
                 DrawBookmarks();
             }
@@ -744,9 +744,14 @@ namespace Edda {
             navMouseDown = false;
         }
         private void ScrollEditor_SizeChanged(object sender, SizeChangedEventArgs e) {
-            // TODO: redraw only gridlines
-            CalculateDrawRange();
             UpdateEditorGridHeight(false);
+            if (e.WidthChanged) {
+                if (beatMap != null) {
+                    DrawEditorGrid();
+                }
+            } else if (beatMap != null) {
+                DrawEditorWaveform();
+            }
         }
         private void ScrollEditor_ScrollChanged(object sender, ScrollChangedEventArgs e) {
             var curr = scrollEditor.VerticalOffset;
@@ -769,8 +774,13 @@ namespace Edda {
         private void ScrollEditor_MouseMove(object sender, MouseEventArgs e) {
 
             // calculate beat
-            editorMouseBeatSnapped   = BeatForPosition(e.GetPosition(EditorGrid).Y, true);
-            editorMouseBeatUnsnapped = BeatForPosition(e.GetPosition(EditorGrid).Y, false);
+            try {
+                editorMouseBeatSnapped = BeatForPosition(e.GetPosition(EditorGrid).Y, true);
+                editorMouseBeatUnsnapped = BeatForPosition(e.GetPosition(EditorGrid).Y, false);
+            } catch {
+                editorMouseBeatSnapped = 0;
+                editorMouseBeatUnsnapped = 0;
+            }
 
             // calculate column
             editorMouseGridCol = ColFromPos(e.GetPosition(EditorGrid).X);
@@ -1303,8 +1313,8 @@ namespace Edda {
             txtSongDuration.Text = Helper.TimeFormat((int)songStream.TotalTime.TotalSeconds);
             txtSongFileName.Text = (string)beatMap.GetValue("_songFilename");
 
-            audioWaveform = new VorbisWaveformVisualiser(new VorbisWaveReader(songPath));
-            navWaveform = new VorbisWaveformVisualiser(new VorbisWaveReader(songPath));
+            audioWaveform = new VorbisWaveformVisualiser(songPath);
+            navWaveform = new VorbisWaveformVisualiser(songPath);
             //awd = new AudioVisualiser_Float32(new VorbisWaveReader(songPath));
             imgAudioWaveform.Source = null;
         }
@@ -1339,6 +1349,7 @@ namespace Edda {
             scrollEditor.IsEnabled = false;
             sliderSongProgress.IsEnabled = false;
             borderNavWaveform.IsEnabled = false;
+            
 
             // hide editor
             imgPreviewNote.Opacity = 0;
@@ -1421,9 +1432,10 @@ namespace Edda {
             st.Children.Add(widthAnim);
             st.Children.Add(heightStackAnim);
             st.Begin(this, true);
+
         }
         internal void AnimateNote(Note n) {
-            var duration = new Duration(new TimeSpan(0, 0, 0, 0, Const.Editor.DrumHitDuration));
+            var duration = new Duration(new TimeSpan(0, 0, 0, 0, Const.Editor.NoteHitDuration));
 
             var opacityAnim = new DoubleAnimation();
             opacityAnim.From = 0;
@@ -1436,7 +1448,8 @@ namespace Edda {
             st.Children.Add(opacityAnim);
             st.Begin(this, true);
 
-            AnimateDrum(n.col);
+
+            //AnimateDrum(n.col);
         }
 
         // drawing functions for the editor grid
@@ -1469,21 +1482,30 @@ namespace Edda {
         }
         internal void DrawEditorGrid() {
 
-            DateTime start = DateTime.Now;
+            
 
             if (beatMap == null) {
                 return;
             }
 
             EditorGrid.Children.Clear();
+            
+            DateTime start = DateTime.Now;
 
             if (editorShowWaveform && EditorGrid.Height - scrollEditor.ActualHeight > 0) {
                 DrawEditorWaveform();
             }
 
+            DateTime beforeLines = DateTime.Now;
+
             DrawEditorGridLines();
 
+            TimeSpan lineDraw = DateTime.Now - beforeLines;
+            DateTime beforeNotes = DateTime.Now;
+
             DrawEditorNotes(mapEditor.notes);
+
+            TimeSpan noteDraw = DateTime.Now - beforeNotes;
 
             // change editor preview note size
             imgPreviewNote.Width = unitLength;
@@ -1492,7 +1514,7 @@ namespace Edda {
 
             EditorGrid.Children.Add(editorDragSelectBorder);
 
-            Trace.WriteLine($"INFO: Redrew editor grid in {(DateTime.Now - start).TotalSeconds} seconds");
+            Trace.WriteLine($"INFO: Redrew editor grid in {(DateTime.Now - start).TotalSeconds} seconds. (lines: {lineDraw.TotalSeconds}, notes: {noteDraw.TotalSeconds})");
         }
         private void DrawEditorWaveform() {
             ResizeEditorWaveform();
@@ -1523,7 +1545,7 @@ namespace Edda {
         }
         private void DrawEditorNavWaveform() {
             Task.Run(() => {
-                BitmapSource bmp = navWaveform.Draw(EditorPanel.ActualHeight, colWaveformVertical.ActualWidth);
+                BitmapSource bmp = navWaveform.Draw(borderNavWaveform.ActualHeight, colWaveformVertical.ActualWidth);
                 if (bmp != null) {
                     this.Dispatcher.Invoke(() => {
                         imgWaveformVertical.Source = bmp;

@@ -31,7 +31,7 @@ namespace Const {
         public const double DefaultGridSpacing       = 1;
         public const double DefaultGridDivision      = 4;
         public const double GridDrawRange            = 1;
-        public const int    GridDrawDebounceInterval = 100; // ms
+        public const int    DrawDebounceInterval     = 100; // ms
         public const string MajorGridlineColour      = "#333333";
         public const string MinorGridlineColour      = "#555555";
         public const double MajorGridlineThickness   = 2;
@@ -41,6 +41,7 @@ namespace Const {
         // Animation Properties
         public const double DrumHitScaleFactor = 0.75; // percentage of 1.0
         public const int    DrumHitDuration    = 150; // ms
+        public const int    NoteHitDuration    = 1000; // ms
 
         // Editor functions
         public const int    HistoryMaxSize     = 128; // actions

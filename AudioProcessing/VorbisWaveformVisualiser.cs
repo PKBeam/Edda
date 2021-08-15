@@ -12,11 +12,11 @@ using System.Threading;
 public class VorbisWaveformVisualiser {
 
 	private CancellationTokenSource tokenSource;
-	private VorbisWaveReader reader;
+	private string filePath;
 	private bool isDrawing;
-	public VorbisWaveformVisualiser(VorbisWaveReader reader) {
+	public VorbisWaveformVisualiser(string filePath) {
 		RecreateTokens();
-		this.reader = reader;
+		this.filePath = filePath;
 		this.isDrawing = false;
 	}
 	public BitmapImage Draw(double height, double width) {
@@ -34,13 +34,14 @@ public class VorbisWaveformVisualiser {
 		BitmapImage b = null;
 		try {
 			b = _Draw(height, width, tokenSource.Token);
-		} catch (Exception ex) {
+		} catch {
 			// ... ?
         }
 		return b;
 	}
 	private BitmapImage _Draw(double height, double width, CancellationToken ct) {
 		isDrawing = true;
+		VorbisWaveReader reader = new(filePath);
 	    reader.Position = 0;
 		DrawingVisual dv = new DrawingVisual();
 		using (DrawingContext dc = dv.RenderOpen()) {
