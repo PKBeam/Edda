@@ -10,8 +10,8 @@ namespace Const {
         public const string VersionNumber = "0.4.0b2";
         public const string SettingsFile  = "settings.txt";
         public const string ResourcesPath = "Resources/";
-        public const string BackupPath    = "backups";
-        public const int    MaxBackups    = 5;
+        public const string BackupPath    = "autosaves";
+        public const int    MaxBackups    = 10;
     }
     public static class DefaultUserSettings {
         public const int    AudioLatency     = -20; // ms
