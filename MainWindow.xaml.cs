@@ -159,6 +159,9 @@ namespace Edda {
         }
 
         // UI bindings
+        private void AppMainWindow_Closing(object sender, System.ComponentModel.CancelEventArgs e) {
+            PromptBeatmapSave();
+        }
         private void AppMainWindow_Closed(object sender, EventArgs e) {
             Trace.WriteLine("Closing window...");
             noteScanner?.Stop();
@@ -355,11 +358,8 @@ namespace Edda {
 
             // check if map already open
             if (beatMap != null) {
-                var res = MessageBox.Show("Do you want to save the map that is currently open?", "Warning", MessageBoxButton.YesNo, MessageBoxImage.Warning);
-                if (res == MessageBoxResult.Yes) {
-                    SaveBeatmap();
-                }
-                
+                PromptBeatmapSave();
+
                 // clear some stuff
                 PauseSong();
                 mapEditor.notes.Clear();
@@ -404,11 +404,7 @@ namespace Edda {
 
             // check if map already open
             if (beatMap != null) {
-                var res = MessageBox.Show("Save the currently opened map?", "Warning", MessageBoxButton.YesNo, MessageBoxImage.Warning);
-                if (res == MessageBoxResult.Yes) {
-                    // save existing work before making a new map
-                    SaveBeatmap();
-                }
+                PromptBeatmapSave();
                 // clear some stuff
                 PauseSong();
                 mapEditor.notes.Clear();
@@ -1168,7 +1164,7 @@ namespace Edda {
             btnDeleteDifficulty.IsEnabled = (beatMap.numDifficulties > 1);
             btnAddDifficulty.IsEnabled = (beatMap.numDifficulties < 3);
         }
-        private void SwitchDifficultyMap(int indx, bool savePrevious = true, bool redraw = true) {
+        private void SwitchDifficultyMap(int indx, bool savePrevious = true, bool redrawGrid = true) {
             PauseSong();
 
             if (savePrevious) {
@@ -1179,18 +1175,11 @@ namespace Edda {
 
             currentDifficulty = indx;
 
-            //if (mapEditors[indx] != null) {
-            //    mapEditor = new MapEditor(this, bookmarks, currentDifficultyNotes, editorClipboard);
-            //} else { // need to use the same pointer to currentDifficultyNotes as the NoteScanner
-            //    mapEditors[indx] = new MapEditor(mapEditors[prevDiff], bookmarks, currentDifficultyNotes);
-            //    mapEditor = mapEditors[indx];
-            //}
             if (mapEditors[indx] == null) {
                 mapEditors[indx] = new MapEditor(this, beatMap.GetNotesForMap(indx), beatMap.GetBPMChangesForMap(indx), beatMap.GetBookmarksForMap(indx), editorClipboard);
             }
             mapEditor = mapEditors[indx];
             noteScanner = new NoteScanner(this, globalBPM, drummer);
-
 
             txtDifficultyNumber.Text = (string)beatMap.GetValueForMap(indx, "_difficultyRank");
             txtNoteSpeed.Text = (string)beatMap.GetValueForMap(indx, "_noteJumpMovementSpeed");
@@ -1210,13 +1199,14 @@ namespace Edda {
 
             EnableDifficultyButtons();
             DrawBookmarks();
-            if (redraw) {
+            if (redrawGrid) {
                 DrawEditorGrid();
             }
         }
         private void SortDifficultyMaps() {
             // bubble sort
             bool swap;
+            int diff = currentDifficulty;
             do {
                 swap = false;
                 for (int i = 0; i < beatMap.numDifficulties - 1; i++) {
@@ -1224,10 +1214,16 @@ namespace Edda {
                     int highDiff = (int)beatMap.GetValueForMap(i + 1, "_difficultyRank");
                     if (lowDiff > highDiff) {
                         SwapDifficultyMaps(i, i + 1);
+                        if (diff == i) {
+                            diff++;
+                        } else if (diff == i + 1) {
+                            diff--;
+                        }
                         swap = true;
                     }
                 }
             } while (swap);
+            SwitchDifficultyMap(diff);
         }
         private void SwapDifficultyMaps(int i, int j) {
             var temp = mapEditors[i];
@@ -1235,11 +1231,11 @@ namespace Edda {
             mapEditors[j] = temp;
 
             beatMap.SwapMaps(i, j);
-            if (currentDifficulty == i) {
-                SwitchDifficultyMap(j);
-            } else if (currentDifficulty == j) {
-                SwitchDifficultyMap(i);
-            }
+            //if (currentDifficulty == i) {
+            //    SwitchDifficultyMap(j);
+            //} else if (currentDifficulty == j) {
+            //    SwitchDifficultyMap(i);
+            //}
             EnableDifficultyButtons();
         }
 
@@ -1837,6 +1833,15 @@ namespace Edda {
             beatNormalised /= globalBPM / recentBPM;
             beatNormalised -= (int)beatNormalised;
             return Helper.BitmapImageForBeat(beatNormalised, highlight);
+        }
+        private void PromptBeatmapSave() {
+            if (beatMap == null) {
+                return;
+            }
+            var res = MessageBox.Show("Save the currently opened map?", "Warning", MessageBoxButton.YesNo, MessageBoxImage.Warning);
+            if (res == MessageBoxResult.Yes) {
+                BackupAndSaveBeatmap();
+            }
         }
     }
 }
