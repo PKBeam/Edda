@@ -1283,7 +1283,7 @@ namespace Edda {
             // check for same file
             var songFile = System.IO.Path.GetFileName(d.FileName);
             var prevSongFile = (string)beatMap.GetValue("_songFilename");
-            if (songFile == beatMap.PathOf(prevSongFile)) {
+            if (d.FileName == beatMap.PathOf(prevSongFile)) {
                 return false;
             }
 
