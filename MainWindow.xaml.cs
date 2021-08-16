@@ -302,11 +302,6 @@ namespace Edda {
             // unselect all notes
             if (e.Key == Key.Escape) {
                 mapEditor.UnselectAllNotes();
-                var result = new WriteableBitmap(
-                    (int)(EditorGrid.Height - scrollEditor.ActualHeight), 
-                    (int)(EditorGrid.ActualWidth * Const.Editor.Waveform.Width), 
-                    96, 96, PixelFormats.Pbgra32, null
-                );
             }                                           
 
         }
@@ -1309,7 +1304,7 @@ namespace Edda {
             songChannel = new SampleChannel(songStream);
             songPlayer = new WasapiOut(AudioClientShareMode.Shared, Const.Audio.WASAPILatencyTarget);
             songPlayer.Init(songChannel);
-
+            beatMap.SetValue("_songApproximativeDuration", (int)songStream.TotalTime.TotalSeconds + 1);
             // subscribe to playbackstopped
             songPlayer.PlaybackStopped += (sender, args) => { PauseSong(); };
 

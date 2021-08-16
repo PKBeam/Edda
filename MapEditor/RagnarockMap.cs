@@ -159,6 +159,10 @@ public class RagnarockMap {
         var obj = JObject.Parse(infoStr);
         foreach (var i in expectedTypesL1) {
             // validate type
+            if (i.Key == "_songApproximativeDuration" && obj[i.Key]?.Type != JTokenType.Object) {
+                SetValue("_songApproximativeDuration", 1);
+                continue;
+            }
             if (!i.Value.Contains(obj[i.Key]?.Type)) {
                 throw new Exception($"Incorrect or missing key {i.Key}");
             }
