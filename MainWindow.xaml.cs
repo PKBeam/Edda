@@ -996,9 +996,11 @@ namespace Edda {
             if (beatMap == null) {
                 return;
             }
-            beatMap.SetBPMChangesForMap(currentDifficulty, mapEditor.bpmChanges);
-            beatMap.SetBookmarksForMap(currentDifficulty, mapEditor.bookmarks);
-            beatMap.SetNotesForMap(currentDifficulty, mapEditor.notes);
+            if (mapEditor != null) {
+                beatMap.SetBPMChangesForMap(currentDifficulty, mapEditor.bpmChanges);
+                beatMap.SetBookmarksForMap(currentDifficulty, mapEditor.bookmarks);
+                beatMap.SetNotesForMap(currentDifficulty, mapEditor.notes);
+            }
             beatMap.SaveToFile();
             this.Dispatcher.Invoke(() => {
                 imgSaved.Opacity = 1;
