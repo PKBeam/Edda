@@ -1295,7 +1295,6 @@ namespace Edda {
             vorbisStream.Dispose();
 
             // do file I/O
-            
             File.Delete(beatMap.PathOf(prevSongFile));
             File.Copy(d.FileName, beatMap.PathOf(songFile));
 
@@ -1324,6 +1323,13 @@ namespace Edda {
             audioWaveform = new VorbisWaveformVisualiser(songPath);
             navWaveform = new VorbisWaveformVisualiser(songPath);
             //awd = new AudioVisualiser_Float32(new VorbisWaveReader(songPath));
+
+            // redraw waveforms
+            if (editorShowWaveform) { 
+                DrawEditorWaveform();
+            }
+            DrawEditorNavWaveform();
+
             imgAudioWaveform.Source = null;
         }
         private void UnloadSong() {

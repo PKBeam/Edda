@@ -98,6 +98,7 @@ public class VorbisWaveformVisualiser {
 		bmp.Freeze();
 		//RenderTargetToDisk(bmp);
 		isDrawing = false;
+		reader.Dispose();
 		return RenderTargetToImage(bmp);
 	}
 	private static void RenderTargetToDisk(RenderTargetBitmap input) {
