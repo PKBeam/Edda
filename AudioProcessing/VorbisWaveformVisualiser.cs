@@ -19,7 +19,7 @@ public class VorbisWaveformVisualiser {
 		this.filePath = filePath;
 		this.isDrawing = false;
 	}
-	public BitmapImage Draw(double height, double width) {
+	public ImageSource Draw(double height, double width) {
 		tokenSource.Cancel();
 		while (isDrawing) {
 			Thread.Sleep(100);
@@ -31,15 +31,15 @@ public class VorbisWaveformVisualiser {
 			height *= scale;
 			width *= scale;
 		}
-		BitmapImage b = null;
+		ImageSource b = null;
 		try {
 			b = _Draw(height, width, tokenSource.Token);
-		} catch {
-			// ... ?
-        }
+		} catch (Exception ex) {
+			Trace.WriteLine(ex);
+		}
 		return b;
 	}
-	private BitmapImage _Draw(double height, double width, CancellationToken ct) {
+	private ImageSource _Draw(double height, double width, CancellationToken ct) {
 		isDrawing = true;
 		VorbisWaveReader reader = new(filePath);
 	    reader.Position = 0;
@@ -110,7 +110,7 @@ public class VorbisWaveformVisualiser {
 			bitmapEncoder.Save(fs);
 		}
 	}
-	private BitmapImage RenderTargetToImage(RenderTargetBitmap input) {
+	private BitmapImage RenderTargetToImage(BitmapSource input) {
 		// https://stackoverflow.com/questions/13987408/convert-rendertargetbitmap-to-bitmapimage#13988871
 		var bitmapEncoder = new PngBitmapEncoder();
 		bitmapEncoder.Frames.Add(BitmapFrame.Create(input));
@@ -136,4 +136,109 @@ public class VorbisWaveformVisualiser {
 		}
 		tokenSource = new CancellationTokenSource();
 	}
+	/* 
+	 public ImageSource DrawLarge(double height, double width) {
+		var largest = Math.Max(height, width);
+		if (largest > Const.Editor.Waveform.MaxDimension) {
+			double scale = Const.Editor.Waveform.MaxDimension / largest;
+			height *= scale;
+			width *= scale;
+		}
+		var bitmap = new WriteableBitmap((int)width, (int)height, 96, 96, PixelFormats.Pbgra32, null);
+
+		isDrawing = true;
+		VorbisWaveReader reader = new(filePath);
+		reader.Position = 0;
+
+		int channels = reader.WaveFormat.Channels;
+		var bytesPerSample = reader.WaveFormat.BitsPerSample / 8 * channels;
+		var numSamples = reader.Length / bytesPerSample;
+
+		int samplesPerPixel = (int)(numSamples / height) * channels;
+		double samplesPerPixel_d = numSamples / height * channels;
+		int totalSamples = 0;
+		double totalSamples_d = 0;
+
+		var buffer = new float[samplesPerPixel + channels];
+		for (int pixel = 0; pixel < height; pixel++) {
+
+			// read samples
+			int samplesRead = reader.Read(buffer, 0, samplesPerPixel);
+			if (samplesRead == 0) {
+				break;
+			}
+
+			// correct floating point rounding errors
+			totalSamples += samplesPerPixel;
+			totalSamples_d += samplesPerPixel_d;
+			if (totalSamples_d - totalSamples > channels) {
+				totalSamples += channels;
+				reader.Read(buffer, samplesPerPixel, channels);
+			}
+
+			var samples = new List<float>(buffer);
+			samples.Sort();
+			float lowPercent = (samples[(int)((samples.Count - 1) * (1 - Const.Editor.Waveform.SampleMaxPercentile))] + 1) / 2;
+			float highPercent = (samples[(int)((samples.Count - 1) * Const.Editor.Waveform.SampleMaxPercentile)] + 1) / 2;
+			float lowValue = (float)width * lowPercent;
+			float highValue = (float)width * highPercent;
+
+		    bitmap.DrawLine((int)lowValue, (int)(height - pixel), (int)highValue, (int)(height - pixel), Const.Editor.Waveform.ColourWPF);
+		}
+
+		//RenderTargetToDisk(bmp);
+		isDrawing = false;
+		return RenderTargetToImage(bitmap);
+	}
+	 */
+	/*
+	public void DrawToCanvas(double height, double width, System.Windows.Controls.Canvas canvas) {
+		VorbisWaveReader reader = new(filePath);
+		reader.Position = 0;
+
+		int channels = reader.WaveFormat.Channels;
+		var bytesPerSample = reader.WaveFormat.BitsPerSample / 8 * channels;
+		var numSamples = reader.Length / bytesPerSample;
+
+		int samplesPerPixel = (int)(numSamples / height) * channels;
+		double samplesPerPixel_d = numSamples / height * channels;
+		int totalSamples = 0;
+		double totalSamples_d = 0;
+
+		var buffer = new float[samplesPerPixel + channels];
+		for (int pixel = 0; pixel < height; pixel++) {
+
+			// read samples
+			int samplesRead = reader.Read(buffer, 0, samplesPerPixel);
+			if (samplesRead == 0) {
+				break;
+			}
+
+			// correct floating point rounding errors
+			totalSamples += samplesPerPixel;
+			totalSamples_d += samplesPerPixel_d;
+			if (totalSamples_d - totalSamples > channels) {
+				totalSamples += channels;
+				reader.Read(buffer, samplesPerPixel, channels);
+			}
+
+			var samples = new List<float>(buffer);
+			samples.Sort();
+			float lowPercent = (samples[(int)((samples.Count - 1) * (1 - Const.Editor.Waveform.SampleMaxPercentile))] + 1) / 2;
+			float highPercent = (samples[(int)((samples.Count - 1) * Const.Editor.Waveform.SampleMaxPercentile)] + 1) / 2;
+			float lowValue = (float)width * lowPercent;
+			float highValue = (float)width * highPercent;
+
+			System.Windows.Shapes.Line line = new();
+			line.X1 = lowValue;
+			line.X2 = highValue;
+			line.Y1 = (int)(height - pixel);
+			line.Y2 = (int)(height - pixel);
+			line.Stroke = (SolidColorBrush)new BrushConverter().ConvertFrom(Const.Editor.Bookmark.Colour);
+			line.StrokeThickness = 1.0;
+			canvas.Children.Add(line);
+
+		}
+	}
+	 */
 }

@@ -68,9 +68,9 @@ namespace Const {
             public const double SampleMaxPercentile = 0.95;
             public const double Width        = 0.75;
             public const int    MaxDimension = 65535;
-            public const double ThicknessWPF = 2;
+            public const double ThicknessWPF = 1;
             public const bool   UseGDI       = false;
-            public static MediaColor   ColourWPF => MediaColor.FromArgb(96, 0, 0, 255);
+            public static MediaColor   ColourWPF => MediaColor.FromArgb(180, 0, 0, 255);
             public static DrawingColor ColourGDI => DrawingColor.FromArgb(180, 0, 0, 255);
         }
     }

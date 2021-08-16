@@ -128,6 +128,7 @@ namespace Edda {
             // disable parts of UI, as no map is loaded
             imgSaved.Opacity = 0;
             imgWaveformVertical.Opacity = Const.Editor.NavWaveformOpacity;
+            RenderOptions.SetBitmapScalingMode(imgAudioWaveform, BitmapScalingMode.NearestNeighbor);
             lineSongMouseover.Opacity = 0;
             DisableUI();
 
@@ -301,7 +302,12 @@ namespace Edda {
             // unselect all notes
             if (e.Key == Key.Escape) {
                 mapEditor.UnselectAllNotes();
-            }
+                var result = new WriteableBitmap(
+                    (int)(EditorGrid.Height - scrollEditor.ActualHeight), 
+                    (int)(EditorGrid.ActualWidth * Const.Editor.Waveform.Width), 
+                    96, 96, PixelFormats.Pbgra32, null
+                );
+            }                                           
 
         }
         private void AppMainWindow_KeyUp(object sender, KeyEventArgs e) {
@@ -1532,7 +1538,9 @@ namespace Edda {
         }
         private void CreateEditorWaveform(double height, double width) {
             Task.Run(() => {
-                BitmapSource bmp = audioWaveform.Draw(height, width); //awd.Draw(height, width, Constants.Editor.Waveform.UseGDI);
+                DateTime before = DateTime.Now;
+                ImageSource bmp = audioWaveform.Draw(height, width);
+                Trace.WriteLine($"INFO: Drew big waveform in {(DateTime.Now - before).TotalSeconds} sec");
                 if (bmp != null && editorShowWaveform) {
                     this.Dispatcher.Invoke(() => {
                         imgAudioWaveform.Source = bmp;
@@ -1543,7 +1551,9 @@ namespace Edda {
         }
         private void DrawEditorNavWaveform() {
             Task.Run(() => {
-                BitmapSource bmp = navWaveform.Draw(borderNavWaveform.ActualHeight, colWaveformVertical.ActualWidth);
+                DateTime before = DateTime.Now;
+                ImageSource bmp = navWaveform.Draw(borderNavWaveform.ActualHeight, colWaveformVertical.ActualWidth);
+                Trace.WriteLine($"INFO: Drew nav waveform in {(DateTime.Now - before).TotalSeconds} sec");
                 if (bmp != null) {
                     this.Dispatcher.Invoke(() => {
                         imgWaveformVertical.Source = bmp;
