@@ -13,7 +13,7 @@
                 <Label x:Name="lblGlobalBPM" Padding="5 0 0 20" FontSize="14" >0</Label>
             </StackPanel>
             <Label Padding="0 0 0 5" FontWeight="Bold">BPM Changes:</Label>
-            <DataGrid x:Name="dataBPMChange" Height="200" AutoGenerateColumns="False" CellEditEnding="dataBPMChange_CellEditEnding" CurrentCellChanged="dataBPMChange_CurrentCellChanged">
+            <DataGrid x:Name="dataBPMChange" Height="200" AutoGenerateColumns="False" CellEditEnding="dataBPMChange_CellEditEnding" CurrentCellChanged="dataBPMChange_CurrentCellChanged" RowEditEnding="dataBPMChange_RowEditEnding">
                 <DataGrid.Columns>
                     <DataGridTextColumn Header="Global Beat" Binding="{Binding globalBeat}" Width="*"/>
                     <DataGridTextColumn Header="BPM" Binding="{Binding BPM}" Width="*"/>

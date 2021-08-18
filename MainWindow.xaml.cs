@@ -1490,9 +1490,6 @@ namespace Edda {
             }
         }
         internal void DrawEditorGrid() {
-
-            
-
             if (beatMap == null) {
                 return;
             }

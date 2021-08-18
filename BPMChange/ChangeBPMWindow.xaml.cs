@@ -1,16 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
-using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Shapes;
 
 namespace Edda {
     /// <summary>
@@ -29,6 +20,8 @@ namespace Edda {
             this.BPMChanges = BPMChanges;
             dataBPMChange.ItemsSource = this.BPMChanges;
             lblGlobalBPM.Content = $"{Math.Round(globalBPM, 3)}";
+            
+            //dataBPMChange.Items.SortDescriptions.Add(new SortDescription("Global Beat", ListSortDirection.Ascending));
         }
 
         private void btnExit_Click(object sender, RoutedEventArgs e) {
@@ -69,6 +62,19 @@ namespace Edda {
 
         private void dataBPMChange_CurrentCellChanged(object sender, EventArgs e) {
             caller.DrawEditorGrid();
+        }
+
+        private void dataBPMChange_RowEditEnding(object sender, DataGridRowEditEndingEventArgs e) {
+            // commit edit
+            dataBPMChange.RowEditEnding -= dataBPMChange_RowEditEnding;
+            dataBPMChange.CommitEdit();
+            dataBPMChange.RowEditEnding += dataBPMChange_RowEditEnding;
+
+
+            dataBPMChange.ItemsSource = null;
+            BPMChanges.Sort();
+            caller.DrawEditorGrid();
+            dataBPMChange.ItemsSource = this.BPMChanges;
         }
     }
 }

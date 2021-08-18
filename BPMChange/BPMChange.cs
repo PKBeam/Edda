@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-public class BPMChange {
+public class BPMChange : IComparable {
     public double globalBeat { get; set; }
     public double BPM { get; set; }
     public int gridDivision { get; set; }
@@ -16,4 +16,12 @@ public class BPMChange {
     }
 
     public BPMChange() : this(0, 120, 4) { }
+
+    public int CompareTo(object obj) {
+        if (!(obj is BPMChange n)) {
+            throw new Exception();
+        }
+        BPMChange m = this;
+        return m.globalBeat.CompareTo(n.globalBeat);
+    }
 }
