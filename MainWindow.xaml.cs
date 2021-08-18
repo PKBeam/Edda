@@ -1279,9 +1279,9 @@ namespace Edda {
             }
 
             // check for same file
-            var songFile = System.IO.Path.GetFileName(d.FileName);
-            var prevSongFile = (string)beatMap.GetValue("_songFilename");
-            if (d.FileName == beatMap.PathOf(prevSongFile)) {
+            var songFile = System.IO.Path.GetFileName(Helper.SanitiseFileName(d.FileName));
+            var prevSongFile = beatMap.PathOf((string)beatMap.GetValue("_songFilename"));
+            if (d.FileName == prevSongFile) {
                 return false;
             }
 
@@ -1293,9 +1293,12 @@ namespace Edda {
             vorbisStream.Dispose();
 
             // do file I/O
-            File.Delete(beatMap.PathOf(prevSongFile));
-            File.Copy(d.FileName, beatMap.PathOf(songFile));
-
+            if (!File.Exists(prevSongFile)) {
+                File.Delete(prevSongFile);
+            }
+            if (!File.Exists(beatMap.PathOf(songFile))) {
+                File.Copy(d.FileName, beatMap.PathOf(songFile));
+            }
             LoadSong();
 
             return true;

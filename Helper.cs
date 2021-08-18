@@ -95,6 +95,20 @@ public class Helper {
         }
         return BitmapGenerator($"rune{runeStr}{(isHighlighted ? "highlight" : "")}.png");
     }
+    public static string SanitiseFileName(string fileName) {
+        string newName = "";
+        foreach (var ch in fileName) {
+            // ascii check
+            if (ch < 128) {
+                if (Char.IsWhiteSpace(ch)) {
+                    newName += '-';
+                } else {
+                    newName += ch;
+                }
+            }
+        }
+        return newName;
+    }
     public static string TimeFormat(int seconds) {
         int min = seconds / 60;
         int sec = seconds % 60;
