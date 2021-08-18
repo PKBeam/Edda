@@ -394,8 +394,9 @@ namespace Edda {
 
             // check folder is empty
             if (Directory.GetFiles(d2.FileName).Length > 0) {
-                MessageBox.Show("The specified folder is not empty.", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
-                return;
+                if (MessageBoxResult.No == MessageBox.Show("The specified folder is not empty. Continue anyway?", "Warning", MessageBoxButton.YesNo, MessageBoxImage.Warning)) {
+                    return;
+                }
             }
 
             beatMap = new RagnarockMap(d2.FileName, true);
@@ -1128,13 +1129,15 @@ namespace Edda {
 
             string prevPath = beatMap.PathOf((string)beatMap.GetValue("_coverImageFilename"));
             string newFile = System.IO.Path.GetFileName(d.FileName);
+            string newPath = beatMap.PathOf(newFile);
 
-            if (prevPath != beatMap.PathOf(newFile)) {
+            if (prevPath != newPath) {
                 if (File.Exists(prevPath)) {
                     File.Delete(prevPath);
                 }
-
-                File.Copy(d.FileName, beatMap.PathOf(newFile));
+                if (!File.Exists(newPath)) {
+                    File.Copy(d.FileName, newPath);
+                } 
                 beatMap.SetValue("_coverImageFilename", newFile);
                 SaveBeatmap();
             }
