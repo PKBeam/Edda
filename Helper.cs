@@ -5,6 +5,7 @@ using System.Diagnostics;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using System.Text;
 using System.Windows;
 using System.Windows.Media.Imaging;
 
@@ -96,18 +97,8 @@ public class Helper {
         return BitmapGenerator($"rune{runeStr}{(isHighlighted ? "highlight" : "")}.png");
     }
     public static string SanitiseFileName(string fileName) {
-        string newName = "";
-        foreach (var ch in fileName) {
-            // ascii check
-            if (ch < 128) {
-                if (Char.IsWhiteSpace(ch)) {
-                    newName += '-';
-                } else {
-                    newName += ch;
-                }
-            }
-        }
-        return newName;
+        //return fileName.Replace(" ", "-");
+        return "song.ogg";
     }
     public static string TimeFormat(int seconds) {
         int min = seconds / 60;
