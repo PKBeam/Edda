@@ -68,8 +68,8 @@ namespace Edda {
             if (int.TryParse(TxtStartTimeMin.Text, out temp) && Helper.DoubleRangeCheck(startMin, 0, 59)) {
                 startMin = temp;
                 if (!TimeRangeCheck()) {
-                    startMin = endMin;
-                    startSec = endSec;
+                    endMin = startMin;
+                    endSec = startSec;
                 }
             } else {
                 ShowRangeError();
@@ -81,8 +81,8 @@ namespace Edda {
             if (int.TryParse(TxtStartTimeSec.Text, out temp) && Helper.DoubleRangeCheck(startSec, 0, 59)) {
                 startSec = temp;
                 if (!TimeRangeCheck()) {
-                    startMin = endMin;
-                    startSec = endSec;
+                    endMin = startMin;
+                    endSec = startSec;
                 }
             } else {
                 ShowRangeError();
@@ -94,8 +94,8 @@ namespace Edda {
             if (int.TryParse(TxtEndTimeMin.Text, out temp) && Helper.DoubleRangeCheck(endMin, 0, 59)) {
                 endMin = temp;
                 if (!TimeRangeCheck()) {
-                    endMin = startMin;
-                    endSec = startSec;
+                    startMin = endMin;
+                    startSec = endSec;
                 }
             } else { 
                 ShowRangeError();
@@ -108,8 +108,8 @@ namespace Edda {
             if (int.TryParse(TxtEndTimeSec.Text, out temp) && Helper.DoubleRangeCheck(endSec, 0, 59)) {
                 endSec = temp;
                 if (!TimeRangeCheck()) {
-                    endMin = startMin;
-                    endSec = startSec;
+                    startMin = endMin;
+                    startSec = endSec;
                 }
             } else { 
                 ShowRangeError();

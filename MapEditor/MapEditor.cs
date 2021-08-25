@@ -36,16 +36,19 @@ public class MapEditor {
         parent.DrawBookmarks();
     }
     public void AddNotes(List<Note> notes, bool updateHistory = true) {
+        List<Note> drawNotes = new();
         foreach (Note n in notes) {
-            Helper.InsertSortedUnique(this.notes, n);
+            if (Helper.InsertSortedUnique(this.notes, n)) {
+                drawNotes.Add(n);
+            }
         }
         // draw the added notes
         // note: by drawing this note out of order, it is inconsistently layered with other notes.
         //       should we take the performance hit of redrawing the entire grid for visual consistency?
-        parent.DrawEditorNotes(notes);
+        parent.DrawEditorNotes(drawNotes);
 
         if (updateHistory) {
-            editorHistory.Add(new EditList<Note>(true, notes));
+            editorHistory.Add(new EditList<Note>(true, drawNotes));
         }
         editorHistory.Print();
     }

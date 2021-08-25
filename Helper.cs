@@ -37,21 +37,22 @@ public class Helper {
         }
         return null;       
     }
-    public static void InsertSortedUnique(List<Note> notes, Note note) {
+    public static bool InsertSortedUnique(List<Note> notes, Note note) {
         // check which index to insert the new note at (keep everything in sorted order)
         var i = 0;
         foreach (var thisNote in notes) {
             int comp = thisNote.CompareTo(note);
             if (comp == 0) {
-                return;
+                return false;
             }
             if (comp > 0) {
                 notes.Insert(i, note);
-                return;
+                return true;
             }
             i++;
         }
         notes.Add(note);
+        return true;
     }
     // TODO figure out a better way than this
     public static string UidGenerator(Note n) {
