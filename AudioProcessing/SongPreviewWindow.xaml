@@ -7,7 +7,11 @@
         mc:Ignorable="d"
         Title="Song Preview" Height="210" Width="255"  Background="{DynamicResource {x:Static SystemColors.ControlDarkBrushKey}}">
     <Grid>
-        <DockPanel>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="31*"/>
+            <ColumnDefinition Width="54*"/>
+        </Grid.ColumnDefinitions>
+        <DockPanel Grid.ColumnSpan="2">
             <Border DockPanel.Dock="Bottom" BorderBrush="{DynamicResource {x:Static SystemColors.ControlDarkDarkBrushKey}}" BorderThickness="0, 1, 0, 0">
                 <Border.Background>
                     <LinearGradientBrush EndPoint="0.5,1" StartPoint="0.5,0">

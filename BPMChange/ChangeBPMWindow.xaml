@@ -7,21 +7,42 @@
         mc:Ignorable="d"
         Title="Variable BPM Settings" Height="370" Width="300" ResizeMode="NoResize" d:DesignHeight="343.605">
     <Grid Background="{DynamicResource {x:Static SystemColors.ControlDarkBrushKey}}">
-        <StackPanel Margin="15">
-            <StackPanel Orientation="Horizontal">
-                <Label Padding="0 0 0 20" FontWeight="Bold" FontSize="14">Global BPM:</Label>
-                <Label x:Name="lblGlobalBPM" Padding="5 0 0 20" FontSize="14" >0</Label>
+        <DockPanel>
+            <Border DockPanel.Dock="Top" BorderBrush="{DynamicResource {x:Static SystemColors.ControlDarkDarkBrushKey}}" BorderThickness="0, 0, 0, 1">
+                <Border.Background>
+                    <LinearGradientBrush EndPoint="0.5,1" StartPoint="0.5,0">
+                        <GradientStop Color="{DynamicResource {x:Static SystemColors.ControlLightColorKey}}" Offset="0"/>
+                        <GradientStop Color="{DynamicResource {x:Static SystemColors.ControlDarkColorKey}}" Offset="1"/>
+                    </LinearGradientBrush>
+                </Border.Background>
+                <StackPanel Orientation="Horizontal">
+                    <Label Padding="10 10 0 10" FontWeight="Bold" FontSize="14">Global BPM:</Label>
+                    <Label x:Name="lblGlobalBPM" Padding="5 10 10 10" FontSize="14" >0</Label>
+                </StackPanel>
+            </Border>
+            <Border DockPanel.Dock="Bottom" BorderBrush="{DynamicResource {x:Static SystemColors.ControlDarkDarkBrushKey}}" BorderThickness="0, 1, 0, 0">
+                <Border.Background>
+                    <LinearGradientBrush EndPoint="0.5,1" StartPoint="0.5,0">
+                        <GradientStop Color="{DynamicResource {x:Static SystemColors.ControlLightColorKey}}"/>
+                        <GradientStop Color="{DynamicResource {x:Static SystemColors.ControlDarkColorKey}}" Offset="1"/>
+                    </LinearGradientBrush>
+                </Border.Background>
+                <StackPanel>
+                    <Button x:Name="btnExit" Width="60" Margin="0 10 10 10" HorizontalAlignment="Right" Click="btnExit_Click">Exit</Button>
+                </StackPanel>
+            </Border>
+            <StackPanel Margin="15">
+                
+                <Label Padding="0 0 0 5" FontWeight="Bold">BPM Changes:</Label>
+                <DataGrid x:Name="dataBPMChange" Height="200" AutoGenerateColumns="False" CellEditEnding="dataBPMChange_CellEditEnding" CurrentCellChanged="dataBPMChange_CurrentCellChanged" RowEditEnding="dataBPMChange_RowEditEnding">
+                    <DataGrid.Columns>
+                        <DataGridTextColumn Header="Global Beat" Binding="{Binding globalBeat}" Width="*"/>
+                        <DataGridTextColumn Header="BPM" Binding="{Binding BPM}" Width="*"/>
+                        <DataGridTextColumn Header="Grid Division" Binding="{Binding gridDivision}" Width="*"/>
+                    </DataGrid.Columns>
+                </DataGrid>
             </StackPanel>
-            <Label Padding="0 0 0 5" FontWeight="Bold">BPM Changes:</Label>
-            <DataGrid x:Name="dataBPMChange" Height="200" AutoGenerateColumns="False" CellEditEnding="dataBPMChange_CellEditEnding" CurrentCellChanged="dataBPMChange_CurrentCellChanged" RowEditEnding="dataBPMChange_RowEditEnding">
-                <DataGrid.Columns>
-                    <DataGridTextColumn Header="Global Beat" Binding="{Binding globalBeat}" Width="*"/>
-                    <DataGridTextColumn Header="BPM" Binding="{Binding BPM}" Width="*"/>
-                    <DataGridTextColumn Header="Grid Division" Binding="{Binding gridDivision}" Width="*"/>
-                </DataGrid.Columns>
-            </DataGrid>
-            <Button x:Name="btnExit" Width="60" Margin="0 20 0 0" HorizontalAlignment="Right" Click="btnExit_Click">Exit</Button>
-        </StackPanel>
+        </DockPanel>
     </Grid>
     
 </Window>
