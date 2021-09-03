@@ -243,13 +243,22 @@
                             <Label Padding="0 0 0 5">Change Difficulty</Label>
                             <StackPanel x:Name="DifficultyChangePanel" Orientation="Horizontal">
                                 <Button x:Name="btnChangeDifficulty0" Width="65" Height="40" Click="BtnChangeDifficulty0_Click">
-                                    <Image Source="pack://application:,,,/Edda;component/resources/difficulty1.png"/>
+                                    <Grid Width="60">
+                                        <Image Source="pack://application:,,,/Edda;component/resources/difficulty1.png"/>
+                                        <Label x:Name="lblDifficultyRank1" VerticalAlignment="Bottom" Padding="0 0 3 1" HorizontalAlignment="Right" FontWeight="Bold"></Label>
+                                    </Grid>
                                 </Button>
                                 <Button x:Name="btnChangeDifficulty1" Width="65" Height="40" Click="BtnChangeDifficulty1_Click">
-                                    <Image Source="pack://application:,,,/Edda;component/resources/difficulty2.png"/>
+                                    <Grid Width="60">
+                                        <Image Source="pack://application:,,,/Edda;component/resources/difficulty2.png"/>
+                                        <Label x:Name="lblDifficultyRank2" VerticalAlignment="Bottom" Padding="0 0 3 1" HorizontalAlignment="Right" FontWeight="Bold"></Label>
+                                    </Grid>
                                 </Button>
                                 <Button x:Name="btnChangeDifficulty2" Width="65" Height="40" Click="BtnChangeDifficulty2_Click">
-                                    <Image Source="pack://application:,,,/Edda;component/resources/difficulty3.png"/>
+                                    <Grid Width="60">
+                                        <Image Source="pack://application:,,,/Edda;component/resources/difficulty3.png"/>
+                                        <Label x:Name="lblDifficultyRank3" VerticalAlignment="Bottom" Padding="0 0 3 1" HorizontalAlignment="Right" FontWeight="Bold"></Label>
+                                    </Grid>
                                 </Button>
                             </StackPanel>
 

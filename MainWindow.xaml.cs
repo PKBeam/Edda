@@ -419,7 +419,6 @@ namespace Edda {
                 PromptBeatmapSave();
                 // clear some stuff
                 PauseSong();
-                mapEditor.notes.Clear();
             }
 
             // select folder for map
@@ -621,7 +620,7 @@ namespace Edda {
                 level = prevLevel;
                 txtDifficultyNumber.Text = level.ToString();
             }
-            
+            UpdateDifficultyLabels();
         }
         private void TxtNoteSpeed_LostFocus(object sender, RoutedEventArgs e) {
             double prevSpeed = int.Parse((string)beatMap.GetValueForMap(currentDifficulty, "_noteJumpMovementSpeed"));
@@ -912,6 +911,8 @@ namespace Edda {
             for (int i = 0; i < mapEditors.Length; i++) {
                 mapEditors[i] = null;
             }
+
+            UpdateDifficultyLabels();
 
             // init difficulty-specific UI 
             SwitchDifficultyMap(0, false, false);
@@ -1882,6 +1883,16 @@ namespace Edda {
             var res = MessageBox.Show("Save the currently opened map?", "Warning", MessageBoxButton.YesNo, MessageBoxImage.Warning);
             if (res == MessageBoxResult.Yes) {
                 BackupAndSaveBeatmap();
+            }
+        }
+        private void UpdateDifficultyLabels() {
+            var difficultyLabels = new List<Label>() { lblDifficultyRank1, lblDifficultyRank2, lblDifficultyRank3 };
+            for (int i = 0; i < 3; i++) {
+                try {
+                    difficultyLabels[i].Content = beatMap.GetValueForMap(i, "_difficultyRank");
+                } catch {
+                    difficultyLabels[i].Content = "";
+                }
             }
         }
     }
