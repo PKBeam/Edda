@@ -909,6 +909,10 @@ namespace Edda {
 
             comboEnvironment.SelectedIndex = Const.BeatmapDefaults.EnvironmentNames.IndexOf((string)beatMap.GetValue("_environmentName"));
 
+            for (int i = 0; i < mapEditors.Length; i++) {
+                mapEditors[i] = null;
+            }
+
             // init difficulty-specific UI 
             SwitchDifficultyMap(0, false, false);
 
@@ -1742,6 +1746,7 @@ namespace Edda {
                     txtBox.KeyDown += new KeyEventHandler((src, e) => {
                         if (e.Key == Key.Escape || e.Key == Key.Enter) {
                             Keyboard.ClearFocus();
+                            Keyboard.Focus(this);
                         }
                     });
 
