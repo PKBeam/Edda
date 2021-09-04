@@ -4,13 +4,8 @@
 
 Want to make your own Ragnarock maps? Let's get started.  
 
-## Table of Contents
-1.  [Installation](#installation)
-2. [Setting up your song](#setting-up-your-song)
-3. [Mapping with Edda](#mapping-with-edda)
-
 ## Installation
-To install and use Edda, you'll need a computer running Windows 10.  
+To run Edda, you'll need a computer running Windows 10.  
 
 > **NOTE**: If you have a Linux or macOS computer, you may be able to use something like [WINE](https://www.winehq.org) or [Parallels](https://www.parallels.com/) to run Windows programs.
 
@@ -27,9 +22,9 @@ Make sure your antivirus doesn't interfere, and that you don't extract Edda into
   
 ## Setting up your song
 ### Choosing a good song
-Every good map needs a good track, so before we start placing notes we need to pick a good song.  
+Every map needs a good track, so before we start placing notes we need to pick a good song.  
 
-Ragnarock is designed to be played with metal music genres but works great with many kinds of loud, energetic songs.  
+Ragnarock is designed for metal genres but works great with many kinds of loud, energetic songs.  
 
 Be careful when mapping quiet songs, such as background music or "chill" songs - they may not work as well as you expect.
 
@@ -54,9 +49,9 @@ There are plenty of applications that can do this:
 
 If possible, you should obtain a lossless audio file (e.g. `.wav` or `.flac`) and transcode it into Vorbis format (`.ogg`).
 
-You should aim for a quality preset somewhere from 5 to 9 (which is Spotify Premium quality).  
+You should aim for a quality preset somewhere from 5 to 9. (Spotify Premium uses quality 9.)  
 
-The quality 10 preset produces unnecessarily large files, and anything under quality 5 may result in noticeably poor sound quality.
+The quality 10 preset produces unnecessarily large files, and anything under quality 5 may sound noticeably poor.
 
 You can set the quality
 - in Audacity, by using the slider in the file save dialog (after you click "Export to OGG").
@@ -69,36 +64,9 @@ The easiest way to get one is via YouTube. There are plenty of websites that wil
 
 You can then transcode to Vorbis format by using Audacity or ffmpeg as described above in [Lossless encoding](#lossless-encoding).
 
-> **NOTE**: If possible, you should aim to get lossless files. Lossy files and lossy-to-lossy transcoding will result in a lower sound quality.  
-> But if you can't find a lossless file, don't worry. It will be hard for most players to tell the difference, especially with Ragnarock's drum sounds playing over the music.   
+> **NOTE**: If possible, you should aim to get lossless files. Lossy files and in particular lossy-to-lossy transcoding will result in worse sound quality.  
+> If you can't find a lossless file, don't worry. It will be hard for most players to tell the difference, especially with Ragnarock's drum sounds playing over the music.
 
-## Mapping with Edda
+___   
 
-### Creating the map
-
-Now that your audio file is all set up, it's time to create the map!
-
-Go to the folder you extracted Edda to, and open `Edda.exe`.
-
-Click the "New Map" button.
-
-Select a folder to store your map in. Ragnarock uses the directory `Documents/Ragnarock/CustomSongs`, so a good starting point is to create a folder in there and use it.
-
-Select the `.ogg` Vorbis file you want to map.
-
-Your map is now set up and ready to edit!
-
-### Setting up the map
-
-Before you get into note placement, there are a few things you should fill out first.
-
-In the left sidebar under **Map Settings**, fill out the *Song Name*, *Artist Name* and *Mapper*.   
-
-Choose an *Environment* for your song - this is the world your boat will row in when you play the song in-game.  
-
-Enter the *Song BPM*. If you don't know the song's BPM, you can find it with Edda's BPM finder function or another similar tool.  
-
-Under **File Info**, click the ellipsis (`...`) next to the *Image* field. Choose a cover image for your map - this will be displayed in-game.  
-  
-
-
+Now that you have Edda installed and an audio file ready to go, head on over to [Using Edda](using-edda) to start making your map!  
