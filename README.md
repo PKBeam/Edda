@@ -1,10 +1,12 @@
 # Edda <img src="https://img.shields.io/github/v/release/PKBeam/Edda">
 <img src="https://img.shields.io/github/downloads/PKBeam/Edda/total"> <img src="https://img.shields.io/github/downloads/PKBeam/Edda/latest/total"> 
 
-
 Edda is a beatmap editor for the VR rhythm game [Ragnarock](https://www.ragnarock-vr.com/home).  
 
-It is still under development and has not been tested extensively, but most features should work well.  
+For more information, including installation and usage instructions, go to https://pkbeam.github.io/Edda/.
+
+<details>
+  <summary>(click to show old documentation)</summary>
 
 If you have suggestions or bug reports, feel free to make a new issue on GitHub or come over to the [Ragnacustoms](https://ragnacustoms.com/) Discord server to discuss it.
 
@@ -155,3 +157,4 @@ Although WASAPI is fast, it requires more CPU power than other APIs (weak CPUs m
 Because of how WASAPI works, it is recommended that you match the sample rate of your sound output and your song, in order to eliminate latency from audio resampling. Resampling to 44.1 kHz is preferred. If you must use 48 kHz, you may be able to reduce latency by using 48 kHz files for the note playback sounds.  
 
 There is a slight delay between the playback of the song and the playback of individual notes. You can adjust this delay in the Settings menu.  
+</details>
