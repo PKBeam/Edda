@@ -16,12 +16,12 @@ If you have suggestions or bug reports, feel free to make a new issue on GitHub 
 ### Requirements
 - Windows 10  
 - *Recommended*: a CPU with good single-threaded performance (for low latency audio playback)
-- *Recommended*: a high refresh rate monitor (for smooth animations)
+- *Recommended*: a high refresh rate display (for smooth animations)
 
 ### Downloading
-Go to the [Releases](https://github.com/PKBeam/Edda/releases/latest) section and download the appropriate `.zip` package.
-- The `NoRuntime` package requires the [.NET 5.0 runtime](https://dotnet.microsoft.com/download/dotnet/5.0/runtime) to be installed.
-- If you do not have this runtime installed, you should download the larger `.zip` file.
+Go to the [Releases](https://github.com/PKBeam/Edda/releases) section and download the appropriate `.zip` package.
+- Most users should download the larger `.zip` file that is *NOT* the `NoRuntime` package.
+- You can use the `NoRuntime` package if you have installed the [.NET 5.0 runtime](https://dotnet.microsoft.com/download/dotnet/5.0/runtime).
 
 ### Troubleshooting
 If you're having issues, make sure to check the following:
@@ -66,6 +66,7 @@ If you're having issues, make sure to check the following:
       - Mirror notes
     - Undo and redo edits
     - Create bookmarks for easy navigation
+  - Autosave and backup features
   - In-built BPM finding tool
     - Press a key to a song's beat to automatically calculate its BPM
 </details>
@@ -78,8 +79,7 @@ This creates lots of unnecessary clutter and affects the user experience, especi
 
 ## Usage
 
-Edda does not autosave maps yet. Don't forget to save your work often.  
-Please also keep backups of any important maps, as bugs may cause map corruption.  
+There may be bugs that cause map corruption. Edda creates backups for all saves that are not autosaves, so please save often to ensure you can recover from data loss issues.
 
 ### Creating a new map
 - Click "New Map".
