@@ -4,6 +4,13 @@
 
 Want to make your own Ragnarock maps? Let's get started.  
 
+- [Installation](#installation)
+- [Setting up your song](#setting-up-your-song)
+  - [Choosing a good song](#choosing-a-good-song)
+  - [Getting a song file](#getting-a-song-file)
+    - [Lossless encoding](#lossless-encoding)
+    - [Lossy encoding](#lossy-encoding)
+
 ## Installation
 To run Edda, you'll need a computer running Windows 10.  
 
@@ -14,11 +21,11 @@ Start by going to the GitHub repository's [Releases section](https://github.com/
 Most users should download the larger of the two (the one that is **not** named `NoRuntime`).  
 If you are unsure, download this one.
   
-If you have the [.NET 5.0 runtime](https://dotnet.microsoft.com/download/dotnet/5.0/runtime) installed, then you can download the smaller `NoRuntime` zip package.
+If you have the [.NET 5.0 runtime](https://dotnet.microsoft.com/download/dotnet/5.0/runtime) installed, then you can use the smaller `NoRuntime` zip package.
 
 Once you've downloaded the zip package, extract it somewhere on your PC.
 
-Make sure your antivirus doesn't interfere, and that you don't extract Edda into a privileged folder (such as `Program Files`).
+Make sure your antivirus doesn't interfere with anything, and that you don't extract Edda into a privileged folder (such as `Program Files`).
   
 ## Setting up your song
 ### Choosing a good song
@@ -49,9 +56,9 @@ There are plenty of applications that can do this:
 
 If possible, you should obtain a lossless audio file (e.g. `.wav` or `.flac`) and transcode it into Vorbis format (`.ogg`).
 
-You should aim for a quality preset somewhere from 5 to 9. (Spotify Premium uses quality 9.)  
+You should aim for a quality preset somewhere from 5 to 9.
 
-The quality 10 preset produces unnecessarily large files, and anything under quality 5 may sound noticeably poor.
+The quality 10 preset produces unnecessarily large files, and anything under quality 5 may sound noticeably poor. For reference, Spotify Premium uses quality 9.
 
 You can set the quality
 - in Audacity, by using the slider in the file save dialog (after you click "Export to OGG").

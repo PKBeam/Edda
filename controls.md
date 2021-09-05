@@ -1,26 +1,26 @@
 ---
 ---
-## Controls
+# Controls
 
-### Mouse Controls
+## Mouse Controls
 
-#### Editing Grid
+### Editing Grid
 
 Click and drag to select multiple notes.
 
 Left-click to place a new note or select an existing note.
 
-Shift+Left-click to add or remove a note to/from the selection
+Shift+Left-click to add or remove a note to/from the selection.
 
-Right-click to delete a note or clear the selcetion
+Right-click to delete a note or clear the selection.
 
-#### Navigational Waveform
+### Navigational Waveform
 
 Double-click a bookmark to rename it.
 
 Right-click a bookmark to delete it.
 
-### Keyboard Controls
+## Keyboard Controls
 
 Edda comes with many keyboard shortcuts for ease of use.
 
