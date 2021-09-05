@@ -80,17 +80,22 @@ public class MapEditor {
         if (selectedNotes.Contains(n)) {
             UnselectNote(n);
         } else {
-            SelectNote(n);
+            SelectNotes(n);
         }
     }
-    public void SelectNote(Note n) {
-        Helper.InsertSortedUnique(selectedNotes, n);
-        parent.HighlightEditorNotes(n);
+    public void SelectNotes(Note n) {
+        SelectNotes(new List<Note>() { n });
+    }
+    public void SelectNotes(List<Note> notes) {
+        foreach (Note n in notes) {
+            Helper.InsertSortedUnique(selectedNotes, n);        
+        }
+        parent.HighlightEditorNotes(notes);
     }
     public void SelectNewNotes(List<Note> notes) {
         UnselectAllNotes();
         foreach (Note n in notes) {
-            SelectNote(n);
+            SelectNotes(n);
         }
     }
     public void SelectNewNotes(Note n) {

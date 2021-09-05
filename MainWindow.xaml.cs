@@ -850,7 +850,11 @@ namespace Edda {
                         newSelection.Add(n);
                     }
                 }
-                mapEditor.SelectNewNotes(newSelection);
+                if (shiftKeyDown) {
+                    mapEditor.SelectNotes(newSelection);
+                } else {
+                    mapEditor.SelectNewNotes(newSelection);
+                }
             } else if (editorMouseDown) {
                 //Trace.WriteLine($"Row: {editorMouseGridRow} ({Math.Round(editorMouseGridRowFractional, 2)}), Col: {editorMouseGridCol}, Beat: {beat} ({beatFractional})");
 
