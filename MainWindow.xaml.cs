@@ -86,7 +86,9 @@ namespace Edda {
         Image imgAudioWaveform = new();
         VorbisWaveformVisualiser audioWaveform;
         VorbisWaveformVisualiser navWaveform;
-        bool editorShowWaveform = false;
+        bool editorShowWaveform {
+            get { return checkWaveform.IsChecked == true; }
+        }
 
         // -- for note placement
         Image imgPreviewNote = new();
@@ -698,7 +700,6 @@ namespace Edda {
             txtGridDivision.Text = div.ToString();
         }
         private void CheckWaveform_Click(object sender, RoutedEventArgs e) {
-            editorShowWaveform = (checkWaveform.IsChecked == true);
             if (editorShowWaveform) {
                 DrawEditorWaveform();
             } else {
@@ -1226,7 +1227,6 @@ namespace Edda {
             DrawBookmarks();
             if (redrawGrid) {
                 UpdateEditorGridHeight();
-                DrawEditorGrid();
             }
         }
         private void SortDifficultyMaps() {
@@ -1311,6 +1311,12 @@ namespace Edda {
             }
             LoadSong();
 
+            // redraw waveforms
+            if (editorShowWaveform) {
+                DrawEditorWaveform();
+            }
+            DrawEditorNavWaveform();
+
             return true;
         }
         private void LoadSong() {
@@ -1334,12 +1340,6 @@ namespace Edda {
             audioWaveform = new VorbisWaveformVisualiser(songPath);
             navWaveform = new VorbisWaveformVisualiser(songPath);
             //awd = new AudioVisualiser_Float32(new VorbisWaveReader(songPath));
-
-            // redraw waveforms
-            if (editorShowWaveform) { 
-                DrawEditorWaveform();
-            }
-            DrawEditorNavWaveform();
 
             imgAudioWaveform.Source = null;
         }
@@ -1557,12 +1557,13 @@ namespace Edda {
                 DateTime before = DateTime.Now;
                 ImageSource bmp = audioWaveform.Draw(height, width);
                 Trace.WriteLine($"INFO: Drew big waveform in {(DateTime.Now - before).TotalSeconds} sec");
-                if (bmp != null && editorShowWaveform) {
-                    this.Dispatcher.Invoke(() => {
+                    
+                this.Dispatcher.Invoke(() => {
+                    if (bmp != null && editorShowWaveform) {
                         imgAudioWaveform.Source = bmp;
                         ResizeEditorWaveform();
-                    });
-                }
+                    }
+                });
             });
         }
         private void DrawEditorNavWaveform() {

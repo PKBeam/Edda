@@ -35,6 +35,7 @@ public class VorbisWaveformVisualiser {
 		try {
 			b = _Draw(height, width, tokenSource.Token);
 		} catch (Exception ex) {
+			isDrawing = false;
 			Trace.WriteLine(ex);
 		}
 		return b;

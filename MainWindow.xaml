@@ -427,12 +427,12 @@
                             <Border Grid.Row="7" Grid.Column="0" Margin="0 5 0 0"/>
 
                             <Border Grid.Row="8" Grid.Column="0">
-                                <TextBlock VerticalAlignment="Bottom">Map Waveform</TextBlock>
+                                <TextBlock VerticalAlignment="Bottom">Grid Waveform</TextBlock>
                             </Border>
 
                             <Border Grid.Row="8" Grid.Column="1">
                                 <StackPanel Orientation="Horizontal">
-                                    <CheckBox x:Name="checkWaveform" VerticalAlignment="Center" Click="CheckWaveform_Click"></CheckBox>
+                                    <CheckBox x:Name="checkWaveform" VerticalAlignment="Center" Click="CheckWaveform_Click" IsChecked="True"></CheckBox>
                                 </StackPanel>
                             </Border>
                         </Grid>
