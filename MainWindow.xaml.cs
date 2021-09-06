@@ -1225,6 +1225,7 @@ namespace Edda {
             EnableDifficultyButtons();
             DrawBookmarks();
             if (redrawGrid) {
+                UpdateEditorGridHeight();
                 DrawEditorGrid();
             }
         }
@@ -1714,53 +1715,7 @@ namespace Edda {
                 l.Stroke = (SolidColorBrush)new BrushConverter().ConvertFrom(Const.Editor.Bookmark.Colour);
                 l.StrokeThickness = Const.Editor.Bookmark.Thickness;
 
-                var txtBlock = new Label();
-                txtBlock.Foreground = (SolidColorBrush)new BrushConverter().ConvertFrom(Const.Editor.Bookmark.NameColour);
-                
-                txtBlock.Content = b.name;
-                txtBlock.FontSize = Const.Editor.Bookmark.NameSize;
-                txtBlock.Padding = new Thickness(Const.Editor.Bookmark.NamePadding);
-                txtBlock.FontWeight = FontWeights.Bold;
-                txtBlock.Opacity = Const.Editor.Bookmark.Opacity;
-                //txtBlock.IsReadOnly = true;
-                txtBlock.Cursor = Cursors.Arrow;
-                Canvas.SetBottom(txtBlock, borderNavWaveform.ActualHeight - offset);
-                txtBlock.MouseLeftButtonDown += new MouseButtonEventHandler((src, e) => {
-                    e.Handled = true;
-                });
-                txtBlock.MouseLeftButtonUp += new MouseButtonEventHandler((src, e) => {
-                    sliderSongProgress.Value = b.beat / globalBPM * 60000;
-                    navMouseDown = false;
-                    e.Handled = true;
-                });
-                txtBlock.MouseRightButtonDown += new MouseButtonEventHandler((src, e) => {
-                    var res = MessageBox.Show("Are you sure you want to delete this bookmark?", "Confirm Bookmark Deletion", MessageBoxButton.YesNoCancel, MessageBoxImage.Warning);
-                    if (res == MessageBoxResult.Yes) {
-                        mapEditor.RemoveBookmark(b);
-                    }
-                });
-                txtBlock.MouseDoubleClick += new MouseButtonEventHandler((src, e) => {
-                    var txtBox = new TextBox();  
-                    txtBox.Text = b.name;
-                    txtBox.FontSize = Const.Editor.Bookmark.NameSize;
-                    Canvas.SetBottom(txtBox, borderNavWaveform.ActualHeight - offset);
-                    txtBox.LostKeyboardFocus += new KeyboardFocusChangedEventHandler((src, e) => {
-                        mapEditor.RenameBookmark(b, txtBox.Text);
-                        canvasNavInputBox.Children.Remove(txtBox);
-                    });
-                    txtBox.KeyDown += new KeyEventHandler((src, e) => {
-                        if (e.Key == Key.Escape || e.Key == Key.Enter) {
-                            Keyboard.ClearFocus();
-                            Keyboard.Focus(this);
-                        }
-                    });
-
-                    canvasNavInputBox.Children.Add(txtBox);
-                    txtBox.Focus();
-                    txtBox.SelectAll();
-                    
-                    e.Handled = true;
-                });
+                var txtBlock = CreateBookmarkLabel(b);
                 canvasBookmarks.Children.Add(l);
                 canvasBookmarkLabels.Children.Add(txtBlock);
             }
@@ -1879,6 +1834,59 @@ namespace Edda {
             beatNormalised /= globalBPM / recentBPM;
             beatNormalised -= (int)beatNormalised;
             return Helper.BitmapImageForBeat(beatNormalised, highlight);
+        }
+        private Label CreateBookmarkLabel(Bookmark b) {
+            var offset = borderNavWaveform.ActualHeight * (1 - 60000 * b.beat / (globalBPM * sliderSongProgress.Maximum));
+            var txtBlock = new Label();
+            txtBlock.Foreground = (SolidColorBrush)new BrushConverter().ConvertFrom(Const.Editor.Bookmark.NameColour);
+
+            txtBlock.Content = b.name;
+            txtBlock.FontSize = Const.Editor.Bookmark.NameSize;
+            txtBlock.Padding = new Thickness(Const.Editor.Bookmark.NamePadding);
+            txtBlock.FontWeight = FontWeights.Bold;
+            txtBlock.Opacity = Const.Editor.Bookmark.Opacity;
+            //txtBlock.IsReadOnly = true;
+            txtBlock.Cursor = Cursors.Arrow;
+            Canvas.SetBottom(txtBlock, borderNavWaveform.ActualHeight - offset);
+            txtBlock.MouseLeftButtonDown += new MouseButtonEventHandler((src, e) => {
+                e.Handled = true;
+            });
+            txtBlock.MouseLeftButtonUp += new MouseButtonEventHandler((src, e) => {
+                sliderSongProgress.Value = b.beat / globalBPM * 60000;
+                navMouseDown = false;
+                e.Handled = true;
+            });
+            txtBlock.MouseRightButtonDown += new MouseButtonEventHandler((src, e) => {
+                var res = MessageBox.Show("Are you sure you want to delete this bookmark?", "Confirm Bookmark Deletion", MessageBoxButton.YesNoCancel, MessageBoxImage.Warning);
+                if (res == MessageBoxResult.Yes) {
+                    mapEditor.RemoveBookmark(b);
+                }
+            });
+            txtBlock.MouseDoubleClick += new MouseButtonEventHandler((src, e) => {
+                var txtBox = new TextBox();
+                txtBox.Text = b.name;
+                txtBox.FontSize = Const.Editor.Bookmark.NameSize;
+                Canvas.SetBottom(txtBox, borderNavWaveform.ActualHeight - offset);
+                txtBox.LostKeyboardFocus += new KeyboardFocusChangedEventHandler((src, e) => {
+                    if (txtBox.Text != "") {
+                        mapEditor.RenameBookmark(b, txtBox.Text);
+                    }
+                    canvasNavInputBox.Children.Remove(txtBox);
+                });
+                txtBox.KeyDown += new KeyEventHandler((src, e) => {
+                    if (e.Key == Key.Escape || e.Key == Key.Enter) {
+                        Keyboard.ClearFocus();
+                        Keyboard.Focus(this);
+                    }
+                });
+
+                canvasNavInputBox.Children.Add(txtBox);
+                txtBox.Focus();
+                txtBox.SelectAll();
+
+                e.Handled = true;
+            });
+            return txtBlock;
         }
         private void PromptBeatmapSave() {
             if (beatMap == null) {
