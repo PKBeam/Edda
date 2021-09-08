@@ -64,7 +64,8 @@ namespace Edda {
         public double globalBPM;
         System.Timers.Timer autosaveTimer;
         UserSettings userSettings;
-        List<double> gridLines = new();
+        List<double> gridlines = new();
+        List<double> majorGridlines = new();
         bool shiftKeyDown;
         bool ctrlKeyDown;
 
@@ -117,11 +118,14 @@ namespace Edda {
         NoteScanner noteScanner;
 
         // -- audio playback
+        bool playMetronome = false;
         int editorAudioLatency; // ms
         SampleChannel songChannel;
         VorbisWaveReader songStream;
         WasapiOut songPlayer;
         DrumPlayer drummer;
+        Metronome metronome;
+        BeatScanner beatScanner;
 
         public MainWindow() {
 
@@ -141,6 +145,8 @@ namespace Edda {
             };
             discordClient = new DiscordClient(this);
             LoadSettingsFile();
+
+            metronome = new Metronome(Const.Audio.MetronomeFilename, Const.Audio.MetronomeStreams, Const.Audio.WASAPILatencyTarget, checkMetronome.IsChecked == true);
 
             // init border
             InitDragSelectBorder();
@@ -177,10 +183,12 @@ namespace Edda {
         }
         private void AppMainWindow_Closed(object sender, EventArgs e) {
             Trace.WriteLine("Closing window...");
+            beatScanner?.Stop();
             noteScanner?.Stop();
             songPlayer?.Stop();
             songPlayer?.Dispose();
             songStream?.Dispose();
+            metronome?.Dispose();
             drummer?.Dispose();
             Application.Current.Shutdown();
         }
@@ -532,6 +540,13 @@ namespace Edda {
             drummer.ChangeVolume(sliderDrumVol.Value);
             txtDrumVol.Text = $"{(int)(sliderDrumVol.Value * 100)}%";
         }
+        private void CheckMetronome_Click(object sender, RoutedEventArgs e) {
+            if (checkMetronome.IsChecked == true) {
+                metronome.Enable();
+            } else {
+                metronome.Disable();
+            }
+        }
         private void SliderSongProgress_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e) {
 
             // update song seek time text box
@@ -572,8 +587,6 @@ namespace Edda {
                     }
                     beatMap.SetValue("_beatsPerMinute", BPM);
                     globalBPM = BPM;
-                    noteScanner.bpm = BPM;
-                    
                     UpdateEditorGridHeight();
                 }
             } else {
@@ -948,6 +961,7 @@ namespace Edda {
             btnPickCover.IsEnabled = true;
             sliderSongVol.IsEnabled = true;
             sliderDrumVol.IsEnabled = true;
+            checkMetronome.IsEnabled = true;
             checkGridSnap.IsEnabled = true;
             txtDifficultyNumber.IsEnabled = true;
             txtNoteSpeed.IsEnabled = true;
@@ -982,6 +996,7 @@ namespace Edda {
             btnPickCover.IsEnabled = false;
             sliderSongVol.IsEnabled = false;
             sliderDrumVol.IsEnabled = false;
+            checkMetronome.IsEnabled = false;
             checkGridSnap.IsEnabled = false;
             txtDifficultyNumber.IsEnabled = false;
             txtNoteSpeed.IsEnabled = false;
@@ -1205,7 +1220,8 @@ namespace Edda {
                 mapEditors[indx] = new MapEditor(this, beatMap.GetNotesForMap(indx), beatMap.GetBPMChangesForMap(indx), beatMap.GetBookmarksForMap(indx), editorClipboard);
             }
             mapEditor = mapEditors[indx];
-            noteScanner = new NoteScanner(this, globalBPM, drummer);
+            noteScanner = new NoteScanner(this, drummer);
+            beatScanner = new BeatScanner(metronome);
 
             txtDifficultyNumber.Text = (string)beatMap.GetValueForMap(indx, "_difficultyRank");
             txtNoteSpeed.Text = (string)beatMap.GetValueForMap(indx, "_noteJumpMovementSpeed");
@@ -1390,7 +1406,8 @@ namespace Edda {
             //Timeline.SetDesiredFrameRate(songPlayAnim, animationFramerate);
             sliderSongProgress.BeginAnimation(Slider.ValueProperty, songPlayAnim);
 
-            noteScanner.Start((int)(sliderSongProgress.Value - editorAudioLatency), new List<Note>(mapEditor.notes));
+            noteScanner.Start((int)(sliderSongProgress.Value - editorAudioLatency), new List<Note>(mapEditor.notes), globalBPM);
+            beatScanner.Start((int)(sliderSongProgress.Value - editorAudioLatency), majorGridlines, globalBPM);
 
             // play song
             songPlayer.Play();
@@ -1404,6 +1421,7 @@ namespace Edda {
 
             // stop note scaning
             noteScanner.Stop();
+            beatScanner.Stop();
 
             // re-enable actions that were disabled
             txtSongBPM.IsEnabled = true;
@@ -1594,7 +1612,8 @@ namespace Edda {
                 return l;
             }
 
-            gridLines.Clear();
+            majorGridlines.Clear();
+            gridlines.Clear();
 
             // calculate grid offset
             double userOffset = editorGridOffset * globalBPM / 60 * unitLength;
@@ -1611,9 +1630,13 @@ namespace Edda {
             while (offset <= EditorGrid.Height) {
 
                 // add new gridline
-                var l = makeGridLine(offset, counter % localGridDiv == 0);
+                bool isMajor = counter % localGridDiv == 0;
+                var l = makeGridLine(offset, isMajor);
                 EditorGrid.Children.Add(l);
-                gridLines.Add((offset - userOffset)/unitLength);
+                if (isMajor) {
+                    majorGridlines.Add((offset - userOffset) / unitLength);
+                }
+                gridlines.Add((offset - userOffset)/unitLength);
 
                 offset += globalBPM/localBPM * unitLength / localGridDiv;
                 counter++;
@@ -1758,9 +1781,9 @@ namespace Edda {
             double unsnapped = 0;
             if (pos >= userOffset) {
                 unsnapped = (pos - userOffset) / unitLength;
-                int indx1 = -gridLines.BinarySearch(unsnapped) - 1;
+                int indx1 = -gridlines.BinarySearch(unsnapped) - 1;
                 int indx2 = Math.Max(0, indx1 - 1);
-                snapped = (gridLines[indx1] - unsnapped) < (unsnapped - gridLines[indx2]) ? gridLines[indx1] : gridLines[indx2];
+                snapped = (gridlines[indx1] - unsnapped) < (unsnapped - gridlines[indx2]) ? gridlines[indx1] : gridlines[indx2];
             }
             return snap ? snapped : unsnapped;
         }
@@ -1904,9 +1927,12 @@ namespace Edda {
                 try {
                     difficultyLabels[i].Content = beatMap.GetValueForMap(i, "_difficultyRank");
                 } catch {
+                    Trace.WriteLine($"INFO: difficulty {i} not found");
                     difficultyLabels[i].Content = "";
                 }
             }
         }
+
+
     }
 }

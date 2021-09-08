@@ -12,20 +12,20 @@ public class NoteScanner {
     CancellationTokenSource noteScanTokenSource;
     CancellationToken noteScanToken;
 
-    public double bpm { get; set; }
+    double globalBPM;
     public List<Note> notes;
 
     MainWindow caller;
     DrumPlayer drummer;
 
-    public NoteScanner(MainWindow caller, double bpm, DrumPlayer drummer) {
-        this.bpm = bpm;
+    public NoteScanner(MainWindow caller, DrumPlayer drummer) {
         this.drummer = drummer;
         this.noteScanStopwatch = new Stopwatch();
         this.caller = caller;
     }
 
-    public void Start(int millisecStart, List<Note> notes) {
+    public void Start(int millisecStart, List<Note> notes, double globalBPM) {
+        this.globalBPM = globalBPM;
         this.notes = notes;
         noteScanStopwatchOffset = millisecStart; // set user audio delay
         SetScanStart();
@@ -45,7 +45,7 @@ public class NoteScanner {
     }
     private void SetScanStart() {
         // calculate scan index for playing drum hits
-        var seekBeat = noteScanStopwatchOffset * bpm / 60000;
+        var seekBeat = noteScanStopwatchOffset * globalBPM / 60000;
         var newNoteScanIndex = 0;
         foreach (var n in notes) {
             if (Helper.DoubleApproxGreaterEqual(n.beat, seekBeat)) {
@@ -73,7 +73,7 @@ public class NoteScanner {
         var noteCols = new List<int>();
         var notesPlayed = new List<Note>();
         if (noteScanIndex < notes.Count) {
-            var noteTime = 60000 * notes[noteScanIndex].beat / bpm;
+            var noteTime = 60000 * notes[noteScanIndex].beat / globalBPM;
             var drumHits = 0;
 
             // check if any notes were missed
@@ -84,7 +84,7 @@ public class NoteScanner {
                 noteCols.Add(notes[noteScanIndex].col);
                 notesPlayed.Add(notes[noteScanIndex]);
                 noteScanIndex++;
-                noteTime = 60000 * notes[noteScanIndex].beat / bpm;
+                noteTime = 60000 * notes[noteScanIndex].beat / globalBPM;
             }
 
             // check if we need to play any notes
@@ -98,7 +98,7 @@ public class NoteScanner {
                 if (noteScanIndex >= notes.Count) {
                     break;
                 }
-                noteTime = 60000 * notes[noteScanIndex].beat / bpm;
+                noteTime = 60000 * notes[noteScanIndex].beat / globalBPM;
             }
 
             // play all pending drum hits
