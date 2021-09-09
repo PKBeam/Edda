@@ -123,8 +123,8 @@ namespace Edda {
         SampleChannel songChannel;
         VorbisWaveReader songStream;
         WasapiOut songPlayer;
-        DrumPlayer drummer;
-        Metronome metronome;
+        ParallelAudioPlayer drummer;
+        ParallelAudioPlayer metronome;
         BeatScanner beatScanner;
 
         public MainWindow() {
@@ -146,7 +146,7 @@ namespace Edda {
             discordClient = new DiscordClient(this);
             LoadSettingsFile();
 
-            metronome = new Metronome(Const.Audio.MetronomeFilename, Const.Audio.MetronomeStreams, Const.Audio.WASAPILatencyTarget, checkMetronome.IsChecked == true);
+            metronome = new ParallelAudioPlayer(Const.Audio.MetronomeFilename, Const.Audio.MetronomeStreams, Const.Audio.WASAPILatencyTarget, checkMetronome.IsChecked == true);
 
             // init border
             InitDragSelectBorder();
@@ -302,7 +302,7 @@ namespace Edda {
                 double defaultInput = BeatForPosition(scrollEditor.VerticalOffset + scrollEditor.ActualHeight - unitLengthUnscaled / 2, editorSnapToGrid);
                 Note n = new Note(songIsPlaying ? defaultInput : mouseInput, col);
                 mapEditor.AddNotes(n);
-                drummer.PlayDrum(1);
+                drummer.Play(1);
             }
 
             // delete selected notes
@@ -541,11 +541,7 @@ namespace Edda {
             txtDrumVol.Text = $"{(int)(sliderDrumVol.Value * 100)}%";
         }
         private void CheckMetronome_Click(object sender, RoutedEventArgs e) {
-            if (checkMetronome.IsChecked == true) {
-                metronome.Enable();
-            } else {
-                metronome.Disable();
-            }
+            metronome.isEnabled = (checkMetronome.IsChecked == true);
         }
         private void SliderSongProgress_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e) {
 
@@ -884,7 +880,7 @@ namespace Edda {
                     }
                 } else {
                     mapEditor.AddNotes(n);
-                    drummer.PlayDrum(1);
+                    drummer.Play(1);
                 }
             }
             EditorGrid.ReleaseMouseCapture();
@@ -1769,7 +1765,7 @@ namespace Edda {
             EditorGrid.Children.Add(imgPreviewNote);
         }
         private void InitDrummer(string basePath) {
-            drummer = new DrumPlayer(basePath, Const.Audio.NotePlaybackStreams, Const.Audio.WASAPILatencyTarget);
+            drummer = new ParallelAudioPlayer(basePath, Const.Audio.NotePlaybackStreams, Const.Audio.WASAPILatencyTarget, true);
         }
         private double BeatForPosition(double position, bool snap) {
             double userOffsetBeat = editorGridOffset * globalBPM / 60;
@@ -1927,7 +1923,7 @@ namespace Edda {
                 try {
                     difficultyLabels[i].Content = beatMap.GetValueForMap(i, "_difficultyRank");
                 } catch {
-                    Trace.WriteLine($"INFO: difficulty {i} not found");
+                    Trace.WriteLine($"INFO: difficulty index {i} not found");
                     difficultyLabels[i].Content = "";
                 }
             }
