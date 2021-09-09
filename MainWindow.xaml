@@ -4,7 +4,7 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         mc:Ignorable="d"
-        x:Name="AppMainWindow" Title="Edda" Height="830" Width="800" MinWidth="800" Closed="AppMainWindow_Closed" KeyDown="AppMainWindow_KeyDown" KeyUp="AppMainWindow_KeyUp" PreviewKeyDown="AppMainWindow_PreviewKeyDown" Closing="AppMainWindow_Closing">
+        x:Name="AppMainWindow" Title="Edda" Height="830" Width="800" MinWidth="800" Closed="AppMainWindow_Closed" KeyDown="AppMainWindow_KeyDown" KeyUp="AppMainWindow_KeyUp" PreviewKeyDown="AppMainWindow_PreviewKeyDown" Closing="AppMainWindow_Closing" Loaded="AppMainWindow_Loaded" ContentRendered="AppMainWindow_ContentRendered">
     <DockPanel>
         <Border DockPanel.Dock="Top" Name="TopPanel" BorderBrush="{DynamicResource {x:Static SystemColors.ControlDarkDarkBrushKey}}" BorderThickness="0, 0, 0, 1">
             <Border.Background>

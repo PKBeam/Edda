@@ -1,10 +1,12 @@
 ﻿using Edda;
+using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using System.Net.Http;
 using System.Text;
 using System.Windows;
 using System.Windows.Media.Imaging;
@@ -123,6 +125,17 @@ public class Helper {
             File.Delete(path);
         } catch {
             // ???
+        }
+    }
+    public static void CheckForUpdates() {
+        HttpClient client = new HttpClient();
+        client.DefaultRequestHeaders.Add("User-Agent", "Edda");
+        string res = client.GetStringAsync("https://api.github.com/repos/PKBeam/Edda/releases/latest").Result;
+        var resJSON = JObject.Parse(res);
+        string newestVersion = (string)resJSON.GetValue("tag_name");
+        string currentVersion = Const.Program.VersionDisplayString;
+        if (newestVersion != currentVersion) {
+            MessageBox.Show($"A new release of Edda is available.\n\nNewest version: {newestVersion}\nCurrent version: {currentVersion}", "New release available", MessageBoxButton.OK, MessageBoxImage.Information);
         }
     }
 }

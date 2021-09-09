@@ -5,7 +5,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:Edda"
         mc:Ignorable="d"
-        Title="Settings" Name="Window" Width="260" Height="360" ResizeMode="NoResize" Background="{DynamicResource {x:Static SystemColors.ControlDarkBrushKey}}">
+        Title="Settings" Name="Window" Width="260" Height="380" ResizeMode="NoResize" Background="{DynamicResource {x:Static SystemColors.ControlDarkBrushKey}}">
     <Grid>
         <DockPanel>
             
@@ -20,7 +20,7 @@
                     <Image Width="35" RenderOptions.BitmapScalingMode="Fant" Margin="0 0 8 0" Source="pack://application:,,,/Edda;component/resources/icon.png"/>
                     <StackPanel>
                         <Label x:Name="lblProgramName" Padding="0" FontSize="14" VerticalAlignment="Center" FontWeight="Bold">Edda v0.0.0</Label>
-                        <Label x:Name="lblRepoLink" Padding="0" FontSize="11" VerticalAlignment="Center" MouseDown="LblRepoLink_MouseDown">https://github.com/PKBeam/Edda</Label>
+                        <Label x:Name="lblRepoLink" Padding="0" FontSize="11" VerticalAlignment="Center" MouseDown="LblRepoLink_MouseDown" Foreground="{DynamicResource {x:Static SystemColors.HotTrackBrushKey}}" MouseEnter="lblRepoLink_MouseEnter" MouseLeave="lblRepoLink_MouseLeave">https://github.com/PKBeam/Edda</Label>
                     </StackPanel>
                 </StackPanel>
             </Border>
@@ -55,7 +55,7 @@
                         <RowDefinition Height="*" />
                     </Grid.RowDefinitions>
                     <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="100" />
+                        <ColumnDefinition Width="110" />
                         <ColumnDefinition Width="110" />
                     </Grid.ColumnDefinitions>
 
@@ -87,7 +87,7 @@
                         <RowDefinition Height="*" />
                     </Grid.RowDefinitions>
                     <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="100" />
+                        <ColumnDefinition Width="110" />
                         <ColumnDefinition Width="110" />
                     </Grid.ColumnDefinitions>
 
@@ -110,7 +110,7 @@
                         <ComboBox x:Name="comboDrumSample" SelectionChanged="ComboDrumSample_SelectionChanged" VerticalAlignment="Center"/>
                     </Border>
                 </Grid>
-                <Label Padding="10 5" FontWeight="Bold" FontSize="14">Discord Integration</Label>
+                <Label Padding="10 5" FontWeight="Bold" FontSize="14">Miscellaneous</Label>
                 <Grid Margin="15 0 5 0" VerticalAlignment="Center">
                     <Grid.Resources>
                         <Style TargetType="Border" >
@@ -129,7 +129,7 @@
                         <RowDefinition Height="*" />
                     </Grid.RowDefinitions>
                     <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="100" />
+                        <ColumnDefinition Width="110" />
                         <ColumnDefinition Width="110" />
                     </Grid.ColumnDefinitions>
 
@@ -139,6 +139,14 @@
 
                     <Border Grid.Row="0" Grid.Column="1">
                         <CheckBox x:Name="checkDiscord" Click="CheckDiscord_Click"/>
+                    </Border>
+
+                    <Border Grid.Row="1" Grid.Column="0">
+                        <TextBlock VerticalAlignment="Center">Check for Updates</TextBlock>
+                    </Border>
+
+                    <Border Grid.Row="1" Grid.Column="1">
+                        <CheckBox x:Name="checkStartupUpdate" Click="CheckStartupUpdate_Click"/>
                     </Border>
                 </Grid>
             </StackPanel>

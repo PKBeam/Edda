@@ -2,7 +2,6 @@
 using System.Diagnostics;
 using System.Collections.Generic;
 using System.IO;
-using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
@@ -17,7 +16,6 @@ using NAudio.CoreAudioApi;
 using NAudio.Wave;
 using NAudio.Wave.SampleProviders;
 using NAudio.Vorbis;
-using System.Drawing.Imaging;
 using System.Reactive.Linq;
 /// <summary>
 /// Interaction logic for MainWindow.xaml
@@ -175,6 +173,18 @@ namespace Edda {
         }
 
         // UI bindings
+        private void AppMainWindow_Loaded(object sender, RoutedEventArgs e) {
+            
+        }
+        private void AppMainWindow_ContentRendered(object sender, EventArgs e) {
+            try {
+                if (userSettings.GetValueForKey(Const.UserSettings.CheckForUpdates) == true.ToString()) {
+                    Helper.CheckForUpdates();
+                }
+            } catch {
+                Trace.WriteLine("INFO: Could not check for updates.");
+            }
+        }
         private void AppMainWindow_Closing(object sender, System.ComponentModel.CancelEventArgs e) {
             PromptBeatmapSave();
         }
@@ -1122,6 +1132,10 @@ namespace Edda {
             }
             autosaveTimer.Enabled = userSettings.GetBoolForKey(Const.UserSettings.EnableAutosave);
 
+            if (userSettings.GetValueForKey(Const.UserSettings.CheckForUpdates) == null) {
+                userSettings.SetValueForKey(Const.UserSettings.CheckForUpdates, Const.DefaultUserSettings.CheckForUpdates);
+            }
+
             userSettings.Write();
         }
 
@@ -1925,7 +1939,5 @@ namespace Edda {
                 }
             }
         }
-
-
     }
 }

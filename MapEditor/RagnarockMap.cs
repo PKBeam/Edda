@@ -94,7 +94,7 @@ public class RagnarockMap {
                 _contributors = new List<object>(),
                 _editors = new {
                     Edda = new {
-                        version = Const.Program.VersionNumber,
+                        version = Const.Program.VersionString,
                     },
                     _lastEditedBy = Const.Program.Name,
                 },
@@ -218,7 +218,7 @@ public class RagnarockMap {
                 _contributors = new List<object>(),
                 _editors = new {
                     Edda = new {
-                        version = Const.Program.VersionNumber,
+                        version = Const.Program.VersionString,
                     },
                     _lastEditedBy = "Edda"
                 },
@@ -232,14 +232,14 @@ public class RagnarockMap {
         if (customData["_editors"]?.Type != JTokenType.Object) {
             var editorsObject = new {
                 Edda = new {
-                    version = Const.Program.VersionNumber,
+                    version = Const.Program.VersionString,
                 },
                 _lastEditedBy = "Edda"
             };
             customData["_editors"] = JToken.FromObject(editorsObject);
         }
         if (customData["_editors"]["Edda"]?.Type != JTokenType.Object) {
-            customData["_editors"]["Edda"] = JToken.FromObject(new { version = Const.Program.VersionNumber });
+            customData["_editors"]["Edda"] = JToken.FromObject(new { version = Const.Program.VersionString });
         }
         //if (customData["_editors"]["_lastEditedBy"]?.Type != JTokenType.String) {
         customData["_editors"]["_lastEditedBy"] = JToken.FromObject("Edda");
@@ -311,7 +311,7 @@ public class RagnarockMap {
     }
     private void UpdateEddaVersion() {
         var obj = JObject.Parse(infoStr);
-        obj["_customData"]["_editors"]["Edda"]["version"] = Const.Program.VersionNumber;
+        obj["_customData"]["_editors"]["Edda"]["version"] = Const.Program.VersionString;
         obj["_customData"]["_editors"]["_lastEditedBy"] = Const.Program.Name;
         infoStr = JsonConvert.SerializeObject(obj, Formatting.Indented);
     }

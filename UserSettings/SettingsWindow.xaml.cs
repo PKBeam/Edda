@@ -26,10 +26,11 @@ namespace Edda {
             this.caller = caller;
             this.userSettings = userSettings;
             InitComboDrumSample();
-            lblProgramName.Content = $"Edda v{Const.Program.VersionNumber}";
+            lblProgramName.Content = "Edda " + Const.Program.VersionDisplayString;
             txtAudioLatency.Text = userSettings.GetValueForKey(Const.UserSettings.EditorAudioLatency);
             checkDiscord.IsChecked = userSettings.GetBoolForKey(Const.UserSettings.EnableDiscordRPC);
             CheckAutosave.IsChecked = userSettings.GetBoolForKey(Const.UserSettings.EnableAutosave);
+            checkStartupUpdate.IsChecked = userSettings.GetBoolForKey(Const.UserSettings.CheckForUpdates);
             doneInit = true;
         }
 
@@ -83,6 +84,12 @@ namespace Edda {
             userSettings.SetValueForKey(Const.UserSettings.EnableAutosave, newStatus);
             UpdateSettings();
         }
+        private void CheckStartupUpdate_Click(object sender, RoutedEventArgs e) {
+            bool newStatus = checkStartupUpdate.IsChecked ?? false;
+            userSettings.SetValueForKey(Const.UserSettings.CheckForUpdates, newStatus);
+            UpdateSettings();
+        }
+
         private void BtnSave_Click(object sender, RoutedEventArgs e) {
             Close();
         }
@@ -90,6 +97,14 @@ namespace Edda {
         private void UpdateSettings() {
             userSettings.Write();
             caller.LoadSettingsFile();
+        }
+
+        private void lblRepoLink_MouseEnter(object sender, MouseEventArgs e) {
+            Mouse.OverrideCursor = Cursors.Hand;
+        }
+
+        private void lblRepoLink_MouseLeave(object sender, MouseEventArgs e) {
+            Mouse.OverrideCursor = null;
         }
     }
 }

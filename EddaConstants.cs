@@ -7,7 +7,8 @@ namespace Const {
     public static class Program {
         public const string Name          = "Edda";
         public const string RepositoryURL = "https://github.com/PKBeam/Edda";
-        public const string VersionNumber = "0.4.0b4";
+        public const string VersionString = "0.4.0b4";
+        public const string VersionDisplayString = "v" + VersionString;
         public const string SettingsFile  = "settings.txt";
         public const string ResourcesPath = "Resources/";
         public const string BackupPath    = "autosaves";
@@ -18,6 +19,7 @@ namespace Const {
         public const string DrumSampleFile   = "bassdrum";
         public const bool   EnableDiscordRPC = true;
         public const bool   EnableAutosave   = true;
+        public const bool   CheckForUpdates  = true;
     }
 
     public static class UserSettings {
@@ -25,6 +27,7 @@ namespace Const {
         public const string DrumSampleFile     = "drumSampleFile";
         public const string EnableDiscordRPC   = "enableDiscordRPC";
         public const string EnableAutosave     = "enableAutosave";
+        public const string CheckForUpdates    = "checkForUpdates";
     }
     public static class Editor {
         // Grid drawing
