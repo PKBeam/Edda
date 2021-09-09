@@ -512,6 +512,7 @@ namespace Edda {
             SwitchDifficultyMap(beatMap.numDifficulties - 1);
             UpdateDifficultyButtonVisibility();
             SortDifficultyMaps();
+            UpdateDifficultyLabels();
         }
         private void BtnDeleteDifficulty_Click(object sender, RoutedEventArgs e) {
             var res = MessageBox.Show("Are you sure you want to delete this difficulty? This cannot be undone.", "Warning", MessageBoxButton.YesNo, MessageBoxImage.Warning);
@@ -529,6 +530,7 @@ namespace Edda {
             SwitchDifficultyMap(Math.Min(currentDifficulty, beatMap.numDifficulties - 1), false);
 
             UpdateDifficultyButtonVisibility();
+            UpdateDifficultyLabels();
         }
         private void BtnChangeDifficulty0_Click(object sender, RoutedEventArgs e) {
             SwitchDifficultyMap(0);
@@ -1167,9 +1169,11 @@ namespace Edda {
                 if (File.Exists(prevPath)) {
                     File.Delete(prevPath);
                 }
-                if (!File.Exists(newPath)) {
-                    File.Copy(d.FileName, newPath);
-                } 
+                if (File.Exists(newPath)) {
+                    File.Delete(newPath);
+                }
+                File.Copy(d.FileName, newPath);
+                
                 beatMap.SetValue("_coverImageFilename", newFile);
                 SaveBeatmap();
             }
@@ -1312,7 +1316,7 @@ namespace Edda {
             }
 
             // check for same file
-            var songFile = System.IO.Path.GetFileName(Helper.SanitiseFileName(d.FileName));
+            var songFile = System.IO.Path.GetFileName(Helper.SanitiseSongFileName(d.FileName));
             var songFilePath = beatMap.PathOf(songFile);
             var prevSongFile = beatMap.PathOf((string)beatMap.GetValue("_songFilename"));
 

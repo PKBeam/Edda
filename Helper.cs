@@ -99,7 +99,7 @@ public class Helper {
         }
         return BitmapGenerator($"rune{runeStr}{(isHighlighted ? "highlight" : "")}.png");
     }
-    public static string SanitiseFileName(string fileName) {
+    public static string SanitiseSongFileName(string fileName) {
         //return fileName.Replace(" ", "-");
         return "song.ogg";
     }
