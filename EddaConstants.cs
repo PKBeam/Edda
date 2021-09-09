@@ -88,7 +88,7 @@ namespace Const {
         public const int    MaxPreviewLength    = 15; // sec
         public const int    DefaultPreviewFade  = 3; // sec
 
-        public static string MetronomeFilename = "Resources/metronome.wav";
+        public static string MetronomeFilename = "metronome";
         public const int MetronomeStreams = 4;
     }
     public static class BeatmapDefaults {

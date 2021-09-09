@@ -30,7 +30,7 @@
     <None Remove="Resources\medalBronze.png" />
     <None Remove="Resources\medalGold.png" />
     <None Remove="Resources\medalSilver.png" />
-    <None Remove="Resources\metronome.wav" />
+    <None Remove="Resources\metronome1.wav" />
     <None Remove="Resources\musicNote.png" />
     <None Remove="Resources\newMap.png" />
     <None Remove="Resources\openMap.png" />
@@ -103,7 +103,7 @@
     <Resource Include="Resources\medalBronze.png" />
     <Resource Include="Resources\medalGold.png" />
     <Resource Include="Resources\medalSilver.png" />
-    <Content Include="Resources\metronome.wav">
+    <Content Include="Resources\metronome1.wav">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
     <Resource Include="Resources\musicNote.png" />

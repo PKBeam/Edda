@@ -235,9 +235,9 @@ namespace Edda.Properties {
         /// <summary>
         ///   Looks up a localized resource of type System.IO.UnmanagedMemoryStream similar to System.IO.MemoryStream.
         /// </summary>
-        internal static System.IO.UnmanagedMemoryStream metronome {
+        internal static System.IO.UnmanagedMemoryStream metronome1 {
             get {
-                return ResourceManager.GetStream("metronome", resourceCulture);
+                return ResourceManager.GetStream("metronome1", resourceCulture);
             }
         }
         

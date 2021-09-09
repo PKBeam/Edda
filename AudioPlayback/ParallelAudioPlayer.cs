@@ -1,20 +1,21 @@
-﻿using System;
+﻿using NAudio.CoreAudioApi;
 using NAudio.Wave;
-using NAudio.CoreAudioApi;
+using System;
 using System.IO;
 
-public class DrumPlayer : IDisposable {
-
+public class ParallelAudioPlayer: IDisposable {
     int streams;
     int uniqueSamples;
     int lastPlayedStream;
     DateTime[] lastPlayedTimes;
     AudioFileReader[] noteStreams;
-    WasapiOut[] notePlayers;
+    WasapiOut[] notePlayers;    
+    public bool isEnabled { get; set; }
 
-    public DrumPlayer(string basePath, int streams, int desiredLatency) {
+    public ParallelAudioPlayer(string basePath, int streams, int desiredLatency, bool isEnabled) {
         this.lastPlayedStream = 0;
         this.streams = streams;
+        this.isEnabled = isEnabled;
 
         this.uniqueSamples = 0;
         while (File.Exists(GetFilePath(basePath, this.uniqueSamples + 1))) {
@@ -33,23 +34,35 @@ public class DrumPlayer : IDisposable {
             };
             notePlayers[i] = new WasapiOut(AudioClientShareMode.Shared, desiredLatency);
             notePlayers[i].Init(noteStreams[i]);
+            
         }
     }
-    public bool PlayDrum(int hits) {
+    public ParallelAudioPlayer(string basePath, int streams, int desiredLatency) : this(basePath, streams, desiredLatency, true) { }
+
+    public virtual bool Play() {
+        return Play(1);
+    }
+    public virtual bool Play(int hits) {
+        if (!isEnabled) {
+            return false;
+        }
         if (hits == 0) {
             return true;
         }
         int playedHits = 0;
         for (int i = 0; i < streams; i++) {
-            // check that the stream is available to play, and that the sample file is not the same as the last
-            if (DateTime.Now - lastPlayedTimes[i] > new TimeSpan(0, 0, 1) && (i % uniqueSamples != lastPlayedStream % uniqueSamples)) {
-                noteStreams[i].CurrentTime = TimeSpan.Zero;
-                notePlayers[i].Play();
-                this.lastPlayedStream = i;
-                lastPlayedTimes[i] = DateTime.Now;
-                playedHits++;
-                if (playedHits == hits) {
-                    return true;
+            // check that the stream is available to play
+            if (DateTime.Now - lastPlayedTimes[i] > noteStreams[i].TotalTime) {
+                // and that the sample file is not the same as the last
+                if ((uniqueSamples <= 1) || (i % uniqueSamples != lastPlayedStream % uniqueSamples)) {
+                    noteStreams[i].CurrentTime = TimeSpan.Zero;
+                    notePlayers[i].Play();
+                    this.lastPlayedStream = i;
+                    lastPlayedTimes[i] = DateTime.Now;
+                    playedHits++;
+                    if (playedHits == hits) {
+                        return true;
+                    }
                 }
             }
         }
@@ -61,10 +74,6 @@ public class DrumPlayer : IDisposable {
         }
     }
     public void Dispose() {
-        Dispose(true);
-    }
-    protected virtual void Dispose(bool disposing) {
-        // Cleanup
         for (int i = 0; i < this.streams; i++) {
             noteStreams[i].Dispose();
             notePlayers[i].Dispose();
