@@ -130,7 +130,7 @@ public class Helper {
     public static void CheckForUpdates() {
         HttpClient client = new HttpClient();
         client.DefaultRequestHeaders.Add("User-Agent", "Edda");
-        string res = client.GetStringAsync("https://api.github.com/repos/PKBeam/Edda/releases/latest").Result;
+        string res = client.GetStringAsync(Const.Program.ReleasesAPI).Result;
         var resJSON = JObject.Parse(res);
         string newestVersion = (string)resJSON.GetValue("tag_name");
         string currentVersion = Const.Program.VersionDisplayString;

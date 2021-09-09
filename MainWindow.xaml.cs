@@ -1313,7 +1313,9 @@ namespace Edda {
 
             // check for same file
             var songFile = System.IO.Path.GetFileName(Helper.SanitiseFileName(d.FileName));
+            var songFilePath = beatMap.PathOf(songFile);
             var prevSongFile = beatMap.PathOf((string)beatMap.GetValue("_songFilename"));
+
             if (d.FileName == prevSongFile) {
                 return false;
             }
@@ -1326,12 +1328,16 @@ namespace Edda {
             vorbisStream.Dispose();
 
             // do file I/O
-            if (!File.Exists(prevSongFile)) {
+            if (File.Exists(prevSongFile)) {
                 File.Delete(prevSongFile);
             }
-            if (!File.Exists(beatMap.PathOf(songFile))) {
-                File.Copy(d.FileName, beatMap.PathOf(songFile));
+
+            // can't copy over an existing file
+            if (File.Exists(songFilePath)) {
+                File.Delete(songFilePath);
             }
+            File.Copy(d.FileName, songFilePath);
+
             LoadSong();
 
             // redraw waveforms
