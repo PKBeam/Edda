@@ -7,13 +7,14 @@ namespace Const {
     public static class Program {
         public const string Name          = "Edda";
         public const string RepositoryURL = "https://github.com/PKBeam/Edda";
-        public const string ReleasesAPI = "https://api.github.com/repos/PKBeam/Edda/releases/latest";
-        public const string VersionString = "0.4.0b4";
-        public const string VersionDisplayString = "v" + VersionString;
+        public const string ReleasesAPI   = "https://api.github.com/repos/PKBeam/Edda/releases/latest";
+        public const string VersionString = "0.4.0";
         public const string SettingsFile  = "settings.txt";
         public const string ResourcesPath = "Resources/";
         public const string BackupPath    = "autosaves";
         public const int    MaxBackups    = 10;
+
+        public const string VersionDisplayString = "v" + VersionString;
     }
     public static class DefaultUserSettings {
         public const int    AudioLatency     = -20; // ms
