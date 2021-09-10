@@ -2,7 +2,7 @@
 ---
 # Using Edda
 
-> **NOTE**: This guide was last updated for Edda v0.4.0b4.
+> **NOTE**: This guide was last updated for Edda v0.4.0.
 
 Now that you have Edda installed and a song file ready to go, let's make a map!
 
@@ -86,7 +86,7 @@ First, we need to find the *Global Beat* that the song's first beat begins on.
 
 Using the editing grid, find the start of the song's first beat with the mouse. The global beat corresponding to the mouse location will be shown in the timing bar - you'll want to use the unsnapped value in the brackets.  
 
-It may be helpful to turn on the *Map Waveform* (or *Big Waveform*) in the right sidebar, so you can visually find the start of the first beat.
+It may be helpful to use the *Grid Waveform* (in the right sidebar) to visually find the start of the first beat.
 
 Once you know the global beat, we can now specify a BPM change.  
  
@@ -100,9 +100,9 @@ Enter the global beat you found previously, and set the *BPM* and *Grid Division
 
 Your song should be ready to map now, but let's check that the timing is correct.
 
-Place some notes on the major gridlines by left-clicking. Now play them back using the Play/Pause button in the media controls (or by pressing space).
+Turn on the *Metronome* feature in the right sidebar. Now play them back using the Play/Pause button in the media controls (or by pressing space).
 
-Do the drum notes sound synchronised with the music?
+Does the metronome sound like it's synchronised to the music?
 
 Be sure to check both at the start *and* at the end of your song:
 
@@ -195,7 +195,7 @@ Medal Distances represent how many metres your boat must row in order to achieve
 
 Now that everything else is set up, let's start mapping for real.
 
-Before you begin, you might want to turn on the *Map Waveform* (or *Big Waveform*) in the right sidebar.
+While you map, it might be helpful to refer to the *Grid Waveform* (in the right sidebar).
 
 ### Basic controls
 
