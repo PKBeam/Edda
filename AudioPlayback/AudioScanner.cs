@@ -58,12 +58,9 @@ public class AudioScanner {
         // NOTE: this function is called on a separate thread
 
         // scan notes while song is still playing
-        var nextPollTime = Const.Audio.NotePollRate;
         while (!ct.IsCancellationRequested) {
-            if (stopwatch.ElapsedMilliseconds + startFrom >= nextPollTime) {
-                ScanNotes();
-                nextPollTime += Const.Audio.NotePollRate;
-            }
+            ScanNotes();
+            Thread.Sleep(Const.Audio.NotePollRate);
         }
     }
     private void ScanNotes() {
