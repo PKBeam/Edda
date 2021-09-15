@@ -19,6 +19,9 @@ public class NoteScanner: AudioScanner {
     }
     protected override void OnNoteScanHit(Note n) {
         notesPlayed.Add(n);
+        double currentTime = stopwatch.ElapsedMilliseconds + stopwatchOffset;
+        double songTime = caller.songStream.CurrentTime.TotalMilliseconds;
+        //Trace.WriteLine($"Played note early by {currentTime - songTime:.##}ms");
     }
     protected override void OnNoteScanFinish() {
         foreach (Note n in notesPlayed) {

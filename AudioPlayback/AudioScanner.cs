@@ -8,19 +8,23 @@ using System.Threading.Tasks;
 
 public class AudioScanner {
     int scanIndex;
-    int stopwatchOffset = 0;
-    Stopwatch stopwatch;
+    protected int stopwatchOffset = 0;
+    protected Stopwatch stopwatch;
     CancellationTokenSource tokenSource;
     CancellationToken token;
 
-    double globalBPM;
+    protected double globalBPM;
     public List<Note> notes;
 
     ParallelAudioPlayer parallelAudioPlayer;
 
     public AudioScanner(ParallelAudioPlayer parallelAudioPlayer) {
-        this.parallelAudioPlayer = parallelAudioPlayer;
+        SetAudioPlayer(parallelAudioPlayer);
         this.stopwatch = new Stopwatch();
+    }
+
+    public void SetAudioPlayer(ParallelAudioPlayer parallelAudioPlayer) {
+        this.parallelAudioPlayer = parallelAudioPlayer;
     }
 
     public void Start(int millisecStart, List<Note> notes, double globalBPM) {
@@ -85,7 +89,7 @@ public class AudioScanner {
 
         // check if we need to play any notes
         while (Math.Abs(currentTime - noteTime) < Const.Audio.NoteDetectionDelta) {
-            //Trace.WriteLine($"Played note at beat {selectedDifficultyNotes[noteScanIndex].Item1}");
+            
             OnNoteScanHit(notes[scanIndex]);
             noteHits++;
             scanIndex++;

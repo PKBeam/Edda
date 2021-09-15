@@ -115,8 +115,8 @@ namespace Edda {
         // -- audio playback
         int editorAudioLatency; // ms
         SampleChannel songChannel;
-        VorbisWaveReader songStream;
-        WasapiOut songPlayer;
+        public VorbisWaveReader songStream;
+        public WasapiOut songPlayer;
         ParallelAudioPlayer drummer;
         ParallelAudioPlayer metronome;
         NoteScanner noteScanner;
@@ -1393,7 +1393,8 @@ namespace Edda {
             // set seek position for song
             try {
                 songStream.CurrentTime = TimeSpan.FromMilliseconds(sliderSongProgress.Value);
-            } catch {
+            } catch (Exception ex) {
+                Trace.WriteLine($"WARNING: Could not seek correctly on song ({ex})");
                 songStream.CurrentTime = TimeSpan.Zero;
             }
 
@@ -1787,6 +1788,8 @@ namespace Edda {
         }
         private void InitDrummer(string basePath) {
             drummer = new ParallelAudioPlayer(basePath, Const.Audio.NotePlaybackStreams, Const.Audio.WASAPILatencyTarget, true);
+            drummer.ChangeVolume(sliderDrumVol.Value);
+            noteScanner?.SetAudioPlayer(drummer);
         }
         private double BeatForPosition(double position, bool snap) {
             double userOffsetBeat = editorGridOffset * globalBPM / 60;
