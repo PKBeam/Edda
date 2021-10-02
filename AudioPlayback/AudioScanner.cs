@@ -80,7 +80,12 @@ public class AudioScanner {
 
         // check if any notes were missed
         while (currentTime - noteTime >= Const.Audio.NoteDetectionDelta && scanIndex < notes.Count - 1) {
-            Trace.WriteLine($"WARNING: Scanner played audio late (Delta: {Math.Round(currentTime - noteTime, 2)})");
+            
+            if (parallelAudioPlayer.Play(notes[scanIndex].col) == false) {
+                Trace.WriteLine("WARNING: Scanner skipped a note that was already late");
+            } else {
+                Trace.WriteLine($"WARNING: Scanner played audio late (Delta: {Math.Round(currentTime - noteTime, 2)})");
+            }
             OnNoteScanLateHit(notes[scanIndex]);
             noteHits++;
             scanIndex++;
@@ -89,7 +94,11 @@ public class AudioScanner {
 
         // check if we need to play any notes
         while (Math.Abs(currentTime - noteTime) < Const.Audio.NoteDetectionDelta) {
-            
+
+            if (parallelAudioPlayer.Play(notes[scanIndex].col) == false) {
+                Trace.WriteLine("WARNING: Scanner skipped a note");
+            }
+
             OnNoteScanHit(notes[scanIndex]);
             noteHits++;
             scanIndex++;
@@ -100,9 +109,9 @@ public class AudioScanner {
         }
 
         // play all pending drum hits
-        if (parallelAudioPlayer.isEnabled && parallelAudioPlayer.Play(noteHits) == false) {
-            Trace.WriteLine("WARNING: Scanner skipped a note");
-        }
+        //if (parallelAudioPlayer.isEnabled && parallelAudioPlayer.Play(noteHits) == false) {
+        //    Trace.WriteLine("WARNING: Scanner skipped a note");
+        //}
 
         OnNoteScanFinish();
     }

@@ -31,6 +31,7 @@ namespace Edda {
             checkDiscord.IsChecked = userSettings.GetBoolForKey(Const.UserSettings.EnableDiscordRPC);
             CheckAutosave.IsChecked = userSettings.GetBoolForKey(Const.UserSettings.EnableAutosave);
             checkStartupUpdate.IsChecked = userSettings.GetBoolForKey(Const.UserSettings.CheckForUpdates);
+            checkPanNotes.IsChecked = userSettings.GetBoolForKey(Const.UserSettings.PanDrumSounds);
             doneInit = true;
         }
 
@@ -68,6 +69,12 @@ namespace Edda {
                 }
             }
         }
+        private void checkPanNotes_Click(object sender, RoutedEventArgs e) {
+            bool newStatus = checkPanNotes.IsChecked ?? false;
+            userSettings.SetValueForKey(Const.UserSettings.PanDrumSounds, newStatus);
+            UpdateSettings();
+        }
+
         private void LblRepoLink_MouseDown(object sender, MouseButtonEventArgs e) {
             Process proc = new Process();
             proc.StartInfo.UseShellExecute = true;
@@ -106,5 +113,7 @@ namespace Edda {
         private void lblRepoLink_MouseLeave(object sender, MouseEventArgs e) {
             Mouse.OverrideCursor = null;
         }
+
+      
     }
 }

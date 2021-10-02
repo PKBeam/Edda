@@ -1,10 +1,13 @@
 ﻿using NAudio.CoreAudioApi;
 using NAudio.Wave;
+using NAudio.Wave.SampleProviders;
 using System;
 using System.Diagnostics;
 using System.IO;
 
 public class ParallelAudioPlayer: IDisposable {
+    const int numChannels = 4;
+    const float maxPan = 0.75f;
     int streams;
     int uniqueSamples;
     int lastPlayedStream;
@@ -12,11 +15,13 @@ public class ParallelAudioPlayer: IDisposable {
     AudioFileReader[] noteStreams;
     WasapiOut[] notePlayers;    
     public bool isEnabled { get; set; }
+    public bool isPanned { get; set; }
 
-    public ParallelAudioPlayer(string basePath, int streams, int desiredLatency, bool isEnabled) {
+    public ParallelAudioPlayer(string basePath, int streams, int desiredLatency, bool isEnabled, bool isPanned) {
         this.lastPlayedStream = 0;
         this.streams = streams;
         this.isEnabled = isEnabled;
+        this.isPanned = isPanned;
 
         this.uniqueSamples = 0;
         while (File.Exists(GetFilePath(basePath, this.uniqueSamples + 1))) {
@@ -30,41 +35,43 @@ public class ParallelAudioPlayer: IDisposable {
         notePlayers = new WasapiOut[streams];
         lastPlayedTimes = new DateTime[streams];
         for (int i = 0; i < streams; i++) {
-            noteStreams[i] = new AudioFileReader(GetFilePath(basePath, (i % uniqueSamples) + 1)) {
+            noteStreams[i] = new AudioFileReader(GetFilePath(basePath, (i % numChannels % uniqueSamples) + 1)) {
                 Volume = Const.Audio.DefaultNoteVolume
             };
             notePlayers[i] = new WasapiOut(AudioClientShareMode.Shared, desiredLatency);
-            notePlayers[i].Init(noteStreams[i]);
-            
+            if (isPanned) {
+                var mono = new StereoToMonoSampleProvider(noteStreams[i]);
+                mono.LeftVolume = 1.0f;
+                mono.RightVolume = 0.0f;
+                var panProv = new PanningSampleProvider(mono);
+                panProv.Pan = i % numChannels * 2 * maxPan / (numChannels - 1) - maxPan;
+                notePlayers[i].Init(panProv);
+            } else {
+                notePlayers[i].Init(noteStreams[i]);
+            } 
         }
     }
-    public ParallelAudioPlayer(string basePath, int streams, int desiredLatency) : this(basePath, streams, desiredLatency, true) { }
+    public ParallelAudioPlayer(string basePath, int streams, int desiredLatency, bool isPanned) : this(basePath, streams, desiredLatency, true, isPanned) { }
 
     public virtual bool Play() {
-        return Play(1);
+        return Play(0);
     }
-    public virtual bool Play(int hits) {
+
+    public virtual bool Play(int channel) {
         if (!isEnabled) {
-            return false;
-        }
-        if (hits == 0) {
             return true;
         }
-        int playedHits = 0;
         for (int i = 0; i < streams; i++) {
+            if (isPanned && i % numChannels != channel) {
+                continue;
+            }
             // check that the stream is available to play
             if (DateTime.Now - lastPlayedTimes[i] > noteStreams[i].TotalTime) {
-                // and that the sample file is not the same as the last
-                if ((uniqueSamples <= 1) || (i % uniqueSamples != lastPlayedStream % uniqueSamples)) {
-                    noteStreams[i].CurrentTime = TimeSpan.Zero;
-                    notePlayers[i].Play();
-                    this.lastPlayedStream = i;
-                    lastPlayedTimes[i] = DateTime.Now;
-                    playedHits++;
-                    if (playedHits == hits) {
-                        return true;
-                    }
-                }
+                noteStreams[i].CurrentTime = TimeSpan.Zero;
+                notePlayers[i].Play();
+                this.lastPlayedStream = i;
+                lastPlayedTimes[i] = DateTime.Now;
+                return true;
             }
         }
         return false;

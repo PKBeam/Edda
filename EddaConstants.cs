@@ -19,6 +19,7 @@ namespace Const {
     public static class DefaultUserSettings {
         public const int    AudioLatency     = -20; // ms
         public const string DrumSampleFile   = "bassdrum";
+        public const bool   PanDrumSounds    = true;
         public const bool   EnableDiscordRPC = true;
         public const bool   EnableAutosave   = true;
         public const bool   CheckForUpdates  = true;
@@ -27,6 +28,7 @@ namespace Const {
     public static class UserSettings {
         public const string EditorAudioLatency = "editorAudioLatency";
         public const string DrumSampleFile     = "drumSampleFile";
+        public const string PanDrumSounds      = "panDrumSounds";
         public const string EnableDiscordRPC   = "enableDiscordRPC";
         public const string EnableAutosave     = "enableAutosave";
         public const string CheckForUpdates    = "checkForUpdates";
@@ -86,7 +88,7 @@ namespace Const {
         // Latencies        
         public const int    WASAPILatencyTarget = 100; // ms
         // Note Playback    
-        public const int    NotePlaybackStreams = 16;
+        public const int    NotePlaybackStreams = 64;
         public const int    NotePollRate        = 15;  // ms
         public const double NoteDetectionDelta  = 10;  // ms
 

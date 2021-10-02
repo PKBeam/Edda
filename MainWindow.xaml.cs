@@ -141,7 +141,13 @@ namespace Edda {
             discordClient = new DiscordClient(this);
             LoadSettingsFile();
 
-            metronome = new ParallelAudioPlayer(Const.Audio.MetronomeFilename, Const.Audio.MetronomeStreams, Const.Audio.WASAPILatencyTarget, checkMetronome.IsChecked == true);
+            metronome = new ParallelAudioPlayer(
+                Const.Audio.MetronomeFilename, 
+                Const.Audio.MetronomeStreams, 
+                Const.Audio.WASAPILatencyTarget, 
+                checkMetronome.IsChecked == true, 
+                false
+            );
 
             // init border
             InitDragSelectBorder();
@@ -197,6 +203,7 @@ namespace Edda {
             beatScanner?.Stop();
             drummer?.Dispose();
             metronome?.Dispose();
+            Trace.WriteLine("INFO: Audio resources disposed...");
             Application.Current.Shutdown();
         }
         private void AppMainWindow_KeyDown(object sender, KeyEventArgs e) {
@@ -309,7 +316,7 @@ namespace Edda {
                 double defaultInput = BeatForPosition(scrollEditor.VerticalOffset + scrollEditor.ActualHeight - unitLengthUnscaled / 2, editorSnapToGrid);
                 Note n = new Note(songIsPlaying ? defaultInput : mouseInput, col);
                 mapEditor.AddNotes(n);
-                drummer.Play(1);
+                drummer.Play(col);
             }
 
             // delete selected notes
@@ -454,6 +461,13 @@ namespace Edda {
                 LoadSong(); // song file
                 LoadCoverImage();
                 InitUI(); // cover image file
+
+                // bandaid fix to prevent WPF from committing large amounts of memory
+                new System.Threading.Thread(new System.Threading.ThreadStart(delegate {
+                    System.Threading.Thread.Sleep(500);
+                    this.Dispatcher.Invoke(() => DrawEditorGrid());
+                })).Start();
+
             } catch (Exception ex) {
                 beatMap = null;
                 txtSongFileName.Text = "N/A";
@@ -889,7 +903,7 @@ namespace Edda {
                     }
                 } else {
                     mapEditor.AddNotes(n);
-                    drummer.Play(1);
+                    drummer.Play(n.col);
                 }
             }
             EditorGrid.ReleaseMouseCapture();
@@ -1117,11 +1131,16 @@ namespace Edda {
                 editorAudioLatency = Const.DefaultUserSettings.AudioLatency;
             }
 
+            if (userSettings.GetValueForKey(Const.UserSettings.PanDrumSounds) == null) {
+                userSettings.SetValueForKey(Const.UserSettings.PanDrumSounds, Const.DefaultUserSettings.PanDrumSounds);
+            }
+            bool isPanned = userSettings.GetBoolForKey(Const.UserSettings.PanDrumSounds);
+
             try {
-                InitDrummer(userSettings.GetValueForKey(Const.UserSettings.DrumSampleFile));
+                InitDrummer(userSettings.GetValueForKey(Const.UserSettings.DrumSampleFile), isPanned);
             } catch {
                 userSettings.SetValueForKey(Const.UserSettings.DrumSampleFile, Const.DefaultUserSettings.DrumSampleFile);
-                InitDrummer(Const.DefaultUserSettings.DrumSampleFile);
+                InitDrummer(Const.DefaultUserSettings.DrumSampleFile, isPanned);
             }
 
             if (userSettings.GetValueForKey(Const.UserSettings.EnableDiscordRPC) == null) {
@@ -1546,6 +1565,11 @@ namespace Edda {
                 return;
             }
 
+            foreach (UIElement u in EditorGrid.Children) {
+                if (u is Image && u != imgAudioWaveform) {
+                    ((Image)u).Source = null;
+                }
+            }
             EditorGrid.Children.Clear();
             
             DateTime start = DateTime.Now;
@@ -1688,14 +1712,14 @@ namespace Edda {
 
                 // find which beat fraction this note lies on
                 img.Source = RuneForBeat(n.beat);
-
+                
                 // this assumes there are no duplicate notes given to us
                 img.Uid = Helper.UidGenerator(n);
                 if (FindName(Helper.NameGenerator(n)) != null) {
                     UnregisterName(Helper.NameGenerator(n));
                 }
                 RegisterName(Helper.NameGenerator(n), img);
-
+                
                 Canvas.SetBottom(img, noteHeight);
                 Canvas.SetLeft(img, noteXOffset);
                 EditorGrid.Children.Add(img);
@@ -1786,8 +1810,13 @@ namespace Edda {
             imgPreviewNote.Height = unitHeight;
             EditorGrid.Children.Add(imgPreviewNote);
         }
-        private void InitDrummer(string basePath) {
-            drummer = new ParallelAudioPlayer(basePath, Const.Audio.NotePlaybackStreams, Const.Audio.WASAPILatencyTarget, true);
+        private void InitDrummer(string basePath, bool isPanned) {
+            drummer = new ParallelAudioPlayer(
+                basePath, 
+                Const.Audio.NotePlaybackStreams, 
+                Const.Audio.WASAPILatencyTarget,
+                isPanned
+            );
             drummer.ChangeVolume(sliderDrumVol.Value);
             noteScanner?.SetAudioPlayer(drummer);
         }

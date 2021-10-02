@@ -5,7 +5,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:Edda"
         mc:Ignorable="d"
-        Title="Settings" Name="Window" Width="260" Height="380" ResizeMode="NoResize" Background="{DynamicResource {x:Static SystemColors.ControlDarkBrushKey}}">
+        Title="Settings" Name="Window" Width="260" Height="390" ResizeMode="NoResize" Background="{DynamicResource {x:Static SystemColors.ControlDarkBrushKey}}">
     <Grid>
         <DockPanel>
             
@@ -103,11 +103,19 @@
                     </Border>
 
                     <Border Grid.Row="1" Grid.Column="0">
-                        <TextBlock VerticalAlignment="Center">Playback Sound</TextBlock>
+                        <TextBlock VerticalAlignment="Center">Note Sound</TextBlock>
                     </Border>
 
                     <Border Grid.Row="1" Grid.Column="1">
                         <ComboBox x:Name="comboDrumSample" SelectionChanged="ComboDrumSample_SelectionChanged" VerticalAlignment="Center"/>
+                    </Border>
+
+                    <Border Grid.Row="2" Grid.Column="0">
+                        <TextBlock VerticalAlignment="Center">Pan Note Sounds</TextBlock>
+                    </Border>
+
+                    <Border Grid.Row="2" Grid.Column="1">
+                        <CheckBox x:Name="checkPanNotes" Click="checkPanNotes_Click"/>
                     </Border>
                 </Grid>
                 <Label Padding="10 5" FontWeight="Bold" FontSize="14">Miscellaneous</Label>
