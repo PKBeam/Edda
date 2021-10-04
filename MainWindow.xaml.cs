@@ -129,6 +129,7 @@ namespace Edda {
             // disable parts of UI, as no map is loaded
             imgSaved.Opacity = 0;
             imgWaveformVertical.Opacity = Const.Editor.NavWaveformOpacity;
+            imgWaveformVertical.Stretch = Stretch.Fill;
             RenderOptions.SetBitmapScalingMode(imgAudioWaveform, BitmapScalingMode.NearestNeighbor);
             lineSongMouseover.Opacity = 0;
             DisableUI();
