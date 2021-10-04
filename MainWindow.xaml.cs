@@ -1377,6 +1377,7 @@ namespace Edda {
             var songPath = beatMap.PathOf((string)beatMap.GetValue("_songFilename"));
             songStream = new VorbisWaveReader(songPath);
             songChannel = new SampleChannel(songStream);
+            songChannel.Volume = (float)sliderSongVol.Value;
             songPlayer = new WasapiOut(AudioClientShareMode.Shared, Const.Audio.WASAPILatencyTarget);
             songPlayer.Init(songChannel);
             beatMap.SetValue("_songApproximativeDuration", (int)songStream.TotalTime.TotalSeconds + 1);
