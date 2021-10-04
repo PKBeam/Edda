@@ -15,7 +15,7 @@ Now that you're comfortable with using Edda, here are some more advanced topics 
 
 Edda periodically keeps backups of your maps in the `autosaves` folder that is located in the folder your map is in.  
 
-In this folder there will be up to ten folders numbered `backup1` to `backup10`, each containing `.dat` files for each mapped difficulty. Larger numbers correspond to the most recent backups.
+In this folder there will be up to ten folders numbered `backup1` to `backup10`, each containing `.dat` files for each mapped difficulty. Smaller numbers correspond to the most recent backups; the folder `backup1` should always have the most recent backup.
 
 This is so you can recover your work if a bug or issue causes a data wipe. (Please feel free to [report](https://github.com/PKBeam/Edda/issues) any such issues).
 
