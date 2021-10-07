@@ -1058,47 +1058,67 @@ namespace Edda {
             });
         }
         private void BackupAndSaveBeatmap() {
+            // https://stackoverflow.com/questions/329355/cannot-delete-directory-with-directory-deletepath-true
+            void DeleteDirectory(string target_dir) {
+                string[] files = Directory.GetFiles(target_dir);
+                string[] dirs = Directory.GetDirectories(target_dir);
 
-            string GetBackupPath(int i, string fileName, bool create=true) {
-                string backupSubFolder = System.IO.Path.Combine(beatMap.PathOf(Const.Program.BackupPath), $"backup{i}");
-                if (!Directory.Exists(backupSubFolder) && create) {
-                    Directory.CreateDirectory(backupSubFolder);
+                foreach (string file in files) {
+                    File.SetAttributes(file, FileAttributes.Normal);
+                    File.Delete(file);
                 }
-                return System.IO.Path.Combine(backupSubFolder, $"{fileName}.dat");
-            }
 
-            // create backup directory if it doesnt exist
-            if (!Directory.Exists(beatMap.PathOf(Const.Program.BackupPath))) {
-                Directory.CreateDirectory(beatMap.PathOf(Const.Program.BackupPath));
-            }
-
-            List<string> files = new(Const.BeatmapDefaults.DifficultyNames);
-            files.Add("info");
-
-            // shift backup files
-            for (int i = Const.Program.MaxBackups - 1; i > 0; i--) {
-                foreach (var diffName in files) {
-                    string oldSavePath = GetBackupPath(i, diffName, false);
-                    if (File.Exists(oldSavePath)) {
-                        string newSavePath = GetBackupPath(i + 1, diffName);
-                        File.Move(oldSavePath, newSavePath, true);
-                    }
+                foreach (string dir in dirs) {
+                    DeleteDirectory(dir);
                 }
+
+                Directory.Delete(target_dir, false);
             }
 
             // save beatmap
             SaveBeatmap();
 
+            // create backup directory if it doesnt exist
+            string backupFolder = beatMap.PathOf(Const.Program.BackupPath);
+            if (!Directory.Exists(backupFolder)) {
+                Directory.CreateDirectory(backupFolder);
+            }
+
+            // get names of files to backup
+            List<string> files = new(Const.BeatmapDefaults.DifficultyNames);
+            files.Add("info");
+
+            string newBackupName = DateTime.Now.ToString("Backup - dd MMMM yyyy h.mmtt");
+            string newBackupPath = System.IO.Path.Combine(backupFolder, newBackupName);
+            List<string> folders = new(Directory.GetDirectories(backupFolder));
+            List<string> existingBackups = folders.FindAll((str) => { return str.StartsWith(System.IO.Path.Combine(backupFolder, "Backup ")); });
+
+            // dont make another backup if one has been made very recently (1 second)
+            if (existingBackups.Exists((str) => { return str == newBackupPath; })) {
+                return;
+            }
+
+            // sort by oldest first
+            existingBackups.Sort((a, b) => {
+                DateTime dA = Directory.GetCreationTime(a);
+                DateTime dB = Directory.GetCreationTime(b);
+                return dA.CompareTo(dB);
+            });
+
+            // delete oldest backup if we have too many
+            if (existingBackups.Count == Const.Program.MaxBackups) {
+                DeleteDirectory(existingBackups[0]);
+            }
+
             // make new backup file
+            Directory.CreateDirectory(newBackupPath);
             foreach (var diffName in files) {
                 string recentSavePath = beatMap.PathOf($"{diffName}.dat");
-                string backupPath = GetBackupPath(1, diffName);
                 if (File.Exists(recentSavePath)) {
-                    File.Copy(recentSavePath, backupPath);
+                    File.Copy(recentSavePath, System.IO.Path.Combine(newBackupPath, $"{diffName}.dat"));
                 }
             }
 
-            // delete unused backup folders
         }
         private void ToggleLeftDock() {
             if (borderLeftDock.Visibility == Visibility.Collapsed) {
