@@ -305,7 +305,11 @@ namespace Edda {
                     }
                     mapEditor.AddBookmark(new Bookmark(beat, Const.Editor.Bookmark.DefaultName));
                 }
-                
+                // toggle grid snap (Ctrl-G)
+                if (e.Key == Key.G) {
+                    checkGridSnap.IsChecked = !(checkGridSnap.IsChecked == true);
+                    CheckGridSnap_Click(null, null);
+                }
             }
 
             if ((e.Key == Key.D1 || e.Key == Key.D2 || e.Key == Key.D3 || e.Key == Key.D4) &&
@@ -319,7 +323,7 @@ namespace Edda {
                 mapEditor.AddNotes(n);
                 drummer.Play(col);
             }
-
+            
             // delete selected notes
             if (e.Key == Key.Delete) {
                 mapEditor.RemoveSelectedNotes();
