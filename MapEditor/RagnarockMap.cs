@@ -239,7 +239,7 @@ public class RagnarockMap {
             customData["_editors"] = JToken.FromObject(editorsObject);
         }
         if (customData["_editors"]["Edda"]?.Type != JTokenType.Object) {
-            customData["_editors"]["Edda"] = JToken.FromObject(new { version = Const.Program.VersionString });
+            customData["_editors"]["Edda"] = JToken.FromObject(new { version = Const.Program.DisplayVersionString });
         }
         //if (customData["_editors"]["_lastEditedBy"]?.Type != JTokenType.String) {
         customData["_editors"]["_lastEditedBy"] = JToken.FromObject("Edda");
@@ -311,7 +311,7 @@ public class RagnarockMap {
     }
     private void UpdateEddaVersion() {
         var obj = JObject.Parse(infoStr);
-        obj["_customData"]["_editors"]["Edda"]["version"] = Const.Program.VersionString;
+        obj["_customData"]["_editors"]["Edda"]["version"] = Const.Program.DisplayVersionString;
         obj["_customData"]["_editors"]["_lastEditedBy"] = Const.Program.Name;
         infoStr = JsonConvert.SerializeObject(obj, Formatting.Indented);
     }

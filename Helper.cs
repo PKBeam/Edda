@@ -133,7 +133,7 @@ public class Helper {
         string res = client.GetStringAsync(Const.Program.ReleasesAPI).Result;
         var resJSON = JObject.Parse(res);
         string newestVersion = (string)resJSON.GetValue("tag_name");
-        string currentVersion = Const.Program.VersionDisplayString;
+        string currentVersion = "v" + Const.Program.VersionString;
         if (newestVersion != currentVersion) {
             MessageBox.Show($"A new release of Edda is available.\n\nNewest version: {newestVersion}\nCurrent version: {currentVersion}", "New release available", MessageBoxButton.OK, MessageBoxImage.Information);
         }

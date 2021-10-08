@@ -26,7 +26,7 @@ namespace Edda {
             this.caller = caller;
             this.userSettings = userSettings;
             InitComboDrumSample();
-            lblProgramName.Content = "Edda " + Const.Program.VersionDisplayString;
+            lblProgramName.Content = "Edda v" + Const.Program.DisplayVersionString;
             txtAudioLatency.Text = userSettings.GetValueForKey(Const.UserSettings.EditorAudioLatency);
             checkDiscord.IsChecked = userSettings.GetBoolForKey(Const.UserSettings.EnableDiscordRPC);
             CheckAutosave.IsChecked = userSettings.GetBoolForKey(Const.UserSettings.EnableAutosave);
