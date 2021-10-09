@@ -23,7 +23,7 @@ namespace Const {
     }
     public static class DefaultUserSettings {
         public const int    AudioLatency     = -20; // ms
-        public const string DrumSampleFile   = "bassdrum";
+        public const string DrumSampleFile   = "snaredrum";
         public const bool   PanDrumSounds    = true;
         public const bool   EnableDiscordRPC = true;
         public const bool   EnableAutosave   = true;
@@ -94,7 +94,7 @@ namespace Const {
         // Latencies        
         public const int    WASAPILatencyTarget = 100; // ms
         // Note Playback    
-        public const int    NotePlaybackStreams = 64;
+        public const int    NotePlaybackStreams = 16;
         public const int    NotePollRate        = 15;  // ms
         public const double NoteDetectionDelta  = 15;  // ms
 

@@ -41,8 +41,14 @@ public class ParallelAudioPlayer: IDisposable {
             notePlayers[i] = new WasapiOut(AudioClientShareMode.Shared, desiredLatency);
             if (isPanned) {
                 var mono = new StereoToMonoSampleProvider(noteStreams[i]);
-                mono.LeftVolume = 1.0f;
-                mono.RightVolume = 0.0f;
+                if (basePath == "bassdrum") {
+                    mono.LeftVolume = 1.0f;
+                    mono.RightVolume = 0.0f;
+                } else {
+                    mono.LeftVolume = 0.5f;
+                    mono.RightVolume = 0.5f;
+                }
+                
                 var panProv = new PanningSampleProvider(mono);
                 panProv.Pan = i % numChannels * 2 * maxPan / (numChannels - 1) - maxPan;
                 notePlayers[i].Init(panProv);

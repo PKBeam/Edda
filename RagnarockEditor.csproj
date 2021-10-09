@@ -60,6 +60,10 @@
     <None Remove="Resources\runeXhighlight.png" />
     <None Remove="Resources\saveMap.png" />
     <None Remove="Resources\settings.png" />
+    <None Remove="Resources\snaredrum1.wav" />
+    <None Remove="Resources\snaredrum2.wav" />
+    <None Remove="Resources\snaredrum3.wav" />
+    <None Remove="Resources\snaredrum4.wav" />
     <None Remove="Resources\tick.png" />
     <None Remove="Resources\waterTexture.png" />
     <None Remove="Resources\waterTextureSmall.png" />
@@ -138,6 +142,18 @@
     <Resource Include="Resources\runeXhighlight.png" />
     <Resource Include="Resources\saveMap.png" />
     <Resource Include="Resources\settings.png" />
+    <Content Include="Resources\snaredrum1.wav">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Resources\snaredrum2.wav">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Resources\snaredrum3.wav">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Resources\snaredrum4.wav">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
     <Resource Include="Resources\tick.png" />
     <Resource Include="Resources\waterTexture.png" />
     <Resource Include="Resources\waterTextureSmall.png" />
