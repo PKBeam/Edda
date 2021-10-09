@@ -186,7 +186,9 @@ namespace Edda {
         private void AppMainWindow_ContentRendered(object sender, EventArgs e) {
             try {
                 if (userSettings.GetValueForKey(Const.UserSettings.CheckForUpdates) == true.ToString()) {
-                    Helper.CheckForUpdates();
+                    #if !DEBUG
+                        Helper.CheckForUpdates();
+                    #endif
                 }
             } catch {
                 Trace.WriteLine("INFO: Could not check for updates.");
