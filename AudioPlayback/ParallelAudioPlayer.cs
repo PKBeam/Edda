@@ -42,7 +42,7 @@ public class ParallelAudioPlayer: IDisposable {
             if (isPanned) {
                 var mono = new StereoToMonoSampleProvider(noteStreams[i]);
                 mono.LeftVolume = 1.0f;
-                mono.RightVolume = 1.0f;
+                mono.RightVolume = 0.0f;
                 var panProv = new PanningSampleProvider(mono);
                 panProv.Pan = i % numChannels * 2 * maxPan / (numChannels - 1) - maxPan;
                 notePlayers[i].Init(panProv);
