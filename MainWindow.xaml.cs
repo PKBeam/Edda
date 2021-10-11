@@ -207,7 +207,7 @@ namespace Edda {
             drummer?.Dispose();
             metronome?.Dispose();
             Trace.WriteLine("INFO: Audio resources disposed...");
-            Application.Current.Shutdown();
+            //Application.Current.Shutdown();
         }
         private void AppMainWindow_KeyDown(object sender, KeyEventArgs e) {
 
@@ -653,15 +653,16 @@ namespace Edda {
             int prevLevel = (int)beatMap.GetValueForMap(currentDifficulty, "_difficultyRank");
             int level;
             if (int.TryParse(txtDifficultyNumber.Text, out level) && Helper.DoubleRangeCheck(level, 1, 10)) {
-                beatMap.SetValueForMap(currentDifficulty, "_difficultyRank", level);
-                txtDifficultyNumber.Text = level.ToString();
-                SortDifficultyMaps();
+                if (level != prevLevel) {
+                    beatMap.SetValueForMap(currentDifficulty, "_difficultyRank", level);
+                    SortDifficultyMaps();
+                    UpdateDifficultyLabels();
+                }
             } else {
                 MessageBox.Show($"The difficulty level must be an integer between 1 and 10.", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
                 level = prevLevel;
-                txtDifficultyNumber.Text = level.ToString();
             }
-            UpdateDifficultyLabels();
+            txtDifficultyNumber.Text = level.ToString();
         }
         private void TxtNoteSpeed_LostFocus(object sender, RoutedEventArgs e) {
             double prevSpeed = int.Parse((string)beatMap.GetValueForMap(currentDifficulty, "_noteJumpMovementSpeed"));
@@ -1507,6 +1508,9 @@ namespace Edda {
             //Trace.WriteLine($"Slider is late by {Math.Round(songStream.CurrentTime.TotalMilliseconds - sliderSongProgress.Value, 2)}ms");
 
             songPlayer.Pause();
+
+            //bool isPanned = userSettings.GetBoolForKey(Const.UserSettings.PanDrumSounds);
+            //InitDrummer(userSettings.GetValueForKey(Const.UserSettings.DrumSampleFile), isPanned);
         }
         private void AnimateDrum(int num) {
             if (!Helper.DoubleRangeCheck(num, 0, 3)) {

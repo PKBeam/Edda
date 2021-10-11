@@ -72,11 +72,14 @@ public class ParallelAudioPlayer: IDisposable {
                 continue;
             }
             // check that the stream is available to play
-            if (DateTime.Now - lastPlayedTimes[i] > noteStreams[i].TotalTime) {
+            DateTime now = DateTime.Now;
+            if (now - lastPlayedTimes[i] > noteStreams[i].TotalTime) {
+                notePlayers[i].Pause();
                 noteStreams[i].CurrentTime = TimeSpan.Zero;
+                
                 notePlayers[i].Play();
                 this.lastPlayedStream = i;
-                lastPlayedTimes[i] = DateTime.Now;
+                lastPlayedTimes[i] = now;
                 return true;
             }
         }

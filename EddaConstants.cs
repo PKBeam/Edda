@@ -94,7 +94,7 @@ namespace Const {
         // Latencies        
         public const int    WASAPILatencyTarget = 100; // ms
         // Note Playback    
-        public const int    NotePlaybackStreams = 16;
+        public const int    NotePlaybackStreams = 32;
         public const int    NotePollRate        = 15;  // ms
         public const double NoteDetectionDelta  = 15;  // ms
 
