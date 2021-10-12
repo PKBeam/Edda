@@ -784,6 +784,7 @@ namespace Edda {
         private void BorderNavWaveform_MouseLeave(object sender, MouseEventArgs e) {
             lineSongMouseover.Opacity = 0;
             navMouseDown = false;
+            lblSelectedBeat.Content = "";
         }
         private void ScrollEditor_SizeChanged(object sender, SizeChangedEventArgs e) {
             UpdateEditorGridHeight(false);
@@ -959,11 +960,11 @@ namespace Edda {
 
             UpdateDifficultyLabels();
 
-            // init difficulty-specific UI 
-            SwitchDifficultyMap(0, false, false);
-
             // enable UI parts
             EnableUI();
+
+            // init difficulty-specific UI 
+            SwitchDifficultyMap(0, false, false);
 
             UpdateEditorGridHeight();
             scrollEditor.ScrollToBottom();
@@ -1284,9 +1285,12 @@ namespace Edda {
             txtDifficultyNumber.Text = (string)beatMap.GetValueForMap(indx, "_difficultyRank");
             txtNoteSpeed.Text = (string)beatMap.GetValueForMap(indx, "_noteJumpMovementSpeed");
 
-            txtDistMedal0.Text = beatMap.GetMedalDistanceForMap(indx, 0).ToString();
-            txtDistMedal1.Text = beatMap.GetMedalDistanceForMap(indx, 1).ToString();
-            txtDistMedal2.Text = beatMap.GetMedalDistanceForMap(indx, 2).ToString();
+            int dist0 = beatMap.GetMedalDistanceForMap(indx, 0);
+            int dist1 = beatMap.GetMedalDistanceForMap(indx, 1);
+            int dist2 = beatMap.GetMedalDistanceForMap(indx, 2);
+            txtDistMedal0.Text = dist0.ToString();
+            txtDistMedal1.Text = dist1.ToString();
+            txtDistMedal2.Text = dist2.ToString();
 
             txtGridOffset.Text = (string)beatMap.GetCustomValueForMap(indx, "_editorOffset");
             txtGridSpacing.Text = (string)beatMap.GetCustomValueForMap(indx, "_editorGridSpacing");
@@ -1306,7 +1310,6 @@ namespace Edda {
         private void SortDifficultyMaps() {
             // bubble sort
             bool swap;
-            int diff = currentDifficulty;
             do {
                 swap = false;
                 for (int i = 0; i < beatMap.numDifficulties - 1; i++) {
@@ -1314,16 +1317,16 @@ namespace Edda {
                     int highDiff = (int)beatMap.GetValueForMap(i + 1, "_difficultyRank");
                     if (lowDiff > highDiff) {
                         SwapDifficultyMaps(i, i + 1);
-                        if (diff == i) {
-                            diff++;
-                        } else if (diff == i + 1) {
-                            diff--;
+                        if (currentDifficulty == i) {
+                            currentDifficulty++;
+                        } else if (currentDifficulty == i + 1) {
+                            currentDifficulty--;
                         }
                         swap = true;
                     }
                 }
             } while (swap);
-            SwitchDifficultyMap(diff);
+            SwitchDifficultyMap(currentDifficulty);
         }
         private void SwapDifficultyMaps(int i, int j) {
             var temp = mapEditors[i];
@@ -1456,7 +1459,6 @@ namespace Edda {
             scrollEditor.IsEnabled = false;
             sliderSongProgress.IsEnabled = false;
             borderNavWaveform.IsEnabled = false;
-            
 
             // hide editor
             imgPreviewNote.Opacity = 0;
@@ -2013,5 +2015,7 @@ namespace Edda {
                 }
             }
         }
+
+
     }
 }
