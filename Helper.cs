@@ -138,4 +138,9 @@ public class Helper {
             MessageBox.Show($"A new release of Edda is available.\n\nNewest version: {newestVersion}\nCurrent version: {currentVersion}", "New release available", MessageBoxButton.OK, MessageBoxImage.Information);
         }
     }
+    public static void ThreadedPrint(string message) {
+        new System.Threading.Thread(new System.Threading.ThreadStart(delegate {
+            Trace.WriteLine(message);
+        })).Start();
+    }
 }

@@ -144,7 +144,7 @@
                         </Border>
 
                         <Border Grid.Row="4" Grid.Column="0" Grid.ColumnSpan="2">
-                            <TextBlock VerticalAlignment="Center" FontWeight="Bold" FontSize="12">Global Song Settings</TextBlock>
+                            <TextBlock VerticalAlignment="Center" FontWeight="Bold" FontSize="12">Song Settings</TextBlock>
                         </Border>
 
                         <Border Grid.Row="5" Grid.Column="0">

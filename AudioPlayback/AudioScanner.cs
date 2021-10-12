@@ -1,8 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Linq;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -82,9 +80,9 @@ public class AudioScanner {
         while (currentTime - noteTime >= Const.Audio.NoteDetectionDelta && scanIndex < notes.Count - 1) {
             
             if (parallelAudioPlayer.Play(notes[scanIndex].col) == false) {
-                Trace.WriteLine("WARNING: Scanner skipped a note that was already late");
+                Helper.ThreadedPrint("WARNING: Scanner skipped a note that was already late");
             } else {
-                Trace.WriteLine($"WARNING: Scanner played audio late (Delta: {Math.Round(currentTime - noteTime, 2)})");
+                Helper.ThreadedPrint($"WARNING: Scanner played audio late (Delta: {Math.Round(currentTime - noteTime, 2)})");
             }
             OnNoteScanLateHit(notes[scanIndex]);
             noteHits++;
@@ -96,7 +94,7 @@ public class AudioScanner {
         while (Math.Abs(currentTime - noteTime) < Const.Audio.NoteDetectionDelta) {
 
             if (parallelAudioPlayer.Play(notes[scanIndex].col) == false) {
-                Trace.WriteLine("WARNING: Scanner skipped a note");
+                Helper.ThreadedPrint("WARNING: Scanner skipped a note");
             }
 
             OnNoteScanHit(notes[scanIndex]);

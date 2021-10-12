@@ -8,14 +8,17 @@ using Edda;
 public class NoteScanner: AudioScanner {
     MainWindow caller;
     List<Note> notesPlayed;
+    public bool playedLateNote { get; set; }
     public NoteScanner(MainWindow caller, ParallelAudioPlayer parallelAudioPlayer): base(parallelAudioPlayer) {
         this.caller = caller;
+        this.playedLateNote = false;
     }
     protected override void OnNoteScanBegin() {
         notesPlayed = new List<Note>();
     }
     protected override void OnNoteScanLateHit(Note n) {
         notesPlayed.Add(n);
+        playedLateNote = true;
     }
     protected override void OnNoteScanHit(Note n) {
         notesPlayed.Add(n);

@@ -92,11 +92,11 @@ namespace Const {
         public const float  DefaultNoteVolume = 1.0f;
         public const float  MaxPanDistance    = 0.6f;
         // Latencies        
-        public const int    WASAPILatencyTarget = 100; // ms
+        public const int    WASAPILatencyTarget = 200; // ms
         // Note Playback    
         public const int    NotePlaybackStreams = 32;
         public const int    NotePollRate        = 15;  // ms
-        public const double NoteDetectionDelta  = 15;  // ms
+        public const double NoteDetectionDelta  = 10;  // ms
 
         public const int    MaxPreviewLength    = 15; // sec
         public const int    DefaultPreviewFade  = 3; // sec

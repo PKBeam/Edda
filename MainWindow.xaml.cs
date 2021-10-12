@@ -1510,7 +1510,10 @@ namespace Edda {
             //Trace.WriteLine($"Slider is late by {Math.Round(songStream.CurrentTime.TotalMilliseconds - sliderSongProgress.Value, 2)}ms");
 
             songPlayer.Pause();
-
+            //if (noteScanner.playedLateNote) {
+            //    drummer.InitAudioOut();
+            //    noteScanner.playedLateNote = false;
+            //}
             //bool isPanned = userSettings.GetBoolForKey(Const.UserSettings.PanDrumSounds);
             //InitDrummer(userSettings.GetValueForKey(Const.UserSettings.DrumSampleFile), isPanned);
         }

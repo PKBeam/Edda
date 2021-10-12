@@ -11,6 +11,8 @@ public class ParallelAudioPlayer: IDisposable {
     int streams;
     int uniqueSamples;
     int lastPlayedStream;
+    int desiredLatency;
+    string basePath;
     DateTime[] lastPlayedTimes;
     AudioFileReader[] noteStreams;
     WasapiOut[] notePlayers;    
@@ -22,15 +24,19 @@ public class ParallelAudioPlayer: IDisposable {
         this.streams = streams;
         this.isEnabled = isEnabled;
         this.isPanned = isPanned;
-
+        this.desiredLatency = desiredLatency;
+        this.basePath = basePath;
         this.uniqueSamples = 0;
         while (File.Exists(GetFilePath(basePath, this.uniqueSamples + 1))) {
             this.uniqueSamples++;
         }
         if (uniqueSamples < 1) {
             throw new FileNotFoundException();
-        }
+        }   
+        InitAudioOut();
+    }
 
+    public void InitAudioOut() {
         noteStreams = new AudioFileReader[streams];
         notePlayers = new WasapiOut[streams];
         lastPlayedTimes = new DateTime[streams];
@@ -48,13 +54,13 @@ public class ParallelAudioPlayer: IDisposable {
                     mono.LeftVolume = 0.5f;
                     mono.RightVolume = 0.5f;
                 }
-                
+
                 var panProv = new PanningSampleProvider(mono);
                 panProv.Pan = i % numChannels * 2 * maxPan / (numChannels - 1) - maxPan;
                 notePlayers[i].Init(panProv);
             } else {
                 notePlayers[i].Init(noteStreams[i]);
-            } 
+            }
         }
     }
     public ParallelAudioPlayer(string basePath, int streams, int desiredLatency, bool isPanned) : this(basePath, streams, desiredLatency, true, isPanned) { }
