@@ -15,7 +15,7 @@ Now that you're comfortable with using Edda, here are some more advanced topics 
 
 Edda periodically keeps backups of your maps in the `autosaves` folder that is located in the folder your map is in.  
 
-In this folder there will be up to ten folders numbered `backup1` to `backup10`, each containing `.dat` files for each mapped difficulty. Smaller numbers correspond to the most recent backups; the folder `backup1` should always have the most recent backup.
+In this folder there will be up to ten folders with names that look like `Backup - 08 October 2021 4.23PM`. Inside these backup folders are `.dat` files for each mapped difficulty.  
 
 This is so you can recover your work if a bug or issue causes a data wipe. (Please feel free to [report](https://github.com/PKBeam/Edda/issues) any such issues).
 
@@ -104,11 +104,11 @@ Arpeggiated notes are so close together that they can look like notes that suppo
 
 Knowing *which* note has the ᚷ rune also informs players preciesly how they should hit the runes.
 
-Now if you don't tell Ragnarock what the BPM is or where the BPM changes are, then it won't know which beat a note is placed on. That means all the notes will probably have an ᚷ rune on them. This makes it harder for players to do things like play arpeggiated notes. 
+If you don't tell Ragnarock what the BPM is or where the BPM changes are, then it won't know which beat a note is placed on. That means all the notes will probably have an ᚷ rune on them, which makes it harder for players to do things like play arpeggiated notes. 
 
 So the lesson here is to map out your BPM and BPM changes properly! It makes it much nicer for the people that play your map.  
 
-> **NOTE**: Edda has a *Grid Offset* feature in the right sidebar. The reader may notice that it has not been mentioned, and that is because you shouldn't use it - it will cause all of your notes to have ᚷ runes on them.  
+> **NOTE**: Edda has a *Grid Offset* feature in the right sidebar. The reader may notice that it has not ever been mentioned, and that is because you shouldn't use it - it will cause all of your notes to have ᚷ runes on them.  
 > This feature may be removed in the future - use a BPM change if you want to shift the grid's alignment. 
 
 ## Audio latency
@@ -127,26 +127,33 @@ You can change this freely, but you'll have to experiment with in-game playback 
 
 Edda uses [WASAPI](https://docs.microsoft.com/en-us/windows/win32/coreaudio/wasapi) via the [NAudio library](https://github.com/naudio/NAudio) to try and obtain the lowest audio latency.
 
-WASAPI produces the lowest latency results but is relatively more intensive on your CPU. 
+WASAPI produces the lowest latency results but is relatively more intensive on your CPU. This means you'll tend to have better synced audio, but at the cost of higher CPU usage. If your CPU has weak single-threaded performance, you may experience stuttering or audio drop-outs. 
 
-By default, NAudio aims for a target latency of 200ms with WASAPI, but Edda specifies a more aggresive value of 100ms. This means you'll tend to have better synced audio, but at the cost of higher CPU usage while playing audio in Edda. If your CPU has weak single-threaded performance, you may experience stuttering or audio drop-outs. 
-
- WASAPI also performs best when your audio output's sample rate matches the sample rate of the music file that it wants to play. If these sample rates don't match, WASAPI needs to resample on-the-fly, which incurs a latency penalty.
+ WASAPI performs best when your audio output's sample rate matches the sample rate of the music file that it wants to play. If these sample rates don't match, WASAPI needs to resample on-the-fly, which incurs a latency penalty.
  
- Audio files typically use 44.1kHz or 48kHz sample rates, but most *music* tends to use 44.1kHz (this includes the drum hitsounds used by Edda). 
+ Audio files typically use 44.1kHz or 48kHz sample rates, but most *music* tends to use 44.1kHz (including the drum hitsounds used by Edda). 
  
  For optimal latency, you should set your sound output (e.g. DAC, sound card, or motherboard sound) to 44.1kHz in Windows' audio settings.
 
 ## Drum hitsounds
 
-When you play back a map in Edda, a deep bass drum sound will play when the scan line passes a note.
+When you play back a map in Edda, a snare drum sound will play when the scan line passes a note.
 
 That's the default hitsound for Edda, and it can be changed in the Settings menu (under **Audio Playback**, then *Playback Sound*).
 
-By default Edda provides a bass drum sound and a hi-hat sound, but you can add your own hitsounds if you aren't satisfied with either.
+By default Edda also provides a bass drum sound and a hi-hat sound, but you can add your own hitsounds if you aren't satisfied with either.
 
 To add your own hitsounds, go to the `Resources` folder in your Edda install and place `.mp3` or `.wav` files there.
 
 To specify multiple samples together, number them e.g. `file1.wav`, `file2.wav`, `file3.wav` or `my_drum1.mp3`, `my_drum2.mp3`.
 
 It is recommended to provide at least two distinct samples per hitsound, which makes them sound more natural when multiple drums are played simultaneously.
+
+### Panned audio
+
+By default, drum hitsounds are panned. That means if a note is played on the left column, the drum hitsound will play closer to your left ear (and vice versa for the right columns).  
+
+Some users may find panned audio harder to hear or may experience audio playback issues with panned audio. Panned audio can be disabled in the Settings menu (under **Audio Playback**, then *Pan Note Sound*).  
+
+When panned audio is disabled, all drum hitsounds will be played in the middle of both ears.  
+
