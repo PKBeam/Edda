@@ -195,7 +195,7 @@ Medal Distances represent how many metres your boat must row in order to achieve
 
 Now that everything else is set up, let's start mapping for real.
 
-While you map, it might be helpful to refer to the *Grid Waveform* (in the right sidebar).
+While you map, it might be helpful to refer to the *Grid Waveform*.
 
 ### Basic controls
 
