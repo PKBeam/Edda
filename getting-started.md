@@ -12,7 +12,7 @@ Want to make your own Ragnarock maps? Let's get started.
     - [Lossy encoding](#lossy-encoding)
 
 ## Installation
-To run Edda, you'll need a computer running Windows 10.  
+To run Edda, you'll need a computer with Windows 10 or Windows 11.  
 
 > **NOTE**: If you have a Linux or macOS computer, you may be able to use something like [WINE](https://www.winehq.org) or [Parallels](https://www.parallels.com/) to run Windows programs.
 
