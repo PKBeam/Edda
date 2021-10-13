@@ -37,6 +37,7 @@ Edda comes with many keyboard shortcuts for ease of use.
 |**Ctrl-Z**      |Undo
 |**Ctrl-Y**<br/>**Ctrl-Shift-Z**    |Redo
 |**Ctrl-B**      |Add Bookmark  | The bookmark is placed on your mouse. You can add a bookmark on either the editor grid or navigational waveform. 
+|**Ctrl-G**      |Toggle Grid Snap
 |**Ctrl-[**<br/>**Ctrl-]**        |Toggle left/right sidebar
 |**Shift-Up**<br/>**Shift-Down**  |Move selected notes one gridline forward/backward
 |**Shift-Left**<br/>**Shift-Right**   |Move selected notes one column left/right
