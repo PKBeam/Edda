@@ -1,6 +1,6 @@
 ---
 ---
-# What is Edda?
+# About Edda
 Edda is a beatmap editor for the VR rhythm game [Ragnarock](https://store.steampowered.com/app/1345820/Ragnarock/).  
 Using Edda, you can map out your own songs and play them back in-game.
 
