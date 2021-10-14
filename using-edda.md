@@ -2,8 +2,6 @@
 ---
 # Using Edda
 
-> **NOTE**: This guide was last updated for Edda v0.4.3.
-
 Now that you have Edda installed and a song file ready to go, let's make a map!
 
 - [Getting to know the UI](#getting-to-know-the-ui)
