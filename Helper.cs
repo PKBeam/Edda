@@ -22,7 +22,7 @@ public class Helper {
         return x - y >= -threshold;
     }
     public static bool DoubleApproxGreater(double x, double y) {
-        return x - y > -threshold;
+        return x - y > threshold;
     }
     public static bool DoubleApproxEqual(double x, double y) {
         return Math.Abs(x - y) <= threshold;
@@ -48,7 +48,7 @@ public class Helper {
                 return false;
             }
             if (comp > 0) {
-                notes.Insert(i, note);
+                notes.Insert(i + 1, note);
                 return true;
             }
             i++;

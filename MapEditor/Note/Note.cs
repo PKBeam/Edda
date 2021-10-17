@@ -20,7 +20,7 @@ public class Note: IComparable, IEquatable<Note> {
         if (Helper.DoubleApproxGreater(m.beat, n.beat)) {
             return 1;
         }
-        if (Helper.DoubleApproxEqual(n.beat, this.beat) && Helper.DoubleApproxGreater(m.col, n.col)) {
+        if (Helper.DoubleApproxEqual(n.beat, this.beat) && m.col > n.col) {
             return 1;
         }
         return -1;
