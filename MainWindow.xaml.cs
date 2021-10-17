@@ -763,6 +763,9 @@ namespace Edda {
             if (beatMap != null) {
                 DrawEditorNavWaveform();
                 DrawBookmarks();
+                var lineY = sliderSongProgress.Value/sliderSongProgress.Maximum * borderNavWaveform.ActualHeight;
+                lineSongMouseover.Y1 = lineY;
+                lineSongMouseover.Y2 = lineY;
             }
         }
         private void BorderNavWaveform_MouseLeftButtonDown(object sender, MouseButtonEventArgs e) {
@@ -776,9 +779,9 @@ namespace Edda {
         }
         private void BorderNavWaveform_MouseMove(object sender, MouseEventArgs e) {
             var mouseY = e.GetPosition(borderNavWaveform).Y;
-            var mouseTime = sliderSongProgress.Maximum * (1 - mouseY / borderNavWaveform.ActualHeight);
             lineSongMouseover.Y1 = mouseY;
             lineSongMouseover.Y2 = mouseY;
+            var mouseTime = sliderSongProgress.Maximum * (1 - mouseY / borderNavWaveform.ActualHeight);
             if (navMouseDown) {
                 sliderSongProgress.Value = mouseTime;
             }
