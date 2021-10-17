@@ -530,7 +530,13 @@ namespace Edda {
         private void BtnAddDifficulty_Click(object sender, RoutedEventArgs e) {
             PauseSong();
             beatMap.AddMap();
-            SwitchDifficultyMap(beatMap.numDifficulties - 1);
+            int newMap = beatMap.numDifficulties - 1;
+            var res = MessageBox.Show("Copy over bookmarks and BPM changes from the currently selected map?", "Copy Existing Map Data?", MessageBoxButton.YesNo, MessageBoxImage.Question);
+            if (res == MessageBoxResult.Yes) {
+                beatMap.SetBookmarksForMap(newMap, beatMap.GetBookmarksForMap(currentDifficulty));
+                beatMap.SetBPMChangesForMap(newMap, beatMap.GetBPMChangesForMap(currentDifficulty));
+            }
+            SwitchDifficultyMap(newMap);
             UpdateDifficultyButtonVisibility();
             SortDifficultyMaps();
             UpdateDifficultyLabels();

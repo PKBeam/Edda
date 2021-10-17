@@ -495,18 +495,19 @@ public class RagnarockMap {
             foreach (var i in expectedTypesL2) {
                 // validate type
                 if (!i.Value.Contains(note[i.Key]?.Type)) {
-                    throw new Exception($"Incorrect or missing key {i.Key}");
+                    throw new Exception($"Note at time {note["_time"]} has incorrect or missing key {i.Key}");
                 }
                 // validate value
                 if (i.Value == numericTypes) {
                     var val = Helper.DoubleParseInvariant((string)note[i.Key]);
-                    Exception ex = new Exception($"Bad value for key {i.Key}");
+                    Exception ex = new Exception($"Note at time {note["_time"]} has bad value for key {i.Key}");
                     switch (i.Key) {
                         case "_time":
                             if (val < 0) throw ex;
                             break;
                         case "_lineIndex":
-                            if ((int)val != val || val < 0 || 3 < val) throw ex;
+                            if ((int)val != val || val < 0 || 3 < val) 
+                                throw ex;
                             break;
                         case "_lineLayer":
                             if (val != 1) throw ex;

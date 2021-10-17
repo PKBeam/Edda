@@ -40,7 +40,7 @@ namespace Const {
     }
     public static class Editor {
         // Grid drawing
-        public const double DefaultGridSpacing       = 1;
+        public const double DefaultGridSpacing       = 2;
         public const double DefaultGridDivision      = 4;
         public const double GridDrawRange            = 1;
         public const int    DrawDebounceInterval     = 100; // ms
