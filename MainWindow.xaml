@@ -128,7 +128,7 @@
                         </Border>
 
                         <Border Grid.Row="2" Grid.Column="0">
-                            <TextBlock>Mapper</TextBlock>
+                            <TextBlock>Mapper Name</TextBlock>
                         </Border>
 
                         <Border Grid.Row="2" Grid.Column="1">
@@ -142,27 +142,35 @@
                         <Border Grid.Row="3" Grid.Column="1">
                             <ComboBox x:Name="comboEnvironment" SelectionChanged="ComboEnvironment_SelectionChanged"/>
                         </Border>
+                        
+                        <Border Grid.Row="4" Grid.Column="0">
+                            <TextBlock VerticalAlignment="Bottom" FontSize="11">Explicit Content</TextBlock>
+                        </Border>
 
-                        <Border Grid.Row="4" Grid.Column="0" Grid.ColumnSpan="2">
+                        <Border Grid.Row="4" Grid.Column="1">
+                            <CheckBox x:Name="checkExplicitContent" VerticalAlignment="Center" Click="checkExplicitContent_Click"></CheckBox>
+                        </Border>
+                        
+                        <Border Grid.Row="5" Grid.Column="0" Grid.ColumnSpan="2">
                             <TextBlock VerticalAlignment="Center" FontWeight="Bold" FontSize="12">Song Settings</TextBlock>
                         </Border>
 
-                        <Border Grid.Row="5" Grid.Column="0">
+                        <Border Grid.Row="6" Grid.Column="0">
                             <TextBlock Padding="10 0 0 0">Song BPM</TextBlock>
                         </Border>
 
-                        <Border Grid.Row="5" Grid.Column="1">
+                        <Border Grid.Row="6" Grid.Column="1">
                             <StackPanel Orientation="Horizontal">
                                 <TextBox x:Name="txtSongBPM" Grid.Row="0" Grid.Column="1" LostFocus="TxtSongBPM_LostFocus" Width="85"/>
                                 <Button x:Name="btnChangeBPM" Width="20" Height="Auto" Click="BtnChangeBPM_Click" Margin="5 0 0 0">...</Button>
                             </StackPanel>
                         </Border>
 
-                        <Border Grid.Row="6" Grid.Column="0">
+                        <Border Grid.Row="7" Grid.Column="0">
                             <TextBlock Padding="10 0 0 0">Song Offset</TextBlock>
                         </Border>
 
-                        <Border Grid.Row="6" Grid.Column="1">
+                        <Border Grid.Row="7" Grid.Column="1">
                             <TextBox x:Name="txtSongOffset" Grid.Row="0" Grid.Column="1" LostFocus="TxtSongOffset_LostFocus" />
                         </Border>
 

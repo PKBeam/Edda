@@ -8,7 +8,7 @@ namespace Const {
         public const string Name          = "Edda";
         public const string RepositoryURL = "https://github.com/PKBeam/Edda";
         public const string ReleasesAPI   = "https://api.github.com/repos/PKBeam/Edda/releases/latest";
-        public const string VersionString = "0.4.3";
+        public const string VersionString = "0.4.4";
         public const string DisplayVersionString =
             #if DEBUG
                 VersionString + "-dev";
@@ -112,7 +112,7 @@ namespace Const {
         public const string BeatmapCharacteristicName = "Standard";
         public const double NoteJumpMovementSpeed     = 15;
         public static List<string> DifficultyNames  => new() { "Easy", "Normal", "Hard" };
-        public static List<string> EnvironmentNames => new() { "Midgard", "Alfheim", "Nidavellir", "Asgard", "Muspelheim" };
+        public static List<string> EnvironmentNames => new() { "Midgard", "Alfheim", "Nidavellir", "Asgard", "Muspelheim", "Helheim" };
         //public const string DefaultEnvironmentAlias = "Midgard";
     }
 

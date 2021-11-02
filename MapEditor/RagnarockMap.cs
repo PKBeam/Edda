@@ -13,6 +13,7 @@ public class RagnarockMap {
     private readonly List<JTokenType?> stringTypes = new() { JTokenType.String };
     private readonly List<JTokenType?> numericTypes = new() { JTokenType.Float, JTokenType.Integer };
     private readonly List<JTokenType?> arrayTypes = new() { JTokenType.Array };
+    private readonly List<JTokenType?> boolTypes = new() { JTokenType.Boolean };
     private readonly (float, float) positiveNumeric = (0, float.PositiveInfinity);
     private readonly (float, float) anyNumeric = (float.NegativeInfinity, float.PositiveInfinity);
 
@@ -80,6 +81,7 @@ public class RagnarockMap {
             _songSubName = "",                              // unused?
             _songAuthorName = "",
             _levelAuthorName = "",
+            _explicit = false,
             _beatsPerMinute = Const.BeatmapDefaults.BeatsPerMinute,
             _shuffle = Const.BeatmapDefaults.Shuffle,              // unused?
             _shufflePeriod = Const.BeatmapDefaults.ShufflePeriod,  // unused?
@@ -116,6 +118,7 @@ public class RagnarockMap {
             {"_songSubName",               stringTypes  },
             {"_songAuthorName",            stringTypes  },
             {"_levelAuthorName",           stringTypes  },
+            {"_explicit",                  stringTypes    },
             {"_beatsPerMinute",            numericTypes },
             {"_shuffle",                   numericTypes },
             {"_shufflePeriod",             numericTypes },
@@ -161,6 +164,10 @@ public class RagnarockMap {
             // validate type
             if (i.Key == "_songApproximativeDuration" && obj[i.Key]?.Type != JTokenType.Object) {
                 SetValue("_songApproximativeDuration", 1);
+                continue;
+            }
+            if (i.Key == "_explicit" && (obj[i.Key] == null)) {
+                SetValue("_explicit", "false");
                 continue;
             }
             if (!i.Value.Contains(obj[i.Key]?.Type)) {

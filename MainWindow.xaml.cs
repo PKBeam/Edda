@@ -655,6 +655,9 @@ namespace Edda {
         private void TxtMapperName_TextChanged(object sender, TextChangedEventArgs e) {
             beatMap.SetValue("_levelAuthorName", txtMapperName.Text);
         }
+        private void checkExplicitContent_Click(object sender, RoutedEventArgs e) {
+            beatMap.SetValue("_explicit", (checkExplicitContent.IsChecked == true).ToString().ToLower());
+        }
         private void TxtDifficultyNumber_LostFocus(object sender, RoutedEventArgs e) {
             int prevLevel = (int)beatMap.GetValueForMap(currentDifficulty, "_difficultyRank");
             int level;
@@ -958,7 +961,7 @@ namespace Edda {
             txtMapperName.Text = (string)beatMap.GetValue("_levelAuthorName");
             txtSongBPM.Text    = (string)beatMap.GetValue("_beatsPerMinute");
             txtSongOffset.Text = (string)beatMap.GetValue("_songTimeOffset");
-            
+            checkExplicitContent.IsChecked = (string)beatMap.GetValue("_explicit") == "true";
             globalBPM = Helper.DoubleParseInvariant((string)beatMap.GetValue("_beatsPerMinute"));
 
             comboEnvironment.SelectedIndex = Const.BeatmapDefaults.EnvironmentNames.IndexOf((string)beatMap.GetValue("_environmentName"));
@@ -992,6 +995,7 @@ namespace Edda {
             txtSongBPM.IsEnabled = true;
             btnChangeBPM.IsEnabled = true;
             txtSongOffset.IsEnabled = true;
+            checkExplicitContent.IsEnabled = true;
             comboEnvironment.IsEnabled = true;
             btnPickSong.IsEnabled = true;
             btnMakePreview.IsEnabled = true;
@@ -1027,6 +1031,7 @@ namespace Edda {
             txtSongBPM.IsEnabled = false;
             btnChangeBPM.IsEnabled = false;
             txtSongOffset.IsEnabled = false;
+            checkExplicitContent.IsEnabled = false;
             comboEnvironment.IsEnabled = false;
             btnPickSong.IsEnabled = false;
             btnMakePreview.IsEnabled = false;
@@ -2027,7 +2032,5 @@ namespace Edda {
                 }
             }
         }
-
-
     }
 }
