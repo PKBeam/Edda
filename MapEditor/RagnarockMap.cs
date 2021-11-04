@@ -360,7 +360,7 @@ public class RagnarockMap {
             _customData = new {
                 _editorOffset = 0,
                 _editorOldOffset = 0,
-                _editorGridSpacing = 1,
+                _editorGridSpacing = Const.Editor.DefaultGridSpacing,
                 _editorGridDivision = 4,
                 _warnings = new List<object>(),
                 _information = new List<object>(),
