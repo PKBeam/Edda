@@ -1231,10 +1231,12 @@ namespace Edda {
                 if (File.Exists(prevPath)) {
                     File.Delete(prevPath);
                 }
-                if (File.Exists(newPath)) {
-                    File.Delete(newPath);
+                if (!newPath.StartsWith(beatMap.GetPath())) {
+                    if (File.Exists(newPath)) {
+                        File.Delete(newPath);
+                    }
+                    File.Copy(d.FileName, newPath);
                 }
-                File.Copy(d.FileName, newPath);
                 
                 beatMap.SetValue("_coverImageFilename", newFile);
                 SaveBeatmap();

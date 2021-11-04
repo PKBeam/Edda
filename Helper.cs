@@ -48,7 +48,7 @@ public class Helper {
                 return false;
             }
             if (comp > 0) {
-                notes.Insert(i + 1, note);
+                notes.Insert(i, note);
                 return true;
             }
             i++;

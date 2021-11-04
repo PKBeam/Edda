@@ -81,7 +81,7 @@ public class RagnarockMap {
             _songSubName = "",                              // unused?
             _songAuthorName = "",
             _levelAuthorName = "",
-            _explicit = false,
+            _explicit = "false",
             _beatsPerMinute = Const.BeatmapDefaults.BeatsPerMinute,
             _shuffle = Const.BeatmapDefaults.Shuffle,              // unused?
             _shufflePeriod = Const.BeatmapDefaults.ShufflePeriod,  // unused?
@@ -282,7 +282,7 @@ public class RagnarockMap {
                 var customDataObject = new {
                     _editorOffset = 0,
                     _editorOldOffset = 0,
-                    _editorGridSpacing = 1,
+                    _editorGridSpacing = Const.Editor.DefaultGridSpacing,
                     _editorGridDivision = 4,
                     _warnings = new List<object>(),
                     _information = new List<object>(),
@@ -440,6 +440,7 @@ public class RagnarockMap {
             int colIndex = int.Parse((string)n["_lineIndex"]);
             output.Add(new Note(time, colIndex));
         }
+        output.Sort();
         return output;
     }
     public void SetNotesForMap(int indx, List<Note> notes) {
