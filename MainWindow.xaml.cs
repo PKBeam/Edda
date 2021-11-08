@@ -430,6 +430,9 @@ namespace Edda {
                 }
             }
 
+            if (beatMap != null) {
+                mapEditor.notes.Clear();
+            }
             beatMap = new RagnarockMap(d2.FileName, true);
 
             // select and load an audio file
@@ -1231,7 +1234,7 @@ namespace Edda {
                 if (File.Exists(prevPath)) {
                     File.Delete(prevPath);
                 }
-                if (!newPath.StartsWith(beatMap.GetPath())) {
+                if (!d.FileName.StartsWith(beatMap.GetPath())) {
                     if (File.Exists(newPath)) {
                         File.Delete(newPath);
                     }
