@@ -128,13 +128,57 @@ public class Helper {
         }
     }
     public static void CheckForUpdates() {
+
+        // turn version string into number for comparison purposes
+        /* 
+         *  e.g. 
+         *  
+         *  0.4.5   => 45
+         *  0.4.5.1 => 45.1
+         *  1.0     => 100
+         *  1.0.0.1 => 100.1
+        */
+        double numerifyVersionString(string version) {
+            string numerify = "";
+            int counter = 0;
+            foreach (var character in version) {
+                if (counter == 3) {
+                    numerify += '.';
+                    counter++;
+                }
+                if (character >= '0' && character <= '9') {
+                    numerify += character;
+                    counter++;
+                }
+                
+            }
+            while (counter < 3) {
+                numerify += '0';
+                counter++;
+            }
+            return double.Parse(numerify);
+        }
+
+        bool isBeta(string version) {
+            return version.Contains('b') || version.Contains('B');
+        }
+
         HttpClient client = new HttpClient();
-        client.DefaultRequestHeaders.Add("User-Agent", "Edda");
+        client.DefaultRequestHeaders.Add("User-Agent", "Edda-" + Const.Program.DisplayVersionString);
         string res = client.GetStringAsync(Const.Program.ReleasesAPI).Result;
-        var resJSON = JObject.Parse(res);
-        string newestVersion = (string)resJSON.GetValue("tag_name");
+
+        // get most recent non-beta release
+        var resJSON = JArray.Parse(res);
+        var i = 0 ;
+        while (isBeta((string)resJSON[i]["tag_name"])) {
+            i++;
+        }
+        var newestRelease = resJSON[i];
+
+        // check if this release is a newer version
+        string newestVersion = (string)newestRelease["tag_name"];
         string currentVersion = "v" + Const.Program.VersionString;
-        if (newestVersion != currentVersion) {
+        if (numerifyVersionString(newestVersion) > numerifyVersionString(currentVersion)) {
             MessageBox.Show($"A new release of Edda is available.\n\nNewest version: {newestVersion}\nCurrent version: {currentVersion}", "New release available", MessageBoxButton.OK, MessageBoxImage.Information);
         }
     }

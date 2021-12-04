@@ -33,6 +33,7 @@ namespace Edda {
         private void BtnReset_Click(object sender, RoutedEventArgs e) {
             // reset variables
             lblAvgBPM.Content = 0;
+            lblUnroundedAvgBPM.Content = "(0.00)";
             //lblMedBPM.Content = 0;
             prevTime = 0;
             numInputs = 0;
@@ -83,7 +84,8 @@ namespace Edda {
                 medInterval = 0.5 * (intervalSamples[numSamples / 2] + intervalSamples[numSamples / 2 - 1]);
             }
             */
-            lblAvgBPM.Content = (60000 / avgInterval).ToString("0.00");
+            lblUnroundedAvgBPM.Content = "(" + (60000 / avgInterval).ToString("0.00") + ")";
+            lblAvgBPM.Content = (60000 / avgInterval).ToString("0.");
             //lblMedBPM.Content = (60000 / medInterval).ToString("0.00");
         }
     }

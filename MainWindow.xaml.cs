@@ -17,6 +17,7 @@ using NAudio.Wave;
 using NAudio.Wave.SampleProviders;
 using NAudio.Vorbis;
 using System.Reactive.Linq;
+using System.Threading;
 /// <summary>
 /// Interaction logic for MainWindow.xaml
 /// </summary>
@@ -163,6 +164,7 @@ namespace Edda {
             Observable
             .FromEventPattern<SizeChangedEventArgs>(scrollEditor, nameof(SizeChanged))
             .Throttle(TimeSpan.FromMilliseconds(Const.Editor.DrawDebounceInterval))
+            .ObserveOn(SynchronizationContext.Current)
             .Subscribe(eventPattern => 
                 AppMainWindow.Dispatcher.Invoke(() =>
                     ScrollEditor_SizeChanged(eventPattern.Sender, eventPattern.EventArgs)
@@ -172,6 +174,7 @@ namespace Edda {
             Observable
             .FromEventPattern<SizeChangedEventArgs>(borderNavWaveform, nameof(SizeChanged))
             .Throttle(TimeSpan.FromMilliseconds(Const.Editor.DrawDebounceInterval))
+            .ObserveOn(SynchronizationContext.Current)
             .Subscribe(eventPattern =>
                 AppMainWindow.Dispatcher.Invoke(() =>
                     BorderNavWaveform_SizeChanged(eventPattern.Sender, eventPattern.EventArgs)
@@ -186,9 +189,9 @@ namespace Edda {
         private void AppMainWindow_ContentRendered(object sender, EventArgs e) {
             try {
                 if (userSettings.GetValueForKey(Const.UserSettings.CheckForUpdates) == true.ToString()) {
-                    #if !DEBUG
+                    //#if !DEBUG
                         Helper.CheckForUpdates();
-                    #endif
+                    //#endif
                 }
             } catch {
                 Trace.WriteLine("INFO: Could not check for updates.");
@@ -466,24 +469,26 @@ namespace Edda {
             }
 
             // try to load info
+            var oldBeatMap = beatMap;
             try {
                 beatMap = new RagnarockMap(d2.FileName, false);
                 LoadSong(); // song file
                 LoadCoverImage();
                 InitUI(); // cover image file
 
-                // bandaid fix to prevent WPF from committing large amounts of memory
-                new System.Threading.Thread(new System.Threading.ThreadStart(delegate {
-                    System.Threading.Thread.Sleep(500);
+                // bandaid fix to prevent WPF from committing unnecessarily large amounts of memory
+                new Thread(new ThreadStart(delegate {
+                    Thread.Sleep(500);
                     this.Dispatcher.Invoke(() => DrawEditorGrid());
                 })).Start();
 
             } catch (Exception ex) {
-                beatMap = null;
-                txtSongFileName.Text = "N/A";
-                txtCoverFileName.Text = "N/A";
-
                 MessageBox.Show($"An error occured while opening the map:\n{ex.Message}.", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                // reload previous beatmap
+                beatMap = oldBeatMap;
+                LoadSong(); 
+                LoadCoverImage();
+                InitUI();
                 return;
             }
             discordClient.SetPresence();
@@ -1230,14 +1235,19 @@ namespace Edda {
             string newFile = System.IO.Path.GetFileName(d.FileName);
             string newPath = beatMap.PathOf(newFile);
 
+            // load new cover image, if necessary
             if (prevPath != newPath) {
+                // remove the previous cover image
                 if (File.Exists(prevPath)) {
                     File.Delete(prevPath);
                 }
+                // copy over the image file if it's not in the same folder already
                 if (!d.FileName.StartsWith(beatMap.GetPath())) {
+                    // delete any existing files in the map folder with conflicting names
                     if (File.Exists(newPath)) {
                         File.Delete(newPath);
                     }
+                    // copy image file over
                     File.Copy(d.FileName, newPath);
                 }
                 
