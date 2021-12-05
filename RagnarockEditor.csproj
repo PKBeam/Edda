@@ -4,7 +4,7 @@
     <OutputType>WinExe</OutputType>
     <TargetFramework>net6.0-windows10.0.17763.0</TargetFramework>
     <UseWPF>true</UseWPF>
-    <PublishSingleFile>true</PublishSingleFile>
+    <PublishSingleFile Condition="'$(Configuration)' == 'Release'">true</PublishSingleFile>
     <RuntimeIdentifier>win-x64</RuntimeIdentifier>
     <AssemblyName>Edda</AssemblyName>
     <SelfContained>true</SelfContained>
@@ -27,10 +27,12 @@
     <None Remove="Resources\bassdrum2.wav" />
     <None Remove="Resources\bassdrum3.wav" />
     <None Remove="Resources\bassdrum4.wav" />
+    <None Remove="Resources\bpmFinder.png" />
     <None Remove="Resources\difficulty1.png" />
     <None Remove="Resources\difficulty2.png" />
     <None Remove="Resources\difficulty3.png" />
     <None Remove="Resources\drum.png" />
+    <None Remove="Resources\exportMap.png" />
     <None Remove="Resources\ffmpeg.exe" />
     <None Remove="Resources\hihat1.wav" />
     <None Remove="Resources\hihat2.wav" />
@@ -97,6 +99,7 @@
     <Content Include="Resources\bassdrum4.wav">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
+    <Resource Include="Resources\bpmFinder.png" />
     <Resource Include="Resources\difficulty1.png" />
     <Resource Include="Resources\difficulty2.png" />
     <Resource Include="Resources\difficulty3.png" />
@@ -113,6 +116,7 @@
     <Content Include="Resources\hihat4.wav">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
+    <Resource Include="Resources\exportMap.png" />
     <Resource Include="Resources\ffmpeg.exe">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Resource>
@@ -145,8 +149,6 @@
     <Resource Include="Resources\runeHighlight.png" />
     <Resource Include="Resources\runeX.png" />
     <Resource Include="Resources\runeXhighlight.png" />
-    <Resource Include="Resources\saveMap.png" />
-    <Resource Include="Resources\settings.png" />
     <Content Include="Resources\snaredrum1.wav">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
@@ -159,6 +161,8 @@
     <Content Include="Resources\snaredrum4.wav">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
+    <Resource Include="Resources\saveMap.png" />
+    <Resource Include="Resources\settings.png" />
     <Resource Include="Resources\tick.png" />
     <Resource Include="Resources\waterTexture.png" />
     <Resource Include="Resources\waterTextureSmall.png" />

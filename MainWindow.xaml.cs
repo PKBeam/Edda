@@ -414,7 +414,7 @@ namespace Edda {
             var d2 = new CommonOpenFileDialog();
             d2.Title = "Select an empty folder to store your map";
             d2.IsFolderPicker = true;
-
+            d2.InitialDirectory = Helper.DefaultRagnarockMapPath();
             if (d2.ShowDialog() != CommonFileDialogResult.Ok) {
                 return;
             }
@@ -463,7 +463,7 @@ namespace Edda {
             var d2 = new CommonOpenFileDialog();
             d2.Title = "Select your map's containing folder";
             d2.IsFolderPicker = true;
-
+            d2.InitialDirectory = Helper.DefaultRagnarockMapPath();
             if (d2.ShowDialog() != CommonFileDialogResult.Ok) {
                 return;
             }
@@ -496,6 +496,9 @@ namespace Edda {
         private void BtnSaveMap_Click(object sender, RoutedEventArgs e) {
             BackupAndSaveBeatmap();
             //SaveBeatmap();
+        }
+        private void BtnExportMap_Click(object sender, RoutedEventArgs e) {
+
         }
         private void BtnBPMFinder_Click(object sender, RoutedEventArgs e) {
             var win = Helper.GetFirstWindow<BPMCalcWindow>();

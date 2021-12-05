@@ -17,27 +17,27 @@
                 <StackPanel DockPanel.Dock="Left" Orientation="Horizontal">
                     <StackPanel Margin="10 10 0 10">
                         <Button x:Name="btnNewMap" Width="50" Height="50" Click="BtnNewMap_Click">
-                            <Image Source="pack://application:,,,/Edda;component/resources/newMap.png"/>
+                            <Image Source="pack://application:,,,/Edda;component/resources/newMap.png" OpacityMask="Black" RenderOptions.BitmapScalingMode="Fant"/>
                         </Button>
                         <TextBlock Margin="0 3 0 0" FontSize="12" HorizontalAlignment="Center">New Map</TextBlock>
                     </StackPanel>
                     <StackPanel Margin="10 10 0 10">
                         <Button x:Name="btnOpenMap" Width="50" Height="50" Click="BtnOpenMap_Click">
-                            <Image Source="pack://application:,,,/Edda;component/resources/openMap.png"/>
+                            <Image Source="pack://application:,,,/Edda;component/resources/openMap.png" RenderOptions.BitmapScalingMode="Fant"/>
                         </Button>
                         <TextBlock Margin="0 3 0 0" FontSize="12" HorizontalAlignment="Center">Open Map</TextBlock>
                     </StackPanel>
                     <StackPanel Margin="10 10 0 10">
                         <Button x:Name="btnSaveMap" Width="50" Height="50" Click="BtnSaveMap_Click">
                             <Grid>
-                                <Image Source="pack://application:,,,/Edda;component/resources/saveMap.png"/>
-                                <Image x:Name="imgSaved" Source="pack://application:,,,/Edda;component/resources/tick.png" RenderTransformOrigin="0.5,0.5">
+                                <Image Source="pack://application:,,,/Edda;component/resources/saveMap.png" RenderOptions.BitmapScalingMode="Fant"/>
+                                <Image x:Name="imgSaved" Source="pack://application:,,,/Edda;component/resources/tick.png" RenderOptions.BitmapScalingMode="Fant" RenderTransformOrigin="0.5,0.5">
                                     <Image.RenderTransform>
                                         <TransformGroup>
-                                            <ScaleTransform ScaleX="0.75" ScaleY="0.75"/>
+                                            <ScaleTransform ScaleX="0.5" ScaleY="0.5"/>
                                             <SkewTransform/>
                                             <RotateTransform/>
-                                            <TranslateTransform X="7" Y="7"/>
+                                            <TranslateTransform X="0" Y="8.5"/>
                                         </TransformGroup>
                                     </Image.RenderTransform>
                                 </Image>
@@ -45,19 +45,27 @@
                         </Button>
                         <TextBlock Margin="0 3 0 0" FontSize="12" HorizontalAlignment="Center">Save Map</TextBlock>
                     </StackPanel>
+                    <StackPanel Margin="10 10 0 10">
+                        <Button x:Name="btnExportMap" Width="50" Height="50" Click="BtnExportMap_Click">
+                            <Grid>
+                                <Image Source="pack://application:,,,/Edda;component/resources/exportMap.png" RenderOptions.BitmapScalingMode="Fant"/>
+                            </Grid>
+                        </Button>
+                        <TextBlock Margin="0 3 0 0" FontSize="12" HorizontalAlignment="Center">Export Map</TextBlock>
+                    </StackPanel>
                 </StackPanel>
                 <StackPanel DockPanel.Dock="Right" Orientation="Horizontal" HorizontalAlignment="Right">
 
                     <StackPanel Margin="0 10 10 10">
                         <Button x:Name="btnBPMFinder" Width="50" Height="50" Click="BtnBPMFinder_Click">
-                            <Image Source="pack://application:,,,/Edda;component/resources/musicNote.png"/>
+                            <Image Source="pack://application:,,,/Edda;component/resources/bpmFinder.png" RenderOptions.BitmapScalingMode="Fant"/>
                         </Button>
                         <TextBlock Margin="0 3 0 0" FontSize="12" HorizontalAlignment="Center">BPM Finder</TextBlock>
                     </StackPanel>
 
                     <StackPanel Margin="0 10 10 10">
                         <Button x:Name="btnSettings" Width="50" Height="50" Click="BtnSettings_Click">
-                            <Image Source="pack://application:,,,/Edda;component/resources/settings.png"/>
+                            <Image Source="pack://application:,,,/Edda;component/resources/settings.png" RenderOptions.BitmapScalingMode="Fant"/>
                         </Button>
                         <TextBlock Margin="0 3 0 0" FontSize="12" HorizontalAlignment="Center">Settings</TextBlock>
                     </StackPanel>

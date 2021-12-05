@@ -19,7 +19,7 @@ namespace Edda.Properties {
     // class via a tool like ResGen or Visual Studio.
     // To add or remove a member, edit your .ResX file then rerun ResGen
     // with the /str option, or rebuild your VS project.
-    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Resources.Tools.StronglyTypedResourceBuilder", "16.0.0.0")]
+    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Resources.Tools.StronglyTypedResourceBuilder", "17.0.0.0")]
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
     [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
     internal class Resources {
@@ -109,6 +109,16 @@ namespace Edda.Properties {
         /// <summary>
         ///   Looks up a localized resource of type System.Drawing.Bitmap.
         /// </summary>
+        internal static System.Drawing.Bitmap bpmFinder {
+            get {
+                object obj = ResourceManager.GetObject("bpmFinder", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Drawing.Bitmap.
+        /// </summary>
         internal static System.Drawing.Bitmap difficulty1 {
             get {
                 object obj = ResourceManager.GetObject("difficulty1", resourceCulture);
@@ -142,6 +152,16 @@ namespace Edda.Properties {
         internal static System.Drawing.Bitmap drum {
             get {
                 object obj = ResourceManager.GetObject("drum", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Drawing.Bitmap.
+        /// </summary>
+        internal static System.Drawing.Bitmap exportMap {
+            get {
+                object obj = ResourceManager.GetObject("exportMap", resourceCulture);
                 return ((System.Drawing.Bitmap)(obj));
             }
         }
@@ -238,16 +258,6 @@ namespace Edda.Properties {
         internal static System.IO.UnmanagedMemoryStream metronome1 {
             get {
                 return ResourceManager.GetStream("metronome1", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized resource of type System.Drawing.Bitmap.
-        /// </summary>
-        internal static System.Drawing.Bitmap musicNote {
-            get {
-                object obj = ResourceManager.GetObject("musicNote", resourceCulture);
-                return ((System.Drawing.Bitmap)(obj));
             }
         }
         

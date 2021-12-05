@@ -187,4 +187,11 @@ public class Helper {
             Trace.WriteLine(message);
         })).Start();
     }
+
+    public static string DefaultRagnarockMapPath() {
+        string docPath = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
+        string ragPath = Path.Combine(docPath, "Ragnarock");
+        string ragSongPath = Path.Combine(ragPath, "CustomSongs");
+        return Directory.Exists(ragSongPath) ? ragSongPath : null;
+    }
 }
