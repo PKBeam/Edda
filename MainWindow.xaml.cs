@@ -746,14 +746,34 @@ namespace Edda {
             }
             txtNoteSpeed.Text = speed.ToString();
         }
+        private void TxtDistMedal0_GotFocus(object sender, RoutedEventArgs e) {
+            if (txtDistMedal0.Text == "Auto") {
+                txtDistMedal0.Text = "";
+            }
+        }
+
+        private void TxtDistMedal1_GotFocus(object sender, RoutedEventArgs e) {
+            if (txtDistMedal1.Text == "Auto") {
+                txtDistMedal1.Text = "";
+            }
+        }
+
+        private void TxtDistMedal2_GotFocus(object sender, RoutedEventArgs e) {
+            if (txtDistMedal2.Text == "Auto") {
+                txtDistMedal2.Text = "";
+            }
+        }
         private void TxtDistMedal0_LostFocus(object sender, RoutedEventArgs e) {
-            txtDistMedal0.Text = UpdateMedalDistance(0, txtDistMedal0.Text).ToString();
+            int dist = UpdateMedalDistance(0, txtDistMedal0.Text);
+            txtDistMedal0.Text = dist == 0 ? "Auto" : dist.ToString();
         }
         private void TxtDistMedal1_LostFocus(object sender, RoutedEventArgs e) {
-            txtDistMedal1.Text = UpdateMedalDistance(1, txtDistMedal1.Text).ToString();
+            int dist = UpdateMedalDistance(1, txtDistMedal1.Text);
+            txtDistMedal1.Text = dist == 0 ? "Auto" : dist.ToString();
         }
         private void TxtDistMedal2_LostFocus(object sender, RoutedEventArgs e) {
-            txtDistMedal2.Text = UpdateMedalDistance(2, txtDistMedal2.Text).ToString();
+            int dist = UpdateMedalDistance(2, txtDistMedal2.Text);
+            txtDistMedal2.Text = dist == 0 ? "Auto" : dist.ToString();
         }
         private void CheckGridSnap_Click(object sender, RoutedEventArgs e) {
             editorSnapToGrid = (checkGridSnap.IsChecked == true);
@@ -1383,9 +1403,9 @@ namespace Edda {
             int dist0 = beatMap.GetMedalDistanceForMap(indx, 0);
             int dist1 = beatMap.GetMedalDistanceForMap(indx, 1);
             int dist2 = beatMap.GetMedalDistanceForMap(indx, 2);
-            txtDistMedal0.Text = dist0.ToString();
-            txtDistMedal1.Text = dist1.ToString();
-            txtDistMedal2.Text = dist2.ToString();
+            txtDistMedal0.Text = (dist0 == 0) ? "Auto" : dist0.ToString();
+            txtDistMedal1.Text = (dist1 == 0) ? "Auto" : dist1.ToString();
+            txtDistMedal2.Text = (dist2 == 0) ? "Auto" : dist2.ToString();
 
             txtGridOffset.Text = (string)beatMap.GetCustomValueForMap(indx, "_editorOffset");
             txtGridSpacing.Text = (string)beatMap.GetCustomValueForMap(indx, "_editorGridSpacing");
@@ -1985,6 +2005,10 @@ namespace Edda {
             mapEditor.UnselectAllNotes();
         }
         private int UpdateMedalDistance(int medal, string strDist) {
+            if (strDist.Trim() == "") {
+                beatMap.SetMedalDistanceForMap(currentDifficulty, medal, 0);
+                return 0;
+            }
             int prevDist = (int)beatMap.GetMedalDistanceForMap(currentDifficulty, medal);
             int dist;
             if (int.TryParse(strDist, out dist) && dist >= 0) {
@@ -2113,5 +2137,7 @@ namespace Edda {
                 }
             }
         }
+
+
     }
 }

@@ -333,7 +333,7 @@
                             </Border>
 
                             <Border Grid.Row="3" Grid.Column="1">
-                                <TextBox x:Name="txtDistMedal0" LostFocus="TxtDistMedal0_LostFocus"/>
+                                <TextBox x:Name="txtDistMedal0" LostFocus="TxtDistMedal0_LostFocus" GotFocus="TxtDistMedal0_GotFocus"/>
                             </Border>
 
                             <Border Grid.Row="4" Grid.Column="0">
@@ -341,7 +341,7 @@
                             </Border>
 
                             <Border Grid.Row="4" Grid.Column="1">
-                                <TextBox x:Name="txtDistMedal1" LostFocus="TxtDistMedal1_LostFocus"/>
+                                <TextBox x:Name="txtDistMedal1" LostFocus="TxtDistMedal1_LostFocus" GotFocus="TxtDistMedal1_GotFocus"/>
                             </Border>
 
                             <Border Grid.Row="5" Grid.Column="0">
@@ -349,7 +349,7 @@
                             </Border>
 
                             <Border Grid.Row="5" Grid.Column="1">
-                                <TextBox x:Name="txtDistMedal2" LostFocus="TxtDistMedal2_LostFocus"/>
+                                <TextBox x:Name="txtDistMedal2" LostFocus="TxtDistMedal2_LostFocus" GotFocus="TxtDistMedal2_GotFocus"/>
                             </Border>
 
                         </Grid>
