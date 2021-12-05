@@ -1,5 +1,7 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Windows.Media;
+using System.IO;
 
 namespace Const {
     using MediaColor = System.Windows.Media.Color;
@@ -12,10 +14,12 @@ namespace Const {
         public const string DisplayVersionString =
             #if DEBUG
                 VersionString + "-dev";
-            #else
+#else
                 VersionString;
-            #endif
-        public const string SettingsFile  = "settings.txt";
+#endif
+        public static string ProgramDataDir => Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "Edda");
+        public static string SettingsFile  => Path.Combine(ProgramDataDir, "settings.txt");
+        public const string OldSettingsFile = "settings.txt";
         public const string ResourcesPath = "Resources/";
         public const string BackupPath    = "autosaves";
         public const int    MaxBackups    = 10;

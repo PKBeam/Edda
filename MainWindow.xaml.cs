@@ -146,6 +146,8 @@ namespace Edda {
                 }
             };
             discordClient = new DiscordClient(this);
+
+            InitSettings();
             LoadSettingsFile();
 
             metronome = new ParallelAudioPlayer(
@@ -1228,6 +1230,16 @@ namespace Edda {
         }
 
         // config file
+        internal void InitSettings() {
+            // init program data dir if necessary
+            if (!Directory.Exists(Const.Program.ProgramDataDir)) {
+                Directory.CreateDirectory(Const.Program.ProgramDataDir);
+            }
+            // move old settings files to new centralised location
+            if (File.Exists(Const.Program.OldSettingsFile)) {
+                File.Move(Const.Program.OldSettingsFile, Const.Program.SettingsFile);
+            }
+        }
         internal void LoadSettingsFile() {
             userSettings = new UserSettings(Const.Program.SettingsFile);
 
