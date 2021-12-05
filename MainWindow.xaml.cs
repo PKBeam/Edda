@@ -18,6 +18,7 @@ using NAudio.Wave.SampleProviders;
 using NAudio.Vorbis;
 using System.Reactive.Linq;
 using System.Threading;
+using System.IO.Compression;
 /// <summary>
 /// Interaction logic for MainWindow.xaml
 /// </summary>
@@ -138,7 +139,11 @@ namespace Edda {
             autosaveTimer = new System.Timers.Timer(1000 * Const.Editor.AutosaveInterval);
             autosaveTimer.Enabled = false;
             autosaveTimer.Elapsed += (source, e) => {
-                SaveBeatmap();
+                try {
+                    SaveBeatmap();
+                } catch {
+                    Trace.WriteLine("INFO: Unable to autosave beatmap");
+                }
             };
             discordClient = new DiscordClient(this);
             LoadSettingsFile();
@@ -485,10 +490,12 @@ namespace Edda {
             } catch (Exception ex) {
                 MessageBox.Show($"An error occured while opening the map:\n{ex.Message}.", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
                 // reload previous beatmap
-                beatMap = oldBeatMap;
-                LoadSong(); 
-                LoadCoverImage();
-                InitUI();
+                if (oldBeatMap != null) {
+                    beatMap = oldBeatMap;
+                    LoadSong();
+                    LoadCoverImage();
+                    InitUI();
+                }
                 return;
             }
             discordClient.SetPresence();
@@ -498,7 +505,49 @@ namespace Edda {
             //SaveBeatmap();
         }
         private void BtnExportMap_Click(object sender, RoutedEventArgs e) {
+            var d = new CommonOpenFileDialog();
+            d.Title = "Select a folder to export the map to";
+            d.IsFolderPicker = true;
+            d.InitialDirectory = Helper.DefaultRagnarockMapPath();
+            if (d.ShowDialog() != CommonFileDialogResult.Ok) {
+                return;
+            }
 
+            string baseFolder = beatMap.GetPath();
+            string zipName = (string)beatMap.GetValue("_songAuthorName") + " - " + (string)beatMap.GetValue("_songName");
+            // make the temp dir for zip
+            string zipFolder = System.IO.Path.Combine(baseFolder, zipName + "_tempDir");
+            string zipPath = System.IO.Path.Combine(d.FileName, zipName + ".zip");
+
+            try {
+                if (File.Exists(zipPath)) {
+                    File.Delete(zipPath);
+                }
+
+                var copyFiles = new List<string>();
+                foreach (var file in Directory.GetFiles(baseFolder)) {
+                    copyFiles.Add(file);
+                }
+                
+                if (Directory.Exists(zipFolder)) {
+                    Directory.Delete(zipFolder, true);
+                }
+                Directory.CreateDirectory(zipFolder);
+
+                // need to use cmd to copy files; .NET Filesystem API throws an exception because "the file is being used"
+                //Helper.CmdCopyFiles(copyFiles, zipFolder);
+                foreach (var file in copyFiles) {
+                    File.Copy(file, System.IO.Path.Combine(zipFolder, System.IO.Path.GetFileName(file)));
+                }
+                ZipFile.CreateFromDirectory(zipFolder, zipPath);
+                
+            } catch {
+                MessageBox.Show($"An error occured while creating the zip file.", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+            } finally {
+                if (Directory.Exists(zipFolder)) {
+                    Directory.Delete(zipFolder, true);
+                }
+            }
         }
         private void BtnBPMFinder_Click(object sender, RoutedEventArgs e) {
             var win = Helper.GetFirstWindow<BPMCalcWindow>();
@@ -995,6 +1044,7 @@ namespace Edda {
         }
         private void EnableUI() {
             btnSaveMap.IsEnabled = true;
+            btnExportMap.IsEnabled = true;
             btnChangeDifficulty0.IsEnabled = true;
             btnChangeDifficulty1.IsEnabled = true;
             btnChangeDifficulty2.IsEnabled = true;
@@ -1032,6 +1082,7 @@ namespace Edda {
         }
         private void DisableUI() {
             btnSaveMap.IsEnabled = false;
+            btnExportMap.IsEnabled = false;
             btnChangeDifficulty0.IsEnabled = false;
             btnChangeDifficulty1.IsEnabled = false;
             btnChangeDifficulty2.IsEnabled = false;

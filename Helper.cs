@@ -127,6 +127,24 @@ public class Helper {
             // ???
         }
     }
+    public static void CmdCopyFile(string src, string dst) {
+        var p = Process.Start("cmd.exe", "/C copy \"" + src + "\" \"" + dst + "\"");
+        p.StartInfo.RedirectStandardOutput = true;
+        p.Start();
+        Console.WriteLine(p.StandardOutput.ReadToEnd());
+       // p.WaitForExit();
+    }
+    public static void CmdCopyFiles(List<string> src, string dst) {
+        var cmd = "/C ";
+        foreach (var str in src) {
+            cmd += "copy \"" + str + "\" \"" + dst + "\" & ";
+        }
+        var p = Process.Start("cmd.exe", cmd);
+        //p.StartInfo.RedirectStandardOutput = true;
+        p.Start();
+        //Console.WriteLine(p.StandardOutput.ReadToEnd());
+        p.WaitForExit();
+    }
     public static void CheckForUpdates() {
 
         // turn version string into number for comparison purposes
@@ -187,7 +205,6 @@ public class Helper {
             Trace.WriteLine(message);
         })).Start();
     }
-
     public static string DefaultRagnarockMapPath() {
         string docPath = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
         string ragPath = Path.Combine(docPath, "Ragnarock");
