@@ -404,19 +404,11 @@
                                 <ColumnDefinition Width="115" />
                             </Grid.ColumnDefinitions>
 
-                            <Border Grid.Row="0" Grid.ColumnSpan="2" Margin="0 0 0 5" Padding="0 5 0 10">
-                                <Button x:Name="btnChangeBPM" Width="199" Padding="3" HorizontalAlignment="Center" Click="BtnChangeBPM_Click">Edit Song Timing</Button>
+                            <Border Grid.Row="0" Grid.Column="0">
+                                <TextBlock VerticalAlignment="Center">Song Volume</TextBlock>
                             </Border>
 
-                            <Border Grid.Row="1" Grid.Column="0" Padding="5 0 0 5">
-                                <TextBlock VerticalAlignment="Center" FontWeight="Bold" FontSize="12">Playback</TextBlock>
-                            </Border>
-                            
-                            <Border Grid.Row="2" Grid.Column="0">
-                                <TextBlock Padding="10 0 0 0" VerticalAlignment="Center">Song Volume</TextBlock>
-                            </Border>
-
-                            <Border Grid.Row="2" Grid.Column="1">
+                            <Border Grid.Row="0" Grid.Column="1">
                                 <DockPanel>
                                     <TextBlock x:Name="txtSongVol" DockPanel.Dock="Right" Width="30" Margin="5 0 0 0">0%</TextBlock>
                                     <Slider x:Name="sliderSongVol" Maximum="1" ValueChanged="SliderSongVol_ValueChanged" IsMoveToPointEnabled="True"/>
