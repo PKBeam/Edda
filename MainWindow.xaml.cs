@@ -773,14 +773,23 @@ namespace Edda {
             }
         }
         private void TxtDistMedal0_LostFocus(object sender, RoutedEventArgs e) {
+            if (txtDistMedal0.Text == "Auto" || txtDistMedal0.Text == "auto") {
+                txtDistMedal0.Text = "";
+            }
             int dist = UpdateMedalDistance(0, txtDistMedal0.Text);
             txtDistMedal0.Text = dist == 0 ? "Auto" : dist.ToString();
         }
         private void TxtDistMedal1_LostFocus(object sender, RoutedEventArgs e) {
+            if (txtDistMedal1.Text == "Auto" || txtDistMedal1.Text == "auto") {
+                txtDistMedal1.Text = "";
+            }
             int dist = UpdateMedalDistance(1, txtDistMedal1.Text);
             txtDistMedal1.Text = dist == 0 ? "Auto" : dist.ToString();
         }
         private void TxtDistMedal2_LostFocus(object sender, RoutedEventArgs e) {
+            if (txtDistMedal2.Text == "Auto" || txtDistMedal2.Text == "auto") {
+                txtDistMedal2.Text = "";
+            }
             int dist = UpdateMedalDistance(2, txtDistMedal2.Text);
             txtDistMedal2.Text = dist == 0 ? "Auto" : dist.ToString();
         }
