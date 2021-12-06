@@ -124,7 +124,7 @@
                         </Border>
 
                         <Border Grid.Row="0" Grid.Column="1">
-                            <TextBox x:Name="txtSongName" TextChanged="TxtSongName_TextChanged"/>
+                            <TextBox x:Name="txtSongName" TextChanged="TxtSongName_TextChanged" LostFocus="TxtSongName_LostFocus"/>
                         </Border>
 
                         <Border Grid.Row="1" Grid.Column="0">
@@ -132,7 +132,7 @@
                         </Border>
 
                         <Border Grid.Row="1" Grid.Column="1">
-                            <TextBox x:Name="txtArtistName" TextChanged="TxtArtistName_TextChanged"/>
+                            <TextBox x:Name="txtArtistName" TextChanged="TxtArtistName_TextChanged" LostFocus="TxtArtistName_LostFocus"/>
                         </Border>
 
                         <Border Grid.Row="2" Grid.Column="0">
@@ -140,7 +140,7 @@
                         </Border>
 
                         <Border Grid.Row="2" Grid.Column="1">
-                            <TextBox x:Name="txtMapperName" TextChanged="TxtMapperName_TextChanged"/>
+                            <TextBox x:Name="txtMapperName" TextChanged="TxtMapperName_TextChanged" LostFocus="TxtMapperName_LostFocus"/>
                         </Border>
 
                         <Border Grid.Row="3" Grid.Column="0">

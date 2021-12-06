@@ -712,11 +712,20 @@ namespace Edda {
         private void TxtSongName_TextChanged(object sender, TextChangedEventArgs e) {
             beatMap.SetValue("_songName", txtSongName.Text);
         }
+        private void TxtSongName_LostFocus(object sender, RoutedEventArgs e) {
+            txtSongName.ScrollToHome();
+        }
         private void TxtArtistName_TextChanged(object sender, TextChangedEventArgs e) {
             beatMap.SetValue("_songAuthorName", txtArtistName.Text);
         }
+        private void TxtArtistName_LostFocus(object sender, RoutedEventArgs e) {
+            txtArtistName.ScrollToHome();
+        }
         private void TxtMapperName_TextChanged(object sender, TextChangedEventArgs e) {
             beatMap.SetValue("_levelAuthorName", txtMapperName.Text);
+        }
+        private void TxtMapperName_LostFocus(object sender, RoutedEventArgs e) {
+            txtMapperName.ScrollToHome();
         }
         private void checkExplicitContent_Click(object sender, RoutedEventArgs e) {
             beatMap.SetValue("_explicit", (checkExplicitContent.IsChecked == true).ToString().ToLower());
@@ -752,13 +761,11 @@ namespace Edda {
                 txtDistMedal0.Text = "";
             }
         }
-
         private void TxtDistMedal1_GotFocus(object sender, RoutedEventArgs e) {
             if (txtDistMedal1.Text == "Auto") {
                 txtDistMedal1.Text = "";
             }
         }
-
         private void TxtDistMedal2_GotFocus(object sender, RoutedEventArgs e) {
             if (txtDistMedal2.Text == "Auto") {
                 txtDistMedal2.Text = "";
@@ -2138,7 +2145,6 @@ namespace Edda {
                 }
             }
         }
-
 
     }
 }
