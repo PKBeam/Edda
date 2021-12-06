@@ -19,6 +19,8 @@ namespace Const {
 #endif
         public static string ProgramDataDir => Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "Edda");
         public static string SettingsFile  => Path.Combine(ProgramDataDir, "settings.txt");
+        public static string DocumentsMapFolder => Path.Combine(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), "Ragnarock"), "CustomSongs");
+        public static string GameInstallRelativeMapFolder => Path.Combine("Ragnarock", "CustomSongs");
         public const string OldSettingsFile = "settings.txt";
         public const string ResourcesPath = "Resources/";
         public const string BackupPath    = "autosaves";
@@ -32,15 +34,19 @@ namespace Const {
         public const bool   EnableDiscordRPC = true;
         public const bool   EnableAutosave   = true;
         public const bool   CheckForUpdates  = true;
+        public const int MapSaveLocationIndex = 0;
+        public const string MapSaveLocationPath = "";
     }
 
-    public static class UserSettings {
-        public const string EditorAudioLatency = "editorAudioLatency";
-        public const string DrumSampleFile     = "drumSampleFile";
-        public const string PanDrumSounds      = "panDrumSounds";
-        public const string EnableDiscordRPC   = "enableDiscordRPC";
-        public const string EnableAutosave     = "enableAutosave";
-        public const string CheckForUpdates    = "checkForUpdates";
+    public static class UserSettings {           
+        public const string EditorAudioLatency   = "editorAudioLatency";
+        public const string DrumSampleFile       = "drumSampleFile";
+        public const string PanDrumSounds        = "panDrumSounds";
+        public const string EnableDiscordRPC     = "enableDiscordRPC";
+        public const string EnableAutosave       = "enableAutosave";
+        public const string CheckForUpdates      = "checkForUpdates";
+        public const string MapSaveLocationIndex = "mapSaveLocationIndex";
+        public const string MapSaveLocationPath  = "mapSaveLocationPath";
     }
     public static class Editor {
         // Grid drawing

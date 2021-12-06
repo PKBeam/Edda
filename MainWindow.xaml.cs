@@ -19,6 +19,7 @@ using NAudio.Vorbis;
 using System.Reactive.Linq;
 using System.Threading;
 using System.IO.Compression;
+using Path = System.IO.Path;
 /// <summary>
 /// Interaction logic for MainWindow.xaml
 /// </summary>
@@ -421,7 +422,7 @@ namespace Edda {
             var d2 = new CommonOpenFileDialog();
             d2.Title = "Select an empty folder to store your map";
             d2.IsFolderPicker = true;
-            d2.InitialDirectory = Helper.DefaultRagnarockMapPath();
+            d2.InitialDirectory = RagnarockMapFolder();
             if (d2.ShowDialog() != CommonFileDialogResult.Ok) {
                 return;
             }
@@ -470,7 +471,7 @@ namespace Edda {
             var d2 = new CommonOpenFileDialog();
             d2.Title = "Select your map's containing folder";
             d2.IsFolderPicker = true;
-            d2.InitialDirectory = Helper.DefaultRagnarockMapPath();
+            d2.InitialDirectory = RagnarockMapFolder();
             if (d2.ShowDialog() != CommonFileDialogResult.Ok) {
                 return;
             }
@@ -510,7 +511,7 @@ namespace Edda {
             var d = new CommonOpenFileDialog();
             d.Title = "Select a folder to export the map to";
             d.IsFolderPicker = true;
-            d.InitialDirectory = Helper.DefaultRagnarockMapPath();
+            d.InitialDirectory = RagnarockMapFolder();
             if (d.ShowDialog() != CommonFileDialogResult.Ok) {
                 return;
             }
@@ -1300,6 +1301,24 @@ namespace Edda {
 
             if (userSettings.GetValueForKey(Const.UserSettings.CheckForUpdates) == null) {
                 userSettings.SetValueForKey(Const.UserSettings.CheckForUpdates, Const.DefaultUserSettings.CheckForUpdates);
+            }
+
+            try {
+                var index = int.Parse(userSettings.GetValueForKey(Const.UserSettings.MapSaveLocationIndex));
+                // game install directory chosen
+                var gameInstallPath = userSettings.GetValueForKey(Const.UserSettings.MapSaveLocationPath);
+                if (index == 1 && !Directory.Exists(gameInstallPath)) {
+                    throw new Exception();
+                }
+            } catch {
+                userSettings.SetValueForKey(Const.UserSettings.MapSaveLocationIndex, Const.DefaultUserSettings.MapSaveLocationIndex);
+                userSettings.SetValueForKey(Const.UserSettings.MapSaveLocationPath, Const.DefaultUserSettings.MapSaveLocationPath);
+            }
+
+            try {
+                int.Parse(userSettings.GetValueForKey(Const.UserSettings.MapSaveLocationIndex));
+            } catch {
+                userSettings.SetValueForKey(Const.UserSettings.MapSaveLocationIndex, Const.DefaultUserSettings.MapSaveLocationIndex);
             }
 
             userSettings.Write();
@@ -2145,6 +2164,13 @@ namespace Edda {
                 }
             }
         }
-
+        private string RagnarockMapFolder() {
+            var index = int.Parse(userSettings.GetValueForKey(Const.UserSettings.MapSaveLocationIndex));
+            if (index == 0) {
+                return Helper.DefaultRagnarockMapPath();
+            } else {
+                return Path.Combine(userSettings.GetValueForKey(Const.UserSettings.MapSaveLocationPath), Const.Program.GameInstallRelativeMapFolder);
+            }
+        }
     }
 }

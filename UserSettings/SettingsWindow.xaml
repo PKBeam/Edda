@@ -5,7 +5,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:Edda"
         mc:Ignorable="d"
-        Title="Settings" Name="Window" Width="260" Height="410" ResizeMode="NoResize" Background="{DynamicResource {x:Static SystemColors.ControlDarkBrushKey}}">
+        Title="Settings" Name="Window" Width="260" Height="470" ResizeMode="NoResize" Background="{DynamicResource {x:Static SystemColors.ControlDarkBrushKey}}">
     <Grid>
         <DockPanel>
             
@@ -155,6 +155,21 @@
 
                     <Border Grid.Row="1" Grid.Column="1">
                         <CheckBox x:Name="checkStartupUpdate" Click="CheckStartupUpdate_Click"/>
+                    </Border>
+
+                    <Border Grid.Row="2" Grid.Column="0">
+                        <TextBlock VerticalAlignment="Center">Map Save Location</TextBlock>
+                    </Border>
+
+                    <Border Grid.Row="2" Grid.Column="1">
+                        <ComboBox x:Name="comboMapSaveFolder" VerticalAlignment="Center" SelectionChanged="comboMapSaveFolder_SelectionChanged">
+                            <ComboBoxItem x:Name="comboMapSaveFolder_Documents">Documents</ComboBoxItem>
+                            <ComboBoxItem x:Name="comboMapSaveFolder_GameInstall">Game Install</ComboBoxItem>
+                        </ComboBox>
+                    </Border>
+
+                    <Border Grid.Row="3" Grid.ColumnSpan="2" Padding="0">
+                        <TextBlock Width="210" FontSize="10" FontStyle="Italic" x:Name="txtMapSaveFolderPath" VerticalAlignment="Center" MouseLeftButtonUp="txtMapSaveFolderPath_MouseLeftButtonUp" Foreground="{DynamicResource {x:Static SystemColors.HotTrackBrushKey}}">C:/Username/Documents/Ragnarock/CustomSongs</TextBlock>
                     </Border>
                 </Grid>
             </StackPanel>

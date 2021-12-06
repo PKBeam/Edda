@@ -12,6 +12,8 @@ using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Shapes;
+using Microsoft.WindowsAPICodePack.Dialogs;
+using Path = System.IO.Path;
 
 namespace Edda {
     /// <summary>
@@ -25,13 +27,18 @@ namespace Edda {
             InitializeComponent();
             this.caller = caller;
             this.userSettings = userSettings;
-            InitComboDrumSample();
+            InitComboDrumSample();  
             lblProgramName.Content = "Edda v" + Const.Program.DisplayVersionString;
             txtAudioLatency.Text = userSettings.GetValueForKey(Const.UserSettings.EditorAudioLatency);
             checkDiscord.IsChecked = userSettings.GetBoolForKey(Const.UserSettings.EnableDiscordRPC);
             CheckAutosave.IsChecked = userSettings.GetBoolForKey(Const.UserSettings.EnableAutosave);
             checkStartupUpdate.IsChecked = userSettings.GetBoolForKey(Const.UserSettings.CheckForUpdates);
             checkPanNotes.IsChecked = userSettings.GetBoolForKey(Const.UserSettings.PanDrumSounds);
+            comboMapSaveFolder.SelectedIndex = int.Parse(userSettings.GetValueForKey(Const.UserSettings.MapSaveLocationIndex));
+            txtMapSaveFolderPath.Text = (comboMapSaveFolder.SelectedIndex == 0) ? Const.Program.DocumentsMapFolder : userSettings.GetValueForKey(Const.UserSettings.MapSaveLocationPath);
+            txtMapSaveFolderPath.TextTrimming = TextTrimming.CharacterEllipsis;
+            txtMapSaveFolderPath.Cursor = Cursors.Hand;
+            ToggleMapPathVisibility();
             doneInit = true;
         }
 
@@ -97,6 +104,24 @@ namespace Edda {
             UpdateSettings();
         }
 
+        private void comboMapSaveFolder_SelectionChanged(object sender, SelectionChangedEventArgs e) {
+            
+            if (comboMapSaveFolder.SelectedIndex == 1) {
+                string gameInstall = PickGameFolder();
+                if (gameInstall == null) {
+                    comboMapSaveFolder.SelectedIndex = 0;
+                    userSettings.SetValueForKey(Const.UserSettings.MapSaveLocationPath, Const.DefaultUserSettings.MapSaveLocationPath);
+                } else {
+                    txtMapSaveFolderPath.Text = gameInstall; 
+                    userSettings.SetValueForKey(Const.UserSettings.MapSaveLocationPath, gameInstall);
+                }
+            }
+
+            ToggleMapPathVisibility();
+            userSettings.SetValueForKey(Const.UserSettings.MapSaveLocationIndex, comboMapSaveFolder.SelectedIndex.ToString());
+            UpdateSettings();
+        }
+
         private void BtnSave_Click(object sender, RoutedEventArgs e) {
             Close();
         }
@@ -114,6 +139,43 @@ namespace Edda {
             Mouse.OverrideCursor = null;
         }
 
-      
+        private void txtMapSaveFolderPath_MouseLeftButtonUp(object sender, MouseButtonEventArgs e) {
+            string gameInstall = PickGameFolder();
+            if (gameInstall == null) {
+                return;
+            } else {
+                userSettings.SetValueForKey(Const.UserSettings.MapSaveLocationPath, gameInstall);
+            }
+            UpdateSettings();
+        }
+
+        private string PickGameFolder() {
+            var d = new CommonOpenFileDialog();
+            d.Title = "Select the folder that Ragnarock is installed in";
+            d.IsFolderPicker = true;
+            var prevGamePath = userSettings.GetValueForKey(Const.UserSettings.MapSaveLocationPath);
+            if (Directory.Exists(prevGamePath)) {
+                d.InitialDirectory = prevGamePath;
+            }
+            if (d.ShowDialog() != CommonFileDialogResult.Ok) {
+                return null;
+            }
+
+            // make custom song game folder if it doesnt exist
+            var songFolder = Path.Combine(d.FileName, Const.Program.GameInstallRelativeMapFolder);
+            if (!Directory.Exists(songFolder)) { 
+                Directory.CreateDirectory(songFolder);
+            }
+
+            return d.FileName;
+        }
+
+        private void ToggleMapPathVisibility() {
+            if (comboMapSaveFolder.SelectedIndex == 0) {
+                txtMapSaveFolderPath.Visibility = Visibility.Collapsed;
+            } else {
+                txtMapSaveFolderPath.Visibility = Visibility.Visible;
+            }
+        }
     }
 }
