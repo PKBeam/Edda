@@ -152,19 +152,19 @@
                         </Border>
                         
                         <Border Grid.Row="4" Grid.Column="0">
-                            <TextBlock VerticalAlignment="Bottom" FontSize="11">Explicit Content</TextBlock>
+                            <TextBlock FontSize="11.5">Explicit Content</TextBlock>
                         </Border>
 
                         <Border Grid.Row="4" Grid.Column="1">
                             <CheckBox x:Name="checkExplicitContent" VerticalAlignment="Center" Click="checkExplicitContent_Click"></CheckBox>
                         </Border>
-                        
+
                         <Border Grid.Row="5" Grid.Column="0" Grid.ColumnSpan="2">
-                            <TextBlock VerticalAlignment="Center" FontWeight="Bold" FontSize="12">Song Settings</TextBlock>
+                            <TextBlock Visibility="Collapsed" VerticalAlignment="Center" FontWeight="Bold" FontSize="12">Song Settings</TextBlock>
                         </Border>
 
                         <Border Grid.Row="6" Grid.Column="0">
-                            <TextBlock Padding="10 0 0 0">Song BPM</TextBlock>
+                            <TextBlock Padding="0 0 0 0">Song BPM</TextBlock>
                         </Border>
 
                         <Border Grid.Row="6" Grid.Column="1">
@@ -174,11 +174,15 @@
                             </StackPanel>
                         </Border>
 
-                        <Border Grid.Row="7" Grid.Column="0">
+                        <!-- 
+                            hidden for now because I don't know if Ragnarock actually uses this, 
+                            and mappers should be syncing up audio before mapping anyway 
+                        -->
+                        <Border Grid.Row="7" Grid.Column="0" Visibility="Collapsed">
                             <TextBlock Padding="10 0 0 0">Song Offset</TextBlock>
                         </Border>
 
-                        <Border Grid.Row="7" Grid.Column="1">
+                        <Border Grid.Row="7" Grid.Column="1" Visibility="Collapsed">
                             <TextBox x:Name="txtSongOffset" Grid.Row="0" Grid.Column="1" LostFocus="TxtSongOffset_LostFocus" />
                         </Border>
 
@@ -213,7 +217,7 @@
 
                         <Border Grid.Row="0" Grid.Column="1">
                             <StackPanel Orientation="Horizontal">
-                                <TextBlock x:Name="txtSongFileName" Margin="0 0 5 0" Width="115" TextAlignment="Right" Grid.Row="0" Grid.Column="1" VerticalAlignment="Center" FontStyle="Italic" TextWrapping="WrapWithOverflow">N/A</TextBlock>
+                                <TextBlock x:Name="txtSongFileName" Margin="0 0 5 0" Width="115" FontSize="11" TextAlignment="Right" Grid.Row="0" Grid.Column="1" VerticalAlignment="Center" FontStyle="Italic" TextWrapping="WrapWithOverflow">N/A</TextBlock>
                                 <Button x:Name="btnPickSong" Width="20" Height="Auto" Click="BtnPickSong_Click">...</Button>
                             </StackPanel>
                         </Border>
@@ -230,7 +234,7 @@
 
                         <Border Grid.Row="5" Grid.Column="1">
                             <StackPanel Orientation="Horizontal">
-                                <TextBlock x:Name="txtCoverFileName" Margin="0 0 5 0" Width="115" TextAlignment="Right" Grid.Row="0" Grid.Column="1" VerticalAlignment="Center" FontStyle="Italic">N/A</TextBlock>
+                                <TextBlock x:Name="txtCoverFileName" Margin="0 0 5 0" Width="115" FontSize="11" TextAlignment="Right" Grid.Row="0" Grid.Column="1" VerticalAlignment="Center" FontStyle="Italic">N/A</TextBlock>
                                 <Button x:Name="btnPickCover" Width="20" Height="Auto" Click="BtnPickCover_Click">...</Button>
                             </StackPanel>
                         </Border>
@@ -238,7 +242,7 @@
                         <Border Grid.Row="6" Grid.Column="0"/>
 
                         <Border Grid.Row="7" Grid.ColumnSpan="2" Padding="0">
-                            <Border x:Name="borderImgCover" BorderBrush="{DynamicResource {x:Static SystemColors.ControlDarkDarkBrushKey}}" Padding="0" Height="175" Width="175" BorderThickness="0">
+                            <Border x:Name="borderImgCover" BorderBrush="{DynamicResource {x:Static SystemColors.ControlDarkDarkBrushKey}}" Padding="0" Height="175" Width="175" BorderThickness="1">
                                 <Image Margin="0" x:Name="imgCover" Width="175"/>
                             </Border>
                         </Border>
@@ -257,32 +261,41 @@
                         <Label Margin="5 0 0 5" FontWeight="Bold" FontSize="14">Difficulty Settings</Label>
                         <StackPanel Orientation="Vertical" HorizontalAlignment="Center">
                             <Label Padding="0 0 0 5">Change Difficulty</Label>
-                            <StackPanel x:Name="DifficultyChangePanel" Orientation="Horizontal">
-                                <Button x:Name="btnChangeDifficulty0" Width="65" Height="40" Click="BtnChangeDifficulty0_Click">
-                                    <Grid Width="60">
-                                        <Image Source="pack://application:,,,/Edda;component/resources/difficulty1.png"/>
-                                        <Label x:Name="lblDifficultyRank1" VerticalAlignment="Bottom" Padding="0 0 3 1" HorizontalAlignment="Right" FontWeight="Bold"></Label>
-                                    </Grid>
-                                </Button>
-                                <Button x:Name="btnChangeDifficulty1" Width="65" Height="40" Click="BtnChangeDifficulty1_Click">
-                                    <Grid Width="60">
-                                        <Image Source="pack://application:,,,/Edda;component/resources/difficulty2.png"/>
-                                        <Label x:Name="lblDifficultyRank2" VerticalAlignment="Bottom" Padding="0 0 3 1" HorizontalAlignment="Right" FontWeight="Bold"></Label>
-                                    </Grid>
-                                </Button>
-                                <Button x:Name="btnChangeDifficulty2" Width="65" Height="40" Click="BtnChangeDifficulty2_Click">
-                                    <Grid Width="60">
-                                        <Image Source="pack://application:,,,/Edda;component/resources/difficulty3.png"/>
-                                        <Label x:Name="lblDifficultyRank3" VerticalAlignment="Bottom" Padding="0 0 3 1" HorizontalAlignment="Right" FontWeight="Bold"></Label>
-                                    </Grid>
-                                </Button>
+                            <StackPanel Orientation="Horizontal">
+                                <StackPanel x:Name="DifficultyChangePanel" Orientation="Horizontal">
+                                    <Button x:Name="btnChangeDifficulty0" Width="55" Height="40" Click="BtnChangeDifficulty0_Click">
+                                        <Grid Width="50">
+                                            <Image Source="pack://application:,,,/Edda;component/resources/difficulty1.png" RenderOptions.BitmapScalingMode="Fant"/>
+                                            <Label x:Name="lblDifficultyRank1" VerticalAlignment="Bottom" Padding="0 0 2 1" HorizontalAlignment="Right" FontWeight="Bold"></Label>
+                                        </Grid>
+                                    </Button>
+                                    <Button x:Name="btnChangeDifficulty1" Width="55" Height="40" Click="BtnChangeDifficulty1_Click">
+                                        <Grid Width="50">
+                                            <Image Source="pack://application:,,,/Edda;component/resources/difficulty2.png" RenderOptions.BitmapScalingMode="Fant"/>
+                                            <Label x:Name="lblDifficultyRank2" VerticalAlignment="Bottom" Padding="0 0 2 1" HorizontalAlignment="Right" FontWeight="Bold"></Label>
+                                        </Grid>
+                                    </Button>
+                                    <Button x:Name="btnChangeDifficulty2" Width="55" Height="40" Click="BtnChangeDifficulty2_Click">
+                                        <Grid Width="50">
+                                            <Image Source="pack://application:,,,/Edda;component/resources/difficulty3.png" RenderOptions.BitmapScalingMode="Fant"/>
+                                            <Label x:Name="lblDifficultyRank3" VerticalAlignment="Bottom" Padding="0 0 2 1" HorizontalAlignment="Right" FontWeight="Bold"></Label>
+                                        </Grid>
+                                    </Button>
+                                
+                                </StackPanel>
+                                <StackPanel Margin="5 0 0 0">
+                                    <Button x:Name="btnAddDifficulty" Width="20" Padding="3" Click="BtnAddDifficulty_Click">
+                                        <Grid>
+                                            <Image Source="pack://application:,,,/Edda;component/resources/Plus.png" RenderOptions.BitmapScalingMode="Fant"/>
+                                        </Grid>
+                                    </Button>
+                                    <Button x:Name="btnDeleteDifficulty" Width="20" Padding="3" Click="BtnDeleteDifficulty_Click">
+                                        <Image Source="pack://application:,,,/Edda;component/resources/Minus.png" RenderOptions.BitmapScalingMode="Fant"/>
+                                    </Button>
+                                </StackPanel>
                             </StackPanel>
-
                         </StackPanel>
-                        <StackPanel Orientation="Horizontal" Margin="0 10 0 5" HorizontalAlignment="Center">
-                            <Button x:Name="btnAddDifficulty" Width="95" Margin="0 0 5 0" VerticalAlignment="Top" Click="BtnAddDifficulty_Click">Add Difficulty</Button>
-                            <Button x:Name="btnDeleteDifficulty" Width="95" VerticalAlignment="Top" Click="BtnDeleteDifficulty_Click">Delete Difficulty</Button>
-                        </StackPanel>
+                        
                         <Line X1="0" X2="190" Margin="0 10 0 5" StrokeThickness="1" Stroke="{DynamicResource {x:Static SystemColors.ControlDarkDarkBrushKey}}" HorizontalAlignment="Center"></Line>
 
                         <Grid Margin="10 5 5 0" VerticalAlignment="Center">
@@ -324,8 +337,8 @@
                                 <TextBox x:Name="txtNoteSpeed" LostFocus="TxtNoteSpeed_LostFocus"/>
                             </Border>
 
-                            <Border Grid.Row="2" Grid.Column="0" Grid.ColumnSpan="2">
-                                <TextBlock VerticalAlignment="Center" FontWeight="Bold" FontSize="12">Medal Distance</TextBlock>
+                            <Border Grid.Row="2" Grid.Column="0" Grid.ColumnSpan="2" Margin="0 3 0 0">
+                                <TextBlock VerticalAlignment="Center" FontWeight="Bold" FontSize="12">Medal Distances</TextBlock>
                             </Border>
 
                             <Border Grid.Row="3" Grid.Column="0">

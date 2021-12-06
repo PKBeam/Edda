@@ -43,12 +43,14 @@
     <None Remove="Resources\medalGold.png" />
     <None Remove="Resources\medalSilver.png" />
     <None Remove="Resources\metronome1.wav" />
+    <None Remove="Resources\Minus.png" />
     <None Remove="Resources\musicNote.png" />
     <None Remove="Resources\newMap.png" />
     <None Remove="Resources\openMap.png" />
     <None Remove="Resources\pauseButton.png" />
     <None Remove="Resources\placeholder.png" />
     <None Remove="Resources\playButton.png" />
+    <None Remove="Resources\Plus.png" />
     <None Remove="Resources\rune.png" />
     <None Remove="Resources\rune1.png" />
     <None Remove="Resources\rune12.png" />
@@ -127,12 +129,14 @@
     <Content Include="Resources\metronome1.wav">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
+    <Resource Include="Resources\Minus.png" />
     <Resource Include="Resources\musicNote.png" />
     <Resource Include="Resources\newMap.png" />
     <Resource Include="Resources\openMap.png" />
     <Resource Include="Resources\pauseButton.png" />
     <Resource Include="Resources\placeholder.png" />
     <Resource Include="Resources\playButton.png" />
+    <Resource Include="Resources\Plus.png" />
     <Resource Include="Resources\rune.png" />
     <Resource Include="Resources\rune1.png" />
     <Resource Include="Resources\rune12.png" />
