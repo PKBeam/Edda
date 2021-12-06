@@ -109,7 +109,7 @@ namespace Edda {
 
         // -- for grid drawing
         bool editorSnapToGrid = true;
-        int editorGridDivision;
+        public int editorGridDivision;
         double editorGridSpacing;
         double editorGridOffset;
         double editorDrawRangeLower = 0;

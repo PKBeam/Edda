@@ -76,5 +76,9 @@ namespace Edda {
             caller.DrawEditorGrid();
             dataBPMChange.ItemsSource = this.BPMChanges;
         }
+
+        private void dataBPMChange_AddingNewItem(object sender, AddingNewItemEventArgs e) {
+            e.NewItem = new BPMChange(Math.Round(caller.sliderSongProgress.Value / 60000 * globalBPM, 3), caller.globalBPM, caller.editorGridDivision);
+        }
     }
 }
