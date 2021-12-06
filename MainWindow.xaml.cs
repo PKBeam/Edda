@@ -574,7 +574,8 @@ namespace Edda {
         private void BtnMakePreview_Click(object sender, RoutedEventArgs e) {
             var win = Helper.GetFirstWindow<SongPreviewWindow>();
             if (win == null) {
-                new SongPreviewWindow(beatMap.GetPath(), beatMap.PathOf((string)beatMap.GetValue("_songFilename"))).Show();
+                int selectedTime = (int)(sliderSongProgress.Value / 1000.0);
+                new SongPreviewWindow(beatMap.GetPath(), beatMap.PathOf((string)beatMap.GetValue("_songFilename")), selectedTime / 60, selectedTime % 60).Show();
             } else {
                 win.Focus();
             }

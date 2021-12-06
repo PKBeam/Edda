@@ -11,14 +11,15 @@ namespace Edda {
         int startSec;
         int endMin;
         int endSec;
-        int fadeDur;
+        int fadeInDur;
+        int fadeOutDur;
 
         int songEndMin;
         int songEndSec;
 
         string songFolder;
         string songURL;
-        public SongPreviewWindow(string songFolder, string songURL) {
+        public SongPreviewWindow(string songFolder, string songURL, int startMin, int startSec) {
             InitializeComponent();
             this.songFolder = songFolder;
             this.songURL = songURL;
@@ -27,11 +28,12 @@ namespace Edda {
             songEndMin = (int)(songStream.TotalTime.TotalSeconds / 60);
             songEndSec = (int)songStream.TotalTime.TotalSeconds % 60;
 
-            startMin = 0;
-            startSec = 0;
-            endMin   = Const.Audio.MaxPreviewLength / 60;
-            endSec   = Const.Audio.MaxPreviewLength % 60;
-            fadeDur  = Const.Audio.DefaultPreviewFade;
+            this.startMin = startMin;
+            this.startSec = startSec;
+            endMin   = (startMin * 60 + startSec + Const.Audio.MaxPreviewLength) / 60;
+            endSec   = (startMin * 60 + startSec + Const.Audio.MaxPreviewLength) % 60;
+            fadeInDur = Const.Audio.DefaultPreviewFadeIn;
+            fadeOutDur  = Const.Audio.DefaultPreviewFadeOut;
 
             UpdateTextFields();
         }
@@ -48,16 +50,31 @@ namespace Edda {
         private void TxtEndTimeSec_GotFocus(object sender, RoutedEventArgs e) {
             TxtEndTimeSec.SelectAll();
         }
-        private void TxtFadeDuration_GotFocus(object sender, RoutedEventArgs e) {
-            TxtFadeDuration.SelectAll();
+        private void TxtFadeInDuration_GotFocus(object sender, RoutedEventArgs e) {
+            TxtFadeInDuration.SelectAll();
         }
-        private void TxtFadeDuration_LostFocus(object sender, RoutedEventArgs e) {
+        private void TxtFadeInDuration_LostFocus(object sender, RoutedEventArgs e) {
             int temp;
-            if (int.TryParse(TxtFadeDuration.Text, out temp) && temp >= 0) {
+            if (int.TryParse(TxtFadeInDuration.Text, out temp) && temp >= 0) {
                 if (temp > TotalSec(songEndMin, songEndSec)) {
                     temp = TotalSec(songEndMin, songEndSec);
                 }
-                fadeDur = temp;
+                fadeInDur = temp;
+            } else {
+                MessageBox.Show($"The duration must be a positive integer", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+            UpdateTextFields();
+        }
+        private void TxtFadeOutDuration_GotFocus(object sender, RoutedEventArgs e) {
+            TxtFadeOutDuration.SelectAll();
+        }
+        private void TxtFadeOutDuration_LostFocus(object sender, RoutedEventArgs e) {
+            int temp;
+            if (int.TryParse(TxtFadeOutDuration.Text, out temp) && temp >= 0) {
+                if (temp > TotalSec(songEndMin, songEndSec)) {
+                    temp = TotalSec(songEndMin, songEndSec);
+                }
+                fadeOutDur = temp;
             } else {
                 MessageBox.Show($"The duration must be a positive integer", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
             }
@@ -120,8 +137,9 @@ namespace Edda {
             if (TimeRangeDurationCheck() || ShowDurationError()) {
                 string saveURL = Path.Combine(songFolder, "preview.ogg");
                 btnGenerate.IsEnabled = false;
-                Helper.FFmpeg(songFolder, $"-i \"{songURL}\" -y -ss 00:{startMin:D2}:{startSec:D2} -to 00:{endMin:D2}:{endSec:D2} -af afade=t=out:st={TotalSec(endMin, endSec) - fadeDur}:d={fadeDur} \"{saveURL}\"");
+                Helper.FFmpeg(songFolder, $"-i \"{songURL}\" -y -ss 00:{startMin:D2}:{startSec:D2} -to 00:{endMin:D2}:{endSec:D2} -af afade=t=out:st={TotalSec(endMin, endSec) - fadeOutDur}:d={fadeOutDur},afade=t=in:st={TotalSec(startMin, startSec)}:d={fadeInDur} \"{saveURL}\"");
                 btnGenerate.IsEnabled = true;
+                MessageBox.Show($"Song preview created successfully.", "Success", MessageBoxButton.OK, MessageBoxImage.Information);
             }
         }
 
@@ -130,7 +148,8 @@ namespace Edda {
             TxtStartTimeSec.Text = startSec.ToString();
             TxtEndTimeMin.Text = endMin.ToString();
             TxtEndTimeSec.Text = endSec.ToString();
-            TxtFadeDuration.Text = fadeDur.ToString();
+            TxtFadeInDuration.Text = fadeInDur.ToString();
+            TxtFadeOutDuration.Text = fadeOutDur.ToString();
         }
         private int TotalSec(int min, int sec) {
             return 60 * min + sec;

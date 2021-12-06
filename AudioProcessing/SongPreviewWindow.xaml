@@ -5,7 +5,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:Edda"
         mc:Ignorable="d"
-        Title="Song Preview" Height="210" Width="255"  Background="{DynamicResource {x:Static SystemColors.ControlDarkBrushKey}}">
+        Title="Song Preview" Height="245" Width="255"  Background="{DynamicResource {x:Static SystemColors.ControlDarkBrushKey}}">
     <Grid>
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="31*"/>
@@ -73,12 +73,24 @@
                     </Border>
 
                     <Border Grid.Row="2" Grid.Column="0">
-                        <TextBlock VerticalAlignment="Center">Fade Out</TextBlock>
+                        <TextBlock VerticalAlignment="Center">Fade In</TextBlock>
                     </Border>
 
                     <Border Grid.Row="2" Grid.Column="1">
                         <StackPanel Orientation="Horizontal">
-                            <TextBox x:Name="TxtFadeDuration" Width="70" VerticalAlignment="Center" LostFocus="TxtFadeDuration_LostFocus" GotFocus="TxtFadeDuration_GotFocus"/>
+                            <TextBox x:Name="TxtFadeInDuration" Width="70" VerticalAlignment="Center" LostFocus="TxtFadeInDuration_LostFocus" GotFocus="TxtFadeInDuration_GotFocus"/>
+                            <Label>sec</Label>
+                        </StackPanel>
+
+                    </Border>
+
+                    <Border Grid.Row="3" Grid.Column="0">
+                        <TextBlock VerticalAlignment="Center">Fade Out</TextBlock>
+                    </Border>
+
+                    <Border Grid.Row="3" Grid.Column="1">
+                        <StackPanel Orientation="Horizontal">
+                            <TextBox x:Name="TxtFadeOutDuration" Width="70" VerticalAlignment="Center" LostFocus="TxtFadeOutDuration_LostFocus" GotFocus="TxtFadeOutDuration_GotFocus"/>
                             <Label>sec</Label>
                         </StackPanel>
 

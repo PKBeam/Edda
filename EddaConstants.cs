@@ -103,7 +103,8 @@ namespace Const {
         public const double NoteDetectionDelta  = 10;  // ms
 
         public const int    MaxPreviewLength    = 15; // sec
-        public const int    DefaultPreviewFade  = 3; // sec
+        public const int    DefaultPreviewFadeIn = 1; // sec
+        public const int    DefaultPreviewFadeOut  = 3; // sec
 
         public static string MetronomeFilename = "metronome";
         public const int MetronomeStreams = 4;
