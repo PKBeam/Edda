@@ -156,7 +156,8 @@ namespace Edda {
                 Const.Audio.MetronomeStreams, 
                 Const.Audio.WASAPILatencyTarget, 
                 checkMetronome.IsChecked == true, 
-                false
+                false,
+                float.Parse(userSettings.GetValueForKey(Const.UserSettings.DefaultNoteVolume))
             );
 
             // init border
@@ -1065,8 +1066,8 @@ namespace Edda {
             lineSongProgress.Y1 = borderNavWaveform.ActualHeight;
             lineSongProgress.Y2 = borderNavWaveform.ActualHeight;
 
-            sliderSongVol.Value = Const.Audio.DefaultSongVolume;
-            sliderDrumVol.Value = Const.Audio.DefaultNoteVolume;
+            sliderSongVol.Value = float.Parse(userSettings.GetValueForKey(Const.UserSettings.DefaultSongVolume));
+            sliderDrumVol.Value = float.Parse(userSettings.GetValueForKey(Const.UserSettings.DefaultNoteVolume));
 
             // map settings
             txtSongName.Text   = (string)beatMap.GetValue("_songName");
@@ -1309,6 +1310,14 @@ namespace Edda {
             } catch {
                 userSettings.SetValueForKey(Const.UserSettings.DrumSampleFile, Const.DefaultUserSettings.DrumSampleFile);
                 InitDrummer(Const.DefaultUserSettings.DrumSampleFile, isPanned);
+            }
+
+            if (userSettings.GetValueForKey(Const.UserSettings.DefaultSongVolume) == null) {
+                userSettings.SetValueForKey(Const.UserSettings.DefaultSongVolume, Const.DefaultUserSettings.DefaultSongVolume);
+            }
+
+            if (userSettings.GetValueForKey(Const.UserSettings.DefaultNoteVolume) == null) {
+                userSettings.SetValueForKey(Const.UserSettings.DefaultNoteVolume, Const.DefaultUserSettings.DefaultNoteVolume);
             }
 
             if (userSettings.GetValueForKey(Const.UserSettings.EnableDiscordRPC) == null) {
@@ -2016,7 +2025,8 @@ namespace Edda {
                 basePath, 
                 Const.Audio.NotePlaybackStreams, 
                 Const.Audio.WASAPILatencyTarget,
-                isPanned
+                isPanned,
+                float.Parse(userSettings.GetValueForKey(Const.UserSettings.DefaultNoteVolume))
             );
             drummer.ChangeVolume(sliderDrumVol.Value);
             noteScanner?.SetAudioPlayer(drummer);

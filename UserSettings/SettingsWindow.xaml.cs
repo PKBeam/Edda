@@ -14,6 +14,7 @@ using System.Windows.Media.Imaging;
 using System.Windows.Shapes;
 using Microsoft.WindowsAPICodePack.Dialogs;
 using Path = System.IO.Path;
+using System.Windows.Controls.Primitives;
 
 namespace Edda {
     /// <summary>
@@ -30,10 +31,12 @@ namespace Edda {
             InitComboDrumSample();  
             lblProgramName.Content = "Edda v" + Const.Program.DisplayVersionString;
             txtAudioLatency.Text = userSettings.GetValueForKey(Const.UserSettings.EditorAudioLatency);
+            checkPanNotes.IsChecked = userSettings.GetBoolForKey(Const.UserSettings.PanDrumSounds);
+            sliderSongVol.Value = float.Parse(userSettings.GetValueForKey(Const.UserSettings.DefaultSongVolume));
+            sliderDrumVol.Value = float.Parse(userSettings.GetValueForKey(Const.UserSettings.DefaultNoteVolume));
             checkDiscord.IsChecked = userSettings.GetBoolForKey(Const.UserSettings.EnableDiscordRPC);
             CheckAutosave.IsChecked = userSettings.GetBoolForKey(Const.UserSettings.EnableAutosave);
             checkStartupUpdate.IsChecked = userSettings.GetBoolForKey(Const.UserSettings.CheckForUpdates);
-            checkPanNotes.IsChecked = userSettings.GetBoolForKey(Const.UserSettings.PanDrumSounds);
             comboMapSaveFolder.SelectedIndex = int.Parse(userSettings.GetValueForKey(Const.UserSettings.MapSaveLocationIndex));
             txtMapSaveFolderPath.Text = (comboMapSaveFolder.SelectedIndex == 0) ? Const.Program.DocumentsMapFolder : userSettings.GetValueForKey(Const.UserSettings.MapSaveLocationPath);
             txtMapSaveFolderPath.TextTrimming = TextTrimming.CharacterEllipsis;
@@ -79,6 +82,34 @@ namespace Edda {
         private void checkPanNotes_Click(object sender, RoutedEventArgs e) {
             bool newStatus = checkPanNotes.IsChecked ?? false;
             userSettings.SetValueForKey(Const.UserSettings.PanDrumSounds, newStatus);
+            UpdateSettings();
+        }
+
+        private void SliderSongVol_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e) {   
+            txtSongVol.Text = $"{(int)(sliderSongVol.Value * 100)}%";          
+        }
+
+        private void sliderSongVol_MouseLeftButtonUp(object sender, MouseButtonEventArgs e) {
+            userSettings.SetValueForKey(Const.UserSettings.DefaultSongVolume, sliderSongVol.Value);
+            UpdateSettings();
+        }
+
+        private void sliderSongVol_DragCompleted(object sender, DragCompletedEventArgs e) {
+            userSettings.SetValueForKey(Const.UserSettings.DefaultSongVolume, sliderSongVol.Value);
+            UpdateSettings();
+        }
+
+        private void SliderDrumVol_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e) {
+            txtDrumVol.Text = $"{(int)(sliderDrumVol.Value * 100)}%";
+            
+        }
+        private void sliderDrumVol_MouseLeftButtonUp(object sender, MouseButtonEventArgs e) {
+            userSettings.SetValueForKey(Const.UserSettings.DefaultNoteVolume, sliderDrumVol.Value);
+            UpdateSettings();
+        }
+
+        private void sliderDrumVol_DragCompleted(object sender, DragCompletedEventArgs e) {
+            userSettings.SetValueForKey(Const.UserSettings.DefaultNoteVolume, sliderDrumVol.Value);
             UpdateSettings();
         }
 

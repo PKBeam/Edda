@@ -19,7 +19,7 @@ public class ParallelAudioPlayer: IDisposable {
     public bool isEnabled { get; set; }
     public bool isPanned { get; set; }
 
-    public ParallelAudioPlayer(string basePath, int streams, int desiredLatency, bool isEnabled, bool isPanned) {
+    public ParallelAudioPlayer(string basePath, int streams, int desiredLatency, bool isEnabled, bool isPanned, float defaultVolume) {
         this.lastPlayedStream = 0;
         this.streams = streams;
         this.isEnabled = isEnabled;
@@ -33,16 +33,16 @@ public class ParallelAudioPlayer: IDisposable {
         if (uniqueSamples < 1) {
             throw new FileNotFoundException();
         }   
-        InitAudioOut();
+        InitAudioOut(defaultVolume);
     }
 
-    public void InitAudioOut() {
+    public void InitAudioOut(float defaultVolume) {
         noteStreams = new AudioFileReader[streams];
         notePlayers = new WasapiOut[streams];
         lastPlayedTimes = new DateTime[streams];
         for (int i = 0; i < streams; i++) {
             noteStreams[i] = new AudioFileReader(GetFilePath(basePath, (i % numChannels % uniqueSamples) + 1)) {
-                Volume = Const.Audio.DefaultNoteVolume
+                Volume = defaultVolume
             };
             notePlayers[i] = new WasapiOut(AudioClientShareMode.Shared, desiredLatency);
             if (isPanned) {
@@ -63,7 +63,7 @@ public class ParallelAudioPlayer: IDisposable {
             }
         }
     }
-    public ParallelAudioPlayer(string basePath, int streams, int desiredLatency, bool isPanned) : this(basePath, streams, desiredLatency, true, isPanned) { }
+    public ParallelAudioPlayer(string basePath, int streams, int desiredLatency, bool isPanned, float defaultVolume) : this(basePath, streams, desiredLatency, true, isPanned, defaultVolume) { }
 
     public virtual bool Play() {
         return Play(0);

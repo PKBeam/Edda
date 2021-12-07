@@ -44,7 +44,7 @@ public class UserSettings {
         fileLines.Add(newLine);
     }
     public void SetValueForKey(string key, double value) {
-        SetValueForKey(key, value.ToString());
+        SetValueForKey(key, value.ToString("0.##"));
     }
     public void SetValueForKey(string key, bool value) {
         SetValueForKey(key, value.ToString());
