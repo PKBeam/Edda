@@ -555,15 +555,22 @@ namespace Edda {
         private void BtnBPMFinder_Click(object sender, RoutedEventArgs e) {
             var win = Helper.GetFirstWindow<BPMCalcWindow>();
             if (win == null) {
-                new BPMCalcWindow().Show();
+                win = new BPMCalcWindow();
+                win.Topmost = true;
+                win.Owner = this;
+                win.Show();
             } else {
                 win.Focus();
             }
         }
         private void BtnSettings_Click(object sender, RoutedEventArgs e) {
             var win = Helper.GetFirstWindow<SettingsWindow>();
+            
             if (win == null) {
-                new SettingsWindow(this, userSettings).Show();
+                win = new SettingsWindow(this, userSettings);
+                win.Topmost = true;
+                win.Owner = this;
+                win.ShowDialog();
             } else {
                 win.Focus();
             }
@@ -576,7 +583,10 @@ namespace Edda {
             var win = Helper.GetFirstWindow<SongPreviewWindow>();
             if (win == null) {
                 int selectedTime = (int)(sliderSongProgress.Value / 1000.0);
-                new SongPreviewWindow(beatMap.GetPath(), beatMap.PathOf((string)beatMap.GetValue("_songFilename")), selectedTime / 60, selectedTime % 60).Show();
+                win = new SongPreviewWindow(beatMap.GetPath(), beatMap.PathOf((string)beatMap.GetValue("_songFilename")), selectedTime / 60, selectedTime % 60);
+                win.Topmost = true;
+                win.Owner = this;
+                win.Show();
             } else {
                 win.Focus();
             }
@@ -694,7 +704,10 @@ namespace Edda {
         private void BtnChangeBPM_Click(object sender, RoutedEventArgs e) {
             var win = Helper.GetFirstWindow<ChangeBPMWindow>();
             if (win == null) {
-                new ChangeBPMWindow(this, mapEditor.bpmChanges).Show();
+                win = new ChangeBPMWindow(this, mapEditor.bpmChanges);
+                win.Topmost = true;
+                win.Owner = this;
+                win.Show();
             } else {
                 win.Focus();
             }

@@ -4,7 +4,7 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         mc:Ignorable="d"
-        x:Name="AppMainWindow" Title="Edda" Height="850" Width="800" MinWidth="800" Closed="AppMainWindow_Closed" KeyDown="AppMainWindow_KeyDown" KeyUp="AppMainWindow_KeyUp" PreviewKeyDown="AppMainWindow_PreviewKeyDown" Closing="AppMainWindow_Closing" Loaded="AppMainWindow_Loaded" ContentRendered="AppMainWindow_ContentRendered">
+        x:Name="AppMainWindow" Title="Edda" Height="860" Width="800" MinWidth="800" Closed="AppMainWindow_Closed" KeyDown="AppMainWindow_KeyDown" KeyUp="AppMainWindow_KeyUp" PreviewKeyDown="AppMainWindow_PreviewKeyDown" Closing="AppMainWindow_Closing" Loaded="AppMainWindow_Loaded" ContentRendered="AppMainWindow_ContentRendered">
     <DockPanel>
         <Border DockPanel.Dock="Top" Name="TopPanel" BorderBrush="{DynamicResource {x:Static SystemColors.ControlDarkDarkBrushKey}}" BorderThickness="0, 0, 0, 1">
             <Border.Background>
@@ -241,7 +241,7 @@
 
                         <Border Grid.Row="7" Grid.ColumnSpan="2" Padding="3">
                             <Border x:Name="borderImgCover" BorderBrush="{DynamicResource {x:Static SystemColors.ControlDarkDarkBrushKey}}" Padding="0" Height="175" Width="175" BorderThickness="1">
-                                <Image Margin="0" x:Name="imgCover" Width="175"/>
+                                <Image Margin="0" x:Name="imgCover" Width="175" RenderOptions.BitmapScalingMode="Fant"/>
                             </Border>
                         </Border>
                     </Grid>
@@ -404,11 +404,19 @@
                                 <ColumnDefinition Width="115" />
                             </Grid.ColumnDefinitions>
 
-                            <Border Grid.Row="0" Grid.Column="0">
-                                <TextBlock VerticalAlignment="Center">Song Volume</TextBlock>
+                            <Border Grid.Row="0" Grid.ColumnSpan="2" Margin="0 0 0 5" Padding="0 5 0 10">
+                                <Button x:Name="btnChangeBPM" Width="199" Padding="3" HorizontalAlignment="Center" Click="BtnChangeBPM_Click">Edit Song Timing</Button>
                             </Border>
 
-                            <Border Grid.Row="0" Grid.Column="1">
+                            <Border Grid.Row="1" Grid.Column="0" Padding="5 0 0 5">
+                                <TextBlock VerticalAlignment="Center" FontWeight="Bold" FontSize="12">Playback</TextBlock>
+                            </Border>
+                            
+                            <Border Grid.Row="2" Grid.Column="0">
+                                <TextBlock Padding="10 0 0 0" VerticalAlignment="Center">Song Volume</TextBlock>
+                            </Border>
+
+                            <Border Grid.Row="2" Grid.Column="1">
                                 <DockPanel>
                                     <TextBlock x:Name="txtSongVol" DockPanel.Dock="Right" Width="30" Margin="5 0 0 0">0%</TextBlock>
                                     <Slider x:Name="sliderSongVol" Maximum="1" ValueChanged="SliderSongVol_ValueChanged" IsMoveToPointEnabled="True"/>

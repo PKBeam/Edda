@@ -5,7 +5,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:Edda"
         mc:Ignorable="d"
-        Title="Timing Settings" Height="370" Width="300" ResizeMode="NoResize" d:DesignHeight="343.605">
+        Title="Timing Settings" Height="370" Width="300" ResizeMode="NoResize" WindowStartupLocation="CenterOwner" d:DesignHeight="343.605">
     <Grid Background="{DynamicResource {x:Static SystemColors.ControlDarkBrushKey}}">
         <DockPanel>
             <Border DockPanel.Dock="Top" BorderBrush="{DynamicResource {x:Static SystemColors.ControlDarkDarkBrushKey}}" BorderThickness="0, 0, 0, 1">
