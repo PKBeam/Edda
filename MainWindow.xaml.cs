@@ -208,6 +208,8 @@ namespace Edda {
         }
         private void AppMainWindow_Closing(object sender, System.ComponentModel.CancelEventArgs e) {
             PromptBeatmapSave();
+            AppMainWindow_Closed(this, null);
+            Environment.Exit(0);
         }
         private void AppMainWindow_Closed(object sender, EventArgs e) {
             Trace.WriteLine("INFO: Closing main window...");
@@ -219,7 +221,7 @@ namespace Edda {
             drummer?.Dispose();
             metronome?.Dispose();
             Trace.WriteLine("INFO: Audio resources disposed...");
-            //Application.Current.Shutdown();
+            Environment.Exit(0);
         }
         private void AppMainWindow_KeyDown(object sender, KeyEventArgs e) {
 
