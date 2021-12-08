@@ -90,8 +90,8 @@ namespace Const {
             public static string Colour           => Colors.SkyBlue.ToString();
             public static string NameColour       => Colors.SkyBlue.ToString();
             public static string BackgroundColour => Colors.SkyBlue.ToString();
-            public const double Thickness = 1.5;
-            public const double NameSize = 9;
+            public const double Thickness = 1;
+            public const double NameSize = 10;
             public const double NamePadding = 1;
             public const double Opacity = 1;
         }
@@ -99,19 +99,19 @@ namespace Const {
             public static string Colour           => Colors.DeepSkyBlue.ToString();
             public static string NameColour       => Colors.DeepSkyBlue.ToString();
             public static string BackgroundColour => Colors.DeepSkyBlue.ToString();
-            public const double Thickness = 1.5;
-            public const double NameSize = 10;
+            public const double Thickness = 3;
+            public const double NameSize = 11;
             public const double NamePadding = 3;
-            public const double Opacity = 0.85;
+            public const double Opacity = 0.75;
         }
         public static class BPMChange {
             public static string Colour           => Colors.MediumPurple.ToString();
             public static string NameColour       => Colors.MediumPurple.ToString();
             public static string BackgroundColour => Colors.MediumPurple.ToString();
-            public const double Thickness = 1.5;
-            public const double NameSize = 10;
+            public const double Thickness = 3;
+            public const double NameSize = 11;
             public const double NamePadding = 3;
-            public const double Opacity = 0.7;
+            public const double Opacity = 0.75;
         }
 
         // Waveform drawing
