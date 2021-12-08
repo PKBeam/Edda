@@ -319,7 +319,7 @@ namespace Edda {
                     } else if (lineSongMouseover.Opacity > 0) {
                         beat = globalBPM * sliderSongProgress.Maximum / 60000 * (1 - lineSongMouseover.Y1/borderNavWaveform.ActualHeight);
                     }
-                    mapEditor.AddBookmark(new Bookmark(beat, Const.Editor.Bookmark.DefaultName));
+                    mapEditor.AddBookmark(new Bookmark(beat, Const.Editor.NavBookmark.DefaultName));
                 }
                 // toggle grid snap (Ctrl-G)
                 if (e.Key == Key.G) {
@@ -881,7 +881,7 @@ namespace Edda {
         private void BorderNavWaveform_SizeChanged(object sender, SizeChangedEventArgs e) {
             if (beatMap != null) {
                 DrawEditorNavWaveform();
-                DrawBookmarks();
+                DrawNavBookmarks();
                 var lineY = sliderSongProgress.Value/sliderSongProgress.Maximum * borderNavWaveform.ActualHeight;
                 lineSongMouseover.Y1 = lineY;
                 lineSongMouseover.Y2 = lineY;
@@ -1477,7 +1477,7 @@ namespace Edda {
             editorGridOffset = Helper.DoubleParseInvariant(txtGridOffset.Text);
 
             EnableDifficultyButtons();
-            DrawBookmarks();
+            DrawNavBookmarks();
             if (redrawGrid) {
                 UpdateEditorGridHeight();
             }
@@ -1787,20 +1787,22 @@ namespace Edda {
             DateTime start = DateTime.Now;
 
             if (editorShowWaveform && EditorGrid.Height - scrollEditor.ActualHeight > 0) {
-                DrawEditorWaveform();
+              DrawEditorWaveform();
             }
 
             DateTime beforeLines = DateTime.Now;
 
-            DrawEditorGridLines();
+            double gridHeight = EditorGrid.Height;
+            DrawEditorGridLines(gridHeight);
 
             TimeSpan lineDraw = DateTime.Now - beforeLines;
             DateTime beforeNotes = DateTime.Now;
 
+  
             DrawEditorNotes(mapEditor.notes);
-
+            DrawEditorGridBookmarks();
+            DrawEditorGridBPMChanges();
             TimeSpan noteDraw = DateTime.Now - beforeNotes;
-
             // change editor preview note size
             imgPreviewNote.Width = unitLength;
             imgPreviewNote.Height = unitHeight;
@@ -1850,14 +1852,10 @@ namespace Edda {
                 }
             });
         }
-        private void DrawEditorGridLines() {
+        private void DrawEditorGridLines(double gridHeight) {
             // helper function for creating gridlines
             Line makeGridLine(double offset, bool isMajor = false) {
-                var l = new Line();
-                l.X1 = 0;
-                l.X2 = EditorGrid.ActualWidth;
-                l.Y1 = offset;
-                l.Y2 = offset;
+                var l = makeLine(EditorGrid.ActualWidth, offset);
                 l.Stroke = (SolidColorBrush)new BrushConverter().ConvertFrom(
                     isMajor ? Const.Editor.MajorGridlineColour : Const.Editor.MinorGridlineColour)
                 ;
@@ -1881,7 +1879,7 @@ namespace Edda {
             // draw gridlines
             int counter = 0;
             int bpmChangeCounter = 0;
-            while (offset <= EditorGrid.Height) {
+            while (offset <= gridHeight) {
 
                 // add new gridline
                 bool isMajor = counter % localGridDiv == 0;
@@ -1890,13 +1888,13 @@ namespace Edda {
                 if (isMajor) {
                     majorGridlines.Add((offset - userOffset) / unitLength);
                 }
-                gridlines.Add((offset - userOffset)/unitLength);
+                gridlines.Add((offset - userOffset) / unitLength);
 
-                offset += globalBPM/localBPM * unitLength / localGridDiv;
+                offset += globalBPM / localBPM * unitLength / localGridDiv;
                 counter++;
 
                 // check for BPM change
-                if (bpmChangeCounter < mapEditor.bpmChanges.Count && Helper.DoubleApproxGreaterEqual((offset - userOffset)/ unitLength, mapEditor.bpmChanges[bpmChangeCounter].globalBeat)) {
+                if (bpmChangeCounter < mapEditor.bpmChanges.Count && Helper.DoubleApproxGreaterEqual((offset - userOffset) / unitLength, mapEditor.bpmChanges[bpmChangeCounter].globalBeat)) {
                     BPMChange next = mapEditor.bpmChanges[bpmChangeCounter];
 
                     offset = next.globalBeat * unitLength + userOffset;
@@ -1905,8 +1903,13 @@ namespace Edda {
 
                     bpmChangeCounter++;
                     counter = 0;
-                }           
+                }
             }
+            //this.Dispatcher.Invoke(() => {
+            //    foreach (var l in gridLinesUI) {
+            //        EditorGrid.Children.Add(l);
+            //    }
+            //});
         }
         internal void DrawEditorNotes(List<Note> notes) {
             // draw drum notes
@@ -1927,18 +1930,80 @@ namespace Edda {
                 
                 // this assumes there are no duplicate notes given to us
                 img.Uid = Helper.UidGenerator(n);
-                if (FindName(Helper.NameGenerator(n)) != null) {
-                    UnregisterName(Helper.NameGenerator(n));
+                var name = Helper.NameGenerator(n);
+
+                if (FindName(name) != null) {
+                    UnregisterName(name);
                 }
-                RegisterName(Helper.NameGenerator(n), img);
-                
-                Canvas.SetBottom(img, noteHeight);
+                RegisterName(name, img);
+
                 Canvas.SetLeft(img, noteXOffset);
+                Canvas.SetBottom(img, noteHeight);
+
                 EditorGrid.Children.Add(img);
             }
         }
         internal void DrawEditorNotes(Note n) {
             DrawEditorNotes(new List<Note>() { n });
+        }
+        private void DrawEditorGridBookmarks() {
+            foreach (Bookmark b in mapEditor.bookmarks) {
+                var l = makeLine(EditorGrid.ActualWidth, unitLength * b.beat);
+                l.Stroke = (SolidColorBrush)new BrushConverter().ConvertFrom(Const.Editor.GridBookmark.Colour);
+                l.StrokeThickness = Const.Editor.GridBookmark.Thickness;
+                l.Opacity = Const.Editor.GridBookmark.Opacity;
+                Canvas.SetBottom(l, unitLength * b.beat + unitHeight / 2 - l.StrokeThickness / 4);
+                EditorGrid.Children.Add(l);
+
+                var txtBlock = new Label();
+                txtBlock.Foreground = Brushes.White;
+                txtBlock.Background = (SolidColorBrush)new BrushConverter().ConvertFrom(Const.Editor.GridBookmark.NameColour);
+                txtBlock.Background.Opacity = Const.Editor.GridBookmark.Opacity;
+                txtBlock.Content = b.name;
+                txtBlock.FontSize = Const.Editor.GridBookmark.NameSize;
+                txtBlock.Padding = new Thickness(Const.Editor.GridBookmark.NamePadding);
+                txtBlock.FontWeight = FontWeights.Bold;
+                txtBlock.Opacity = 1.0;
+                //txtBlock.IsReadOnly = true;
+                //txtBlock.Cursor = Cursors.Hand;
+                Canvas.SetBottom(txtBlock, unitLength * b.beat + unitHeight / 2 + 0.75 * Const.Editor.GridBookmark.Thickness);
+                EditorGrid.Children.Add(txtBlock);
+            }
+        }
+        private void DrawEditorGridBPMChanges() {
+            BPMChange prev = new BPMChange(0, globalBPM, editorGridDivision);
+            foreach (BPMChange b in mapEditor.bpmChanges) {
+                var l = makeLine(EditorGrid.ActualWidth, unitLength * b.globalBeat);
+                l.Stroke = (SolidColorBrush)new BrushConverter().ConvertFrom(Const.Editor.BPMChange.Colour);
+                l.StrokeThickness = Const.Editor.BPMChange.Thickness;
+                l.Opacity = Const.Editor.BPMChange.Opacity;
+                Canvas.SetBottom(l, unitLength * b.globalBeat + unitHeight / 2);
+                EditorGrid.Children.Add(l);
+
+                var txtBlock = new Label();
+                txtBlock.Foreground = Brushes.White;
+                txtBlock.Background = (SolidColorBrush)new BrushConverter().ConvertFrom(Const.Editor.BPMChange.NameColour);
+                txtBlock.Background.Opacity = Const.Editor.BPMChange.Opacity;
+                if (b.BPM != prev.BPM && b.gridDivision != prev.gridDivision) {
+                    txtBlock.Content = $"{b.BPM} BPM, 1/{b.gridDivision} beat";
+                } else if (b.BPM != prev.BPM) {
+                    txtBlock.Content = $"{b.BPM} BPM";
+                } else if (b.gridDivision != prev.gridDivision) {
+                    txtBlock.Content = $"1/{b.gridDivision} beat";
+                } else {
+                    txtBlock.Content = $"{b.BPM} BPM, 1/{b.gridDivision} beat";
+                }
+                
+                txtBlock.FontSize = Const.Editor.BPMChange.NameSize;
+                txtBlock.Padding = new Thickness(Const.Editor.BPMChange.NamePadding);
+                txtBlock.FontWeight = FontWeights.Bold;
+                txtBlock.Opacity = 1.0;
+                //txtBlock.IsReadOnly = true;
+                //txtBlock.Cursor = Cursors.Hand;
+                Canvas.SetBottom(txtBlock, unitLength * b.globalBeat + unitHeight / 2 + 0.75 * Const.Editor.BPMChange.Thickness);
+                EditorGrid.Children.Add(txtBlock);
+                prev = b;
+            }
         }
         internal void UndrawEditorNotes(List<Note> notes) {
             foreach (Note n in notes) {
@@ -1980,21 +2045,17 @@ namespace Edda {
         internal void UnhighlightEditorNotes(Note n) {
             UnhighlightEditorNotes(new List<Note>() { n });
         }
-        internal void DrawBookmarks() {
+        internal void DrawNavBookmarks() {
             canvasBookmarks.Children.Clear();
             canvasBookmarkLabels.Children.Clear();
             foreach (Bookmark b in mapEditor.bookmarks) {
-                var l = new Line();
-                l.X1 = 0;
-                l.X2 = borderNavWaveform.ActualWidth;
-                var offset = borderNavWaveform.ActualHeight * (1 - 60000 * b.beat/(globalBPM * sliderSongProgress.Maximum));
-                l.Y1 = offset;
-                l.Y2 = offset;
-                l.Stroke = (SolidColorBrush)new BrushConverter().ConvertFrom(Const.Editor.Bookmark.Colour);
-                l.StrokeThickness = Const.Editor.Bookmark.Thickness;
+                var l = makeLine(borderNavWaveform.ActualWidth, borderNavWaveform.ActualHeight * (1 - 60000 * b.beat / (globalBPM * sliderSongProgress.Maximum)));
+                l.Stroke = (SolidColorBrush)new BrushConverter().ConvertFrom(Const.Editor.NavBookmark.Colour);
+                l.StrokeThickness = Const.Editor.NavBookmark.Thickness;
+                l.Opacity = Const.Editor.NavBookmark.Opacity;
+                canvasBookmarks.Children.Add(l);
 
                 var txtBlock = CreateBookmarkLabel(b);
-                canvasBookmarks.Children.Add(l);
                 canvasBookmarkLabels.Children.Add(txtBlock);
             }
         }
@@ -2128,15 +2189,15 @@ namespace Edda {
         private Label CreateBookmarkLabel(Bookmark b) {
             var offset = borderNavWaveform.ActualHeight * (1 - 60000 * b.beat / (globalBPM * sliderSongProgress.Maximum));
             var txtBlock = new Label();
-            txtBlock.Foreground = (SolidColorBrush)new BrushConverter().ConvertFrom(Const.Editor.Bookmark.NameColour);
+            txtBlock.Foreground = (SolidColorBrush)new BrushConverter().ConvertFrom(Const.Editor.NavBookmark.NameColour);
 
             txtBlock.Content = b.name;
-            txtBlock.FontSize = Const.Editor.Bookmark.NameSize;
-            txtBlock.Padding = new Thickness(Const.Editor.Bookmark.NamePadding);
+            txtBlock.FontSize = Const.Editor.NavBookmark.NameSize;
+            txtBlock.Padding = new Thickness(Const.Editor.NavBookmark.NamePadding);
             txtBlock.FontWeight = FontWeights.Bold;
-            txtBlock.Opacity = Const.Editor.Bookmark.Opacity;
+            txtBlock.Opacity = Const.Editor.NavBookmark.Opacity;
             //txtBlock.IsReadOnly = true;
-            txtBlock.Cursor = Cursors.Arrow;
+            txtBlock.Cursor = Cursors.Hand;
             Canvas.SetBottom(txtBlock, borderNavWaveform.ActualHeight - offset);
             txtBlock.MouseLeftButtonDown += new MouseButtonEventHandler((src, e) => {
                 e.Handled = true;
@@ -2155,7 +2216,7 @@ namespace Edda {
             txtBlock.MouseDoubleClick += new MouseButtonEventHandler((src, e) => {
                 var txtBox = new TextBox();
                 txtBox.Text = b.name;
-                txtBox.FontSize = Const.Editor.Bookmark.NameSize;
+                txtBox.FontSize = Const.Editor.NavBookmark.NameSize;
                 Canvas.SetBottom(txtBox, borderNavWaveform.ActualHeight - offset);
                 txtBox.LostKeyboardFocus += new KeyboardFocusChangedEventHandler((src, e) => {
                     if (txtBox.Text != "") {
@@ -2169,7 +2230,7 @@ namespace Edda {
                         Keyboard.Focus(this);
                     }
                 });
-
+                
                 canvasNavInputBox.Children.Add(txtBox);
                 txtBox.Focus();
                 txtBox.SelectAll();
@@ -2206,5 +2267,14 @@ namespace Edda {
                 return Path.Combine(userSettings.GetValueForKey(Const.UserSettings.MapSaveLocationPath), Const.Program.GameInstallRelativeMapFolder);
             }
         }
+        private Line makeLine(double width, double offset) {
+            var l = new Line();
+            l.X1 = 0;
+            l.X2 = width;
+            l.Y1 = offset;
+            l.Y2 = offset;
+            return l;
+        }
+       
     }
 }

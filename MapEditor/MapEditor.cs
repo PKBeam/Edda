@@ -25,15 +25,18 @@ public class MapEditor {
     }
     public void AddBookmark(Bookmark b) {
         bookmarks.Add(b);
-        parent.DrawBookmarks();
+        parent.DrawNavBookmarks();
+        parent.DrawEditorGrid();
     }
     public void RemoveBookmark(Bookmark b) {
         bookmarks.Remove(b);
-        parent.DrawBookmarks();
+        parent.DrawNavBookmarks();
+        parent.DrawEditorGrid();
     }
     public void RenameBookmark(Bookmark b, string newName) {
         b.name = newName;
-        parent.DrawBookmarks();
+        parent.DrawNavBookmarks();
+        parent.DrawEditorGrid();
     }
     public void AddNotes(List<Note> notes, bool updateHistory = true) {
         List<Note> drawNotes = new();

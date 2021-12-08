@@ -38,7 +38,7 @@
                     <DataGrid.Columns>
                         <DataGridTextColumn Header="Global Beat" Binding="{Binding globalBeat}" Width="*"/>
                         <DataGridTextColumn Header="BPM" Binding="{Binding BPM}" Width="*"/>
-                        <DataGridTextColumn Header="Grid Division" Binding="{Binding gridDivision}" Width="*"/>
+                        <DataGridTextColumn Header="Beat Division" Binding="{Binding gridDivision}" Width="*"/>
                     </DataGrid.Columns>
                 </DataGrid>
             </StackPanel>

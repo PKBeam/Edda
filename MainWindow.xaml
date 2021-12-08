@@ -164,10 +164,10 @@
                         </Border>
 
                         <Border Grid.Row="4" Grid.Column="1" >
-                            <DockPanel>
-                                <TextBlock Width="25" DockPanel.Dock="Right" Margin="5 0 5 0">BPM</TextBlock>
-                                <TextBox x:Name="txtSongBPM" Grid.Row="0" Grid.Column="1" LostFocus="TxtSongBPM_LostFocus"/>
-                            </DockPanel>
+                            <StackPanel Orientation="Horizontal">
+                                <TextBox Width="30" x:Name="txtSongBPM" Grid.Row="0" Grid.Column="1" LostFocus="TxtSongBPM_LostFocus"/>
+                                <TextBlock Width="25" Margin="5 0 5 0">BPM</TextBlock>
+                            </StackPanel>
                         </Border>
 
                         <!-- 
@@ -324,7 +324,7 @@
                             </Border>
 
                             <Border Grid.Row="0" Grid.Column="1" Padding="5 5 10 5">
-                                <TextBox x:Name="txtDifficultyNumber" LostFocus="TxtDifficultyNumber_LostFocus"/>
+                                <TextBox x:Name="txtDifficultyNumber" Width="30" HorizontalAlignment="Left" LostFocus="TxtDifficultyNumber_LostFocus"/>
                             </Border>
 
                             <Border Grid.Row="1" Grid.Column="0">
@@ -332,7 +332,7 @@
                             </Border>
 
                             <Border Grid.Row="1" Grid.Column="1" Padding="5 5 10 5">
-                                <TextBox x:Name="txtNoteSpeed" LostFocus="TxtNoteSpeed_LostFocus"/>
+                                <TextBox x:Name="txtNoteSpeed" Width="30" HorizontalAlignment="Left" LostFocus="TxtNoteSpeed_LostFocus"/>
                             </Border>
 
                             <Border Grid.Row="2" Grid.Column="0" Grid.ColumnSpan="2" Margin="0 3 0 0">
@@ -344,10 +344,10 @@
                             </Border>
 
                             <Border Grid.Row="3" Grid.Column="1" Padding="5 5 10 5">
-                                <DockPanel>
-                                    <TextBlock Width="10" DockPanel.Dock="Right" Margin="5 0 5 0">m</TextBlock>
-                                    <TextBox x:Name="txtDistMedal0" LostFocus="TxtDistMedal0_LostFocus" GotFocus="TxtDistMedal0_GotFocus"/>
-                                </DockPanel>
+                                <StackPanel Orientation="Horizontal">
+                                    <TextBox x:Name="txtDistMedal0" Width="50" HorizontalAlignment="Left" LostFocus="TxtDistMedal0_LostFocus" GotFocus="TxtDistMedal0_GotFocus"/>
+                                    <TextBlock Width="10" Margin="5 0 5 0">m</TextBlock>
+                                </StackPanel>
                             </Border>
 
                             <Border Grid.Row="4" Grid.Column="0">
@@ -355,10 +355,10 @@
                             </Border>
 
                             <Border Grid.Row="4" Grid.Column="1" Padding="5 5 10 5">
-                                <DockPanel>
-                                    <TextBlock Width="10" DockPanel.Dock="Right" Margin="5 0 5 0">m</TextBlock>
-                                    <TextBox x:Name="txtDistMedal1" LostFocus="TxtDistMedal1_LostFocus" GotFocus="TxtDistMedal1_GotFocus"/>
-                                </DockPanel>
+                                <StackPanel Orientation="Horizontal">
+                                    <TextBox x:Name="txtDistMedal1" Width="50" HorizontalAlignment="Left" LostFocus="TxtDistMedal1_LostFocus" GotFocus="TxtDistMedal1_GotFocus"/>
+                                    <TextBlock Width="10" Margin="5 0 5 0">m</TextBlock>
+                                </StackPanel>
                             </Border>
 
                             <Border Grid.Row="5" Grid.Column="0">
@@ -366,10 +366,10 @@
                             </Border>
 
                             <Border Grid.Row="5" Grid.Column="1" Padding="5 5 10 5">
-                                <DockPanel>
-                                    <TextBlock Width="10" DockPanel.Dock="Right" Margin="5 0 5 0">m</TextBlock>
-                                    <TextBox x:Name="txtDistMedal2" LostFocus="TxtDistMedal2_LostFocus" GotFocus="TxtDistMedal2_GotFocus"/>
-                                </DockPanel>
+                                <StackPanel Orientation="Horizontal">
+                                    <TextBox x:Name="txtDistMedal2" Width="50" HorizontalAlignment="Left" LostFocus="TxtDistMedal2_LostFocus" GotFocus="TxtDistMedal2_GotFocus"/>
+                                    <TextBlock Width="10"  Margin="5 0 5 0">m</TextBlock>
+                                </StackPanel>
                             </Border>
 
                         </Grid>
@@ -459,13 +459,13 @@
                             </Border>
 
                             <Border Grid.Row="7" Grid.Column="0">
-                                <TextBlock Padding="10 0 0 0" VerticalAlignment="Center">Grid Division</TextBlock>
+                                <TextBlock Padding="10 0 0 0" VerticalAlignment="Center">Beat Division</TextBlock>
                             </Border>
 
                             <Border Grid.Row="7" Grid.Column="1">
                                 <StackPanel Orientation="Horizontal">
                                     <TextBlock Margin="0 0 3 0" VerticalAlignment="Center">1/</TextBlock>
-                                    <TextBox Width="25" x:Name="txtGridDivision" LostFocus="TxtGridDivision_LostFocus" VerticalAlignment="Center"/>
+                                    <TextBox Width="30" x:Name="txtGridDivision" LostFocus="TxtGridDivision_LostFocus" VerticalAlignment="Center"/>
                                 </StackPanel>
                             </Border>
 
@@ -474,7 +474,7 @@
                             </Border>
 
                             <Border Grid.Row="8" Grid.Column="1" Padding="5 5 10 5">
-                                <TextBox x:Name="txtGridOffset" LostFocus="TxtGridOffset_LostFocus"/>
+                                <TextBox x:Name="txtGridOffset" Width="30" HorizontalAlignment="Left" LostFocus="TxtGridOffset_LostFocus"/>
                             </Border>
 
                             <Border Grid.Row="9" Grid.Column="0">
@@ -482,7 +482,7 @@
                             </Border>
 
                             <Border Grid.Row="9" Grid.Column="1" Padding="5 5 10 5">
-                                <TextBox x:Name="txtGridSpacing" LostFocus="TxtGridSpacing_LostFocus"/>
+                                <TextBox x:Name="txtGridSpacing" HorizontalAlignment="Left" Width="30" LostFocus="TxtGridSpacing_LostFocus"/>
                             </Border>
 
                             <Border Grid.Row="11" Grid.Column="0">

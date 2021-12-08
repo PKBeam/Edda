@@ -77,7 +77,7 @@ namespace Const {
 
         // Bookmarks
         public const double NavWaveformOpacity = 0.75;
-        public static class Bookmark {
+        public static class NavBookmark {
             public static string DefaultName = "Bookmark";
             public static string Colour           => Colors.SkyBlue.ToString();
             public static string NameColour       => Colors.SkyBlue.ToString();
@@ -87,7 +87,24 @@ namespace Const {
             public const double NamePadding = 1;
             public const double Opacity = 1;
         }
-        
+        public static class GridBookmark {
+            public static string Colour => Colors.SkyBlue.ToString();
+            public static string NameColour => Colors.SkyBlue.ToString();
+            public static string BackgroundColour => Colors.SkyBlue.ToString();
+            public const double Thickness = 2.0;
+            public const double NameSize = 10;
+            public const double NamePadding = 3;
+            public const double Opacity = 0.85;
+        }
+        public static class BPMChange {
+            public static string Colour => Colors.MediumPurple.ToString();
+            public static string NameColour => Colors.MediumPurple.ToString();
+            public static string BackgroundColour => Colors.MediumPurple.ToString();
+            public const double Thickness = 2.0;
+            public const double NameSize = 10;
+            public const double NamePadding = 3;
+            public const double Opacity = 0.85;
+        }
 
         // Waveform drawing
         public static class Waveform {
