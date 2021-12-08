@@ -961,6 +961,11 @@ namespace Edda {
 
             // calculate column
             editorMouseGridCol = ColFromPos(e.GetPosition(EditorGrid).X);
+            if (editorMouseGridCol < 0) {
+                imgPreviewNote.Opacity = 0;
+            } else {
+                imgPreviewNote.Opacity = Const.Editor.PreviewNoteOpacity; 
+            }
             double noteX = (1 + 4 * editorMouseGridCol) * unitSubLength;
             // for some reason Canvas.SetLeft(0) doesn't correspond to the leftmost of the canvas, so we need to do some unknown adjustment to line it up
             var unknownNoteXAdjustment = (unitLength / unitLengthUnscaled - 1) * unitLengthUnscaled / 2;
@@ -973,7 +978,7 @@ namespace Edda {
             // place preview note
             Canvas.SetBottom(imgPreviewNote, editorSnapToGrid ? (editorMouseBeatSnapped * gridLength * editorGridDivision + userOffset) : Math.Max(mousePos, userOffset));
             imgPreviewNote.Source = RuneForBeat(userOffsetBeat + (editorSnapToGrid ? editorMouseBeatSnapped : editorMouseBeatUnsnapped));
-            Canvas.SetLeft(imgPreviewNote, noteX - unknownNoteXAdjustment);
+            Canvas.SetLeft(imgPreviewNote, noteX - unknownNoteXAdjustment + EditorMarginGrid.Margin.Left);
 
             // place preview line
             lineGridMouseover.Y1 = e.GetPosition(EditorGrid).Y;
@@ -1034,7 +1039,7 @@ namespace Edda {
                 } else {
                     mapEditor.SelectNewNotes(newSelection);
                 }
-            } else if (editorMouseDown) {
+            } else if (editorMouseDown && editorMouseGridCol >= 0) {
                 //Trace.WriteLine($"Row: {editorMouseGridRow} ({Math.Round(editorMouseGridRowFractional, 2)}), Col: {editorMouseGridCol}, Beat: {beat} ({beatFractional})");
 
                 // create the note
@@ -1944,7 +1949,7 @@ namespace Edda {
                 }
                 RegisterName(name, img);
 
-                Canvas.SetLeft(img, noteXOffset);
+                Canvas.SetLeft(img, noteXOffset + EditorMarginGrid.Margin.Left);
                 Canvas.SetBottom(img, noteHeight);
 
                 EditorGridNoteCanvas.Children.Add(img);
@@ -2186,18 +2191,18 @@ namespace Edda {
         }
         private int ColFromPos(double pos) {
             // calculate horizontal element
-            var subLength = pos / unitSubLength;
-            int res = -1;
+            var subLength = (pos - EditorMarginGrid.Margin.Left) / unitSubLength;
+            int col = -1;
             if (0 <= subLength && subLength <= 4.5) {
-                res = 0;
+                col = 0;
             } else if (4.5 <= subLength && subLength <= 8.5) {
-                res = 1;
+                col = 1;
             } else if (8.5 <= subLength && subLength <= 12.5) {
-                res = 2;
+                col = 2;
             } else if (12.5 <= subLength && subLength <= 17.0) {
-                res = 3;
+                col = 3;
             }
-            return res;
+            return col;
         }
         private BitmapImage RuneForBeat(double beat, bool highlight = false) {
             // find most recent BPM change
