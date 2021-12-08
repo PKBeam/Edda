@@ -86,6 +86,7 @@ namespace Edda {
 
         // -- for waveform drawing
         Image imgAudioWaveform = new();
+        Line lineGridMouseover = new();
         VorbisWaveformVisualiser audioWaveform;
         VorbisWaveformVisualiser navWaveform;
         bool editorShowWaveform {
@@ -165,6 +166,8 @@ namespace Edda {
 
             // load editor preview note
             InitPreviewNote();
+            InitGridMouseoverLine();
+            InitNavMouseoverLine();
 
             // init environment combobox
             InitComboEnvironment();
@@ -966,11 +969,13 @@ namespace Edda {
 
             // place preview note
             Canvas.SetBottom(imgPreviewNote, editorSnapToGrid ? (editorMouseBeatSnapped * gridLength * editorGridDivision + userOffset) : Math.Max(mousePos, userOffset));
-            
-            // TODO: what runes should be used with variable BPM?
             imgPreviewNote.Source = RuneForBeat(userOffsetBeat + (editorSnapToGrid ? editorMouseBeatSnapped : editorMouseBeatUnsnapped));
             Canvas.SetLeft(imgPreviewNote, noteX - unknownNoteXAdjustment);
-            
+
+            // place preview line
+            lineGridMouseover.Y1 = e.GetPosition(EditorGrid).Y;
+            lineGridMouseover.Y2 = e.GetPosition(EditorGrid).Y;
+
              // update beat display
             lblSelectedBeat.Content = $"Time: {Helper.TimeFormat(editorMouseBeatSnapped * 60 / globalBPM)}, Global Beat: {Math.Round(editorMouseBeatSnapped, 3)} ({Math.Round(editorMouseBeatUnsnapped, 3)})";
 
@@ -985,14 +990,15 @@ namespace Edda {
                     editorDragSelectBorder.Visibility = Visibility.Visible;
                     UpdateDragSelection(e.GetPosition(EditorGrid));
                 }
-
             }
         }
         private void ScrollEditor_MouseEnter(object sender, MouseEventArgs e) {
-                imgPreviewNote.Opacity = Const.Editor.PreviewNoteOpacity;
+            imgPreviewNote.Opacity = Const.Editor.PreviewNoteOpacity;
+            lineGridMouseover.Opacity = 1.0;
         }
         private void ScrollEditor_MouseLeave(object sender, MouseEventArgs e) {
             imgPreviewNote.Opacity = 0;
+            lineGridMouseover.Opacity = 0;
             lblSelectedBeat.Content = "";
         }
         private void ScrollEditor_PreviewMouseLeftButtonDown(object sender, MouseButtonEventArgs e) {
@@ -1806,8 +1812,8 @@ namespace Edda {
             // change editor preview note size
             imgPreviewNote.Width = unitLength;
             imgPreviewNote.Height = unitHeight;
+            EditorGrid.Children.Add(lineGridMouseover);
             EditorGrid.Children.Add(imgPreviewNote);
-
             EditorGrid.Children.Add(editorDragSelectBorder);
 
             Trace.WriteLine($"INFO: Redrew editor grid in {(DateTime.Now - start).TotalSeconds} seconds. (lines: {lineDraw.TotalSeconds}, notes: {noteDraw.TotalSeconds})");
@@ -1971,6 +1977,18 @@ namespace Edda {
             }
         }
         private void DrawEditorGridBPMChanges() {
+            string FormatRelativeBPMChange(BPMChange b, BPMChange prev) {
+                if (b.BPM != prev.BPM && b.gridDivision != prev.gridDivision) {
+                    return $"{b.BPM} BPM, 1/{b.gridDivision} beat";
+                } else if (b.BPM != prev.BPM) {
+                    return $"{b.BPM} BPM";
+                } else if (b.gridDivision != prev.gridDivision) {
+                    return $"1/{b.gridDivision} beat";
+                } else {
+                    return $"Offset";
+                }
+            }
+
             BPMChange prev = new BPMChange(0, globalBPM, editorGridDivision);
             foreach (BPMChange b in mapEditor.bpmChanges) {
                 var l = makeLine(EditorGrid.ActualWidth, unitLength * b.globalBeat);
@@ -1984,16 +2002,7 @@ namespace Edda {
                 txtBlock.Foreground = Brushes.White;
                 txtBlock.Background = (SolidColorBrush)new BrushConverter().ConvertFrom(Const.Editor.BPMChange.NameColour);
                 txtBlock.Background.Opacity = Const.Editor.BPMChange.Opacity;
-                if (b.BPM != prev.BPM && b.gridDivision != prev.gridDivision) {
-                    txtBlock.Content = $"{b.BPM} BPM, 1/{b.gridDivision} beat";
-                } else if (b.BPM != prev.BPM) {
-                    txtBlock.Content = $"{b.BPM} BPM";
-                } else if (b.gridDivision != prev.gridDivision) {
-                    txtBlock.Content = $"1/{b.gridDivision} beat";
-                } else {
-                    txtBlock.Content = $"{b.BPM} BPM, 1/{b.gridDivision} beat";
-                }
-                
+                txtBlock.Content = FormatRelativeBPMChange(b, prev);
                 txtBlock.FontSize = Const.Editor.BPMChange.NameSize;
                 txtBlock.Padding = new Thickness(Const.Editor.BPMChange.NamePadding);
                 txtBlock.FontWeight = FontWeights.Bold;
@@ -2082,6 +2091,19 @@ namespace Edda {
             imgPreviewNote.Width = unitLength;
             imgPreviewNote.Height = unitHeight;
             EditorGrid.Children.Add(imgPreviewNote);
+        }
+        private void InitNavMouseoverLine() {
+            // already initialised in the XAML, for the most part
+            lineSongMouseover.Stroke = (SolidColorBrush)new BrushConverter().ConvertFrom(Const.Editor.NavPreviewLine.Colour);
+            lineSongMouseover.StrokeThickness = Const.Editor.NavPreviewLine.Thickness;
+        }
+        private void InitGridMouseoverLine() {
+            lineGridMouseover.Opacity = 0;
+            lineGridMouseover.X1 = 0;
+            lineGridMouseover.SetBinding(Line.X2Property, new System.Windows.Data.Binding("ActualWidth") { Source = EditorGrid });
+            lineGridMouseover.Stroke = (SolidColorBrush)new BrushConverter().ConvertFrom(Const.Editor.GridPreviewLine.Colour);
+            lineGridMouseover.StrokeThickness = Const.Editor.GridPreviewLine.Thickness;
+            EditorGrid.Children.Add(lineGridMouseover);
         }
         private void InitDrummer(string basePath, bool isPanned) {
             drummer = new ParallelAudioPlayer(
@@ -2275,6 +2297,5 @@ namespace Edda {
             l.Y2 = offset;
             return l;
         }
-       
     }
 }

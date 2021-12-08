@@ -77,6 +77,14 @@ namespace Const {
 
         // Bookmarks
         public const double NavWaveformOpacity = 0.75;
+        public static class GridPreviewLine {
+            public static string Colour => Colors.SkyBlue.ToString();
+            public const double Thickness = 1.0;
+        }
+        public static class NavPreviewLine {
+            public static string Colour => Colors.SkyBlue.ToString();
+            public const double Thickness = 1.0;
+        }
         public static class NavBookmark {
             public static string DefaultName = "Bookmark";
             public static string Colour           => Colors.SkyBlue.ToString();
