@@ -510,7 +510,7 @@
             <Border x:Name="borderNavWaveform" Grid.Column="1" BorderBrush="{DynamicResource {x:Static SystemColors.ControlDarkDarkBrushKey}}" BorderThickness="1 0 0 0" Background="#20000000" MouseMove="BorderNavWaveform_MouseMove" MouseEnter="BorderNavWaveform_MouseEnter" MouseLeave="BorderNavWaveform_MouseLeave" MouseLeftButtonDown="BorderNavWaveform_MouseLeftButtonDown" MouseLeftButtonUp="BorderNavWaveform_MouseLeftButtonUp">
                 <Grid>
                     <Image x:Name="imgWaveformVertical" Width="{Binding ElementName=borderNavWaveform, Path=ActualWidth}"/>
-                    <Line x:Name="lineSongMouseover" Stroke="SkyBlue" StrokeThickness="1" X2="{Binding ElementName=borderNavWaveform, Path=ActualWidth}"></Line>
+                    <Line x:Name="lineSongMouseover" StrokeThickness="1" X2="{Binding ElementName=borderNavWaveform, Path=ActualWidth}"></Line>
                     <Canvas x:Name="canvasBookmarks"/>
                     <Line x:Name="lineSongProgress" Stroke="Navy" StrokeThickness="1" X2="{Binding ElementName=borderNavWaveform, Path=ActualWidth}" Y1="{Binding ElementName=borderNavWaveform, Path=ActualHeight}" Y2="{Binding ElementName=borderNavWaveform, Path=ActualHeight}"/>
                     <Canvas x:Name="canvasBookmarkLabels"/>

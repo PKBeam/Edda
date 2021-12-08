@@ -1793,27 +1793,32 @@ namespace Edda {
             DateTime start = DateTime.Now;
 
             if (editorShowWaveform && EditorGrid.Height - scrollEditor.ActualHeight > 0) {
-              DrawEditorWaveform();
+                DrawEditorWaveform();
             }
+            
 
             DateTime beforeLines = DateTime.Now;
 
             double gridHeight = EditorGrid.Height;
+            EditorGrid.Children.Add(lineGridMouseover);
             DrawEditorGridLines(gridHeight);
 
             TimeSpan lineDraw = DateTime.Now - beforeLines;
             DateTime beforeNotes = DateTime.Now;
 
-  
+            EditorGrid.Children.Add(imgAudioWaveform);
+
             DrawEditorNotes(mapEditor.notes);
+            EditorGrid.Children.Add(imgPreviewNote);
+
             DrawEditorGridBookmarks();
             DrawEditorGridBPMChanges();
             TimeSpan noteDraw = DateTime.Now - beforeNotes;
             // change editor preview note size
             imgPreviewNote.Width = unitLength;
             imgPreviewNote.Height = unitHeight;
-            EditorGrid.Children.Add(lineGridMouseover);
-            EditorGrid.Children.Add(imgPreviewNote);
+            
+            
             EditorGrid.Children.Add(editorDragSelectBorder);
 
             Trace.WriteLine($"INFO: Redrew editor grid in {(DateTime.Now - start).TotalSeconds} seconds. (lines: {lineDraw.TotalSeconds}, notes: {noteDraw.TotalSeconds})");
@@ -1826,11 +1831,11 @@ namespace Edda {
         }
         private void ResizeEditorWaveform() {
             
-            EditorGrid.Children.Remove(imgAudioWaveform);
+            //EditorGrid.Children.Remove(imgAudioWaveform);
             imgAudioWaveform.Height = EditorGrid.Height - scrollEditor.ActualHeight;
             imgAudioWaveform.Width = EditorGrid.ActualWidth;
             Canvas.SetBottom(imgAudioWaveform, unitHeight / 2);
-            EditorGrid.Children.Insert(0, imgAudioWaveform);
+            //EditorGrid.Children.Insert(0, imgAudioWaveform);
         }
         private void CreateEditorWaveform(double height, double width) {
             Task.Run(() => {
@@ -1958,7 +1963,7 @@ namespace Edda {
                 l.Stroke = (SolidColorBrush)new BrushConverter().ConvertFrom(Const.Editor.GridBookmark.Colour);
                 l.StrokeThickness = Const.Editor.GridBookmark.Thickness;
                 l.Opacity = Const.Editor.GridBookmark.Opacity;
-                Canvas.SetBottom(l, unitLength * b.beat + unitHeight / 2 - l.StrokeThickness / 4);
+                Canvas.SetBottom(l, unitLength * b.beat + unitHeight / 2);
                 EditorGrid.Children.Add(l);
 
                 var txtBlock = new Label();
@@ -1985,7 +1990,7 @@ namespace Edda {
                 } else if (b.gridDivision != prev.gridDivision) {
                     return $"1/{b.gridDivision} beat";
                 } else {
-                    return $"Offset";
+                    return $"Timing Offset";
                 }
             }
 

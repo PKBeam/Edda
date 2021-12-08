@@ -60,8 +60,8 @@ namespace Const {
         public const int    DrawDebounceInterval     = 100; // ms
         public const string MajorGridlineColour      = "#333333";
         public const string MinorGridlineColour      = "#555555";
-        public const double MajorGridlineThickness   = 2;
-        public const double MinorGridlineThickness   = 1.5;
+        public const double MajorGridlineThickness   = 1.5;
+        public const double MinorGridlineThickness   = 1;
         public const int    GridDivisionMax          = 64;
 
         // Animation Properties
@@ -78,40 +78,40 @@ namespace Const {
         // Bookmarks
         public const double NavWaveformOpacity = 0.75;
         public static class GridPreviewLine {
-            public static string Colour => Colors.SkyBlue.ToString();
+            public static string Colour => Colors.FloralWhite.ToString();
             public const double Thickness = 1.0;
         }
         public static class NavPreviewLine {
-            public static string Colour => Colors.SkyBlue.ToString();
-            public const double Thickness = 1.0;
+            public static string Colour => Colors.FloralWhite.ToString();
+            public const double Thickness = 1;
         }
         public static class NavBookmark {
             public static string DefaultName = "Bookmark";
             public static string Colour           => Colors.SkyBlue.ToString();
             public static string NameColour       => Colors.SkyBlue.ToString();
             public static string BackgroundColour => Colors.SkyBlue.ToString();
-            public const double Thickness = 1.0;
+            public const double Thickness = 1.5;
             public const double NameSize = 9;
             public const double NamePadding = 1;
             public const double Opacity = 1;
         }
         public static class GridBookmark {
-            public static string Colour => Colors.SkyBlue.ToString();
-            public static string NameColour => Colors.SkyBlue.ToString();
-            public static string BackgroundColour => Colors.SkyBlue.ToString();
-            public const double Thickness = 2.0;
+            public static string Colour           => Colors.DeepSkyBlue.ToString();
+            public static string NameColour       => Colors.DeepSkyBlue.ToString();
+            public static string BackgroundColour => Colors.DeepSkyBlue.ToString();
+            public const double Thickness = 1.5;
             public const double NameSize = 10;
             public const double NamePadding = 3;
             public const double Opacity = 0.85;
         }
         public static class BPMChange {
-            public static string Colour => Colors.MediumPurple.ToString();
-            public static string NameColour => Colors.MediumPurple.ToString();
+            public static string Colour           => Colors.MediumPurple.ToString();
+            public static string NameColour       => Colors.MediumPurple.ToString();
             public static string BackgroundColour => Colors.MediumPurple.ToString();
-            public const double Thickness = 2.0;
+            public const double Thickness = 1.5;
             public const double NameSize = 10;
             public const double NamePadding = 3;
-            public const double Opacity = 0.85;
+            public const double Opacity = 0.7;
         }
 
         // Waveform drawing
