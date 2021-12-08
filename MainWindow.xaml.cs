@@ -20,6 +20,7 @@ using System.Reactive.Linq;
 using System.Threading;
 using System.IO.Compression;
 using Path = System.IO.Path;
+using System.Windows.Data;
 /// <summary>
 /// Interaction logic for MainWindow.xaml
 /// </summary>
@@ -94,6 +95,7 @@ namespace Edda {
         }
 
         // -- for note placement
+        Canvas EditorGridNoteCanvas = new();
         Image imgPreviewNote = new();
         int editorMouseGridCol;
         double editorMouseBeatUnsnapped;
@@ -168,6 +170,7 @@ namespace Edda {
             InitPreviewNote();
             InitGridMouseoverLine();
             InitNavMouseoverLine();
+            InitEditorGridNoteCanvas();
 
             // init environment combobox
             InitComboEnvironment();
@@ -1783,45 +1786,39 @@ namespace Edda {
                 return;
             }
 
-            foreach (UIElement u in EditorGrid.Children) {
-                if (u is Image && u != imgAudioWaveform) {
-                    ((Image)u).Source = null;
-                }
-            }
             EditorGrid.Children.Clear();
             
             DateTime start = DateTime.Now;
 
+            // draw gridlines
+            EditorGrid.Children.Add(lineGridMouseover);
+            DrawEditorGridLines(EditorGrid.Height);
+
+            // then draw the waveform
             if (editorShowWaveform && EditorGrid.Height - scrollEditor.ActualHeight > 0) {
                 DrawEditorWaveform();
             }
-            
-
-            DateTime beforeLines = DateTime.Now;
-
-            double gridHeight = EditorGrid.Height;
-            EditorGrid.Children.Add(lineGridMouseover);
-            DrawEditorGridLines(gridHeight);
-
-            TimeSpan lineDraw = DateTime.Now - beforeLines;
-            DateTime beforeNotes = DateTime.Now;
-
             EditorGrid.Children.Add(imgAudioWaveform);
 
+            // then draw the notes
+            EditorGridNoteCanvas.Children.Clear();
             DrawEditorNotes(mapEditor.notes);
-            EditorGrid.Children.Add(imgPreviewNote);
 
-            DrawEditorGridBookmarks();
-            DrawEditorGridBPMChanges();
-            TimeSpan noteDraw = DateTime.Now - beforeNotes;
-            // change editor preview note size
+            // including the mouseover preview note
             imgPreviewNote.Width = unitLength;
             imgPreviewNote.Height = unitHeight;
-            
-            
+            EditorGridNoteCanvas.Children.Add(imgPreviewNote);
+
+            EditorGrid.Children.Add(EditorGridNoteCanvas);
+
+            // then the drag selection rectangle
             EditorGrid.Children.Add(editorDragSelectBorder);
 
-            Trace.WriteLine($"INFO: Redrew editor grid in {(DateTime.Now - start).TotalSeconds} seconds. (lines: {lineDraw.TotalSeconds}, notes: {noteDraw.TotalSeconds})");
+            // finally, draw the markers
+            DrawEditorGridBookmarks();
+            DrawEditorGridBPMChanges();
+
+            Trace.WriteLine($"INFO: Redrew editor grid in {(DateTime.Now - start).TotalSeconds} seconds.");
         }
         private void DrawEditorWaveform() {
             ResizeEditorWaveform();
@@ -1927,7 +1924,6 @@ namespace Edda {
             // TODO: paginate these? they cause lag when resizing
 
             // init drum note image
-
             foreach (var n in notes) {
                 var img = new Image();
                 img.Width = unitLengthUnscaled;
@@ -1951,7 +1947,7 @@ namespace Edda {
                 Canvas.SetLeft(img, noteXOffset);
                 Canvas.SetBottom(img, noteHeight);
 
-                EditorGrid.Children.Add(img);
+                EditorGridNoteCanvas.Children.Add(img);
             }
         }
         internal void DrawEditorNotes(Note n) {
@@ -2025,9 +2021,9 @@ namespace Edda {
         internal void UndrawEditorNotes(List<Note> notes) {
             foreach (Note n in notes) {
                 var nUid = Helper.UidGenerator(n);
-                foreach (UIElement u in EditorGrid.Children) {
+                foreach (UIElement u in EditorGridNoteCanvas.Children) {
                     if (u.Uid == nUid) {
-                        EditorGrid.Children.Remove(u);
+                        EditorGridNoteCanvas.Children.Remove(u);
                         break;
                     }
                 }
@@ -2038,7 +2034,7 @@ namespace Edda {
         }
         internal void HighlightEditorNotes(List<Note> notes) {
             foreach (Note n in notes) {
-                foreach (UIElement e in EditorGrid.Children) {
+                foreach (UIElement e in EditorGridNoteCanvas.Children) {
                     if (e.Uid == Helper.UidGenerator(n)) {
                         var img = (Image)e;
                         img.Source = RuneForBeat(n.beat, true);
@@ -2051,7 +2047,7 @@ namespace Edda {
         }
         internal void UnhighlightEditorNotes(List<Note> notes) {
             foreach (Note n in notes) {
-                foreach (UIElement e in EditorGrid.Children) {
+                foreach (UIElement e in EditorGridNoteCanvas.Children) {
                     if (e.Uid == Helper.UidGenerator(n)) {
                         var img = (Image)e;
                         img.Source = RuneForBeat(n.beat);
@@ -2098,7 +2094,7 @@ namespace Edda {
             imgPreviewNote.Opacity = 0;
             imgPreviewNote.Width = unitLength;
             imgPreviewNote.Height = unitHeight;
-            EditorGrid.Children.Add(imgPreviewNote);
+            EditorGridNoteCanvas.Children.Add(imgPreviewNote);
         }
         private void InitNavMouseoverLine() {
             // already initialised in the XAML, for the most part
@@ -2108,10 +2104,14 @@ namespace Edda {
         private void InitGridMouseoverLine() {
             lineGridMouseover.Opacity = 0;
             lineGridMouseover.X1 = 0;
-            lineGridMouseover.SetBinding(Line.X2Property, new System.Windows.Data.Binding("ActualWidth") { Source = EditorGrid });
+            lineGridMouseover.SetBinding(Line.X2Property, new Binding("ActualWidth") { Source = EditorGrid });
             lineGridMouseover.Stroke = (SolidColorBrush)new BrushConverter().ConvertFrom(Const.Editor.GridPreviewLine.Colour);
             lineGridMouseover.StrokeThickness = Const.Editor.GridPreviewLine.Thickness;
             EditorGrid.Children.Add(lineGridMouseover);
+        }
+        private void InitEditorGridNoteCanvas() {
+            EditorGridNoteCanvas.SetBinding(Canvas.WidthProperty, new Binding("ActualWidth") { Source = EditorGrid });
+            EditorGridNoteCanvas.SetBinding(Canvas.HeightProperty, new Binding("ActualHeight") { Source = EditorGrid });
         }
         private void InitDrummer(string basePath, bool isPanned) {
             drummer = new ParallelAudioPlayer(
