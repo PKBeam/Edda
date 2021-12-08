@@ -1959,10 +1959,11 @@ namespace Edda {
         }
         private void DrawEditorGridBookmarks() {
             foreach (Bookmark b in mapEditor.bookmarks) {
-                var l = makeLine(EditorGrid.ActualWidth, unitLength * b.beat);
+                var l = makeLine(EditorGrid.ActualWidth / 2, unitLength * b.beat);
                 l.Stroke = (SolidColorBrush)new BrushConverter().ConvertFrom(Const.Editor.GridBookmark.Colour);
                 l.StrokeThickness = Const.Editor.GridBookmark.Thickness;
                 l.Opacity = Const.Editor.GridBookmark.Opacity;
+                Canvas.SetRight(l, 0);
                 Canvas.SetBottom(l, unitLength * b.beat + unitHeight / 2);
                 EditorGrid.Children.Add(l);
 
@@ -1977,6 +1978,7 @@ namespace Edda {
                 txtBlock.Opacity = 1.0;
                 //txtBlock.IsReadOnly = true;
                 //txtBlock.Cursor = Cursors.Hand;
+                Canvas.SetRight(txtBlock, 0);
                 Canvas.SetBottom(txtBlock, unitLength * b.beat + unitHeight / 2 + 0.75 * Const.Editor.GridBookmark.Thickness);
                 EditorGrid.Children.Add(txtBlock);
             }
@@ -1984,22 +1986,23 @@ namespace Edda {
         private void DrawEditorGridBPMChanges() {
             string FormatRelativeBPMChange(BPMChange b, BPMChange prev) {
                 if (b.BPM != prev.BPM && b.gridDivision != prev.gridDivision) {
-                    return $"{b.BPM} BPM, 1/{b.gridDivision} beat";
+                    return $"{b.BPM} BPM\n1/{b.gridDivision} beat";
                 } else if (b.BPM != prev.BPM) {
                     return $"{b.BPM} BPM";
                 } else if (b.gridDivision != prev.gridDivision) {
                     return $"1/{b.gridDivision} beat";
                 } else {
-                    return $"Timing Offset";
+                    return $"Timing\nOffset";
                 }
             }
 
             BPMChange prev = new BPMChange(0, globalBPM, editorGridDivision);
             foreach (BPMChange b in mapEditor.bpmChanges) {
-                var l = makeLine(EditorGrid.ActualWidth, unitLength * b.globalBeat);
+                var l = makeLine(EditorGrid.ActualWidth / 2, unitLength * b.globalBeat);
                 l.Stroke = (SolidColorBrush)new BrushConverter().ConvertFrom(Const.Editor.BPMChange.Colour);
                 l.StrokeThickness = Const.Editor.BPMChange.Thickness;
                 l.Opacity = Const.Editor.BPMChange.Opacity;
+                Canvas.SetLeft(l, 0);
                 Canvas.SetBottom(l, unitLength * b.globalBeat + unitHeight / 2);
                 EditorGrid.Children.Add(l);
 
