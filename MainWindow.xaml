@@ -469,11 +469,12 @@
                                 </StackPanel>
                             </Border>
 
-                            <Border Grid.Row="8" Grid.Column="0">
+                            <!-- Hide this; it's deprecated and broken -->
+                            <Border Grid.Row="8" Grid.Column="0" Visibility="Collapsed">
                                 <TextBlock Padding="10 0 0 0" VerticalAlignment="Center">Grid Offset</TextBlock>
                             </Border>
 
-                            <Border Grid.Row="8" Grid.Column="1" Padding="5 5 10 5">
+                            <Border Grid.Row="8" Grid.Column="1" Visibility="Collapsed" Padding="5 5 10 5">
                                 <TextBox x:Name="txtGridOffset" Width="30" HorizontalAlignment="Left" LostFocus="TxtGridOffset_LostFocus"/>
                             </Border>
 
