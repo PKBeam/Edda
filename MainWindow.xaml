@@ -604,8 +604,8 @@
                     </Grid>
                 </Grid>
                 <!-- Map Notes -->
-                <ScrollViewer x:Name="scrollEditor" VerticalScrollBarVisibility="Hidden" CanContentScroll="False" ScrollChanged="ScrollEditor_ScrollChanged" PreviewMouseWheel="ScrollEditor_PreviewMouseWheel" MouseMove="ScrollEditor_MouseMove" MouseLeave="ScrollEditor_MouseLeave" MouseEnter="ScrollEditor_MouseEnter" MouseLeftButtonUp="ScrollEditor_MouseLeftButtonUp" MouseRightButtonUp="ScrollEditor_MouseRightButtonUp" PreviewMouseLeftButtonDown="ScrollEditor_PreviewMouseLeftButtonDown">
-                    <Canvas x:Name="EditorGrid"/>
+                <ScrollViewer x:Name="scrollEditor" VerticalScrollBarVisibility="Hidden" CanContentScroll="False" ScrollChanged="ScrollEditor_ScrollChanged" PreviewMouseWheel="ScrollEditor_PreviewMouseWheel">
+                    <Canvas x:Name="EditorGrid" MouseLeftButtonDown="EditorGrid_MouseLeftButtonDown" MouseLeftButtonUp="EditorGrid_MouseLeftButtonUp" MouseRightButtonUp="EditorGrid_MouseRightButtonUp" MouseMove="EditorGrid_MouseMove" MouseLeave="EditorGrid_MouseLeave" MouseEnter="EditorGrid_MouseEnter"/>
                 </ScrollViewer>
 
             </Grid>

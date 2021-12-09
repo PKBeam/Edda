@@ -23,20 +23,35 @@ public class MapEditor {
         this.selectedNotes = new();
         this.editorHistory = new(Const.Editor.HistoryMaxSize);
     }
+    public void AddBPMChange(BPMChange b, bool redraw = true) {
+        bpmChanges.Add(b);
+        bpmChanges.Sort();
+        if (redraw) {
+            parent.DrawEditorGrid(false);
+        }
+        parent.RefreshBPMChanges();
+    }
+    public void RemoveBPMChange(BPMChange b, bool redraw = true) {
+        bpmChanges.Remove(b);
+        if (redraw) {
+            parent.DrawEditorGrid(false);
+        }
+        parent.RefreshBPMChanges();
+    }
     public void AddBookmark(Bookmark b) {
         bookmarks.Add(b);
         parent.DrawNavBookmarks();
-        parent.DrawEditorGrid();
+        parent.DrawEditorGrid(false);
     }
     public void RemoveBookmark(Bookmark b) {
         bookmarks.Remove(b);
         parent.DrawNavBookmarks();
-        parent.DrawEditorGrid();
+        parent.DrawEditorGrid(false);
     }
     public void RenameBookmark(Bookmark b, string newName) {
         b.name = newName;
         parent.DrawNavBookmarks();
-        parent.DrawEditorGrid();
+        parent.DrawEditorGrid(false);
     }
     public void AddNotes(List<Note> notes, bool updateHistory = true) {
         List<Note> drawNotes = new();

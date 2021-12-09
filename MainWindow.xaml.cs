@@ -88,6 +88,10 @@ namespace Edda {
         // -- for waveform drawing
         Image imgAudioWaveform = new();
         Line lineGridMouseover = new();
+        Canvas currentlyDraggingMarker;
+        bool isEditingMarker = false;
+        double markerDragOffset = 0;
+        BPMChange currentlyDraggingBPMChange;
         VorbisWaveformVisualiser audioWaveform;
         VorbisWaveformVisualiser navWaveform;
         bool editorShowWaveform {
@@ -327,6 +331,19 @@ namespace Edda {
                     }
                     mapEditor.AddBookmark(new Bookmark(beat, Const.Editor.NavBookmark.DefaultName));
                 }
+
+                // add timing change (Ctrl-T)
+                if (e.Key == Key.T) {
+                    double beat = (shiftKeyDown) ? editorMouseBeatSnapped : editorMouseBeatUnsnapped;
+                    BPMChange previous = new BPMChange(0, globalBPM, editorGridDivision);
+                    foreach (var b in mapEditor.bpmChanges) {
+                        if (b.globalBeat < beat) {
+                            previous = b;
+                        }
+                    }
+                    mapEditor.AddBPMChange(new BPMChange(beat, previous.BPM, previous.gridDivision));
+                }
+
                 // toggle grid snap (Ctrl-G)
                 if (e.Key == Key.G) {
                     checkGridSnap.IsChecked = !(checkGridSnap.IsChecked == true);
@@ -685,7 +702,7 @@ namespace Edda {
         private void TxtSongBPM_LostFocus(object sender, RoutedEventArgs e) {
             double BPM;
             double prevBPM = globalBPM;
-            if (double.TryParse(txtSongBPM.Text, out BPM)) {
+            if (double.TryParse(txtSongBPM.Text, out BPM) && BPM > 0) {
                 if (BPM != prevBPM) {
                     var result = MessageBox.Show("Would you like to convert all BPM changes and notes so that they remain at the same time?", "", MessageBoxButton.YesNoCancel, MessageBoxImage.Question);
 
@@ -862,7 +879,7 @@ namespace Edda {
                 if (div != prevDiv) {
                     editorGridDivision = div;
                     beatMap.SetCustomValueForMap(currentDifficulty, "_editorGridDivision", div);
-                    DrawEditorGrid();
+                    DrawEditorGrid(false);
                 }
             } else {
                 MessageBox.Show($"The grid division amount must be an integer from 1 to {Const.Editor.GridDivisionMax}.", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
@@ -948,7 +965,7 @@ namespace Edda {
         private void ScrollEditor_PreviewMouseWheel(object sender, MouseWheelEventArgs e) {
 
         }
-        private void ScrollEditor_MouseMove(object sender, MouseEventArgs e) {
+        private void EditorGrid_MouseMove(object sender, MouseEventArgs e) {
 
             // calculate beat
             try {
@@ -981,14 +998,19 @@ namespace Edda {
             Canvas.SetLeft(imgPreviewNote, noteX - unknownNoteXAdjustment + EditorMarginGrid.Margin.Left);
 
             // place preview line
-            lineGridMouseover.Y1 = e.GetPosition(EditorGrid).Y;
-            lineGridMouseover.Y2 = e.GetPosition(EditorGrid).Y;
+            lineGridMouseover.Y1 = e.GetPosition(EditorGrid).Y - markerDragOffset;
+            lineGridMouseover.Y2 = e.GetPosition(EditorGrid).Y - markerDragOffset;
 
              // update beat display
             lblSelectedBeat.Content = $"Time: {Helper.TimeFormat(editorMouseBeatSnapped * 60 / globalBPM)}, Global Beat: {Math.Round(editorMouseBeatSnapped, 3)} ({Math.Round(editorMouseBeatUnsnapped, 3)})";
 
             // calculate drag stuff
-            if (editorIsDragging) {
+            if (currentlyDraggingMarker != null && !isEditingMarker) { 
+                double newBottom = unitLength * BeatForPosition(e.GetPosition(EditorGrid).Y - markerDragOffset, shiftKeyDown);
+                Canvas.SetBottom(currentlyDraggingMarker, newBottom + unitHeight / 2);
+                this.Cursor = Cursors.Hand;
+                lineGridMouseover.Visibility = Visibility.Visible;
+            } else if (editorIsDragging) {
                 UpdateDragSelection(e.GetPosition(EditorGrid));
             } else if (editorMouseDown) {
                 Vector delta = e.GetPosition(EditorGrid) - editorDragSelectStart;
@@ -1000,26 +1022,39 @@ namespace Edda {
                 }
             }
         }
-        private void ScrollEditor_MouseEnter(object sender, MouseEventArgs e) {
+        private void EditorGrid_MouseEnter(object sender, MouseEventArgs e) {
             imgPreviewNote.Opacity = Const.Editor.PreviewNoteOpacity;
             lineGridMouseover.Opacity = 1.0;
         }
-        private void ScrollEditor_MouseLeave(object sender, MouseEventArgs e) {
+        private void EditorGrid_MouseLeave(object sender, MouseEventArgs e) {
             imgPreviewNote.Opacity = 0;
             lineGridMouseover.Opacity = 0;
             lblSelectedBeat.Content = "";
         }
-        private void ScrollEditor_PreviewMouseLeftButtonDown(object sender, MouseButtonEventArgs e) {
+        private void EditorGrid_MouseLeftButtonDown(object sender, MouseButtonEventArgs e) {
+
             editorMouseDown = true;
             editorDragSelectStart = e.GetPosition(EditorGrid);
             editorSelBeatStart = editorMouseBeatUnsnapped;
             editorSelColStart = editorMouseGridCol;
             EditorGrid.CaptureMouse();
         }
-        private void ScrollEditor_MouseLeftButtonUp(object sender, MouseButtonEventArgs e) { 
-            if (editorIsDragging) {
+        private void EditorGrid_MouseLeftButtonUp(object sender, MouseButtonEventArgs e) {
+            imgPreviewNote.Visibility = Visibility.Visible;
+            if (currentlyDraggingMarker != null && !isEditingMarker) {
+
+                mapEditor.RemoveBPMChange(currentlyDraggingBPMChange, false);
+                currentlyDraggingBPMChange.globalBeat = BeatForPosition(e.GetPosition(EditorGrid).Y - markerDragOffset, shiftKeyDown);
+                mapEditor.AddBPMChange(currentlyDraggingBPMChange);
+                DrawEditorGrid(false);
+
+                this.Cursor = Cursors.Arrow;
+                lineGridMouseover.Visibility = Visibility.Hidden;
+                currentlyDraggingBPMChange = null;
+                currentlyDraggingMarker = null;
+                markerDragOffset = 0;
+            } else if (editorIsDragging) {
                 editorDragSelectBorder.Visibility = Visibility.Hidden;
-                imgPreviewNote.Visibility = Visibility.Visible;
                 // calculate new selections
                 List<Note> newSelection = new List<Note>();
                 double startBeat = editorSelBeatStart;
@@ -1057,14 +1092,14 @@ namespace Edda {
                     drummer.Play(n.col);
                 }
             }
+
             EditorGrid.ReleaseMouseCapture();
             editorIsDragging = false;
             editorMouseDown = false;
         }
-        private void ScrollEditor_MouseRightButtonUp(object sender, MouseButtonEventArgs e) {
-
+        private void EditorGrid_MouseRightButtonUp(object sender, MouseButtonEventArgs e) {
             // remove the note
-             double beat = editorSnapToGrid ? editorMouseBeatSnapped : editorMouseBeatUnsnapped;
+            double beat = editorSnapToGrid ? editorMouseBeatSnapped : editorMouseBeatUnsnapped;
             Note n = new Note(beat, editorMouseGridCol);
             if (mapEditor.notes.Contains(n)) {
                 mapEditor.RemoveNotes(n);
@@ -1786,7 +1821,7 @@ namespace Edda {
                 DrawEditorGrid();
             }
         }
-        internal void DrawEditorGrid() {
+        internal void DrawEditorGrid(bool redrawWaveform = true) {
             if (beatMap == null) {
                 return;
             }
@@ -1800,7 +1835,7 @@ namespace Edda {
             DrawEditorGridLines(EditorGrid.Height);
 
             // then draw the waveform
-            if (editorShowWaveform && EditorGrid.Height - scrollEditor.ActualHeight > 0) {
+            if (redrawWaveform && editorShowWaveform && EditorGrid.Height - scrollEditor.ActualHeight > 0) {
                 DrawEditorWaveform();
             }
             EditorGrid.Children.Add(imgAudioWaveform);
@@ -1996,30 +2031,126 @@ namespace Edda {
                     return $"Timing\nOffset";
                 }
             }
-
+            Label makeBPMChangeLabel(string content) {
+                var label = new Label();
+                label.Foreground = Brushes.White;
+                label.Background = (SolidColorBrush)new BrushConverter().ConvertFrom(Const.Editor.BPMChange.NameColour);
+                label.Background.Opacity = Const.Editor.BPMChange.Opacity;
+                label.Content = content;
+                label.FontSize = Const.Editor.BPMChange.NameSize;
+                label.Padding = new Thickness(Const.Editor.BPMChange.NamePadding);
+                label.FontWeight = FontWeights.Bold;
+                label.Opacity = 1.0;
+                label.Cursor = Cursors.Hand;
+                return label;
+            }
             BPMChange prev = new BPMChange(0, globalBPM, editorGridDivision);
             foreach (BPMChange b in mapEditor.bpmChanges) {
-                var l = makeLine(EditorGrid.ActualWidth / 2, unitLength * b.globalBeat);
-                l.Stroke = (SolidColorBrush)new BrushConverter().ConvertFrom(Const.Editor.BPMChange.Colour);
-                l.StrokeThickness = Const.Editor.BPMChange.Thickness;
-                l.Opacity = Const.Editor.BPMChange.Opacity;
-                Canvas.SetLeft(l, 0);
-                Canvas.SetBottom(l, unitLength * b.globalBeat + unitHeight / 2);
-                EditorGrid.Children.Add(l);
+                Canvas bpmChangeCanvas = new();
+                Canvas bpmChangeFlagCanvas = new();
 
-                var txtBlock = new Label();
-                txtBlock.Foreground = Brushes.White;
-                txtBlock.Background = (SolidColorBrush)new BrushConverter().ConvertFrom(Const.Editor.BPMChange.NameColour);
-                txtBlock.Background.Opacity = Const.Editor.BPMChange.Opacity;
-                txtBlock.Content = FormatRelativeBPMChange(b, prev);
-                txtBlock.FontSize = Const.Editor.BPMChange.NameSize;
-                txtBlock.Padding = new Thickness(Const.Editor.BPMChange.NamePadding);
-                txtBlock.FontWeight = FontWeights.Bold;
-                txtBlock.Opacity = 1.0;
-                //txtBlock.IsReadOnly = true;
-                //txtBlock.Cursor = Cursors.Hand;
-                Canvas.SetBottom(txtBlock, unitLength * b.globalBeat + unitHeight / 2 + 0.75 * Const.Editor.BPMChange.Thickness);
-                EditorGrid.Children.Add(txtBlock);
+                var line = makeLine(EditorGrid.ActualWidth / 2, unitLength * b.globalBeat);
+                line.Stroke = (SolidColorBrush)new BrushConverter().ConvertFrom(Const.Editor.BPMChange.Colour);
+                line.StrokeThickness = Const.Editor.BPMChange.Thickness;
+                line.Opacity = Const.Editor.BPMChange.Opacity;
+                Canvas.SetBottom(line, 0);
+                bpmChangeCanvas.Children.Add(line);
+
+                var divLabel = makeBPMChangeLabel($"1/{b.gridDivision} beat");
+                divLabel.PreviewMouseRightButtonUp += new MouseButtonEventHandler((src, e) => {
+                    isEditingMarker = true;
+                    var txtBox = new TextBox();
+                    txtBox.Text = b.gridDivision.ToString();
+                    txtBox.FontSize = Const.Editor.BPMChange.NameSize;
+                    Canvas.SetLeft(txtBox, 12);
+                    Canvas.SetBottom(txtBox, line.StrokeThickness + 2);
+                    txtBox.LostKeyboardFocus += new KeyboardFocusChangedEventHandler((src, e) => {
+                        int div;
+                        if (int.TryParse(txtBox.Text, out div) && Helper.DoubleRangeCheck(div, 1, Const.Editor.GridDivisionMax)) {
+                            mapEditor.RemoveBPMChange(b, false);
+                            b.gridDivision = div;
+                            mapEditor.AddBPMChange(b);
+                        }
+                        isEditingMarker = false;
+                        this.Cursor = Cursors.Arrow;
+                        canvasNavInputBox.Children.Remove(txtBox);
+                    });
+                    txtBox.KeyDown += new KeyEventHandler((src, e) => {
+                        if (e.Key == Key.Escape || e.Key == Key.Enter) {
+                            Keyboard.ClearFocus();
+                            Keyboard.Focus(this);
+                        }
+                    });
+
+                    bpmChangeCanvas.Children.Add(txtBox);
+                    txtBox.Focus();
+                    txtBox.SelectAll();
+
+                    e.Handled = true;
+                });
+                Canvas.SetBottom(divLabel, line.StrokeThickness);
+                bpmChangeFlagCanvas.Children.Add(divLabel);
+
+                var bpmLabel = makeBPMChangeLabel($"{b.BPM} BPM");
+                bpmLabel.PreviewMouseRightButtonUp += new MouseButtonEventHandler((src, e) => {
+                    isEditingMarker = true;
+                    var txtBox = new TextBox();
+                    txtBox.Text = b.BPM.ToString();
+                    txtBox.FontSize = Const.Editor.BPMChange.NameSize;
+                    Canvas.SetLeft(txtBox, 2);
+                    Canvas.SetBottom(txtBox, line.StrokeThickness + 22);
+                    txtBox.LostKeyboardFocus += new KeyboardFocusChangedEventHandler((src, e) => {
+                        double BPM;
+                        if (double.TryParse(txtBox.Text, out BPM) && BPM > 0) {
+                            mapEditor.RemoveBPMChange(b, false);
+                            b.BPM = BPM;
+                            mapEditor.AddBPMChange(b);
+                        }
+                        isEditingMarker = false;
+                        this.Cursor = Cursors.Arrow;
+                        canvasNavInputBox.Children.Remove(txtBox);
+                    });
+                    txtBox.KeyDown += new KeyEventHandler((src, e) => {
+                        if (e.Key == Key.Escape || e.Key == Key.Enter) {
+                            Keyboard.ClearFocus();
+                            Keyboard.Focus(this);
+                        }
+                    });
+
+                    bpmChangeCanvas.Children.Add(txtBox);
+                    txtBox.Focus();
+                    txtBox.SelectAll();
+
+                    e.Handled = true;
+                });
+                Canvas.SetBottom(bpmLabel, line.StrokeThickness + 20);
+                bpmChangeFlagCanvas.Children.Add(bpmLabel);
+
+                bpmChangeFlagCanvas.PreviewMouseLeftButtonDown += new MouseButtonEventHandler((src, e) => { 
+                    currentlyDraggingMarker = bpmChangeCanvas;
+                    markerDragOffset = e.GetPosition(bpmChangeCanvas).Y;
+                    currentlyDraggingBPMChange = b;
+                    imgPreviewNote.Visibility = Visibility.Hidden;
+                    EditorGrid.CaptureMouse();
+                    e.Handled = true;
+                });
+                bpmChangeFlagCanvas.PreviewMouseDown += new MouseButtonEventHandler((src, e) => {
+                    if (!(e.ChangedButton == MouseButton.Middle)) {
+                        return;
+                    }
+                    var res = MessageBox.Show("Are you sure you want to delete this timing change?", "Confirm Deletion", MessageBoxButton.YesNoCancel, MessageBoxImage.Warning);
+                    if (res == MessageBoxResult.Yes) {
+                        mapEditor.RemoveBPMChange(b);
+                    }
+                    e.Handled = true;
+                 });
+                Canvas.SetBottom(bpmChangeFlagCanvas, 0);
+                bpmChangeCanvas.Children.Add(bpmChangeFlagCanvas);
+
+                Canvas.SetLeft(bpmChangeCanvas, 0);
+                Canvas.SetBottom(bpmChangeCanvas, unitLength * b.globalBeat + unitHeight / 2);
+                EditorGrid.Children.Add(bpmChangeCanvas);
+
                 prev = b;
             }
         }
@@ -2112,6 +2243,7 @@ namespace Edda {
             lineGridMouseover.SetBinding(Line.X2Property, new Binding("ActualWidth") { Source = EditorGrid });
             lineGridMouseover.Stroke = (SolidColorBrush)new BrushConverter().ConvertFrom(Const.Editor.GridPreviewLine.Colour);
             lineGridMouseover.StrokeThickness = Const.Editor.GridPreviewLine.Thickness;
+            lineGridMouseover.Visibility = Visibility.Hidden;
             EditorGrid.Children.Add(lineGridMouseover);
         }
         private void InitEditorGridNoteCanvas() {
@@ -2139,7 +2271,11 @@ namespace Edda {
             double unsnapped = 0;
             if (pos >= userOffset) {
                 unsnapped = (pos - userOffset) / unitLength;
-                int indx1 = -gridlines.BinarySearch(unsnapped) - 1;
+                int binarySearch = gridlines.BinarySearch(unsnapped);
+                if (binarySearch > 0) {
+                    return gridlines[binarySearch];
+                }
+                int indx1 = -binarySearch - 1;
                 int indx2 = Math.Max(0, indx1 - 1);
                 snapped = (gridlines[indx1] - unsnapped) < (unsnapped - gridlines[indx2]) ? gridlines[indx1] : gridlines[indx2];
             }
@@ -2242,13 +2378,16 @@ namespace Edda {
                 navMouseDown = false;
                 e.Handled = true;
             });
-            txtBlock.MouseRightButtonDown += new MouseButtonEventHandler((src, e) => {
-                var res = MessageBox.Show("Are you sure you want to delete this bookmark?", "Confirm Bookmark Deletion", MessageBoxButton.YesNoCancel, MessageBoxImage.Warning);
+            txtBlock.MouseDown += new MouseButtonEventHandler((src, e) => {
+                if (!(e.ChangedButton == MouseButton.Middle)) {
+                    return;
+                }
+                var res = MessageBox.Show("Are you sure you want to delete this bookmark?", "Confirm Deletion", MessageBoxButton.YesNoCancel, MessageBoxImage.Warning);
                 if (res == MessageBoxResult.Yes) {
                     mapEditor.RemoveBookmark(b);
                 }
             });
-            txtBlock.MouseDoubleClick += new MouseButtonEventHandler((src, e) => {
+            txtBlock.MouseRightButtonUp += new MouseButtonEventHandler((src, e) => {
                 var txtBox = new TextBox();
                 txtBox.Text = b.name;
                 txtBox.FontSize = Const.Editor.NavBookmark.NameSize;
@@ -2310,5 +2449,12 @@ namespace Edda {
             l.Y2 = offset;
             return l;
         }
+        internal void RefreshBPMChanges() {
+            var win = Helper.GetFirstWindow<ChangeBPMWindow>();
+            if (win != null) {
+                ((ChangeBPMWindow)win).RefreshBPMChanges();
+            }
+        }
+
     }
 }

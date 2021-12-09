@@ -24,6 +24,10 @@ namespace Edda {
             //dataBPMChange.Items.SortDescriptions.Add(new SortDescription("Global Beat", ListSortDirection.Ascending));
         }
 
+        public void RefreshBPMChanges() {
+            dataBPMChange.Items.Refresh();
+        }
+
         private void btnExit_Click(object sender, RoutedEventArgs e) {
             this.Close();
         }
@@ -61,7 +65,7 @@ namespace Edda {
         }
 
         private void dataBPMChange_CurrentCellChanged(object sender, EventArgs e) {
-            caller.DrawEditorGrid();
+            caller.DrawEditorGrid(false);
         }
 
         private void dataBPMChange_RowEditEnding(object sender, DataGridRowEditEndingEventArgs e) {
@@ -73,7 +77,7 @@ namespace Edda {
 
             dataBPMChange.ItemsSource = null;
             BPMChanges.Sort();
-            caller.DrawEditorGrid();
+            caller.DrawEditorGrid(false);
             dataBPMChange.ItemsSource = this.BPMChanges;
         }
 
