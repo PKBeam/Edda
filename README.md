@@ -1,5 +1,10 @@
-# Edda <img src="https://img.shields.io/github/v/release/PKBeam/Edda">
+# Edda
+
 <img src="https://img.shields.io/github/downloads/PKBeam/Edda/total"> <img src="https://img.shields.io/github/downloads/PKBeam/Edda/latest/total"> 
+
+| **Stable** | <img src="https://img.shields.io/github/v/release/PKBeam/Edda"> |
+|---|:---|
+| **Beta** | <img src="https://img.shields.io/github/v/release/PKBeam/Edda?include_prereleases"> |
 
 Edda is a beatmap editor for the VR rhythm game [Ragnarock](https://www.ragnarock-vr.com/home).  
 
