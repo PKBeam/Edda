@@ -1,4 +1,4 @@
-# Edda
+# Edda — a beatmap editor for Ragnarock VR
 
 <img src="https://img.shields.io/github/downloads/PKBeam/Edda/total"> 
 
