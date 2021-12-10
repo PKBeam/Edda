@@ -100,6 +100,8 @@ public class VorbisWaveformVisualiser {
 		//RenderTargetToDisk(bmp);
 		isDrawing = false;
 		reader.Dispose();
+		// this causes a UCEERR_RENDERTHREADFAILURE when hardware acceleration is enabled... but why?
+		//return bmp; 
 		return RenderTargetToImage(bmp);
 	}
 	private static void RenderTargetToDisk(RenderTargetBitmap input) {

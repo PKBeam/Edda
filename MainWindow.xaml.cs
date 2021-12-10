@@ -203,7 +203,10 @@ namespace Edda {
 
         // UI bindings
         private void AppMainWindow_Loaded(object sender, RoutedEventArgs e) {
-            
+            // disable hardware acceleration - for debugging
+            //System.Windows.Interop.HwndSource hwndSource = PresentationSource.FromVisual(this) as System.Windows.Interop.HwndSource;
+            //System.Windows.Interop.HwndTarget hwndTarget = hwndSource.CompositionTarget;
+            //hwndTarget.RenderMode = System.Windows.Interop.RenderMode.SoftwareOnly;
         }
         private void AppMainWindow_ContentRendered(object sender, EventArgs e) {
             try {
@@ -322,7 +325,7 @@ namespace Edda {
                 }
 
                 // add bookmark (Ctrl-B)
-                if (e.Key == Key.B) {
+                if (e.Key == Key.B && !songIsPlaying) {
                     double beat = BeatForPosition(scrollEditor.VerticalOffset + scrollEditor.ActualHeight - unitLengthUnscaled / 2, editorSnapToGrid);
                     if (imgPreviewNote.Opacity > 0) {
                         beat = editorSnapToGrid ? editorMouseBeatSnapped : editorMouseBeatUnsnapped;
@@ -333,7 +336,7 @@ namespace Edda {
                 }
 
                 // add timing change (Ctrl-T)
-                if (e.Key == Key.T) {
+                if (e.Key == Key.T && !songIsPlaying) {
                     double beat = (shiftKeyDown) ? editorMouseBeatSnapped : editorMouseBeatUnsnapped;
                     BPMChange previous = new BPMChange(0, globalBPM, editorGridDivision);
                     foreach (var b in mapEditor.bpmChanges) {
