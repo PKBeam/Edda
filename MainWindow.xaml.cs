@@ -1360,6 +1360,18 @@ namespace Edda {
             bool isPanned = userSettings.GetBoolForKey(Const.UserSettings.PanDrumSounds);
 
             try {
+                float.Parse(userSettings.GetValueForKey(Const.UserSettings.DefaultNoteVolume));
+            } catch {
+                userSettings.SetValueForKey(Const.UserSettings.DefaultNoteVolume, Const.DefaultUserSettings.DefaultNoteVolume);
+            }
+
+            try {
+                float.Parse(userSettings.GetValueForKey(Const.UserSettings.DefaultSongVolume));
+            } catch {
+                userSettings.SetValueForKey(Const.UserSettings.DefaultSongVolume, Const.DefaultUserSettings.DefaultSongVolume);
+            }
+
+            try {
                 InitDrummer(userSettings.GetValueForKey(Const.UserSettings.DrumSampleFile), isPanned);
             } catch {
                 userSettings.SetValueForKey(Const.UserSettings.DrumSampleFile, Const.DefaultUserSettings.DrumSampleFile);
