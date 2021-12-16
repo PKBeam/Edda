@@ -10,7 +10,7 @@ namespace Const {
         public const string Name          = "Edda";
         public const string RepositoryURL = "https://github.com/PKBeam/Edda";
         public const string ReleasesAPI   = "https://api.github.com/repos/PKBeam/Edda/releases";
-        public const string VersionString = "1.0.0b1";
+        public const string VersionString = "1.0.0b2";
         public const string DisplayVersionString =
             #if DEBUG
                 VersionString + "-dev";
