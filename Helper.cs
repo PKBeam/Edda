@@ -187,9 +187,14 @@ public class Helper {
 
         // get most recent non-beta release
         var resJSON = JArray.Parse(res);
-        var i = 0 ;
-        while (isBeta((string)resJSON[i]["tag_name"])) {
-            i++;
+        var i = 0;
+
+        // beta versions should show all versions as updates
+        if (!isBeta(Const.Program.VersionString)) {
+            // non-beta versions should not show beta versions as updates
+            while (isBeta((string)resJSON[i]["tag_name"])) {
+                i++;
+            }
         }
         var newestRelease = resJSON[i];
 
