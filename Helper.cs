@@ -211,4 +211,11 @@ public class Helper {
         string ragSongPath = Path.Combine(ragPath, "CustomSongs");
         return Directory.Exists(ragSongPath) ? ragSongPath : null;
     }
+    public static string ValidFilenameFrom(string filename) {
+        string output = filename;
+        foreach (char c in Path.GetInvalidFileNameChars()) {
+            output = output.Replace(c, '_');
+        }
+        return output;
+    }
 }

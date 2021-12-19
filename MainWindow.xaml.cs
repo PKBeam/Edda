@@ -545,11 +545,13 @@ namespace Edda {
                 return;
             }
 
+            string songArtist = Helper.ValidFilenameFrom((string)beatMap.GetValue("_songAuthorName"));
+            string songName = Helper.ValidFilenameFrom((string)beatMap.GetValue("_songName"));
             string baseFolder = beatMap.GetPath();
-            string zipName = (string)beatMap.GetValue("_songAuthorName") + " - " + (string)beatMap.GetValue("_songName");
+            string zipName = songArtist + " - " + songName;
             // make the temp dir for zip
-            string zipFolder = System.IO.Path.Combine(baseFolder, zipName + "_tempDir");
-            string zipPath = System.IO.Path.Combine(d.FileName, zipName + ".zip");
+            string zipFolder = Path.Combine(baseFolder, zipName + "_tempDir");
+            string zipPath = Path.Combine(d.FileName, zipName + ".zip");
 
             try {
                 if (File.Exists(zipPath)) {
@@ -573,7 +575,7 @@ namespace Edda {
                 }
                 ZipFile.CreateFromDirectory(zipFolder, zipPath);
                 
-            } catch {
+            } catch (Exception ex) {
                 MessageBox.Show($"An error occured while creating the zip file.", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
             } finally {
                 if (Directory.Exists(zipFolder)) {
@@ -892,6 +894,9 @@ namespace Edda {
         }
         private void CheckWaveform_Click(object sender, RoutedEventArgs e) {
             if (editorShowWaveform) {
+                if (!EditorGrid.Children.Contains(imgAudioWaveform)) { 
+                    EditorGrid.Children.Add(imgAudioWaveform);
+                }
                 DrawEditorWaveform();
             } else {
                 EditorGrid.Children.Remove(imgAudioWaveform);
