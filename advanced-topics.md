@@ -5,7 +5,7 @@
 Now that you're comfortable with using Edda, here are some more advanced topics to help you make the most of your mapping experience.  
 
 - [Backups](#backups)
-- [BPM changes](#bpm-changes)
+- [Timing changes](#timing-changes)
 - [Note runes](#note-runes)
 - [Audio latency](#audio-latency)
   - [Technical details](#technical-details)
@@ -26,23 +26,25 @@ Backups are made every time a map is saved, *except when the save is an autosave
 To restore a backup, you must manually copy the `.dat` files in the backup folders back into the root of your map folder.
 
 
-## BPM changes
+## Timing changes 
 
-You're probably already familiar with using BPM changes to align your song to the editing grid, but let's go over it in-depth.
+> **NOTE**: Prior to Edda v1.0.0, timing changes were referred to as "BPM changes".
+
+You're probably already familiar with using timing changes to align your song to the editing grid, but let's go over it in-depth.
 
 Most songs will have a constant BPM. These songs are the easiest to map, especially for beginners.
 
-Many songs, however, will change their BPM at some point in their duration. You don't want to respecify the BPM and realign the song every time this happens, so a BPM change will let Edda know that it has to draw the editing grid a bit differently for certain parts of the song.
+Many songs, however, will change their BPM at some point. You don't want to respecify the BPM and realign the song every time you want to map this part of the song, so a timing change will let Edda know that it has to draw the editing grid a bit differently for certain parts of the song.
 
-To add a BPM change, click the ellipsis (`...`) next to *Song BPM* in the left sidebar.
+To add a timing change, you can either use `Ctrl-T` or `Ctrl-Shift-T` or click the "Edit Song Timing" button in the right sidebar.
 
-To specify a BPM change, you need three things:
+To specify a timing change the latter way, you need three things:
 
-- the *Global Beat* where the BPM change begins,
+- the *Global Beat* where the timing change begins,
 - the new *BPM* that will come into effect, and
-- the *Grid Division* during this BPM change.
+- the *Beat Division* during this timing change.
 
-> **NOTE**: Edda's BPM changes are mostly compatible with MMA2's BPM changes, except for the `_metronomeOffset` field (which is unused).
+> **NOTE**: Edda's timing changes are mostly compatible with MMA2's BPM changes, except for the `_metronomeOffset` field (which is unused by Edda).
 
 The *Global Beat* of a point in the song is the beat it would be located on if the *Song BPM* (or Global BPM) was in use for the entire song. 
 You can think of it as an alternative to a minutes/seconds timestamp for referencing a point in the song.
@@ -55,20 +57,20 @@ Two values are shown for the global beat:
 - the first value is the global beat after the mouse position is snapped to the gridlines.
 - the second value (in brackets) is the global beat before snapping.
 
-Typically, you want to use the second, unsnapped value when specifying a BPM change.
+Typically, you want to use the second, unsnapped value when specifying a timing change.
 
 The *BPM* field is, predictably, the new BPM that you want to change to. You can find this with the help of Edda's BPM finder tool in the toolbar.
 
-Often a BPM change will coincide with a time signature change. This could mean that beats are now divided differently. For example, a beat is now divided into thirds instead of quarters. If this happens, you can use the *Grid Division* field to specify the new beat division.
+Often a timing change will coincide with a time signature change. This could mean that beats are now divided differently. For example, a beat is now divided into thirds instead of quarters. If this happens, you can use the *Beat Division* field to specify the new beat division.
 
-If the beats are not divided differently after the BPM change, you should keep the *Grid Division* the same as before.   
+If the beats are not divided differently after the timing change, you should keep the *Beat Division* the same as before.   
 
-> **NOTE**: You can use a BPM change to temporarily adjust the *Grid Division* by leaving the *BPM* field the same as before.  
+> **NOTE**: You can use a timing change to temporarily adjust the *Beat Division* by leaving the *BPM* field the same as before.  
 > This can be useful if there are just a few beats in the song that are divided differently than the rest.
 
 ## Note runes
 
-Why bother with BPMs or BPM changes?
+Why bother with BPMs or timing changes?
 
 Why not just turn off grid snapping and carefully position each and every note on the grid, exactly where you want it?
 
@@ -104,12 +106,9 @@ Arpeggiated notes are so close together that they can look like notes that suppo
 
 Knowing *which* note has the ᚷ rune also informs players preciesly how they should hit the runes.
 
-If you don't tell Ragnarock what the BPM is or where the BPM changes are, then it won't know which beat a note is placed on. That means all the notes will probably have an ᚷ rune on them, which makes it harder for players to do things like play arpeggiated notes. 
+If you don't tell Ragnarock what the BPM is or where the timing changes are, then it won't know which beat a note is placed on. That means all the notes will probably have an ᚷ rune on them, which makes it harder for players to do things like play arpeggiated notes. 
 
-So the lesson here is to map out your BPM and BPM changes properly! It makes it much nicer for the people that play your map.  
-
-> **NOTE**: Edda has a *Grid Offset* feature in the right sidebar. The reader may notice that it has not ever been mentioned, and that is because you shouldn't use it - it will cause all of your notes to have ᚷ runes on them.  
-> This feature may be removed in the future - use a BPM change if you want to shift the grid's alignment. 
+So the lesson here is to map out your BPM and timing changes properly! It makes it much nicer for the people that play your map.  
 
 ## Audio latency
 

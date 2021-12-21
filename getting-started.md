@@ -18,10 +18,12 @@ To run Edda, you'll need a computer with Windows 10 or Windows 11.
 
 Start by going to the GitHub repository's [Releases section](https://github.com/PKBeam/Edda/releases). There will be two `.zip` packages for you to download. 
 
-Most users should download the larger of the two (the one that is **not** named `NoRuntime`).  
+Most users should download the larger package - the one that is **not** named `NoRuntime`.  
 If you are unsure, download this one.
   
-If you have the [.NET 5.0 runtime](https://dotnet.microsoft.com/download/dotnet/5.0/runtime) installed, then you can use the smaller `NoRuntime` zip package.
+If you have the [.NET 6.0 runtime](https://dotnet.microsoft.com/download/dotnet/6.0/runtime) installed, then you can use the smaller `NoRuntime` zip package.
+
+> **NOTE**: For versions of Edda before v1.0.0, you must use the [.NET 5.0 runtime](https://dotnet.microsoft.com/download/dotnet/5.0/runtime) instead.
 
 Once you've downloaded the zip package, extract it somewhere on your PC.
 
