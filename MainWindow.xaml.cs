@@ -91,6 +91,7 @@ namespace Edda {
         Canvas currentlyDraggingMarker;
         bool isEditingMarker = false;
         double markerDragOffset = 0;
+        Bookmark currentlyDraggingBookmark;
         BPMChange currentlyDraggingBPMChange;
         VorbisWaveformVisualiser audioWaveform;
         VorbisWaveformVisualiser navWaveform;
@@ -1051,11 +1052,17 @@ namespace Edda {
             imgPreviewNote.Visibility = Visibility.Visible;
             if (currentlyDraggingMarker != null && !isEditingMarker) {
 
-                mapEditor.RemoveBPMChange(currentlyDraggingBPMChange, false);
-                currentlyDraggingBPMChange.globalBeat = BeatForPosition(e.GetPosition(EditorGrid).Y - markerDragOffset, shiftKeyDown);
-                mapEditor.AddBPMChange(currentlyDraggingBPMChange);
-                DrawEditorGrid(false);
-
+                if (currentlyDraggingBPMChange == null) {
+                    mapEditor.RemoveBookmark(currentlyDraggingBookmark);
+                    currentlyDraggingBookmark.beat = BeatForPosition(e.GetPosition(EditorGrid).Y - markerDragOffset, shiftKeyDown);
+                    mapEditor.AddBookmark(currentlyDraggingBookmark);
+                    DrawEditorGrid(false);
+                } else {
+                    mapEditor.RemoveBPMChange(currentlyDraggingBPMChange, false);
+                    currentlyDraggingBPMChange.globalBeat = BeatForPosition(e.GetPosition(EditorGrid).Y - markerDragOffset, shiftKeyDown);
+                    mapEditor.AddBPMChange(currentlyDraggingBPMChange);
+                    DrawEditorGrid(false);
+                }
                 this.Cursor = Cursors.Arrow;
                 lineGridMouseover.Visibility = Visibility.Hidden;
                 currentlyDraggingBPMChange = null;
@@ -2015,13 +2022,17 @@ namespace Edda {
         }
         private void DrawEditorGridBookmarks() {
             foreach (Bookmark b in mapEditor.bookmarks) {
+                Canvas bookmarkCanvas = new();
+                Canvas.SetRight(bookmarkCanvas, 0);
+                Canvas.SetBottom(bookmarkCanvas, unitLength * b.beat + unitHeight / 2);
+
                 var l = makeLine(EditorGrid.ActualWidth / 2, unitLength * b.beat);
                 l.Stroke = (SolidColorBrush)new BrushConverter().ConvertFrom(Const.Editor.GridBookmark.Colour);
                 l.StrokeThickness = Const.Editor.GridBookmark.Thickness;
                 l.Opacity = Const.Editor.GridBookmark.Opacity;
                 Canvas.SetRight(l, 0);
-                Canvas.SetBottom(l, unitLength * b.beat + unitHeight / 2);
-                EditorGrid.Children.Add(l);
+                Canvas.SetBottom(l, 0);
+                bookmarkCanvas.Children.Add(l);
 
                 var txtBlock = new Label();
                 txtBlock.Foreground = Brushes.White;
@@ -2033,10 +2044,65 @@ namespace Edda {
                 txtBlock.FontWeight = FontWeights.Bold;
                 txtBlock.Opacity = 1.0;
                 //txtBlock.IsReadOnly = true;
-                //txtBlock.Cursor = Cursors.Hand;
+                txtBlock.Cursor = Cursors.Hand;
                 Canvas.SetRight(txtBlock, 0);
-                Canvas.SetBottom(txtBlock, unitLength * b.beat + unitHeight / 2 + 0.75 * Const.Editor.GridBookmark.Thickness);
-                EditorGrid.Children.Add(txtBlock);
+                Canvas.SetBottom(txtBlock, 0.75 * Const.Editor.GridBookmark.Thickness);
+                txtBlock.MouseLeftButtonDown += new MouseButtonEventHandler((src, e) => {
+                    e.Handled = true;
+                });
+                txtBlock.MouseLeftButtonUp += new MouseButtonEventHandler((src, e) => {
+                    sliderSongProgress.Value = b.beat / globalBPM * 60000;
+                    navMouseDown = false;
+                    e.Handled = true;
+                });
+                txtBlock.PreviewMouseLeftButtonDown += new MouseButtonEventHandler((src, e) => {
+                    currentlyDraggingMarker = bookmarkCanvas;
+
+                    currentlyDraggingBookmark = b;
+                    currentlyDraggingBPMChange = null;
+                    markerDragOffset = e.GetPosition(bookmarkCanvas).Y;
+                    imgPreviewNote.Visibility = Visibility.Hidden;
+                    EditorGrid.CaptureMouse();
+                    e.Handled = true;
+                });
+                txtBlock.MouseDown += new MouseButtonEventHandler((src, e) => {
+                    if (!(e.ChangedButton == MouseButton.Middle)) {
+                        return;
+                    }
+                    var res = MessageBox.Show("Are you sure you want to delete this bookmark?", "Confirm Deletion", MessageBoxButton.YesNoCancel, MessageBoxImage.Warning);
+                    if (res == MessageBoxResult.Yes) {
+                        mapEditor.RemoveBookmark(b);
+                    }
+                });
+                txtBlock.MouseRightButtonUp += new MouseButtonEventHandler((src, e) => {
+                    var txtBox = new TextBox();
+                    txtBox.Text = b.name;
+                    txtBox.FontSize = Const.Editor.GridBookmark.NameSize;
+                    Canvas.SetRight(txtBox, Const.Editor.GridBookmark.NamePadding);
+                    Canvas.SetBottom(txtBox, Canvas.GetBottom(bookmarkCanvas) + Const.Editor.GridBookmark.NamePadding);
+                    txtBox.LostKeyboardFocus += new KeyboardFocusChangedEventHandler((src, e) => {
+                        if (txtBox.Text != "") {
+                            mapEditor.RenameBookmark(b, txtBox.Text);
+                        }
+                        EditorGrid.Children.Remove(txtBox);
+                    });
+                    txtBox.KeyDown += new KeyEventHandler((src, e) => {
+                        if (e.Key == Key.Escape || e.Key == Key.Enter) {
+                            Keyboard.ClearFocus();
+                            Keyboard.Focus(this);
+                        }
+                    });
+
+                    EditorGrid.Children.Add(txtBox);
+                    txtBox.Focus();
+                    txtBox.SelectAll();
+
+                    e.Handled = true;
+                });
+                bookmarkCanvas.Children.Add(txtBlock);
+
+                
+                EditorGrid.Children.Add(bookmarkCanvas);
             }
         }
         private void DrawEditorGridBPMChanges() {
@@ -2148,8 +2214,9 @@ namespace Edda {
 
                 bpmChangeFlagCanvas.PreviewMouseLeftButtonDown += new MouseButtonEventHandler((src, e) => { 
                     currentlyDraggingMarker = bpmChangeCanvas;
-                    markerDragOffset = e.GetPosition(bpmChangeCanvas).Y;
                     currentlyDraggingBPMChange = b;
+                    currentlyDraggingBookmark = null;
+                    markerDragOffset = e.GetPosition(bpmChangeCanvas).Y;
                     imgPreviewNote.Visibility = Visibility.Hidden;
                     EditorGrid.CaptureMouse();
                     e.Handled = true;
