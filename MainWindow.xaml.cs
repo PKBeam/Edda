@@ -549,7 +549,7 @@ namespace Edda {
             string songArtist = Helper.ValidFilenameFrom((string)beatMap.GetValue("_songAuthorName"));
             string songName = Helper.ValidFilenameFrom((string)beatMap.GetValue("_songName"));
             string baseFolder = beatMap.GetPath();
-            string zipName = songArtist + " - " + songName;
+            string zipName = Helper.ValidMapFolderNameFrom(songArtist + songName);
             // make the temp dir for zip
             string zipFolder = Path.Combine(baseFolder, zipName + "_tempDir");
             string zipPath = Path.Combine(d.FileName, zipName + ".zip");

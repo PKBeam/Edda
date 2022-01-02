@@ -223,4 +223,13 @@ public class Helper {
         }
         return output;
     }
+    public static string ValidMapFolderNameFrom(string filename) {
+        string output = "";
+        foreach (char c in filename) {
+            if ('a' <= c && c <= 'z' || 'A' <= c && c <= 'Z') {
+                output += c;
+            }
+        }
+        return output;
+    }
 }
