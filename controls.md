@@ -4,7 +4,7 @@
 
 ## Mouse Controls
 
-### Editing Grid
+### Notes
 
 Click and drag to select multiple notes.
 
@@ -14,11 +14,19 @@ Shift+Left-click to add or remove a note to/from the selection.
 
 Right-click to delete a note or clear the selection.
 
-### Navigational Waveform
+### Markers
 
-Double-click a bookmark to rename it.
+**On the editing grid:**
 
-Right-click a bookmark to delete it.
+Click and drag a bookmark or timing change to move it (hold Shift to snap to grid).
+
+**On the navigational waveform:**
+
+Right-click a bookmark to rename it.
+
+Right-click a timing change on either the BPM or beat division fields to edit them.
+
+Middle-click a bookmark or timing change to delete it.
 
 ## Keyboard Controls
 
@@ -48,5 +56,3 @@ Edda comes with many keyboard shortcuts for ease of use.
 |**Escape**    |Unselect all notes
 |**Space**    |Play/Pause song
 |**1**, **2**, **3**, **4**     |Add notes on the 1st/2nd/3rd/4th column | If the song is playing, the notes are placed on the scan line. Otherwise, they are placed on the mouse cursor.
-
-Bookmarks (in the navigational waveform) and timing changes can be edited by right-clicking them. They can be deleted by middle-clicking them. 

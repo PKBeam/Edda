@@ -4,6 +4,7 @@
 
 Want to make your own Ragnarock maps? Let's get started.  
 
+- [System requirements](#system-requirements)
 - [Installation](#installation)
 - [Setting up your song](#setting-up-your-song)
   - [Choosing a good song](#choosing-a-good-song)
@@ -11,10 +12,15 @@ Want to make your own Ragnarock maps? Let's get started.
     - [Lossless encoding](#lossless-encoding)
     - [Lossy encoding](#lossy-encoding)
 
-## Installation
+## System requirements
+
 To run Edda, you'll need a computer with Windows 10 or Windows 11.  
 
-> **NOTE**: If you have a Linux or macOS computer, you may be able to use something like [WINE](https://www.winehq.org) or [Parallels](https://www.parallels.com/) to run Windows programs.
+> **NOTE**: If you have a Linux or macOS computer, you may be able to use software like [WINE](https://www.winehq.org) or [Parallels](https://www.parallels.com/) to run Windows programs.  
+>
+> Older versions of Windows (up to Windows 7) may work, but are not officially supported.
+
+## Installation
 
 Start by going to the GitHub repository's [Releases section](https://github.com/PKBeam/Edda/releases). There will be two `.zip` packages for you to download. 
 

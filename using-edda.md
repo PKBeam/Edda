@@ -69,7 +69,7 @@ Click the "BPM Finder" button at the top of Edda's main window.
 
 Play the song in Edda, then bring up the BPM finder window and tap any key to the beat.
 
-Once you feel that you've tapped enough beats, look at the average BPM displayed and put it in the *Song BPM* under the left sidebar of the main window (you might want to round it to the nearest integer).
+Once you feel that you've tapped enough beats, look at the average BPM displayed and put it in the *Song Tempo* under the left sidebar of the main window (you might want to round it to the nearest integer).
 
 ### Aligning the song
 
@@ -99,9 +99,9 @@ Be sure to check both at the start *and* at the end of your song:
 
 - If you've made an error placing the BPM change at the start of your song, it will become obvious there.
 
-- If you've made an error specifying the *Song BPM*, it will be easiest to find out at the end of the song - that's where all the BPM errors will accumulate.
+- If you've made an error specifying the *Song Tempo*, it will be easiest to find out at the end of the song - that's where all the BPM errors will accumulate.
 
-Make sure your timing is as close to perfect as possible before you move on: you don't want to come back after placing thousands of notes to find that there's a mistake with the timing.  
+Make sure your timing is as close to perfect as possible before you move on - you don't want to come back after placing thousands of notes to find that there's a mistake with the timing.  
 
 > **NOTE**: If you are having audio sync issues, check out the page on [Audio Latency](advanced-topics#audio-latency).
 
@@ -149,16 +149,13 @@ You can create a new bookmark by positioning your mouse where you want the bookm
 
 You can mouse over either the editor grid (for more accuracy) or the navigational waveform. 
 
-Clicking on a bookmark in the navigational waveform will set the song's position to that point.
+Clicking on a bookmark in the navigational waveform will let you jump to that location in the map.
 
 To rename a bookmark, right-click it.
 
 To delete a bookmark, middle-click it.
 
-Bookmarks will also show up on the editing grid, but cannot be modified there.
-
 > **NOTE**: Edda's bookmarks are fully compatible with MMA2's bookmarks.
-
 
 ### Difficulty Settings
 
@@ -180,11 +177,11 @@ The *Difficulty Level* is a number from 1 to 10 (inclusive) that represents how 
 
 The *Note Speed* is how fast the runes approach you when you play the map in-game. You'll have to experiment with this in the game to get a feel for what the numbers mean. A good place to start is 15, which represents an average speed. You can increase this a few units to make the notes approach even faster.
 
-**Medal Distances** represent how many metres your boat must row in order to achieve a certain medal. In most cases, you should leave these blank, set to 0 or on "Auto" so that Ragnarock will automatically calculate medal distances for you.  
+**Medal Distances** represent how many metres your boat must row in order to achieve a certain medal. In most cases, you should leave these set to "Auto" so that Ragnarock will automatically calculate medal distances for you.  
 
 ## Mapping Notes
 
-Now that everything else is set up, let's start mapping for real.
+Now that everything else is set up, let's start placing notes.
 
 While you map, it might be helpful to refer to the *Grid Waveform*.
 

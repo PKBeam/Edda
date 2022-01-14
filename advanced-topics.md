@@ -4,27 +4,34 @@
 
 Now that you're comfortable with using Edda, here are some more advanced topics to help you make the most of your mapping experience.  
 
+- [Settings](#settings)
 - [Backups](#backups)
 - [Timing changes](#timing-changes)
 - [Note runes](#note-runes)
 - [Audio latency](#audio-latency)
   - [Technical details](#technical-details)
 - [Drum hitsounds](#drum-hitsounds)
+- [Map save location](#map-save-location)
+
+## Settings
+
+Since Edda v1.0.0, the settings are automatically stored in `AppData/Roaming/Edda/settings.txt`.
+
+You can migrate settings from other Edda installs by replacing `settings.txt`. 
 
 ## Backups
 
 Edda periodically keeps backups of your maps in the `autosaves` folder that is located in the folder your map is in.  
 
-In this folder there will be up to ten folders with names that look like `Backup - 08 October 2021 4.23PM`. Inside these backup folders are `.dat` files for each mapped difficulty.  
+In this folder there will be up to ten folders with names in the form of `Backup - 08 October 2021 4.23PM`. Inside these backup folders are `.dat` files for each mapped difficulty.  
 
 This is so you can recover your work if a bug or issue causes a data wipe. (Please feel free to [report](https://github.com/PKBeam/Edda/issues) any such issues).
 
-Backups are made every time a map is saved, *except when the save is an autosave*, so make sure to occasionally do a manual save (e.g. Ctrl-S, click the "Save Map" button, or save when prompted on closing Edda).
+Backups are made every time a map is *manually* saved (autosaves do not count), so make sure to occasionally save using Ctrl-S or the "Save Map" button, or save when prompted on closing Edda.
 
 > **NOTE**: You can turn autosaves on and off in the Settings menu, under **Editor**. Autosaves happen every 30 seconds.
 
 To restore a backup, you must manually copy the `.dat` files in the backup folders back into the root of your map folder.
-
 
 ## Timing changes 
 
@@ -38,15 +45,15 @@ Many songs, however, will change their BPM at some point. You don't want to resp
 
 To add a timing change, you can either use `Ctrl-T` or `Ctrl-Shift-T` or click the "Edit Song Timing" button in the right sidebar.
 
-To specify a timing change the latter way, you need three things:
+To specify a timing change the latter way, you need to input three things:
 
 - the *Global Beat* where the timing change begins,
 - the new *BPM* that will come into effect, and
 - the *Beat Division* during this timing change.
 
-> **NOTE**: Edda's timing changes are mostly compatible with MMA2's BPM changes, except for the `_metronomeOffset` field (which is unused by Edda).
+> **NOTE**: Edda's timing changes are mostly compatible with MMA2's BPM changes (except for the `_metronomeOffset` field, which is ignored by Edda).
 
-The *Global Beat* of a point in the song is the beat it would be located on if the *Song BPM* (or Global BPM) was in use for the entire song. 
+The *Global Beat* of a point in the song is the beat it would be located on if the *Song Tempo* (or Global BPM) was in use for the entire song. That is, the beat it would be located on if the song had no BPM changes whatsoever.  
 You can think of it as an alternative to a minutes/seconds timestamp for referencing a point in the song.
 
 To find the *Global Beat*, you can use the timing bar.
@@ -55,18 +62,18 @@ When you move your mouse over the editing grid (or navigational waveform), the t
 
 Two values are shown for the global beat:
 - the first value is the global beat after the mouse position is snapped to the gridlines.
-- the second value (in brackets) is the global beat before snapping.
+- the second value (in brackets) is the *exact* global beat, before snapping.
 
-Typically, you want to use the second, unsnapped value when specifying a timing change.
+Typically, you want to use the second, unsnapped value when specifying a timing change. If you want to specify a timing change that does not change the BPM, you should use the first value (the snapped one).
 
-The *BPM* field is, predictably, the new BPM that you want to change to. You can find this with the help of Edda's BPM finder tool in the toolbar.
+The *BPM* field is, predictably, the new BPM that you want to change to. You can find this with the help of Edda's BPM Finder tool in the toolbar.
 
 Often a timing change will coincide with a time signature change. This could mean that beats are now divided differently. For example, a beat is now divided into thirds instead of quarters. If this happens, you can use the *Beat Division* field to specify the new beat division.
 
 If the beats are not divided differently after the timing change, you should keep the *Beat Division* the same as before.   
 
 > **NOTE**: You can use a timing change to temporarily adjust the *Beat Division* by leaving the *BPM* field the same as before.  
-> This can be useful if there are just a few beats in the song that are divided differently than the rest.
+> This can be useful if there are a few beats in a section that are divided differently than the rest.
 
 ## Note runes
 
@@ -108,7 +115,7 @@ Knowing *which* note has the ᚷ rune also informs players preciesly how they sh
 
 If you don't tell Ragnarock what the BPM is or where the timing changes are, then it won't know which beat a note is placed on. That means all the notes will probably have an ᚷ rune on them, which makes it harder for players to do things like play arpeggiated notes. 
 
-So the lesson here is to map out your BPM and timing changes properly! It makes it much nicer for the people that play your map.  
+So map out your BPM and timing changes properly! It makes it much nicer for the people that play your map.  
 
 ## Audio latency
 
@@ -155,4 +162,18 @@ By default, drum hitsounds are panned. That means if a note is played on the lef
 Some users may find panned audio harder to hear or may experience audio playback issues with panned audio. Panned audio can be disabled in the Settings menu (under **Audio Playback**, then *Pan Note Sound*).  
 
 When panned audio is disabled, all drum hitsounds will be played in the middle of both ears.  
+
+## Map save location
+
+Ragnarock lets you store your custom maps in two locations: in your Documents folder or in the game install folder.  
+
+In the Settings menu under *Map Save Location*, you can choose which of these locations Edda will automatically bring up when you open or create a map.
+
+The *Documents* option is the default one.
+
+If you choose the *Game Install* option, you must specify the folder that Ragnarock is installed in. For Steam installs, this will be the folder `.../steamapps/common/Ragnarock`.
+
+> **NOTE**: This feature has not been tested on Oculus Store installs.
+
+Once selected, this path is shown in blue in the Settings menu and can be respecified by clicking on it.
 
