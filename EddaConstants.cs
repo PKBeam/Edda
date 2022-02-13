@@ -10,13 +10,13 @@ namespace Const {
         public const string Name          = "Edda";
         public const string RepositoryURL = "https://github.com/PKBeam/Edda";
         public const string ReleasesAPI   = "https://api.github.com/repos/PKBeam/Edda/releases";
-        public const string VersionString = "1.0.1";
+        public const string VersionString = "1.0.2";
         public const string DisplayVersionString =
             #if DEBUG
                 VersionString + "-dev";
-#else
+            #else
                 VersionString;
-#endif
+            #endif
         public static string ProgramDataDir => Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "Edda");
         public static string SettingsFile  => Path.Combine(ProgramDataDir, "settings.txt");
         public static string DocumentsMapFolder => Path.Combine(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), "Ragnarock"), "CustomSongs");
