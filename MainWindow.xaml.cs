@@ -1043,7 +1043,6 @@ namespace Edda {
                     UpdateDragSelection(e.GetPosition(EditorGrid));
                 }
             }
-            Trace.WriteLine(editorMouseGridCol);
         }
         private void EditorGrid_MouseEnter(object sender, MouseEventArgs e) {
             imgPreviewNote.Opacity = Const.Editor.PreviewNoteOpacity;
@@ -1088,13 +1087,17 @@ namespace Edda {
                 List<Note> newSelection = new List<Note>();
                 double startBeat = editorSelBeatStart;
                 double endBeat = editorMouseBeatUnsnapped;
+                int editorSelColEnd = editorMouseGridCol;
+                if (editorSelColEnd == -1) {
+                    editorSelColEnd = e.GetPosition(EditorGrid).X < EditorGrid.ActualWidth/2 ? 0 : 3;
+                }
                 foreach (Note n in mapEditor.notes) {
                     // minor optimisation
                     if (n.beat > Math.Max(startBeat, endBeat)) {
                         break;
                     }
                     // check range
-                    if (Helper.DoubleRangeCheck(n.beat, startBeat, endBeat) && Helper.DoubleRangeCheck(n.col, editorSelColStart, editorMouseGridCol)) {
+                    if (Helper.DoubleRangeCheck(n.beat, startBeat, endBeat) && Helper.DoubleRangeCheck(n.col, editorSelColStart, editorSelColEnd)) {
                         newSelection.Add(n);
                     }
                 }
