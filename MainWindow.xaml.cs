@@ -221,9 +221,12 @@ namespace Edda {
             }
         }
         private void AppMainWindow_Closing(object sender, System.ComponentModel.CancelEventArgs e) {
-            PromptBeatmapSave();
-            AppMainWindow_Closed(this, null);
-            Environment.Exit(0);
+            if (PromptBeatmapSave()) {
+                AppMainWindow_Closed(this, null);
+                Environment.Exit(0);
+            } else {
+                e.Cancel = true;
+            }
         }
         private void AppMainWindow_Closed(object sender, EventArgs e) {
             Trace.WriteLine("INFO: Closing main window...");
@@ -441,7 +444,9 @@ namespace Edda {
 
             // check if map already open
             if (beatMap != null) {
-                PromptBeatmapSave();
+                if (!PromptBeatmapSave()) {
+                    return;
+                }
 
                 // clear some stuff
                 PauseSong();
@@ -494,8 +499,10 @@ namespace Edda {
 
             // check if map already open
             if (beatMap != null) {
-                PromptBeatmapSave();
-                // clear some stuff
+                if (!PromptBeatmapSave()) {
+                    return;
+                }
+
                 PauseSong();
             }
 
@@ -1036,6 +1043,7 @@ namespace Edda {
                     UpdateDragSelection(e.GetPosition(EditorGrid));
                 }
             }
+            Trace.WriteLine(editorMouseGridCol);
         }
         private void EditorGrid_MouseEnter(object sender, MouseEventArgs e) {
             imgPreviewNote.Opacity = Const.Editor.PreviewNoteOpacity;
@@ -2508,14 +2516,15 @@ namespace Edda {
             });
             return txtBlock;
         }
-        private void PromptBeatmapSave() {
+        private bool PromptBeatmapSave() {
             if (beatMap == null) {
-                return;
+                return true;
             }
-            var res = MessageBox.Show("Save the currently opened map?", "Warning", MessageBoxButton.YesNo, MessageBoxImage.Warning);
+            var res = MessageBox.Show("Save the currently opened map?", "Warning", MessageBoxButton.YesNoCancel, MessageBoxImage.Warning);
             if (res == MessageBoxResult.Yes) {
                 BackupAndSaveBeatmap();
             }
+            return !(res == MessageBoxResult.Cancel);
         }
         private void UpdateDifficultyLabels() {
             var difficultyLabels = new List<Label>() { lblDifficultyRank1, lblDifficultyRank2, lblDifficultyRank3 };
