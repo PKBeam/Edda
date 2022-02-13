@@ -473,6 +473,9 @@ namespace Edda {
 
             if (beatMap != null) {
                 mapEditor.notes.Clear();
+                mapEditor.bookmarks.Clear();
+                mapEditor.bpmChanges.Clear();
+                ClearCoverImage();
             }
             beatMap = new RagnarockMap(d2.FileName, true);
 
@@ -480,7 +483,7 @@ namespace Edda {
             if (!SelectNewSong()) {
                 return;
             }
-
+            
             // save the map
             SaveBeatmap();
 
@@ -721,6 +724,9 @@ namespace Edda {
                         }
                         foreach (var n in mapEditor.notes) {
                             n.beat *= BPM / prevBPM;
+                        }
+                        foreach (var b in mapEditor.bookmarks) {
+                            b.beat *= BPM / prevBPM;
                         }
                     }
                     beatMap.SetValue("_beatsPerMinute", BPM);
@@ -1481,9 +1487,7 @@ namespace Edda {
         private void LoadCoverImage() {
             var fileName = (string)beatMap.GetValue("_coverImageFilename");
             if (fileName == "") {
-                imgCover.Source = null;
-                txtCoverFileName.Text = "N/A";
-                borderImgCover.BorderThickness = new(0);
+                ClearCoverImage();
             } else {
                 BitmapImage b = Helper.BitmapGenerator(new Uri(beatMap.PathOf(fileName)));
                 imgCover.Source = b;
@@ -1491,7 +1495,11 @@ namespace Edda {
                 borderImgCover.BorderThickness = new(2);
             }
         }
-
+        private void ClearCoverImage() {
+            imgCover.Source = null;
+            txtCoverFileName.Text = "N/A";
+            borderImgCover.BorderThickness = new(0);
+        }
         // manage difficulties
         private void UpdateDifficultyButtonVisibility() {
             var numDiff = beatMap.numDifficulties;

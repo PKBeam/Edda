@@ -167,7 +167,7 @@
 
                         <Border Grid.Row="4" Grid.Column="1" >
                             <StackPanel Orientation="Horizontal">
-                                <TextBox Width="30" x:Name="txtSongBPM" Grid.Row="0" Grid.Column="1" LostFocus="TxtSongBPM_LostFocus"/>
+                                <TextBox Width="40" x:Name="txtSongBPM" Grid.Row="0" Grid.Column="1" LostFocus="TxtSongBPM_LostFocus"/>
                                 <TextBlock VerticalAlignment="Center" Width="25" Margin="5 0 5 0">BPM</TextBlock>
                             </StackPanel>
                         </Border>
