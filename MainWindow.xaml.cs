@@ -448,9 +448,7 @@ namespace Edda {
                     return;
                 }
 
-                // clear some stuff
                 PauseSong();
-                mapEditor.notes.Clear();
             }
 
             // select folder for map

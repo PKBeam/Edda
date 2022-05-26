@@ -586,7 +586,7 @@
                         <Grid.RowDefinitions>
                             <RowDefinition x:Name="DrumRow" Height="*"/>
                         </Grid.RowDefinitions>
-                        <Line x:Name="lineBeatScan" Grid.ColumnSpan="9" Stroke="Navy" StrokeThickness="2" X2="{Binding ElementName=EditorPanel, Path=ActualWidth}"  VerticalAlignment="Center"/>
+                        <Line x:Name="lineBeatScan" Grid.ColumnSpan="9" Stroke="Navy" StrokeThickness="2" X2="{Binding ElementName=EditorPanel, Path=ActualWidth}" VerticalAlignment="Center"/>
                         <StackPanel x:Name="DrumColStack" Grid.Column="1">
                             <StackPanel x:Name="DrumStack0" />
                             <Image x:Name="Drum0"  Source="pack://application:,,,/Edda;component/resources/drum.png" VerticalAlignment="Bottom"/>
