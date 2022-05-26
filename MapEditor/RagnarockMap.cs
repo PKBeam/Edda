@@ -203,7 +203,7 @@ public class RagnarockMap {
                         var val = Helper.DoubleParseInvariant((string)dbItem[i.Key]);
                         // special case
                         if (i.Key == "_difficultyRank") {
-                            if (val < 1 || 99 < val) {
+                            if (val < Const.Editor.DifficultyLevelMin || val > Const.Editor.DifficultyLevelMax) {
                                 throw new Exception($"Bad value for key {i.Key}");
                             }
                         } else if (!Helper.DoubleRangeCheck(val, expectedValuesL3[i.Key].Item1, expectedValuesL3[i.Key].Item2)) {

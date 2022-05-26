@@ -790,14 +790,14 @@ namespace Edda {
         private void TxtDifficultyNumber_LostFocus(object sender, RoutedEventArgs e) {
             int prevLevel = (int)beatMap.GetValueForMap(currentDifficulty, "_difficultyRank");
             int level;
-            if (int.TryParse(txtDifficultyNumber.Text, out level) && Helper.DoubleRangeCheck(level, 1, 10)) {
+            if (int.TryParse(txtDifficultyNumber.Text, out level) && Helper.DoubleRangeCheck(level, Const.Editor.DifficultyLevelMin, Const.Editor.DifficultyLevelMax)) {
                 if (level != prevLevel) {
                     beatMap.SetValueForMap(currentDifficulty, "_difficultyRank", level);
                     SortDifficultyMaps();
                     UpdateDifficultyLabels();
                 }
             } else {
-                MessageBox.Show($"The difficulty level must be an integer between 1 and 10.", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                MessageBox.Show($"The difficulty level must be an integer between {Const.Editor.DifficultyLevelMin} and {Const.Editor.DifficultyLevelMax}.", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
                 level = prevLevel;
             }
             txtDifficultyNumber.Text = level.ToString();

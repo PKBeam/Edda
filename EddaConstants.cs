@@ -10,7 +10,7 @@ namespace Const {
         public const string Name          = "Edda";
         public const string RepositoryURL = "https://github.com/PKBeam/Edda";
         public const string ReleasesAPI   = "https://api.github.com/repos/PKBeam/Edda/releases";
-        public const string VersionString = "1.0.2";
+        public const string VersionString = "1.0.3";
         public const string DisplayVersionString =
             #if DEBUG
                 VersionString + "-dev";
@@ -63,6 +63,8 @@ namespace Const {
         public const double MajorGridlineThickness   = 1.5;
         public const double MinorGridlineThickness   = 1;
         public const int    GridDivisionMax          = 64;
+        public const int    DifficultyLevelMin       = 1;
+        public const int    DifficultyLevelMax       = 99;
 
         // Animation Properties
         public const double DrumHitScaleFactor = 0.75; // percentage of 1.0
