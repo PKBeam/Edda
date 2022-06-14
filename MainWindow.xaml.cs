@@ -1705,7 +1705,6 @@ namespace Edda {
         }
         private void PlaySong() {
             songIsPlaying = true;
-            songPlayer.Volume = 1;
             // toggle button appearance
             imgPlayerButton.Source = Helper.BitmapGenerator("pauseButton.png");
 
@@ -1753,7 +1752,6 @@ namespace Edda {
                 return;
             }
             songIsPlaying = false;
-            songPlayer.Volume = 0;
             imgPlayerButton.Source = Helper.BitmapGenerator("playButton.png");
 
             // stop note scaning
