@@ -124,6 +124,7 @@ namespace Edda {
         double editorDrawRangeHigher = 0;
 
         // -- audio playback
+        CancellationTokenSource songPlaybackCancellationTokenSource;
         int editorAudioLatency; // ms
         SampleChannel songChannel;
         public VorbisWaveReader songStream;
@@ -179,7 +180,7 @@ namespace Edda {
 
             // init environment combobox
             InitComboEnvironment();
-
+            songPlaybackCancellationTokenSource = new();
             //debounce grid redrawing on resize
             Observable
             .FromEventPattern<SizeChangedEventArgs>(scrollEditor, nameof(SizeChanged))
@@ -1703,6 +1704,7 @@ namespace Edda {
                 songPlayer.Dispose();
             }
         }
+
         private void PlaySong() {
             songIsPlaying = true;
             // toggle button appearance
@@ -1744,10 +1746,24 @@ namespace Edda {
             noteScanner.Start((int)(sliderSongProgress.Value - editorAudioLatency), new List<Note>(mapEditor.notes), globalBPM);
             beatScanner.Start((int)(sliderSongProgress.Value - editorAudioLatency), majorGridlines, globalBPM);
 
+            if (songStream.CurrentTime > new TimeSpan(0, 0, 0, 0, editorAudioLatency)) {
+                songStream.CurrentTime = songStream.CurrentTime - new TimeSpan(0, 0, 0, 0, editorAudioLatency);
+                songPlayer.Play();
+            } else {
+                songPlaybackCancellationTokenSource.Dispose();
+                songPlaybackCancellationTokenSource = new();
+                Task.Delay(new TimeSpan(0, 0, 0, 0, editorAudioLatency)).ContinueWith(o => {
+                    if (!songPlaybackCancellationTokenSource.IsCancellationRequested) {
+                        songPlayer.Play();
+                    }
+                });
+            }
+
             // play song
-            songPlayer.Play();
+            //songPlayer.Play();
         }
         internal void PauseSong() {
+            songPlaybackCancellationTokenSource.Cancel();
             if (!songIsPlaying) {
                 return;
             }
@@ -1775,7 +1791,6 @@ namespace Edda {
             imgPreviewNote.Opacity = Const.Editor.PreviewNoteOpacity;
 
             //Trace.WriteLine($"Slider is late by {Math.Round(songStream.CurrentTime.TotalMilliseconds - sliderSongProgress.Value, 2)}ms");
-            
             songPlayer.Pause();
             //if (noteScanner.playedLateNote) {
             //    drummer.InitAudioOut();
