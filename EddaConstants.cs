@@ -151,7 +151,7 @@ namespace Const {
         public const string BeatmapCharacteristicName = "Standard";
         public const double NoteJumpMovementSpeed     = 15;
         public static List<string> DifficultyNames  => new() { "Easy", "Normal", "Hard" };
-        public static List<string> EnvironmentNames => new() { "Midgard", "Alfheim", "Nidavellir", "Asgard", "Muspelheim", "Helheim" };
+        public static List<string> EnvironmentNames => new() { "Midgard", "Alfheim", "Nidavellir", "Asgard", "Muspelheim", "Helheim" , "Hellfest" };
         //public const string DefaultEnvironmentAlias = "Midgard";
     }
 
