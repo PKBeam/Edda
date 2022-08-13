@@ -53,10 +53,7 @@ namespace Edda {
         }
         public int mapNoteCount {
             get {
-                if (mapEditor == null || mapEditor.notes == null) {
-                    return 0;
-                }
-                return mapEditor.notes.Count;
+                return mapEditor?.currentMapDifficulty?.notes?.Count ?? 0;
             }
         }
         
@@ -72,10 +69,8 @@ namespace Edda {
         bool ctrlKeyDown;
 
         // store info about the currently selected difficulty
-        public int currentDifficulty;
-        MapEditor[] mapEditors = new MapEditor[3];
         MapEditor mapEditor;
-        List<Note> editorClipboard = new();
+        internal List<Note> editorClipboard = new();
 
         DoubleAnimation songPlayAnim;            // used for animating scroll when playing a song
         double prevScrollPercent = 0;       // percentage of scroll progress before the scroll viewport was changed
@@ -290,7 +285,7 @@ namespace Edda {
              |  EDITOR SHORTCUTS  |
              *====================*/
 
-            if (mapEditor == null) {
+            if (mapEditor?.currentMapDifficulty == null) {
                 return;
             }
 
@@ -298,7 +293,7 @@ namespace Edda {
             if (ctrlKeyDown) {
                 // select all (Ctrl-A)
                 if (e.Key == Key.A) {
-                    mapEditor.SelectNewNotes(mapEditor.notes);
+                    mapEditor.SelectNewNotes(mapEditor.currentMapDifficulty.notes);
                 }
 
                 // copy (Ctrl-C)
@@ -344,7 +339,7 @@ namespace Edda {
                 if (e.Key == Key.T && !songIsPlaying) {
                     double beat = (shiftKeyDown) ? editorMouseBeatSnapped : editorMouseBeatUnsnapped;
                     BPMChange previous = new BPMChange(0, globalBPM, editorGridDivision);
-                    foreach (var b in mapEditor.bpmChanges) {
+                    foreach (var b in mapEditor.currentMapDifficulty.bpmChanges) {
                         if (b.globalBeat < beat) {
                             previous = b;
                         }
@@ -476,9 +471,7 @@ namespace Edda {
             }
 
             if (beatMap != null) {
-                mapEditor.notes.Clear();
-                mapEditor.bookmarks.Clear();
-                mapEditor.bpmChanges.Clear();
+                mapEditor.ClearSelectedDifficulty();
                 ClearCoverImage();
             }
             beatMap = new RagnarockMap(d2.FileName, true);
@@ -585,7 +578,7 @@ namespace Edda {
                 }
                 ZipFile.CreateFromDirectory(zipFolder, zipPath);
                 
-            } catch (Exception ex) {
+            } catch (Exception) {
                 MessageBox.Show($"An error occured while creating the zip file.", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
             } finally {
                 if (Directory.Exists(zipFolder)) {
@@ -644,17 +637,9 @@ namespace Edda {
         }
         private void BtnAddDifficulty_Click(object sender, RoutedEventArgs e) {
             PauseSong();
-            beatMap.AddMap();
-            int newMap = beatMap.numDifficulties - 1;
             var res = MessageBox.Show("Copy over bookmarks and BPM changes from the currently selected map?", "Copy Existing Map Data?", MessageBoxButton.YesNo, MessageBoxImage.Question);
-            if (res == MessageBoxResult.Yes) {
-                beatMap.SetBookmarksForMap(newMap, beatMap.GetBookmarksForMap(currentDifficulty));
-                beatMap.SetBPMChangesForMap(newMap, beatMap.GetBPMChangesForMap(currentDifficulty));
-            }
-            SwitchDifficultyMap(newMap);
-            UpdateDifficultyButtonVisibility();
-            SortDifficultyMaps();
-            UpdateDifficultyLabels();
+            mapEditor.CreateDifficulty(res == MessageBoxResult.Yes);
+            UpdateDifficultyButtons();
         }
         private void BtnDeleteDifficulty_Click(object sender, RoutedEventArgs e) {
             var res = MessageBox.Show("Are you sure you want to delete this difficulty? This cannot be undone.", "Warning", MessageBoxButton.YesNo, MessageBoxImage.Warning);
@@ -662,17 +647,8 @@ namespace Edda {
                 return;
             }
             PauseSong();
-            
-            for (int i = currentDifficulty; i < mapEditors.Length - 1; i++) {
-                mapEditors[i] = mapEditors[i + 1];
-            }
-            mapEditors[mapEditors.Length - 1] = null;
-
-            beatMap.DeleteMap(currentDifficulty);
-            SwitchDifficultyMap(Math.Min(currentDifficulty, beatMap.numDifficulties - 1), false);
-
-            UpdateDifficultyButtonVisibility();
-            UpdateDifficultyLabels();
+            mapEditor.DeleteDifficulty();
+            UpdateDifficultyButtons();
         }
         private void BtnChangeDifficulty0_Click(object sender, RoutedEventArgs e) {
             SwitchDifficultyMap(0);
@@ -725,13 +701,13 @@ namespace Edda {
                         txtSongBPM.Text = prevBPM.ToString();
                         return;
                     } else if (result == MessageBoxResult.Yes) {
-                        foreach (var bc in mapEditor.bpmChanges) {
+                        foreach (var bc in mapEditor.currentMapDifficulty.bpmChanges) {
                             bc.globalBeat *= BPM / prevBPM;
                         }
-                        foreach (var n in mapEditor.notes) {
+                        foreach (var n in mapEditor.currentMapDifficulty.notes) {
                             n.beat *= BPM / prevBPM;
                         }
-                        foreach (var b in mapEditor.bookmarks) {
+                        foreach (var b in mapEditor.currentMapDifficulty.bookmarks) {
                             b.beat *= BPM / prevBPM;
                         }
                     }
@@ -748,7 +724,7 @@ namespace Edda {
         private void BtnChangeBPM_Click(object sender, RoutedEventArgs e) {
             var win = Helper.GetFirstWindow<ChangeBPMWindow>();
             if (win == null) {
-                win = new ChangeBPMWindow(this, mapEditor.bpmChanges);
+                win = new ChangeBPMWindow(this, mapEditor.currentMapDifficulty.bpmChanges);
                 win.Topmost = true;
                 win.Owner = this;
                 win.Show();
@@ -789,13 +765,13 @@ namespace Edda {
             beatMap.SetValue("_explicit", (checkExplicitContent.IsChecked == true).ToString().ToLower());
         }
         private void TxtDifficultyNumber_LostFocus(object sender, RoutedEventArgs e) {
-            int prevLevel = (int)beatMap.GetValueForMap(currentDifficulty, "_difficultyRank");
+            int prevLevel = (int)beatMap.GetValueForMap(mapEditor.currentDifficultyIndex, "_difficultyRank");
             int level;
             if (int.TryParse(txtDifficultyNumber.Text, out level) && Helper.DoubleRangeCheck(level, Const.Editor.DifficultyLevelMin, Const.Editor.DifficultyLevelMax)) {
                 if (level != prevLevel) {
-                    beatMap.SetValueForMap(currentDifficulty, "_difficultyRank", level);
-                    SortDifficultyMaps();
-                    UpdateDifficultyLabels();
+                    beatMap.SetValueForMap(mapEditor.currentDifficultyIndex, "_difficultyRank", level);
+                    mapEditor.SortDifficulties();
+                    UpdateDifficultyButtons();
                 }
             } else {
                 MessageBox.Show($"The difficulty level must be an integer between {Const.Editor.DifficultyLevelMin} and {Const.Editor.DifficultyLevelMax}.", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
@@ -804,10 +780,10 @@ namespace Edda {
             txtDifficultyNumber.Text = level.ToString();
         }
         private void TxtNoteSpeed_LostFocus(object sender, RoutedEventArgs e) {
-            double prevSpeed = int.Parse((string)beatMap.GetValueForMap(currentDifficulty, "_noteJumpMovementSpeed"));
+            double prevSpeed = int.Parse((string)beatMap.GetValueForMap(mapEditor.currentDifficultyIndex, "_noteJumpMovementSpeed"));
             double speed;
             if (double.TryParse(txtNoteSpeed.Text, out speed) && speed > 0) {
-                beatMap.SetValueForMap(currentDifficulty, "_noteJumpMovementSpeed", speed);
+                beatMap.SetValueForMap(mapEditor.currentDifficultyIndex, "_noteJumpMovementSpeed", speed);
             } else {
                 MessageBox.Show($"The note speed must be a positive number.", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
                 speed = prevSpeed;
@@ -854,7 +830,7 @@ namespace Edda {
             editorSnapToGrid = (checkGridSnap.IsChecked == true);
         }
         private void TxtGridOffset_LostFocus(object sender, RoutedEventArgs e) {
-            double prevOffset = Helper.DoubleParseInvariant((string)beatMap.GetCustomValueForMap(currentDifficulty, "_editorOffset"));
+            double prevOffset = Helper.DoubleParseInvariant((string)beatMap.GetCustomValueForMap(mapEditor.currentDifficultyIndex, "_editorOffset"));
             double offset;
             if (double.TryParse(txtGridOffset.Text, out offset)) {
                 if (offset != prevOffset) {
@@ -865,7 +841,7 @@ namespace Edda {
                     }
 
                     editorGridOffset = offset;
-                    beatMap.SetCustomValueForMap(currentDifficulty, "_editorOffset", offset);
+                    beatMap.SetCustomValueForMap(mapEditor.currentDifficultyIndex, "_editorOffset", offset);
                     UpdateEditorGridHeight();
                 }
             } else {
@@ -875,12 +851,12 @@ namespace Edda {
             txtGridOffset.Text = offset.ToString();
         }
         private void TxtGridSpacing_LostFocus(object sender, RoutedEventArgs e) {
-            double prevSpacing = Helper.DoubleParseInvariant((string)beatMap.GetCustomValueForMap(currentDifficulty, "_editorGridSpacing"));
+            double prevSpacing = Helper.DoubleParseInvariant((string)beatMap.GetCustomValueForMap(mapEditor.currentDifficultyIndex, "_editorGridSpacing"));
             double spacing;
             if (double.TryParse(txtGridSpacing.Text, out spacing)) {
                 if (spacing != prevSpacing) {
                     editorGridSpacing = spacing;
-                    beatMap.SetCustomValueForMap(currentDifficulty, "_editorGridSpacing", spacing);
+                    beatMap.SetCustomValueForMap(mapEditor.currentDifficultyIndex, "_editorGridSpacing", spacing);
                     UpdateEditorGridHeight();
                 }
             } else {
@@ -890,13 +866,13 @@ namespace Edda {
             txtGridSpacing.Text = spacing.ToString();
         }
         private void TxtGridDivision_LostFocus(object sender, RoutedEventArgs e) {
-            int prevDiv = int.Parse((string)beatMap.GetCustomValueForMap(currentDifficulty, "_editorGridDivision"));
+            int prevDiv = int.Parse((string)beatMap.GetCustomValueForMap(mapEditor.currentDifficultyIndex, "_editorGridDivision"));
             int div;
 
             if (int.TryParse(txtGridDivision.Text, out div) && Helper.DoubleRangeCheck(div, 1, Const.Editor.GridDivisionMax)) {
                 if (div != prevDiv) {
                     editorGridDivision = div;
-                    beatMap.SetCustomValueForMap(currentDifficulty, "_editorGridDivision", div);
+                    beatMap.SetCustomValueForMap(mapEditor.currentDifficultyIndex, "_editorGridDivision", div);
                     DrawEditorGrid(false);
                 }
             } else {
@@ -1090,7 +1066,7 @@ namespace Edda {
                 if (editorSelColEnd == -1) {
                     editorSelColEnd = e.GetPosition(EditorGrid).X < EditorGrid.ActualWidth/2 ? 0 : 3;
                 }
-                foreach (Note n in mapEditor.notes) {
+                foreach (Note n in mapEditor.currentMapDifficulty.notes) {
                     // minor optimisation
                     if (n.beat > Math.Max(startBeat, endBeat)) {
                         break;
@@ -1112,7 +1088,7 @@ namespace Edda {
                 double beat = editorSnapToGrid ? editorMouseBeatSnapped : editorMouseBeatUnsnapped;
                 Note n = new Note(beat, editorMouseGridCol);
 
-                if (mapEditor.notes.Contains(n)) {
+                if (mapEditor.currentMapDifficulty.notes.Contains(n)) {
                     if (shiftKeyDown) {
                         mapEditor.ToggleSelection(n);
                     } else {
@@ -1132,7 +1108,7 @@ namespace Edda {
             // remove the note
             double beat = editorSnapToGrid ? editorMouseBeatSnapped : editorMouseBeatUnsnapped;
             Note n = new Note(beat, editorMouseGridCol);
-            if (mapEditor.notes.Contains(n)) {
+            if (mapEditor.currentMapDifficulty.notes.Contains(n)) {
                 mapEditor.RemoveNotes(n);
             } else {
                 mapEditor.UnselectAllNotes();
@@ -1142,7 +1118,6 @@ namespace Edda {
         // UI initialisation
         private void InitUI() {
             // reset variables
-            currentDifficulty = 0;
             prevScrollPercent = 0;
 
             lineSongProgress.Y1 = borderNavWaveform.ActualHeight;
@@ -1162,18 +1137,16 @@ namespace Edda {
 
             comboEnvironment.SelectedIndex = Const.BeatmapDefaults.EnvironmentNames.IndexOf((string)beatMap.GetValue("_environmentName"));
 
-            for (int i = 0; i < mapEditors.Length; i++) {
-                mapEditors[i] = null;
-            }
+            mapEditor = new MapEditor(this);
 
-            UpdateDifficultyLabels();
+            
 
             // enable UI parts
             EnableUI();
 
             // init difficulty-specific UI 
-            SwitchDifficultyMap(0, false, false);
-
+            SwitchDifficultyMap(0);
+            UpdateDifficultyButtons();
             UpdateEditorGridHeight();
             scrollEditor.ScrollToBottom();
             DrawEditorNavWaveform();
@@ -1184,8 +1157,6 @@ namespace Edda {
             btnChangeDifficulty0.IsEnabled = true;
             btnChangeDifficulty1.IsEnabled = true;
             btnChangeDifficulty2.IsEnabled = true;
-            EnableDifficultyButtons();
-            UpdateDifficultyButtonVisibility();
             txtSongName.IsEnabled = true;
             txtArtistName.IsEnabled = true;
             txtMapperName.IsEnabled = true;
@@ -1257,11 +1228,7 @@ namespace Edda {
             if (beatMap == null) {
                 return;
             }
-            if (mapEditor != null) {
-                beatMap.SetBPMChangesForMap(currentDifficulty, mapEditor.bpmChanges);
-                beatMap.SetBookmarksForMap(currentDifficulty, mapEditor.bookmarks);
-                beatMap.SetNotesForMap(currentDifficulty, mapEditor.notes);
-            }
+            mapEditor.SaveMap();
             beatMap.SaveToFile();
             this.Dispatcher.Invoke(() => {
                 imgSaved.Opacity = 1;
@@ -1511,43 +1478,46 @@ namespace Edda {
             borderImgCover.BorderThickness = new(0);
         }
         // manage difficulties
-        private void UpdateDifficultyButtonVisibility() {
+        public void UpdateDifficultyButtons() {
             var numDiff = beatMap.numDifficulties;
+
+            // update visible state
             for (var i = 0; i < numDiff; i++) {
                 ((Button)DifficultyChangePanel.Children[i]).Visibility = Visibility.Visible;
             }
             for (var i = numDiff; i < 3; i++) {
                 ((Button)DifficultyChangePanel.Children[i]).Visibility = Visibility.Hidden;
             }
-            btnDeleteDifficulty.IsEnabled = (numDiff == 1) ? false : true;
-            btnAddDifficulty.Visibility = (numDiff == 3) ? Visibility.Hidden : Visibility.Visible;
-        }
-        private void EnableDifficultyButtons() {
+
+            // update enabled state
             foreach (Button b in DifficultyChangePanel.Children) {
-                if (b.Name == ((Button)DifficultyChangePanel.Children[currentDifficulty]).Name) {
+                if (b.Name == ((Button)DifficultyChangePanel.Children[mapEditor.currentDifficultyIndex]).Name) {
                     b.IsEnabled = false;
                 } else {
                     b.IsEnabled = true;
                 }
             }
+
+            // update button labels
+            var difficultyLabels = new List<Label>() { lblDifficultyRank1, lblDifficultyRank2, lblDifficultyRank3 };
+            for (int i = 0; i < 3; i++) {
+                try {
+                    difficultyLabels[i].Content = beatMap.GetValueForMap(i, "_difficultyRank");
+                } catch {
+                    Trace.WriteLine($"INFO: difficulty index {i} not found");
+                    difficultyLabels[i].Content = "";
+                }
+            }
+
+            // update states of add/delete buttons
             btnDeleteDifficulty.IsEnabled = (beatMap.numDifficulties > 1);
             btnAddDifficulty.IsEnabled = (beatMap.numDifficulties < 3);
         }
-        private void SwitchDifficultyMap(int indx, bool savePrevious = true, bool redrawGrid = true) {
+        private void SwitchDifficultyMap(int indx) {
             PauseSong();
 
-            if (savePrevious) {
-                beatMap.SetNotesForMap(currentDifficulty, mapEditor.notes);
-                beatMap.SetBookmarksForMap(currentDifficulty, mapEditor.bookmarks);
-                beatMap.SetBPMChangesForMap(currentDifficulty, mapEditor.bpmChanges);
-            }
+            mapEditor.SelectDifficulty(indx);
 
-            currentDifficulty = indx;
-
-            if (mapEditors[indx] == null) {
-                mapEditors[indx] = new MapEditor(this, beatMap.GetNotesForMap(indx), beatMap.GetBPMChangesForMap(indx), beatMap.GetBookmarksForMap(indx), editorClipboard);
-            }
-            mapEditor = mapEditors[indx];
             noteScanner = new NoteScanner(this, drummer);
             beatScanner = new BeatScanner(metronome);
 
@@ -1570,45 +1540,9 @@ namespace Edda {
             editorGridSpacing = Helper.DoubleParseInvariant(txtGridSpacing.Text);
             editorGridOffset = Helper.DoubleParseInvariant(txtGridOffset.Text);
 
-            EnableDifficultyButtons();
+            UpdateDifficultyButtons();
             DrawNavBookmarks();
-            if (redrawGrid) {
-                UpdateEditorGridHeight();
-            }
-        }
-        private void SortDifficultyMaps() {
-            // bubble sort
-            bool swap;
-            do {
-                swap = false;
-                for (int i = 0; i < beatMap.numDifficulties - 1; i++) {
-                    int lowDiff = (int)beatMap.GetValueForMap(i, "_difficultyRank");
-                    int highDiff = (int)beatMap.GetValueForMap(i + 1, "_difficultyRank");
-                    if (lowDiff > highDiff) {
-                        SwapDifficultyMaps(i, i + 1);
-                        if (currentDifficulty == i) {
-                            currentDifficulty++;
-                        } else if (currentDifficulty == i + 1) {
-                            currentDifficulty--;
-                        }
-                        swap = true;
-                    }
-                }
-            } while (swap);
-            SwitchDifficultyMap(currentDifficulty);
-        }
-        private void SwapDifficultyMaps(int i, int j) {
-            var temp = mapEditors[i];
-            mapEditors[i] = mapEditors[j];
-            mapEditors[j] = temp;
-
-            beatMap.SwapMaps(i, j);
-            //if (currentDifficulty == i) {
-            //    SwitchDifficultyMap(j);
-            //} else if (currentDifficulty == j) {
-            //    SwitchDifficultyMap(i);
-            //}
-            EnableDifficultyButtons();
+            UpdateEditorGridHeight();
         }
 
         // song/note playback
@@ -1743,7 +1677,7 @@ namespace Edda {
             //Timeline.SetDesiredFrameRate(songPlayAnim, animationFramerate);
             sliderSongProgress.BeginAnimation(Slider.ValueProperty, songPlayAnim);
 
-            noteScanner.Start((int)(sliderSongProgress.Value - editorAudioLatency), new List<Note>(mapEditor.notes), globalBPM);
+            noteScanner.Start((int)(sliderSongProgress.Value - editorAudioLatency), new List<Note>(mapEditor.currentMapDifficulty.notes), globalBPM);
             beatScanner.Start((int)(sliderSongProgress.Value - editorAudioLatency), majorGridlines, globalBPM);
 
             if (songStream.CurrentTime > new TimeSpan(0, 0, 0, 0, editorAudioLatency)) {
@@ -1778,7 +1712,7 @@ namespace Edda {
             txtSongBPM.IsEnabled = true;
             btnChangeBPM.IsEnabled = true;
             txtGridOffset.IsEnabled = true;
-            EnableDifficultyButtons();
+            UpdateDifficultyButtons();
             scrollEditor.IsEnabled = true;
             sliderSongProgress.IsEnabled = true;
             borderNavWaveform.IsEnabled = true;
@@ -1900,7 +1834,7 @@ namespace Edda {
 
             // then draw the notes
             EditorGridNoteCanvas.Children.Clear();
-            DrawEditorNotes(mapEditor.notes);
+            DrawEditorNotes(mapEditor.currentMapDifficulty.notes);
 
             // including the mouseover preview note
             imgPreviewNote.Width = unitLength;
@@ -2000,8 +1934,8 @@ namespace Edda {
                 counter++;
 
                 // check for BPM change
-                if (bpmChangeCounter < mapEditor.bpmChanges.Count && Helper.DoubleApproxGreaterEqual((offset - userOffset) / unitLength, mapEditor.bpmChanges[bpmChangeCounter].globalBeat)) {
-                    BPMChange next = mapEditor.bpmChanges[bpmChangeCounter];
+                if (bpmChangeCounter < mapEditor.currentMapDifficulty.bpmChanges.Count && Helper.DoubleApproxGreaterEqual((offset - userOffset) / unitLength, mapEditor.currentMapDifficulty.bpmChanges[bpmChangeCounter].globalBeat)) {
+                    BPMChange next = mapEditor.currentMapDifficulty.bpmChanges[bpmChangeCounter];
 
                     offset = next.globalBeat * unitLength + userOffset;
                     localBPM = next.BPM;
@@ -2052,7 +1986,7 @@ namespace Edda {
             DrawEditorNotes(new List<Note>() { n });
         }
         private void DrawEditorGridBookmarks() {
-            foreach (Bookmark b in mapEditor.bookmarks) {
+            foreach (Bookmark b in mapEditor.currentMapDifficulty.bookmarks) {
                 Canvas bookmarkCanvas = new();
                 Canvas.SetRight(bookmarkCanvas, 0);
                 Canvas.SetBottom(bookmarkCanvas, unitLength * b.beat + unitHeight / 2);
@@ -2137,17 +2071,6 @@ namespace Edda {
             }
         }
         private void DrawEditorGridBPMChanges() {
-            string FormatRelativeBPMChange(BPMChange b, BPMChange prev) {
-                if (b.BPM != prev.BPM && b.gridDivision != prev.gridDivision) {
-                    return $"{b.BPM} BPM\n1/{b.gridDivision} beat";
-                } else if (b.BPM != prev.BPM) {
-                    return $"{b.BPM} BPM";
-                } else if (b.gridDivision != prev.gridDivision) {
-                    return $"1/{b.gridDivision} beat";
-                } else {
-                    return $"Timing\nOffset";
-                }
-            }
             Label makeBPMChangeLabel(string content) {
                 var label = new Label();
                 label.Foreground = Brushes.White;
@@ -2162,7 +2085,7 @@ namespace Edda {
                 return label;
             }
             BPMChange prev = new BPMChange(0, globalBPM, editorGridDivision);
-            foreach (BPMChange b in mapEditor.bpmChanges) {
+            foreach (BPMChange b in mapEditor.currentMapDifficulty.bpmChanges) {
                 Canvas bpmChangeCanvas = new();
                 Canvas bpmChangeFlagCanvas = new();
 
@@ -2315,7 +2238,7 @@ namespace Edda {
         internal void DrawNavBookmarks() {
             canvasBookmarks.Children.Clear();
             canvasBookmarkLabels.Children.Clear();
-            foreach (Bookmark b in mapEditor.bookmarks) {
+            foreach (Bookmark b in mapEditor.currentMapDifficulty.bookmarks) {
                 var l = makeLine(borderNavWaveform.ActualWidth, borderNavWaveform.ActualHeight * (1 - 60000 * b.beat / (globalBPM * sliderSongProgress.Maximum)));
                 l.Stroke = (SolidColorBrush)new BrushConverter().ConvertFrom(Const.Editor.NavBookmark.Colour);
                 l.StrokeThickness = Const.Editor.NavBookmark.Thickness;
@@ -2406,24 +2329,24 @@ namespace Edda {
         private void ResnapAllNotes(double newOffset) {
             var offsetDelta = newOffset - editorGridOffset;
             var beatOffset = globalBPM / 60 * offsetDelta;
-            for (int i = 0; i < mapEditor.notes.Count; i++) {
+            for (int i = 0; i < mapEditor.currentMapDifficulty.notes.Count; i++) {
                 Note n = new Note();
-                n.beat = mapEditor.notes[i].beat + beatOffset;
-                n.col = mapEditor.notes[i].col;
-                mapEditor.notes[i] = n;
+                n.beat = mapEditor.currentMapDifficulty.notes[i].beat + beatOffset;
+                n.col = mapEditor.currentMapDifficulty.notes[i].col;
+                mapEditor.currentMapDifficulty.notes[i] = n;
             }
             // invalidate selections
             mapEditor.UnselectAllNotes();
         }
         private int UpdateMedalDistance(int medal, string strDist) {
             if (strDist.Trim() == "") {
-                beatMap.SetMedalDistanceForMap(currentDifficulty, medal, 0);
+                beatMap.SetMedalDistanceForMap(mapEditor.currentDifficultyIndex, medal, 0);
                 return 0;
             }
-            int prevDist = (int)beatMap.GetMedalDistanceForMap(currentDifficulty, medal);
+            int prevDist = (int)beatMap.GetMedalDistanceForMap(mapEditor.currentDifficultyIndex, medal);
             int dist;
             if (int.TryParse(strDist, out dist) && dist >= 0) {
-                beatMap.SetMedalDistanceForMap(currentDifficulty, medal, dist);
+                beatMap.SetMedalDistanceForMap(mapEditor.currentDifficultyIndex, medal, dist);
             } else {
                 MessageBox.Show($"The distance must be a non-negative integer.", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
                 dist = prevDist;
@@ -2462,7 +2385,7 @@ namespace Edda {
             // find most recent BPM change
             double recentBPMChange = 0;
             double recentBPM = globalBPM;
-            foreach (var bc in mapEditor.bpmChanges) {
+            foreach (var bc in mapEditor.currentMapDifficulty.bpmChanges) {
                 if (Helper.DoubleApproxGreaterEqual(beat, bc.globalBeat)) {
                     recentBPMChange = bc.globalBeat;
                     recentBPM = bc.BPM;
@@ -2540,17 +2463,6 @@ namespace Edda {
                 BackupAndSaveBeatmap();
             }
             return !(res == MessageBoxResult.Cancel);
-        }
-        private void UpdateDifficultyLabels() {
-            var difficultyLabels = new List<Label>() { lblDifficultyRank1, lblDifficultyRank2, lblDifficultyRank3 };
-            for (int i = 0; i < 3; i++) {
-                try {
-                    difficultyLabels[i].Content = beatMap.GetValueForMap(i, "_difficultyRank");
-                } catch {
-                    Trace.WriteLine($"INFO: difficulty index {i} not found");
-                    difficultyLabels[i].Content = "";
-                }
-            }
         }
         private string RagnarockMapFolder() {
             var index = int.Parse(userSettings.GetValueForKey(Const.UserSettings.MapSaveLocationIndex));
