@@ -23,6 +23,7 @@ public class MapDifficulty {
 public class MapEditor {
     RagnarockMap beatMap;
     MainWindow parent;
+    public double globalBPM;
     public int currentDifficultyIndex = -1;
     MapDifficulty?[] difficultyMaps = new MapDifficulty[3];
     public MapDifficulty? currentMapDifficulty {
@@ -142,17 +143,17 @@ public class MapEditor {
     }
     public void AddBookmark(Bookmark b) {
         currentMapDifficulty?.bookmarks.Add(b);
-        parent.DrawNavBookmarks();
+        parent.editorUI.DrawNavBookmarks();
         parent.DrawEditorGrid(false);
     }
     public void RemoveBookmark(Bookmark b) {
         currentMapDifficulty?.bookmarks.Remove(b);
-        parent.DrawNavBookmarks();
+        parent.editorUI.DrawNavBookmarks();
         parent.DrawEditorGrid(false);
     }
     public void RenameBookmark(Bookmark b, string newName) {
         b.name = newName;
-        parent.DrawNavBookmarks();
+        parent.editorUI.DrawNavBookmarks();
         parent.DrawEditorGrid(false);
     }
     public void AddNotes(List<Note> notes, bool updateHistory = true) {
@@ -165,7 +166,7 @@ public class MapEditor {
         // draw the added notes
         // note: by drawing this note out of order, it is inconsistently layered with other notes.
         //       should we take the performance hit of redrawing the entire grid for visual consistency?
-        parent.DrawEditorNotes(drawNotes);
+        parent.editorUI.DrawEditorNotes(drawNotes);
 
         if (updateHistory) {
             currentMapDifficulty?.editorHistory.Add(new EditList<Note>(true, drawNotes));
@@ -178,7 +179,7 @@ public class MapEditor {
     public void RemoveNotes(List<Note> notes, bool updateHistory = true) {
 
         // undraw the added notes
-        parent.UndrawEditorNotes(notes);
+        parent.editorUI.UndrawEditorNotes(notes);
 
         if (updateHistory) {
             currentMapDifficulty?.editorHistory.Add(new EditList<Note>(false, notes));
@@ -210,7 +211,7 @@ public class MapEditor {
         foreach (Note n in notes) {
             Helper.InsertSortedUnique(currentMapDifficulty?.selectedNotes, n);        
         }
-        parent.HighlightEditorNotes(notes);
+        parent.editorUI.HighlightEditorNotes(notes);
     }
     public void SelectNewNotes(List<Note> notes) {
         UnselectAllNotes();
@@ -225,14 +226,14 @@ public class MapEditor {
         if (currentMapDifficulty?.selectedNotes == null) {
             return;
         }
-        parent.UnhighlightEditorNotes(n);
+        parent.editorUI.UnhighlightEditorNotes(n);
         currentMapDifficulty?.selectedNotes.Remove(n);
     }
     public void UnselectAllNotes() {
         if (currentMapDifficulty?.selectedNotes == null) {
             return;
         }
-        parent.UnhighlightEditorNotes(currentMapDifficulty?.selectedNotes);
+        parent.editorUI.UnhighlightEditorNotes(currentMapDifficulty?.selectedNotes);
         currentMapDifficulty?.selectedNotes.Clear();
     }
     public void CopySelection() {

@@ -16,7 +16,7 @@ namespace Edda {
         public ChangeBPMWindow(MainWindow caller, List<BPMChange> BPMChanges) {
             InitializeComponent();
             this.caller = caller;
-            this.globalBPM = caller.globalBPM;
+            this.globalBPM = caller.mapEditor.globalBPM;
             this.BPMChanges = BPMChanges;
             dataBPMChange.ItemsSource = this.BPMChanges;
             lblGlobalBPM.Content = $"{Math.Round(globalBPM, 3)}";
@@ -82,7 +82,7 @@ namespace Edda {
         }
 
         private void dataBPMChange_AddingNewItem(object sender, AddingNewItemEventArgs e) {
-            e.NewItem = new BPMChange(Math.Round(caller.sliderSongProgress.Value / 60000 * globalBPM, 3), caller.globalBPM, caller.editorGridDivision);
+            e.NewItem = new BPMChange(Math.Round(caller.sliderSongProgress.Value / 60000 * globalBPM, 3), caller.mapEditor.globalBPM, caller.editorUI.gridDivision);
         }
     }
 }
