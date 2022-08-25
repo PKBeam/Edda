@@ -166,7 +166,7 @@ public class MapEditor {
         // draw the added notes
         // note: by drawing this note out of order, it is inconsistently layered with other notes.
         //       should we take the performance hit of redrawing the entire grid for visual consistency?
-        parent.editorUI.DrawEditorNotes(drawNotes);
+        parent.editorUI.DrawNotes(drawNotes);
 
         if (updateHistory) {
             currentMapDifficulty?.editorHistory.Add(new EditList<Note>(true, drawNotes));
@@ -179,7 +179,7 @@ public class MapEditor {
     public void RemoveNotes(List<Note> notes, bool updateHistory = true) {
 
         // undraw the added notes
-        parent.editorUI.UndrawEditorNotes(notes);
+        parent.editorUI.UndrawNotes(notes);
 
         if (updateHistory) {
             currentMapDifficulty?.editorHistory.Add(new EditList<Note>(false, notes));
@@ -211,7 +211,7 @@ public class MapEditor {
         foreach (Note n in notes) {
             Helper.InsertSortedUnique(currentMapDifficulty?.selectedNotes, n);        
         }
-        parent.editorUI.HighlightEditorNotes(notes);
+        parent.editorUI.HighlightNotes(notes);
     }
     public void SelectNewNotes(List<Note> notes) {
         UnselectAllNotes();
@@ -226,14 +226,14 @@ public class MapEditor {
         if (currentMapDifficulty?.selectedNotes == null) {
             return;
         }
-        parent.editorUI.UnhighlightEditorNotes(n);
+        parent.editorUI.UnhighlightNotes(n);
         currentMapDifficulty?.selectedNotes.Remove(n);
     }
     public void UnselectAllNotes() {
         if (currentMapDifficulty?.selectedNotes == null) {
             return;
         }
-        parent.editorUI.UnhighlightEditorNotes(currentMapDifficulty?.selectedNotes);
+        parent.editorUI.UnhighlightNotes(currentMapDifficulty?.selectedNotes);
         currentMapDifficulty?.selectedNotes.Clear();
     }
     public void CopySelection() {

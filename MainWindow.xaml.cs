@@ -772,7 +772,7 @@ namespace Edda {
             txtDistMedal2.Text = dist == 0 ? "Auto" : dist.ToString();
         }
         private void CheckGridSnap_Click(object sender, RoutedEventArgs e) {
-            editorUI.editorSnapToGrid = (checkGridSnap.IsChecked == true);
+            editorUI.snapToGrid = (checkGridSnap.IsChecked == true);
         }
         private void TxtGridOffset_LostFocus(object sender, RoutedEventArgs e) {
             double prevOffset = Helper.DoubleParseInvariant((string)beatMap.GetCustomValueForMap(mapEditor.currentDifficultyIndex, "_editorOffset"));
@@ -845,9 +845,9 @@ namespace Edda {
         private void BorderNavWaveform_SizeChanged(object sender, SizeChangedEventArgs e) {
             if (beatMap != null) {
                 var lineY = sliderSongProgress.Value / sliderSongProgress.Maximum * borderNavWaveform.ActualHeight;
-                editorUI.DrawEditorNavWaveform();
+                editorUI.DrawNavWaveform();
                 editorUI.DrawNavBookmarks();
-                editorUI.SetSongMouseOverLinePos(lineY);
+                editorUI.SetSongMouseoverLinePosition(lineY);
             }
         }
         private void BorderNavWaveform_MouseLeftButtonDown(object sender, MouseButtonEventArgs e) {
@@ -861,7 +861,7 @@ namespace Edda {
         }
         private void BorderNavWaveform_MouseMove(object sender, MouseEventArgs e) {
             var mouseY = e.GetPosition(borderNavWaveform).Y;
-            editorUI.SetSongMouseOverLinePos(mouseY);
+            editorUI.SetSongMouseoverLinePosition(mouseY);
             var mouseTime = sliderSongProgress.Maximum * (1 - mouseY / borderNavWaveform.ActualHeight);
             if (navMouseDown) {
                 sliderSongProgress.Value = mouseTime;
@@ -878,7 +878,7 @@ namespace Edda {
         }
         private void ScrollEditor_SizeChanged(object sender, SizeChangedEventArgs e) {
             if (beatMap != null) {
-                editorUI.UpdateEditorGridHeight();
+                editorUI.UpdateGridHeight();
             }
             if (e.WidthChanged) {
                 if (beatMap != null) {
@@ -908,7 +908,7 @@ namespace Edda {
         }
         private void scrollEditor_MouseMove(object sender, MouseEventArgs e) {
             Point mousePos = e.GetPosition(EditorGrid);
-            editorUI.EditorGridMouseMove(mousePos, shiftKeyDown);
+            editorUI.GridMouseMove(mousePos, shiftKeyDown);
 
             // update beat display
             lblSelectedBeat.Content = $"Time: {Helper.TimeFormat(editorUI.snappedBeat * 60 / mapEditor.globalBPM)}, Global Beat: {Math.Round(editorUI.snappedBeat, 3)} ({Math.Round(editorUI.unsnappedBeat, 3)})";
@@ -933,12 +933,12 @@ namespace Edda {
         private void scrollEditor_PreviewMouseLeftButtonDown(object sender, MouseButtonEventArgs e) {
             Point mousePos = e.GetPosition(EditorGrid);
             editorDragSelectStart = mousePos;
-            editorUI.EditorGridMouseDown(mousePos);
+            editorUI.GridMouseDown(mousePos);
             editorMouseDown = true;
         }
         private void scrollEditor_PreviewMouseLeftButtonUp(object sender, MouseButtonEventArgs e) {
             Point mousePos = e.GetPosition(EditorGrid);
-            editorUI.EditorGridMouseUp(mousePos, shiftKeyDown);
+            editorUI.GridMouseUp(mousePos, shiftKeyDown);
             editorMouseDown = false;
         }
         private void scrollEditor_PreviewMouseRightButtonUp(object sender, MouseButtonEventArgs e) {
@@ -987,7 +987,7 @@ namespace Edda {
             UpdateDifficultyButtons();
             DrawEditorGrid();
             scrollEditor.ScrollToBottom();
-            editorUI.DrawEditorNavWaveform();
+            editorUI.DrawNavWaveform();
         }
         private void EnableUI() {
             btnSaveMap.IsEnabled = true;
@@ -1373,7 +1373,7 @@ namespace Edda {
             txtGridOffset.Text = (string)beatMap.GetCustomValueForMap(indx, "_editorOffset");
             txtGridSpacing.Text = (string)beatMap.GetCustomValueForMap(indx, "_editorGridSpacing");
             txtGridDivision.Text = (string)beatMap.GetCustomValueForMap(indx, "_editorGridDivision");
-
+            
             // set internal values
             editorUI.gridDivision = int.Parse(txtGridDivision.Text);
             editorUI.gridSpacing = Helper.DoubleParseInvariant(txtGridSpacing.Text);
@@ -1441,7 +1441,7 @@ namespace Edda {
                 editorUI.UndrawMainWaveform();
                 editorUI.DrawMainWaveform();
             }
-            editorUI.DrawEditorNavWaveform();
+            editorUI.DrawNavWaveform();
 
             return true;
         }
