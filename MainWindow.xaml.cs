@@ -19,6 +19,8 @@ using System.Reactive.Linq;
 using System.Threading;
 using System.IO.Compression;
 using Path = System.IO.Path;
+using SoundTouch.Net.NAudioSupport;
+
 /// <summary>
 /// Interaction logic for MainWindow.xaml
 /// </summary>
@@ -61,8 +63,6 @@ namespace Edda {
         public EditorUI editorUI;
         System.Timers.Timer autosaveTimer;
         UserSettings userSettings;
-        List<double> gridlines = new();
-        List<double> majorGridlines = new();
         bool shiftKeyDown;
         bool ctrlKeyDown;
 
@@ -88,6 +88,7 @@ namespace Edda {
         int editorAudioLatency; // ms
         SampleChannel songChannel;
         public VorbisWaveReader songStream;
+        SoundTouchWaveStream songTempoStream;
         public WasapiOut songPlayer;
         internal ParallelAudioPlayer drummer;
         ParallelAudioPlayer metronome;
@@ -612,6 +613,13 @@ namespace Edda {
             drummer.ChangeVolume(sliderDrumVol.Value);
             txtDrumVol.Text = $"{(int)(sliderDrumVol.Value * 100)}%";
         }
+        private void sliderSongTempo_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e) {
+            double newTempo = sliderSongTempo.Value;
+            songTempoStream.Tempo = newTempo;
+            noteScanner.SetTempo(newTempo);
+            beatScanner.SetTempo(newTempo);
+            txtSongTempo.Text = $"{(int)(newTempo * 100)}%";
+        }
         private void CheckMetronome_Click(object sender, RoutedEventArgs e) {
             metronome.isEnabled = (checkMetronome.IsChecked == true);
         }
@@ -984,6 +992,7 @@ namespace Edda {
 
             // init difficulty-specific UI 
             SwitchDifficultyMap(0);
+            sliderSongTempo.Value = 1.0;
             UpdateDifficultyButtons();
             DrawEditorGrid();
             scrollEditor.ScrollToBottom();
@@ -1446,10 +1455,10 @@ namespace Edda {
             return true;
         }
         private void LoadSong() {
-
             var songPath = beatMap.PathOf((string)beatMap.GetValue("_songFilename"));
             songStream = new VorbisWaveReader(songPath);
-            songChannel = new SampleChannel(songStream);
+            songTempoStream = new SoundTouchWaveStream(songStream);
+            songChannel = new SampleChannel(songTempoStream);
             songChannel.Volume = (float)sliderSongVol.Value;
             songPlayer = new WasapiOut(AudioClientShareMode.Shared, Const.Audio.WASAPILatencyTarget);
             songPlayer.Init(songChannel);
@@ -1500,6 +1509,7 @@ namespace Edda {
             scrollEditor.IsEnabled = false;
             sliderSongProgress.IsEnabled = false;
             borderNavWaveform.IsEnabled = false;
+            sliderSongTempo.IsEnabled = false; 
 
             // hide editor
             editorUI.SetPreviewNoteVisibility(Visibility.Hidden);
@@ -1511,12 +1521,12 @@ namespace Edda {
             songPlayAnim = new DoubleAnimation();
             songPlayAnim.From = sliderSongProgress.Value;
             songPlayAnim.To = sliderSongProgress.Maximum;
-            songPlayAnim.Duration = new Duration(remainingTimeSpan);
+            songPlayAnim.Duration = new Duration(remainingTimeSpan/songTempoStream.Tempo);
             //Timeline.SetDesiredFrameRate(songPlayAnim, animationFramerate);
             sliderSongProgress.BeginAnimation(Slider.ValueProperty, songPlayAnim);
 
             noteScanner.Start((int)(sliderSongProgress.Value - editorAudioLatency), new List<Note>(mapEditor.currentMapDifficulty.notes), mapEditor.globalBPM);
-            beatScanner.Start((int)(sliderSongProgress.Value - editorAudioLatency), majorGridlines, mapEditor.globalBPM);
+            beatScanner.Start((int)(sliderSongProgress.Value - editorAudioLatency), editorUI.GetBeats(), mapEditor.globalBPM);
 
             if (songStream.CurrentTime > new TimeSpan(0, 0, 0, 0, editorAudioLatency)) {
                 songStream.CurrentTime = songStream.CurrentTime - new TimeSpan(0, 0, 0, 0, editorAudioLatency);
@@ -1554,6 +1564,7 @@ namespace Edda {
             scrollEditor.IsEnabled = true;
             sliderSongProgress.IsEnabled = true;
             borderNavWaveform.IsEnabled = true;
+            sliderSongTempo.IsEnabled = true;
 
             // reset scroll animation
             songPlayAnim.BeginTime = null;

@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 
 public class AudioScanner {
     int scanIndex;
+    double tempo;
     protected int stopwatchOffset = 0;
     protected Stopwatch stopwatch;
     CancellationTokenSource tokenSource;
@@ -16,9 +17,17 @@ public class AudioScanner {
 
     ParallelAudioPlayer parallelAudioPlayer;
 
-    public AudioScanner(ParallelAudioPlayer parallelAudioPlayer) {
+    public AudioScanner(ParallelAudioPlayer parallelAudioPlayer, double tempo) {
         SetAudioPlayer(parallelAudioPlayer);
         this.stopwatch = new Stopwatch();
+        this.tempo = tempo;
+    }
+
+    public AudioScanner(ParallelAudioPlayer parallelAudioPlayer) : this(parallelAudioPlayer, 1.0) {
+    }
+
+    public void SetTempo(double newTempo) {
+        tempo = newTempo;
     }
 
     public void SetAudioPlayer(ParallelAudioPlayer parallelAudioPlayer) {
@@ -68,7 +77,7 @@ public class AudioScanner {
     private void ScanNotes() {
         OnNoteScanBegin();
 
-        var currentTime = stopwatch.ElapsedMilliseconds + stopwatchOffset;
+        var currentTime = stopwatch.ElapsedMilliseconds * tempo + stopwatchOffset;
         // check if we started past the last note in the song
         if (scanIndex >= notes.Count) {
             return;

@@ -597,10 +597,10 @@ public class EditorUI {
             img.Uid = Helper.UidGenerator(n);
             var name = Helper.NameGenerator(n);
 
-            //if (FindName(name) != null) {
-            //    UnregisterName(name);
-            //}
-            //RegisterName(name, img);
+            if (parentWindow.FindName(name) != null) {
+                parentWindow.UnregisterName(name);
+            }
+            parentWindow.RegisterName(name, img);
 
             Canvas.SetLeft(img, noteXOffset + editorMarginGrid.Margin.Left);
             Canvas.SetBottom(img, noteHeight);
@@ -651,7 +651,9 @@ public class EditorUI {
     internal void UnhighlightNotes(Note n) {
         UnhighlightNotes(new List<Note>() { n });
     }
-
+    internal List<double> GetBeats() {
+        return majorGridBeatLines;
+    }
     // mouse input handling
     internal void GridMouseMove(Point mousePos, bool snapMouseMovements) {
         UpdateMousePosition(mousePos);

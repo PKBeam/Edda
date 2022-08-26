@@ -437,34 +437,45 @@
                             </Border>
 
                             <Border Grid.Row="4" Grid.Column="0">
-                                <TextBlock Padding="10 0 0 0" VerticalAlignment="Bottom">Metronome</TextBlock>
+                                <TextBlock Padding="10 0 0 0" VerticalAlignment="Center">Song Speed</TextBlock>
                             </Border>
 
                             <Border Grid.Row="4" Grid.Column="1">
+                                <DockPanel>
+                                    <TextBlock x:Name="txtSongTempo" DockPanel.Dock="Right" Width="30" Margin="5 0 0 0">0%</TextBlock>
+                                    <Slider x:Name="sliderSongTempo" Maximum="1" IsMoveToPointEnabled="True" ValueChanged="sliderSongTempo_ValueChanged"/>
+                                </DockPanel>
+                            </Border>
+
+                            <Border Grid.Row="5" Grid.Column="0">
+                                <TextBlock Padding="10 0 0 0" VerticalAlignment="Bottom">Metronome</TextBlock>
+                            </Border>
+
+                            <Border Grid.Row="5" Grid.Column="1">
                                 <StackPanel Orientation="Horizontal">
                                     <CheckBox x:Name="checkMetronome" VerticalAlignment="Center" Click="CheckMetronome_Click"></CheckBox>
                                 </StackPanel>
                             </Border>
 
-                            <Border Grid.Row="5" Grid.Column="0" Margin="0 3 0 0">
+                            <Border Grid.Row="6" Grid.Column="0" Margin="0 3 0 0">
                                 <TextBlock VerticalAlignment="Center" FontWeight="Bold" FontSize="12">Editing Grid</TextBlock>
                             </Border>
 
-                            <Border Grid.Row="6" Grid.Column="0">
+                            <Border Grid.Row="7" Grid.Column="0">
                                 <TextBlock Padding="10 0 0 0" VerticalAlignment="Center">Snap to Grid</TextBlock>
                             </Border>
 
-                            <Border Grid.Row="6" Grid.Column="1">
+                            <Border Grid.Row="7" Grid.Column="1">
                                 <StackPanel Orientation="Horizontal">
                                     <CheckBox x:Name="checkGridSnap" VerticalAlignment="Center" Click="CheckGridSnap_Click" IsChecked="True"></CheckBox>
                                 </StackPanel>
                             </Border>
 
-                            <Border Grid.Row="7" Grid.Column="0">
+                            <Border Grid.Row="8" Grid.Column="0">
                                 <TextBlock Padding="10 0 0 0" VerticalAlignment="Center">Beat Division</TextBlock>
                             </Border>
 
-                            <Border Grid.Row="7" Grid.Column="1">
+                            <Border Grid.Row="8" Grid.Column="1">
                                 <StackPanel Orientation="Horizontal">
                                     <TextBlock Margin="0 0 3 0" VerticalAlignment="Center">1/</TextBlock>
                                     <TextBox Width="30" x:Name="txtGridDivision" LostFocus="TxtGridDivision_LostFocus" VerticalAlignment="Center"/>
@@ -472,19 +483,19 @@
                             </Border>
 
                             <!-- Hide this; it's deprecated and broken -->
-                            <Border Grid.Row="8" Grid.Column="0" Visibility="Collapsed">
+                            <Border Grid.Row="9" Grid.Column="0" Visibility="Collapsed">
                                 <TextBlock Padding="10 0 0 0" VerticalAlignment="Center">Grid Offset</TextBlock>
                             </Border>
 
-                            <Border Grid.Row="8" Grid.Column="1" Visibility="Collapsed" Padding="5 5 10 5">
+                            <Border Grid.Row="9" Grid.Column="1" Visibility="Collapsed" Padding="5 5 10 5">
                                 <TextBox x:Name="txtGridOffset" Width="30" HorizontalAlignment="Left" LostFocus="TxtGridOffset_LostFocus"/>
                             </Border>
 
-                            <Border Grid.Row="9" Grid.Column="0">
+                            <Border Grid.Row="10" Grid.Column="0">
                                 <TextBlock Padding="10 0 0 0" VerticalAlignment="Center">Grid Spacing</TextBlock>
                             </Border>
 
-                            <Border Grid.Row="9" Grid.Column="1" Padding="5 5 10 5">
+                            <Border Grid.Row="10" Grid.Column="1" Padding="5 5 10 5">
                                 <TextBox x:Name="txtGridSpacing" HorizontalAlignment="Left" Width="30" LostFocus="TxtGridSpacing_LostFocus"/>
                             </Border>
 
