@@ -3,12 +3,10 @@ using Edda;
 using DiscordRPC;
 
 public class DiscordClient {
-	MainWindow parent;
     DiscordRpcClient client;
 	DateTime startTime;
 	bool enabled = false;
-	public DiscordClient(MainWindow parent) {
-		this.parent = parent;
+	public DiscordClient() {
 		UpdateStartTime();
 		InitClient();
 	}
@@ -16,13 +14,13 @@ public class DiscordClient {
 	public void UpdateStartTime() {
 		startTime = DateTime.UtcNow;
 	}
-
-	public void SetPresence() {
+    public void SetPresence() {
+		SetPresence(null, 0);
+    }
+    public void SetPresence(string songName, int numNotes) {
 		if (!enabled) {
 			return;
         }
-		var songName = parent.mapName;
-		var numNotes = parent.mapNoteCount;
 		var rp = new RichPresence() {
 			Details = songName == null ? "No song open" : $"Mapping: {songName}",
 			State = songName == null ? "" : $"{numNotes} notes placed",

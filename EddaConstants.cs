@@ -19,6 +19,8 @@ namespace Const {
             #endif
         public static string ProgramDataDir => Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "Edda");
         public static string SettingsFile  => Path.Combine(ProgramDataDir, "settings.txt");
+        public static string RecentOpenedMapsFile => Path.Combine(ProgramDataDir, "recentMaps.txt");
+        public const int MaxRecentOpenedMaps= 5;
         public static string DocumentsMapFolder => Path.Combine(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), "Ragnarock"), "CustomSongs");
         public static string GameInstallRelativeMapFolder => Path.Combine("Ragnarock", "CustomSongs");
         public const string OldSettingsFile = "settings.txt";

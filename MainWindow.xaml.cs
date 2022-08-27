@@ -34,16 +34,7 @@ namespace Edda {
             set { btnSongPlayer.Tag = (value == false) ? 0 : 1; }
             get { return btnSongPlayer.Tag != null && (int)btnSongPlayer.Tag == 1; }
         }
-        public string mapName {
-            get {
-                return (string)beatMap?.GetValue("_songName");
-            }
-        }
-        public int mapNoteCount {
-            get {
-                return mapEditor?.currentMapDifficulty?.notes?.Count ?? 0;
-            }
-        }
+
         public double songSeekPosition {
             get {
                 return songStream.CurrentTime.TotalMilliseconds;
@@ -74,7 +65,6 @@ namespace Edda {
         double prevScrollPercent = 0;       // percentage of scroll progress before the scroll viewport was changed
 
         // Discord RPC
-        DiscordClient discordClient;
 
         // Editor variables
         Point editorDragSelectStart;
@@ -95,6 +85,16 @@ namespace Edda {
         NoteScanner noteScanner;
         BeatScanner beatScanner;
 
+        RecentOpenedFolders recentMaps {
+            get {
+                return ((RagnarockEditor.App)Application.Current).RecentMaps;
+            }
+        }
+        DiscordClient discordClient {
+            get {
+                return ((RagnarockEditor.App)Application.Current).DiscordClient;
+            }
+        }
         public MainWindow() {
 
             InitializeComponent();
@@ -115,7 +115,7 @@ namespace Edda {
                     Trace.WriteLine("INFO: Unable to autosave beatmap");
                 }
             };
-            discordClient = new DiscordClient(this);
+            
 
             InitSettings();
             LoadSettingsFile();
@@ -384,6 +384,11 @@ namespace Edda {
         }
         private void BtnNewMap_Click(object sender, RoutedEventArgs e) {
 
+            CreateNewMap();
+
+
+        }
+        private void CreateNewMap() {
             // check if map already open
             if (beatMap != null) {
                 if (!PromptBeatmapSave()) {
@@ -399,11 +404,12 @@ namespace Edda {
             }
 
             InitNewMap(newMapFolder);
-
-
         }
         private void BtnOpenMap_Click(object sender, RoutedEventArgs e) {
-
+            OpenMap();
+            
+        }
+        private void OpenMap() {
             // check if map already open
             if (beatMap != null) {
                 if (!PromptBeatmapSave()) {
@@ -421,8 +427,9 @@ namespace Edda {
             // try to load info
             var oldBeatMap = beatMap;
             try {
-                
+
                 InitOpenMap(openMapFolder);
+
 
             } catch (Exception ex) {
                 MessageBox.Show($"An error occured while opening the map:\n{ex.Message}.", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
@@ -435,13 +442,14 @@ namespace Edda {
                 }
                 return;
             }
-            discordClient.SetPresence();
         }
         private void BtnSaveMap_Click(object sender, RoutedEventArgs e) {
             BackupAndSaveBeatmap();
-            //SaveBeatmap();
         }
         private void BtnExportMap_Click(object sender, RoutedEventArgs e) {
+            ExportMap();
+        }
+        private void ExportMap() {
             var d = new CommonOpenFileDialog();
             d.Title = "Select a folder to export the map to";
             d.IsFolderPicker = true;
@@ -467,7 +475,7 @@ namespace Edda {
                 foreach (var file in Directory.GetFiles(baseFolder)) {
                     copyFiles.Add(file);
                 }
-                
+
                 if (Directory.Exists(zipFolder)) {
                     Directory.Delete(zipFolder, true);
                 }
@@ -479,7 +487,7 @@ namespace Edda {
                     File.Copy(file, System.IO.Path.Combine(zipFolder, System.IO.Path.GetFileName(file)));
                 }
                 ZipFile.CreateFromDirectory(zipFolder, zipPath);
-                
+
             } catch (Exception) {
                 MessageBox.Show($"An error occured while creating the zip file.", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
             } finally {
@@ -934,6 +942,9 @@ namespace Edda {
 
             // open the newly created map
             InitUI();
+
+            recentMaps.AddRecentlyOpened((string)beatMap.GetValue("_songName"), newMapFolder);
+            recentMaps.Write();
         }
 
         internal void InitOpenMap(string mapFolder) {
@@ -942,11 +953,16 @@ namespace Edda {
             LoadCoverImage();
             InitUI(); // cover image file
 
+            recentMaps.AddRecentlyOpened((string)beatMap.GetValue("_songName"), mapFolder);
+            recentMaps.Write();
+
             // bandaid fix to prevent WPF from committing unnecessarily large amounts of memory
             new Thread(new ThreadStart(delegate {
                 Thread.Sleep(500);
                 this.Dispatcher.Invoke(() => DrawEditorGrid());
             })).Start();
+
+            discordClient.SetPresence((string)beatMap?.GetValue("_songName"), mapEditor?.currentMapDifficulty?.notes?.Count ?? 0);
         }
         // UI initialisation
         private void InitUI() {
@@ -972,6 +988,7 @@ namespace Edda {
             mapEditor = new MapEditor(this);
             mapEditor.globalBPM = Helper.DoubleParseInvariant((string)beatMap.GetValue("_beatsPerMinute"));
             editorUI.mapEditor = mapEditor;
+            editorUI.showWaveform = (checkWaveform.IsChecked == true);
 
             var songPath = beatMap.PathOf((string)beatMap.GetValue("_songFilename"));
             editorUI.InitWaveforms(songPath);
@@ -1217,11 +1234,6 @@ namespace Edda {
                 userSettings.SetValueForKey(Const.UserSettings.DefaultNoteVolume, Const.DefaultUserSettings.DefaultNoteVolume);
             }
 
-            if (userSettings.GetValueForKey(Const.UserSettings.EnableDiscordRPC) == null) {
-                userSettings.SetValueForKey(Const.UserSettings.EnableDiscordRPC, Const.DefaultUserSettings.EnableDiscordRPC);
-            }
-            SetDiscordRPC(userSettings.GetBoolForKey(Const.UserSettings.EnableDiscordRPC));
-
             if (userSettings.GetValueForKey(Const.UserSettings.EnableAutosave) == null) {
                 userSettings.SetValueForKey(Const.UserSettings.EnableAutosave, Const.DefaultUserSettings.EnableAutosave);
             }
@@ -1250,15 +1262,6 @@ namespace Edda {
             }
 
             userSettings.Write();
-        }
-
-        // Discord RPC
-        public void SetDiscordRPC(bool enable) {
-            if (enable) {
-                discordClient.Enable();
-            } else {
-                discordClient.Disable();
-            }
         }
 
         // manage cover image
@@ -1716,5 +1719,6 @@ namespace Edda {
                 ((ChangeBPMWindow)win).RefreshBPMChanges();
             }
         }
+
     }
 }

@@ -266,10 +266,12 @@ public class EditorUI {
         DrawGridLines(EditorGrid.Height);
 
         // then draw the waveform
+        if (showWaveform) {
+            EditorGrid.Children.Add(imgAudioWaveform);
+        }
         if (redrawWaveform && showWaveform && EditorGrid.Height - scrollEditor.ActualHeight > 0) {
             DrawMainWaveform();
         }
-        EditorGrid.Children.Add(imgAudioWaveform);
 
         // then draw the notes
         noteCanvas.Children.Clear();

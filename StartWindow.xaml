@@ -36,7 +36,7 @@
                     <Image Source="/Resources/newMap.png"/>
                     <StackPanel Margin="5 0 0 0" VerticalAlignment="Center">
                         <TextBlock Foreground="#002668" FontSize="18" FontWeight="Bold" FontFamily="Bahnschrift">New Map</TextBlock>
-                        <TextBlock FontSize="14" FontFamily="Bahnschrift SemiLight">Create a new map for Ragnaröck VR</TextBlock>
+                        <TextBlock FontSize="14" FontFamily="Bahnschrift SemiLight">Create a new beat map for Ragnaröck VR</TextBlock>
                     </StackPanel>
                 </StackPanel>
             </Button>
@@ -45,13 +45,13 @@
                     <Image Source="/Resources/openMap.png"/>
                     <StackPanel Margin="7 0 0 0" VerticalAlignment="Center">
                         <TextBlock Foreground="#002668" FontSize="18" FontWeight="Bold" FontFamily="Bahnschrift">Open Map</TextBlock>
-                        <TextBlock FontSize="14" FontFamily="Bahnschrift SemiLight">Continue working on an existing map</TextBlock>
+                        <TextBlock FontSize="14" FontFamily="Bahnschrift SemiLight">Continue working on an existing beat map</TextBlock>
                     </StackPanel>
                 </StackPanel>
             </Button>
             <Line X1="0" X2="1000" Margin="0 5 0 10" StrokeThickness="1.5" Stroke="{DynamicResource {x:Static SystemColors.ControlDarkDarkBrushKey}}" HorizontalAlignment="Center"></Line>
             <TextBlock Foreground="#002668" FontSize="18" FontWeight="Bold" FontFamily="Bahnschrift" Margin="0 0 0 10">Recent Maps</TextBlock>
-            <ListView Height="220">
+            <ListView x:Name="ListViewRecentMaps" Height="200" ScrollViewer.HorizontalScrollBarVisibility="Auto">
                 <ListView.Background>
                     <LinearGradientBrush EndPoint="0.5,1" StartPoint="0.5,0">
                         <GradientStop Color="{DynamicResource {x:Static SystemColors.ControlLightColorKey}}" Offset="0"/>
@@ -63,7 +63,7 @@
                         <Image Source="/Resources/blankMap.png"/>
                         <StackPanel Margin="7 0 0 0" VerticalAlignment="Center">
                             <TextBlock Foreground="#002668" FontSize="14" FontWeight="Bold" FontFamily="Bahnschrift">Song Name</TextBlock>
-                            <TextBlock FontSize="11" FontFamily="Bahnschrift SemiLight">C:/SongPath</TextBlock>
+                            <TextBlock FontSize="11" FontFamily="Bahnschrift SemiLight">C:/SongPath/SongPath/SongPath/SongPath/SongPath/SongPath/SongPath/SongPath/SongPath/SongPath/SongPath</TextBlock>
                         </StackPanel>
                     </StackPanel>
                 </ListViewItem>
