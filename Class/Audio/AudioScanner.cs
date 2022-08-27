@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Threading;
 using System.Threading.Tasks;
-using Edda.Class;
+using Edda.Const;
 
 public class AudioScanner {
     int scanIndex;

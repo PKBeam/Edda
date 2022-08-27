@@ -5,25 +5,10 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:Edda"
         mc:Ignorable="d"
-        Title="Settings" Name="Window" Width="260" Height="515" ResizeMode="NoResize" WindowStartupLocation="CenterOwner" Background="{DynamicResource {x:Static SystemColors.ControlDarkBrushKey}}">
+        Title="Settings" Name="Window" Width="260" Height="450" ResizeMode="NoResize" WindowStartupLocation="CenterOwner" Background="{DynamicResource {x:Static SystemColors.ControlDarkBrushKey}}">
     <Grid>
         <DockPanel>
             
-            <Border DockPanel.Dock="Top" BorderBrush="{DynamicResource {x:Static SystemColors.ControlDarkDarkBrushKey}}" BorderThickness="0, 0, 0, 1">
-                <Border.Background>
-                    <LinearGradientBrush EndPoint="0.5,1" StartPoint="0.5,0">
-                        <GradientStop Color="{DynamicResource {x:Static SystemColors.ControlLightColorKey}}"/>
-                        <GradientStop Color="{DynamicResource {x:Static SystemColors.ControlDarkColorKey}}" Offset="1"/>
-                    </LinearGradientBrush>
-                </Border.Background>
-                <StackPanel Margin="7" Orientation="Horizontal">
-                    <Image Width="35" RenderOptions.BitmapScalingMode="Fant" Margin="0 0 8 0" Source="pack://application:,,,/Edda;component/resources/icon.png"/>
-                    <StackPanel>
-                        <Label x:Name="lblProgramName" Padding="0" FontSize="14" VerticalAlignment="Center" FontWeight="Bold">Edda v0.0.0</Label>
-                        <Label x:Name="lblRepoLink" Padding="0" FontSize="11" VerticalAlignment="Center" MouseDown="LblRepoLink_MouseDown" Foreground="{DynamicResource {x:Static SystemColors.HotTrackBrushKey}}" MouseEnter="lblRepoLink_MouseEnter" MouseLeave="lblRepoLink_MouseLeave">https://github.com/PKBeam/Edda</Label>
-                    </StackPanel>
-                </StackPanel>
-            </Border>
             <Border DockPanel.Dock="Bottom" BorderBrush="{DynamicResource {x:Static SystemColors.ControlDarkDarkBrushKey}}" BorderThickness="0, 1, 0, 0">
                 <Border.Background>
                     <LinearGradientBrush EndPoint="0.5,1" StartPoint="0.5,0">

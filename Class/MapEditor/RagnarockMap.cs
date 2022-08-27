@@ -4,7 +4,7 @@ using System.Globalization;
 using System.IO;
 using System.Linq;
 using Edda;
-using Edda.Class;
+using Edda.Const;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 

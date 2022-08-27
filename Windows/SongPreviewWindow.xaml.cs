@@ -1,4 +1,4 @@
-﻿using Edda.Class;
+﻿using Edda.Const;
 using NAudio.Vorbis;
 using System.IO;
 using System.Windows;

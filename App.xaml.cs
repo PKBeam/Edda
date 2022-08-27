@@ -2,10 +2,11 @@
 using System.Collections.Generic;
 using System.Configuration;
 using System.Data;
+using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Windows;
-using Edda.Class;
+using Edda.Const;
 
 namespace RagnarockEditor
 {
@@ -22,11 +23,20 @@ namespace RagnarockEditor
             this.UserSettings = new UserSettings(Program.SettingsFile);
             this.DiscordClient = new DiscordClient();
 
-            if (UserSettings.GetValueForKey(Edda.Class.UserSettings.EnableDiscordRPC) == null) {
-                UserSettings.SetValueForKey(Edda.Class.UserSettings.EnableDiscordRPC, DefaultUserSettings.EnableDiscordRPC);
+            if (UserSettings.GetValueForKey(Edda.Const.UserSettings.EnableDiscordRPC) == null) {
+                UserSettings.SetValueForKey(Edda.Const.UserSettings.EnableDiscordRPC, DefaultUserSettings.EnableDiscordRPC);
             }
-            SetDiscordRPC(UserSettings.GetBoolForKey(Edda.Class.UserSettings.EnableDiscordRPC));
+            SetDiscordRPC(UserSettings.GetBoolForKey(Edda.Const.UserSettings.EnableDiscordRPC));
 
+            try {
+                if (UserSettings.GetValueForKey(Edda.Const.UserSettings.CheckForUpdates) == true.ToString()) {
+                    //#if !DEBUG
+                    Helper.CheckForUpdates();
+                    //#endif
+                }
+            } catch {
+                Trace.WriteLine("INFO: Could not check for updates.");
+            }
         }
 
         public void SetDiscordRPC(bool enable) {

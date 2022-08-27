@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Windows.Media;
 using System.IO;
 
-namespace Edda.Class
+namespace Edda.Const
 {
     using MediaColor = Color;
     using DrawingColor = System.Drawing.Color;

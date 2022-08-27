@@ -5,7 +5,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         mc:Ignorable="d"
         WindowStartupLocation="CenterScreen"
-        x:Name="AppMainWindow" Title="Edda" Height="870" Width="900" MinHeight="450" MinWidth="900" Closed="AppMainWindow_Closed" KeyDown="AppMainWindow_KeyDown" KeyUp="AppMainWindow_KeyUp" PreviewKeyDown="AppMainWindow_PreviewKeyDown" Closing="AppMainWindow_Closing" Loaded="AppMainWindow_Loaded" ContentRendered="AppMainWindow_ContentRendered">
+        x:Name="AppMainWindow" Title="Edda" Height="870" Width="900" MinHeight="450" MinWidth="900" Closed="AppMainWindow_Closed" KeyDown="AppMainWindow_KeyDown" KeyUp="AppMainWindow_KeyUp" PreviewKeyDown="AppMainWindow_PreviewKeyDown" Closing="AppMainWindow_Closing" Loaded="AppMainWindow_Loaded">
     <DockPanel>
         <Border DockPanel.Dock="Top" Name="TopPanel" BorderBrush="{DynamicResource {x:Static SystemColors.ControlDarkDarkBrushKey}}" BorderThickness="0, 0, 0, 1">
             <Border.Background>
@@ -17,10 +17,12 @@
             <StackPanel>
                 <Menu Padding="3">
                     <MenuItem Header="_File">
-                        <MenuItem x:Name="MenuItemNewMap" Header="_New Map" InputGestureText="Ctrl+N"/>
-                        <MenuItem x:Name="MenuItemOpenMap" Header="_Open Map" InputGestureText="Ctrl+O"/>
-                        <MenuItem x:Name="MenuItemSaveMap" Header="_Save Map" InputGestureText="Ctrl+S"/>
-                        <MenuItem x:Name="MenuItemExportMap" Header="_Export File"/>
+                        <MenuItem x:Name="MenuItemNewMap" Header="_New Map" InputGestureText="Ctrl+N" Click="MenuItemNewMap_Click"/>
+                        <MenuItem x:Name="MenuItemOpenMap" Header="_Open Map" InputGestureText="Ctrl+O" Click="MenuItemOpenMap_Click"/>
+                        <MenuItem x:Name="MenuItemCloseMap" Header="_Close Map" Click="MenuItemCloseMap_Click"/>
+                        <MenuItem x:Name="MenuItemSaveMap" Header="_Save Map" InputGestureText="Ctrl+S" Click="MenuItemSaveMap_Click"/>
+                        <Separator />
+                        <MenuItem x:Name="MenuItemExportMap" Header="_Export File" Click="MenuItemExportMap_Click"/>
                     </MenuItem>
                     <MenuItem Header="_Edit">
                         <MenuItem Header="_New">
@@ -33,7 +35,18 @@
                             <MenuItem Header="_Timing Change" InputGestureText="Ctrl+T"/>
                             <MenuItem Header="_Grid-Snapped Timing Change" InputGestureText="Ctrl+Shift+T"/>
                         </MenuItem>
-                        <MenuItem Header="_Settings"/>
+                        <Separator />
+                        <MenuItem x:Name="MenuItemUndo" Header="_Undo" InputGestureText="Ctrl+Z" Click="MenuItemUndo_Click"/>
+                        <MenuItem x:Name="MenuItemRedo" Header="_Redo" InputGestureText="Ctrl+Y" Click="MenuItemRedo_Click"/>
+                        <Separator />
+                        <MenuItem x:Name="MenuItemCut" Header="_Cut" InputGestureText="Ctrl+X" Click="MenuItemCut_Click"/>
+                        <MenuItem x:Name="MenuItemCopy" Header="_Copy" InputGestureText="Ctrl+C" Click="MenuItemCopy_Click"/>
+                        <MenuItem x:Name="MenuItemPaste" Header="_Paste" InputGestureText="Ctrl+V" Click="MenuItemPaste_Click"/>
+                        <Separator />
+                        <MenuItem x:Name="MenuItemSelectAll" Header="_Select All" InputGestureText="Ctrl+A" Click="MenuItemSelectAll_Click"/>
+                        <MenuItem x:Name="MenuItemMirrorSelected" Header="_Mirror Selected" InputGestureText="Ctrl+M" Click="MenuItemMirrorSelected_Click"/>
+                        <Separator />
+                        <MenuItem x:Name="MenuItemSettings" Header="_Settings" Click="MenuItemSettings_Click"/>
                     </MenuItem>
                     <MenuItem Header="_View">
                         <MenuItem x:Name="MenuItemToggleLeftBar" Header="_Toggle Left Sidebar" InputGestureText="Ctrl+[" Click="MenuItemToggleLeftBar_Click"/>
@@ -43,68 +56,12 @@
                         <MenuItem x:Name="MenuItemBpmFinder" Header="_BPM Finder" Click="MenuItemBpmFinder_Click"/>
                     </MenuItem>
                     <MenuItem Header="_Help">
+                        <MenuItem x:Name="MenuItemCheckUpdates" Header="_Check For Updates" Click="MenuItemCheckUpdates_Click"/>
+                        <Separator />
                         <MenuItem x:Name="MenuItemUserGuide" Header="_User Guide" Click="MenuItemUserGuide_Click"/>
                         <MenuItem x:Name="MenuItemAboutPage" Header="_About Edda" Click="MenuItemAboutPage_Click"/>
                     </MenuItem>
                 </Menu>
-                <DockPanel Visibility="Collapsed">
-                    <StackPanel DockPanel.Dock="Left" Orientation="Horizontal">
-                        <StackPanel Margin="10 10 0 10">
-                            <Button x:Name="btnNewMap" Width="50" Height="50" Click="BtnNewMap_Click">
-                                <Image Source="pack://application:,,,/Edda;component/resources/newMap.png" OpacityMask="Black" RenderOptions.BitmapScalingMode="Fant"/>
-                            </Button>
-                            <TextBlock Margin="0 3 0 0" FontSize="12" HorizontalAlignment="Center">New Map</TextBlock>
-                        </StackPanel>
-                        <StackPanel Margin="10 10 0 10">
-                            <Button x:Name="btnOpenMap" Width="50" Height="50" Click="BtnOpenMap_Click">
-                                <Image Source="pack://application:,,,/Edda;component/resources/openMap.png" RenderOptions.BitmapScalingMode="Fant"/>
-                            </Button>
-                            <TextBlock Margin="0 3 0 0" FontSize="12" HorizontalAlignment="Center">Open Map</TextBlock>
-                        </StackPanel>
-                        <StackPanel Margin="10 10 0 10">
-                            <Button x:Name="btnSaveMap" Width="50" Height="50" Click="BtnSaveMap_Click">
-                                <Grid>
-                                    <Image Source="pack://application:,,,/Edda;component/resources/saveMap.png" RenderOptions.BitmapScalingMode="Fant"/>
-                                    <Image x:Name="imgSaved" Source="pack://application:,,,/Edda;component/resources/tick.png" RenderOptions.BitmapScalingMode="Fant" RenderTransformOrigin="0.5,0.5">
-                                        <Image.RenderTransform>
-                                            <TransformGroup>
-                                                <ScaleTransform ScaleX="0.5" ScaleY="0.5"/>
-                                                <SkewTransform/>
-                                                <RotateTransform/>
-                                                <TranslateTransform X="0" Y="8.5"/>
-                                            </TransformGroup>
-                                        </Image.RenderTransform>
-                                    </Image>
-                                </Grid>
-                            </Button>
-                            <TextBlock Margin="0 3 0 0" FontSize="12" HorizontalAlignment="Center">Save Map</TextBlock>
-                        </StackPanel>
-                        <StackPanel Margin="10 10 0 10">
-                            <Button x:Name="btnExportMap" Width="50" Height="50" Click="BtnExportMap_Click">
-                                <Grid>
-                                    <Image Source="pack://application:,,,/Edda;component/resources/exportMap.png" RenderOptions.BitmapScalingMode="Fant"/>
-                                </Grid>
-                            </Button>
-                            <TextBlock Margin="0 3 0 0" FontSize="12" HorizontalAlignment="Center">Export Map</TextBlock>
-                        </StackPanel>
-                    </StackPanel>
-                    <StackPanel DockPanel.Dock="Right" Orientation="Horizontal" HorizontalAlignment="Right">
-
-                        <StackPanel Margin="0 10 10 10">
-                            <Button x:Name="btnBPMFinder" Width="50" Height="50" Click="BtnBPMFinder_Click">
-                                <Image Source="pack://application:,,,/Edda;component/resources/bpmFinder.png" RenderOptions.BitmapScalingMode="Fant"/>
-                            </Button>
-                            <TextBlock Margin="0 3 0 0" FontSize="12" HorizontalAlignment="Center">BPM Finder</TextBlock>
-                        </StackPanel>
-
-                        <StackPanel Margin="0 10 10 10">
-                            <Button x:Name="btnSettings" Width="50" Height="50" Click="BtnSettings_Click">
-                                <Image Source="pack://application:,,,/Edda;component/resources/settings.png" RenderOptions.BitmapScalingMode="Fant"/>
-                            </Button>
-                            <TextBlock Margin="0 3 0 0" FontSize="12" HorizontalAlignment="Center">Settings</TextBlock>
-                        </StackPanel>
-                    </StackPanel>
-                </DockPanel>
             </StackPanel>
         </Border>
         <Border DockPanel.Dock="Bottom" BorderBrush="{DynamicResource {x:Static SystemColors.ControlDarkDarkBrushKey}}" BorderThickness="0, 1, 0, 0">

@@ -9,7 +9,6 @@ using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Media.Animation;
-using System.Text.RegularExpressions;
 using Microsoft.WindowsAPICodePack.Dialogs;
 using NAudio.CoreAudioApi;
 using NAudio.Wave;
@@ -20,7 +19,7 @@ using System.Threading;
 using System.IO.Compression;
 using Path = System.IO.Path;
 using SoundTouch.Net.NAudioSupport;
-using Edda.Class;
+using Edda.Const;
 using Edda.Windows;
 
 /// <summary>
@@ -59,6 +58,7 @@ namespace Edda
         UserSettings userSettings;
         bool shiftKeyDown;
         bool ctrlKeyDown;
+        bool returnToStartMenuOnClose = false;
 
         // store info about the currently selected difficulty
         public MapEditor mapEditor;
@@ -103,7 +103,7 @@ namespace Edda
             InitializeComponent();
 
             // disable parts of UI, as no map is loaded
-            imgSaved.Opacity = 0;
+            //imgSaved.Opacity = 0;
             imgWaveformVertical.Opacity = Editor.NavWaveformOpacity;
             imgWaveformVertical.Stretch = Stretch.Fill;
             lineSongMouseover.Opacity = 0;
@@ -129,7 +129,7 @@ namespace Edda
                 Audio.WASAPILatencyTarget, 
                 checkMetronome.IsChecked == true, 
                 false,
-                float.Parse(userSettings.GetValueForKey(Class.UserSettings.DefaultNoteVolume))
+                float.Parse(userSettings.GetValueForKey(Const.UserSettings.DefaultNoteVolume))
             );
 
             // load editor UI
@@ -170,22 +170,14 @@ namespace Edda
             //System.Windows.Interop.HwndTarget hwndTarget = hwndSource.CompositionTarget;
             //hwndTarget.RenderMode = System.Windows.Interop.RenderMode.SoftwareOnly;
         }
-        private void AppMainWindow_ContentRendered(object sender, EventArgs e) {
-            try {
-                if (userSettings.GetValueForKey(Class.UserSettings.CheckForUpdates) == true.ToString()) {
-                    //#if !DEBUG
-                        Helper.CheckForUpdates();
-                    //#endif
-                }
-            } catch {
-                Trace.WriteLine("INFO: Could not check for updates.");
-            }
-        }
         private void AppMainWindow_Closing(object sender, System.ComponentModel.CancelEventArgs e) {
             if (PromptBeatmapSave()) {
-                AppMainWindow_Closed(this, null);
-                Environment.Exit(0);
+                if (returnToStartMenuOnClose) {
+                    new StartWindow().Show();
+                }
+                discordClient.SetPresence();
             } else {
+                returnToStartMenuOnClose = false;
                 e.Cancel = true;
             }
         }
@@ -199,7 +191,10 @@ namespace Edda
             drummer?.Dispose();
             metronome?.Dispose();
             Trace.WriteLine("INFO: Audio resources disposed...");
-            Environment.Exit(0);
+
+            // TODO find other stuff to dispose so we don't cause a memory leak
+
+            Application.Current.Shutdown();
         }
         private void AppMainWindow_KeyDown(object sender, KeyEventArgs e) {
 
@@ -218,21 +213,15 @@ namespace Edda
             if (ctrlKeyDown) {
                 // new map (Ctrl-N)
                 if (e.Key == Key.N) {
-                    if (btnNewMap.IsEnabled) {
-                        BtnNewMap_Click(null, null);
-                    }
+                    CreateNewMap();
                 }
                 // open map (Ctrl-O)
                 if (e.Key == Key.O) {
-                    if (btnOpenMap.IsEnabled) {
-                        BtnOpenMap_Click(null, null);
-                    }
+                    OpenMap();
                 }
                 // save map (Ctrl-S)
                 if (e.Key == Key.S) {
-                    if (btnSaveMap.IsEnabled) {
-                        BtnSaveMap_Click(null, null);
-                    }
+                    BackupAndSaveBeatmap();
                 }
 
                 // toggle left dock (Ctrl-[)
@@ -385,12 +374,6 @@ namespace Edda
                 e.Handled = true;
             }
         }
-        private void BtnNewMap_Click(object sender, RoutedEventArgs e) {
-
-            CreateNewMap();
-
-
-        }
         private void CreateNewMap() {
             // check if map already open
             if (beatMap != null) {
@@ -407,10 +390,6 @@ namespace Edda
             }
 
             InitNewMap(newMapFolder);
-        }
-        private void BtnOpenMap_Click(object sender, RoutedEventArgs e) {
-            OpenMap();
-            
         }
         private void OpenMap() {
             // check if map already open
@@ -445,12 +424,6 @@ namespace Edda
                 }
                 return;
             }
-        }
-        private void BtnSaveMap_Click(object sender, RoutedEventArgs e) {
-            BackupAndSaveBeatmap();
-        }
-        private void BtnExportMap_Click(object sender, RoutedEventArgs e) {
-            ExportMap();
         }
         private void ExportMap() {
             var d = new CommonOpenFileDialog();
@@ -499,9 +472,6 @@ namespace Edda
                 }
             }
         }
-        private void BtnBPMFinder_Click(object sender, RoutedEventArgs e) {
-            ShowUniqueWindow(() => new BPMCalcWindow());
-        }
         private void ShowUniqueWindow<T>(Func<T> windowMaker) where T : Window {
             var win = Helper.GetFirstWindow<T>();
 
@@ -513,9 +483,6 @@ namespace Edda
             } else {
                 win.Focus();
             }
-        }
-        private void BtnSettings_Click(object sender, RoutedEventArgs e) {
-            ShowUniqueWindow(() => new SettingsWindow(this, userSettings));
         }
         private void BtnPickSong_Click(object sender, RoutedEventArgs e) {
             PauseSong();
@@ -970,8 +937,8 @@ namespace Edda
             lineSongProgress.Y1 = borderNavWaveform.ActualHeight;
             lineSongProgress.Y2 = borderNavWaveform.ActualHeight;
 
-            sliderSongVol.Value = float.Parse(userSettings.GetValueForKey(Class.UserSettings.DefaultSongVolume));
-            sliderDrumVol.Value = float.Parse(userSettings.GetValueForKey(Class.UserSettings.DefaultNoteVolume));
+            sliderSongVol.Value = float.Parse(userSettings.GetValueForKey(Const.UserSettings.DefaultSongVolume));
+            sliderDrumVol.Value = float.Parse(userSettings.GetValueForKey(Const.UserSettings.DefaultNoteVolume));
 
             // map settings
             txtSongName.Text   = (string)beatMap.GetValue("_songName");
@@ -1003,8 +970,6 @@ namespace Edda
             editorUI.DrawNavWaveform();
         }
         private void EnableUI() {
-            btnSaveMap.IsEnabled = true;
-            btnExportMap.IsEnabled = true;
             btnChangeDifficulty0.IsEnabled = true;
             btnChangeDifficulty1.IsEnabled = true;
             btnChangeDifficulty2.IsEnabled = true;
@@ -1039,8 +1004,6 @@ namespace Edda
             borderNavWaveform.IsEnabled = true;
         }
         private void DisableUI() {
-            btnSaveMap.IsEnabled = false;
-            btnExportMap.IsEnabled = false;
             btnChangeDifficulty0.IsEnabled = false;
             btnChangeDifficulty1.IsEnabled = false;
             btnChangeDifficulty2.IsEnabled = false;
@@ -1082,7 +1045,7 @@ namespace Edda
             mapEditor.SaveMap();
             beatMap.SaveToFile();
             this.Dispatcher.Invoke(() => {
-                imgSaved.Opacity = 1;
+                //imgSaved.Opacity = 1;
                 var saveAnim = new DoubleAnimation();
                 saveAnim.From = 1;
                 saveAnim.To = 0;
@@ -1195,68 +1158,68 @@ namespace Edda
         internal void LoadSettingsFile() {
             userSettings = new UserSettings(Program.SettingsFile);
 
-            if (!int.TryParse(userSettings.GetValueForKey(Class.UserSettings.EditorAudioLatency), out editorAudioLatency)) {
-                userSettings.SetValueForKey(Class.UserSettings.EditorAudioLatency, DefaultUserSettings.AudioLatency);
+            if (!int.TryParse(userSettings.GetValueForKey(Const.UserSettings.EditorAudioLatency), out editorAudioLatency)) {
+                userSettings.SetValueForKey(Const.UserSettings.EditorAudioLatency, DefaultUserSettings.AudioLatency);
                 editorAudioLatency = DefaultUserSettings.AudioLatency;
             }
 
-            if (userSettings.GetValueForKey(Class.UserSettings.PanDrumSounds) == null) {
-                userSettings.SetValueForKey(Class.UserSettings.PanDrumSounds, DefaultUserSettings.PanDrumSounds);
+            if (userSettings.GetValueForKey(Const.UserSettings.PanDrumSounds) == null) {
+                userSettings.SetValueForKey(Const.UserSettings.PanDrumSounds, DefaultUserSettings.PanDrumSounds);
             }
-            bool isPanned = userSettings.GetBoolForKey(Class.UserSettings.PanDrumSounds);
+            bool isPanned = userSettings.GetBoolForKey(Const.UserSettings.PanDrumSounds);
 
             try {
-                float.Parse(userSettings.GetValueForKey(Class.UserSettings.DefaultNoteVolume));
+                float.Parse(userSettings.GetValueForKey(Const.UserSettings.DefaultNoteVolume));
             } catch {
-                userSettings.SetValueForKey(Class.UserSettings.DefaultNoteVolume, DefaultUserSettings.DefaultNoteVolume);
-            }
-
-            try {
-                float.Parse(userSettings.GetValueForKey(Class.UserSettings.DefaultSongVolume));
-            } catch {
-                userSettings.SetValueForKey(Class.UserSettings.DefaultSongVolume, DefaultUserSettings.DefaultSongVolume);
+                userSettings.SetValueForKey(Const.UserSettings.DefaultNoteVolume, DefaultUserSettings.DefaultNoteVolume);
             }
 
             try {
-                InitDrummer(userSettings.GetValueForKey(Class.UserSettings.DrumSampleFile), isPanned);
+                float.Parse(userSettings.GetValueForKey(Const.UserSettings.DefaultSongVolume));
             } catch {
-                userSettings.SetValueForKey(Class.UserSettings.DrumSampleFile, DefaultUserSettings.DrumSampleFile);
+                userSettings.SetValueForKey(Const.UserSettings.DefaultSongVolume, DefaultUserSettings.DefaultSongVolume);
+            }
+
+            try {
+                InitDrummer(userSettings.GetValueForKey(Const.UserSettings.DrumSampleFile), isPanned);
+            } catch {
+                userSettings.SetValueForKey(Const.UserSettings.DrumSampleFile, DefaultUserSettings.DrumSampleFile);
                 InitDrummer(DefaultUserSettings.DrumSampleFile, isPanned);
             }
 
-            if (userSettings.GetValueForKey(Class.UserSettings.DefaultSongVolume) == null) {
-                userSettings.SetValueForKey(Class.UserSettings.DefaultSongVolume, DefaultUserSettings.DefaultSongVolume);
+            if (userSettings.GetValueForKey(Const.UserSettings.DefaultSongVolume) == null) {
+                userSettings.SetValueForKey(Const.UserSettings.DefaultSongVolume, DefaultUserSettings.DefaultSongVolume);
             }
 
-            if (userSettings.GetValueForKey(Class.UserSettings.DefaultNoteVolume) == null) {
-                userSettings.SetValueForKey(Class.UserSettings.DefaultNoteVolume, DefaultUserSettings.DefaultNoteVolume);
+            if (userSettings.GetValueForKey(Const.UserSettings.DefaultNoteVolume) == null) {
+                userSettings.SetValueForKey(Const.UserSettings.DefaultNoteVolume, DefaultUserSettings.DefaultNoteVolume);
             }
 
-            if (userSettings.GetValueForKey(Class.UserSettings.EnableAutosave) == null) {
-                userSettings.SetValueForKey(Class.UserSettings.EnableAutosave, DefaultUserSettings.EnableAutosave);
+            if (userSettings.GetValueForKey(Const.UserSettings.EnableAutosave) == null) {
+                userSettings.SetValueForKey(Const.UserSettings.EnableAutosave, DefaultUserSettings.EnableAutosave);
             }
-            autosaveTimer.Enabled = userSettings.GetBoolForKey(Class.UserSettings.EnableAutosave);
+            autosaveTimer.Enabled = userSettings.GetBoolForKey(Const.UserSettings.EnableAutosave);
 
-            if (userSettings.GetValueForKey(Class.UserSettings.CheckForUpdates) == null) {
-                userSettings.SetValueForKey(Class.UserSettings.CheckForUpdates, DefaultUserSettings.CheckForUpdates);
+            if (userSettings.GetValueForKey(Const.UserSettings.CheckForUpdates) == null) {
+                userSettings.SetValueForKey(Const.UserSettings.CheckForUpdates, DefaultUserSettings.CheckForUpdates);
             }
 
             try {
-                var index = int.Parse(userSettings.GetValueForKey(Class.UserSettings.MapSaveLocationIndex));
+                var index = int.Parse(userSettings.GetValueForKey(Const.UserSettings.MapSaveLocationIndex));
                 // game install directory chosen
-                var gameInstallPath = userSettings.GetValueForKey(Class.UserSettings.MapSaveLocationPath);
+                var gameInstallPath = userSettings.GetValueForKey(Const.UserSettings.MapSaveLocationPath);
                 if (index == 1 && !Directory.Exists(gameInstallPath)) {
                     throw new Exception();
                 }
             } catch {
-                userSettings.SetValueForKey(Class.UserSettings.MapSaveLocationIndex, DefaultUserSettings.MapSaveLocationIndex);
-                userSettings.SetValueForKey(Class.UserSettings.MapSaveLocationPath, DefaultUserSettings.MapSaveLocationPath);
+                userSettings.SetValueForKey(Const.UserSettings.MapSaveLocationIndex, DefaultUserSettings.MapSaveLocationIndex);
+                userSettings.SetValueForKey(Const.UserSettings.MapSaveLocationPath, DefaultUserSettings.MapSaveLocationPath);
             }
 
             try {
-                int.Parse(userSettings.GetValueForKey(Class.UserSettings.MapSaveLocationIndex));
+                int.Parse(userSettings.GetValueForKey(Const.UserSettings.MapSaveLocationIndex));
             } catch {
-                userSettings.SetValueForKey(Class.UserSettings.MapSaveLocationIndex, DefaultUserSettings.MapSaveLocationIndex);
+                userSettings.SetValueForKey(Const.UserSettings.MapSaveLocationIndex, DefaultUserSettings.MapSaveLocationIndex);
             }
 
             userSettings.Write();
@@ -1664,7 +1627,7 @@ namespace Edda
                 Audio.NotePlaybackStreams, 
                 Audio.WASAPILatencyTarget,
                 isPanned,
-                float.Parse(userSettings.GetValueForKey(Class.UserSettings.DefaultNoteVolume))
+                float.Parse(userSettings.GetValueForKey(Const.UserSettings.DefaultNoteVolume))
             );
             drummer.ChangeVolume(sliderDrumVol.Value);
             noteScanner?.SetAudioPlayer(drummer);
@@ -1716,26 +1679,6 @@ namespace Edda
             if (win != null) {
                 ((ChangeBPMWindow)win).RefreshBPMChanges();
             }
-        }
-
-        private void MenuItemToggleLeftBar_Click(object sender, RoutedEventArgs e) {
-            ToggleLeftDock();
-        }
-
-        private void MenuItemToggleRightBar_Click(object sender, RoutedEventArgs e) {
-            ToggleRightDock();
-        }
-
-        private void MenuItemBpmFinder_Click(object sender, RoutedEventArgs e) {
-            ShowUniqueWindow(() => new BPMCalcWindow());
-        }
-
-        private void MenuItemAboutPage_Click(object sender, RoutedEventArgs e) {
-            ShowUniqueWindow(() => new AboutWindow());
-        }
-
-        private void MenuItemUserGuide_Click(object sender, RoutedEventArgs e) {
-            Helper.OpenWebUrl(Program.UserGuideURL);
         }
     }
 }

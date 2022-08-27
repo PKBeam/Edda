@@ -1,5 +1,5 @@
 ﻿using Edda;
-using Edda.Class;
+using Edda.Const;
 using Microsoft.WindowsAPICodePack.Dialogs;
 using Newtonsoft.Json.Linq;
 using System;
@@ -76,6 +76,9 @@ public class Helper {
         b.Freeze();
         return b;
     }
+    public static Uri UriForResource(string file) {
+        return new Uri($"pack://application:,,,/resources/{file}");
+    }
     public static BitmapImage BitmapGenerator(string resourceFile) {
         return BitmapGenerator(new Uri($"pack://application:,,,/resources/{resourceFile}"));
     }
@@ -149,7 +152,7 @@ public class Helper {
         //Console.WriteLine(p.StandardOutput.ReadToEnd());
         p.WaitForExit();
     }
-    public static void CheckForUpdates() {
+    public static bool CheckForUpdates() {
 
         // turn version string into number for comparison purposes
         /* 
@@ -207,6 +210,9 @@ public class Helper {
         string currentVersion = "v" + Program.VersionString;
         if (numerifyVersionString(newestVersion) > numerifyVersionString(currentVersion)) {
             MessageBox.Show($"A new release of Edda is available.\n\nNewest version: {newestVersion}\nCurrent version: {currentVersion}", "New release available", MessageBoxButton.OK, MessageBoxImage.Information);
+            return true;
+        } else {
+            return false;
         }
     }
     public static void ThreadedPrint(string message) {
@@ -282,11 +288,11 @@ public class Helper {
 
     public static string GetRagnarockMapFolder() {
         UserSettings userSettings = new UserSettings(Program.SettingsFile);
-        var index = int.Parse(userSettings.GetValueForKey(Edda.Class.UserSettings.MapSaveLocationIndex));
+        var index = int.Parse(userSettings.GetValueForKey(Edda.Const.UserSettings.MapSaveLocationIndex));
         if (index == 0) {
             return Helper.DefaultRagnarockMapPath();
         } else {
-            return Path.Combine(userSettings.GetValueForKey(Edda.Class.UserSettings.MapSaveLocationPath), Program.GameInstallRelativeMapFolder);
+            return Path.Combine(userSettings.GetValueForKey(Edda.Const.UserSettings.MapSaveLocationPath), Program.GameInstallRelativeMapFolder);
         }
     }
     public static void OpenWebUrl(string url) {

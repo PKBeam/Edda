@@ -1,4 +1,4 @@
-﻿using Edda.Class;
+﻿using Edda.Const;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;

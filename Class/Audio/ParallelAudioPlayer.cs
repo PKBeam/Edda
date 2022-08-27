@@ -1,4 +1,4 @@
-﻿using Edda.Class;
+﻿using Edda.Const;
 using NAudio.CoreAudioApi;
 using NAudio.Wave;
 using NAudio.Wave.SampleProviders;

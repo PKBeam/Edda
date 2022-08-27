@@ -14,7 +14,7 @@ using System.Windows.Media.Imaging;
 using Brushes = System.Windows.Media.Brushes;
 using System.Windows.Input;
 using Point = System.Windows.Point;
-using Edda.Class;
+using Edda.Const;
 
 public class EditorUI {
 

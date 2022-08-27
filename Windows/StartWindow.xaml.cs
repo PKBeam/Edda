@@ -13,7 +13,7 @@ using System.Windows.Interop;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Shapes;
-using Edda.Class;
+using Edda.Const;
 
 namespace Edda
 {
@@ -89,10 +89,9 @@ namespace Edda
             sp1.Children.Add(img);
             sp1.Children.Add(sp2);
 
-            sp1.MouseUp += new MouseButtonEventHandler((sender, e) => { OpenMap(path); });
-
             ListViewItem item = new();
             item.Content = sp1;
+            item.MouseUp += new MouseButtonEventHandler((sender, e) => { item.IsSelected = false; OpenMap(path); });
             ListViewRecentMaps.Items.Add(item);
         }
 

@@ -25,7 +25,7 @@ public class DiscordClient {
 			Details = songName == null ? "No song open" : $"Mapping: {songName}",
 			State = songName == null ? "" : $"{numNotes} notes placed",
 			Assets = new Assets() {
-				LargeImageKey = Edda.Class.DiscordRPC.IconKey
+				LargeImageKey = Edda.Const.DiscordRPC.IconKey
 			}
 		}.WithTimestamps(new Timestamps(startTime));
 
@@ -41,7 +41,7 @@ public class DiscordClient {
 		DeinitClient();
 	}
 	private void InitClient() {
-		client = new DiscordRpcClient(Edda.Class.DiscordRPC.AppID);
+		client = new DiscordRpcClient(Edda.Const.DiscordRPC.AppID);
 		client.Initialize();
 		SetPresence();
 	}

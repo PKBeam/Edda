@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Windows;
 using System.Windows.Controls;
-using Edda.Class;
+using Edda.Const;
 
 namespace Edda
 {

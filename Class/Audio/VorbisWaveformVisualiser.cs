@@ -8,7 +8,7 @@ using System.Diagnostics;
 using System;
 using System.IO;
 using System.Threading;
-using Edda.Class;
+using Edda.Const;
 
 public class VorbisWaveformVisualiser {
 
