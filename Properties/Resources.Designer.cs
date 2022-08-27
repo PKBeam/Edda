@@ -109,6 +109,16 @@ namespace Edda.Properties {
         /// <summary>
         ///   Looks up a localized resource of type System.Drawing.Bitmap.
         /// </summary>
+        internal static System.Drawing.Bitmap blankMap {
+            get {
+                object obj = ResourceManager.GetObject("blankMap", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Drawing.Bitmap.
+        /// </summary>
         internal static System.Drawing.Bitmap bpmFinder {
             get {
                 object obj = ResourceManager.GetObject("bpmFinder", resourceCulture);

@@ -28,6 +28,7 @@
     <None Remove="Resources\bassdrum3.wav" />
     <None Remove="Resources\bassdrum4.wav" />
     <None Remove="Resources\bassdrum_alt1.wav" />
+    <None Remove="Resources\blankMap.png" />
     <None Remove="Resources\bpmFinder.png" />
     <None Remove="Resources\difficulty1.png" />
     <None Remove="Resources\difficulty2.png" />
@@ -106,6 +107,7 @@
     <Content Include="Resources\bassdrum_alt1.wav">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
+    <Resource Include="Resources\blankMap.png" />
     <Resource Include="Resources\bpmFinder.png" />
     <Resource Include="Resources\difficulty1.png" />
     <Resource Include="Resources\difficulty2.png" />

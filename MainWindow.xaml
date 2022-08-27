@@ -4,7 +4,7 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         mc:Ignorable="d"
-        x:Name="AppMainWindow" Title="Edda" Height="870" Width="900" MinHeight="400" MinWidth="900" Closed="AppMainWindow_Closed" KeyDown="AppMainWindow_KeyDown" KeyUp="AppMainWindow_KeyUp" PreviewKeyDown="AppMainWindow_PreviewKeyDown" Closing="AppMainWindow_Closing" Loaded="AppMainWindow_Loaded" ContentRendered="AppMainWindow_ContentRendered">
+        x:Name="AppMainWindow" Title="Edda" Height="870" Width="900" MinHeight="450" MinWidth="900" Closed="AppMainWindow_Closed" KeyDown="AppMainWindow_KeyDown" KeyUp="AppMainWindow_KeyUp" PreviewKeyDown="AppMainWindow_PreviewKeyDown" Closing="AppMainWindow_Closing" Loaded="AppMainWindow_Loaded" ContentRendered="AppMainWindow_ContentRendered">
     <DockPanel>
         <Border DockPanel.Dock="Top" Name="TopPanel" BorderBrush="{DynamicResource {x:Static SystemColors.ControlDarkDarkBrushKey}}" BorderThickness="0, 0, 0, 1">
             <Border.Background>
@@ -13,7 +13,40 @@
                     <GradientStop Color="{DynamicResource {x:Static SystemColors.ControlLightColorKey}}" Offset="0"/>
                 </LinearGradientBrush>
             </Border.Background>
-            <DockPanel>
+            <StackPanel>
+                <Menu Padding="3">
+                    <MenuItem Header="_File">
+                        <MenuItem Header="_New Map" InputGestureText="Ctrl+N"/>
+                        <MenuItem Header="_Open Map" InputGestureText="Ctrl+O"/>
+                        <MenuItem Header="_Save Map" InputGestureText="Ctrl+S"/>
+                        <MenuItem Header="_Export File"/>
+                    </MenuItem>
+                    <MenuItem Header="_Edit">
+                        <MenuItem Header="_New">
+                            <MenuItem Header="_Note (column 1)" InputGestureText="1"/>
+                            <MenuItem Header="_Note (column 2)" InputGestureText="2"/>
+                            <MenuItem Header="_Note (column 3)" InputGestureText="3"/>
+                            <MenuItem Header="_Note (column 4)" InputGestureText="4"/>
+                            <MenuItem Header="_Bookmark" InputGestureText="Ctrl+B"/>
+                            <MenuItem Header="_Grid-Snapped Bookmark" InputGestureText="Ctrl+Shift+B"/>
+                            <MenuItem Header="_Timing Change" InputGestureText="Ctrl+T"/>
+                            <MenuItem Header="_Grid-Snapped Timing Change" InputGestureText="Ctrl+Shift+T"/>
+                        </MenuItem>
+                        <MenuItem Header="_Settings"/>
+                    </MenuItem>
+                    <MenuItem Header="_View">
+                        <MenuItem Header="_Toggle Left Sidebar" InputGestureText="Ctrl+["/>
+                        <MenuItem Header="_Toggle Right Sidebar" InputGestureText="Ctrl+]"/>
+                    </MenuItem>
+                    <MenuItem Header="_Tools">
+                        <MenuItem Header="_BPM Finder"/>
+                    </MenuItem>
+                    <MenuItem Header="_Help">
+                        <MenuItem Header="_User Guide"/>
+                        <MenuItem Header="_About Edda"/>
+                    </MenuItem>
+                </Menu>
+                <DockPanel>
                 <StackPanel DockPanel.Dock="Left" Orientation="Horizontal">
                     <StackPanel Margin="10 10 0 10">
                         <Button x:Name="btnNewMap" Width="50" Height="50" Click="BtnNewMap_Click">
@@ -71,6 +104,7 @@
                     </StackPanel>
                 </StackPanel>
             </DockPanel>
+            </StackPanel>
         </Border>
         <Border DockPanel.Dock="Bottom" BorderBrush="{DynamicResource {x:Static SystemColors.ControlDarkDarkBrushKey}}" BorderThickness="0, 1, 0, 0">
             <Border.Background>

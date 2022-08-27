@@ -1,13 +1,17 @@
-﻿using Edda;
+﻿using Const;
+using Edda;
+using Microsoft.WindowsAPICodePack.Dialogs;
 using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Drawing;
 using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Net.Http;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Windows;
 using System.Windows.Media.Imaging;
 
@@ -37,7 +41,7 @@ public class Helper {
         if (wins.Any()) {
             return wins.First();
         }
-        return null;       
+        return null;
     }
     public static bool InsertSortedUnique(List<Note> notes, Note note) {
         // check which index to insert the new note at (keep everything in sorted order)
@@ -78,7 +82,7 @@ public class Helper {
     public static BitmapImage BitmapImageForBeat(double beat, bool isHighlighted = false) {
         double fracBeat = beat - (int)beat;
         string runeStr = "X";
-        if (DoubleApproxEqual(fracBeat, 0.0) || 
+        if (DoubleApproxEqual(fracBeat, 0.0) ||
             DoubleApproxEqual(fracBeat, 1.0)) {
             runeStr = "1";
         }
@@ -117,7 +121,7 @@ public class Helper {
         // (cuts down on filesize a lot)
         string path = Path.Combine(Path.GetTempPath(), "ffmpeg_temp.exe");
         File.WriteAllBytes(path, Edda.Properties.Resources.ffmpeg);
-        
+
         var p = Process.Start(path, arg);
         p.WaitForExit();
 
@@ -132,7 +136,7 @@ public class Helper {
         p.StartInfo.RedirectStandardOutput = true;
         p.Start();
         Console.WriteLine(p.StandardOutput.ReadToEnd());
-       // p.WaitForExit();
+        // p.WaitForExit();
     }
     public static void CmdCopyFiles(List<string> src, string dst) {
         var cmd = "/C ";
@@ -168,7 +172,7 @@ public class Helper {
                     numerify += character;
                     counter++;
                 }
-                
+
             }
             while (counter < 3) {
                 numerify += '0';
@@ -231,5 +235,58 @@ public class Helper {
             }
         }
         return output;
+    }
+    public static string ChooseNewMapFolder() {
+        return ChooseNewMapFolder(GetRagnarockMapFolder());
+    }
+    public static string ChooseNewMapFolder(string initialDirectory) {
+        // select folder for map
+        var d2 = new CommonOpenFileDialog();
+        d2.Title = "Select an empty folder to store your map";
+        d2.IsFolderPicker = true;
+        d2.InitialDirectory = initialDirectory;
+        if (d2.ShowDialog() != CommonFileDialogResult.Ok) {
+            return null;
+        }
+
+        // check folder name is appropriate
+        var folderName = new FileInfo(d2.FileName).Name;
+        if (!Regex.IsMatch(folderName, @"^[a-zA-Z]+$")) {
+            MessageBox.Show("The folder name cannot contain spaces or non-alphabetic characters.", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+            return null;
+        }
+
+        // check folder is empty
+        if (Directory.GetFiles(d2.FileName).Length > 0) {
+            if (MessageBoxResult.No == MessageBox.Show("The specified folder is not empty. Continue anyway?", "Warning", MessageBoxButton.YesNo, MessageBoxImage.Warning)) {
+                return null;
+            }
+        }
+        return d2.FileName;
+    }
+    public static string ChooseOpenMapFolder() {
+        return ChooseOpenMapFolder(GetRagnarockMapFolder());
+    }
+    public static string ChooseOpenMapFolder(string initialDirectory) {
+        // select folder for map
+        // TODO: this dialog is sometimes hangs, is there a better way to select a folder?
+        var d2 = new CommonOpenFileDialog();
+        d2.Title = "Select your map's containing folder";
+        d2.IsFolderPicker = true;
+        d2.InitialDirectory = initialDirectory;
+        if (d2.ShowDialog() != CommonFileDialogResult.Ok) {
+            return null;
+        }
+        return d2.FileName;
+    }
+
+    public static string GetRagnarockMapFolder() {
+        UserSettings userSettings = new UserSettings(Const.Program.SettingsFile);
+        var index = int.Parse(userSettings.GetValueForKey(Const.UserSettings.MapSaveLocationIndex));
+        if (index == 0) {
+            return Helper.DefaultRagnarockMapPath();
+        } else {
+            return Path.Combine(userSettings.GetValueForKey(Const.UserSettings.MapSaveLocationPath), Const.Program.GameInstallRelativeMapFolder);
+        }
     }
 }

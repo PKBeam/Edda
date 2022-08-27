@@ -393,45 +393,14 @@ namespace Edda {
                 PauseSong();
             }
 
-            // select folder for map
-            var d2 = new CommonOpenFileDialog();
-            d2.Title = "Select an empty folder to store your map";
-            d2.IsFolderPicker = true;
-            d2.InitialDirectory = RagnarockMapFolder();
-            if (d2.ShowDialog() != CommonFileDialogResult.Ok) {
+            string newMapFolder = Helper.ChooseNewMapFolder();
+            if (newMapFolder == null) {
                 return;
             }
 
-            // check folder name is appropriate
-            var folderName = new FileInfo(d2.FileName).Name;
-            if (!Regex.IsMatch(folderName, @"^[a-zA-Z]+$")) {
-                MessageBox.Show("The folder name cannot contain spaces or non-alphabetic characters.", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
-                return;
-            }
+            InitNewMap(newMapFolder);
 
-            // check folder is empty
-            if (Directory.GetFiles(d2.FileName).Length > 0) {
-                if (MessageBoxResult.No == MessageBox.Show("The specified folder is not empty. Continue anyway?", "Warning", MessageBoxButton.YesNo, MessageBoxImage.Warning)) {
-                    return;
-                }
-            }
 
-            if (beatMap != null) {
-                mapEditor.ClearSelectedDifficulty();
-                ClearCoverImage();
-            }
-            beatMap = new RagnarockMap(d2.FileName, true);
-
-            // select and load an audio file
-            if (!SelectNewSong()) {
-                return;
-            }
-            
-            // save the map
-            SaveBeatmap();
-
-            // open the newly created map
-            InitUI();
         }
         private void BtnOpenMap_Click(object sender, RoutedEventArgs e) {
 
@@ -444,29 +413,16 @@ namespace Edda {
                 PauseSong();
             }
 
-            // select folder for map
-            // TODO: this dialog is sometimes hangs, is there a better way to select a folder?
-            var d2 = new CommonOpenFileDialog();
-            d2.Title = "Select your map's containing folder";
-            d2.IsFolderPicker = true;
-            d2.InitialDirectory = RagnarockMapFolder();
-            if (d2.ShowDialog() != CommonFileDialogResult.Ok) {
+            string openMapFolder = Helper.ChooseOpenMapFolder();
+            if (openMapFolder == null) {
                 return;
             }
 
             // try to load info
             var oldBeatMap = beatMap;
             try {
-                beatMap = new RagnarockMap(d2.FileName, false);
-                LoadSong(); // song file
-                LoadCoverImage();
-                InitUI(); // cover image file
-
-                // bandaid fix to prevent WPF from committing unnecessarily large amounts of memory
-                new Thread(new ThreadStart(delegate {
-                    Thread.Sleep(500);
-                    this.Dispatcher.Invoke(() => DrawEditorGrid());
-                })).Start();
+                
+                InitOpenMap(openMapFolder);
 
             } catch (Exception ex) {
                 MessageBox.Show($"An error occured while opening the map:\n{ex.Message}.", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
@@ -489,7 +445,7 @@ namespace Edda {
             var d = new CommonOpenFileDialog();
             d.Title = "Select a folder to export the map to";
             d.IsFolderPicker = true;
-            d.InitialDirectory = RagnarockMapFolder();
+            d.InitialDirectory = Helper.GetRagnarockMapFolder();
             if (d.ShowDialog() != CommonFileDialogResult.Ok) {
                 return;
             }
@@ -959,6 +915,39 @@ namespace Edda {
             }
         }
 
+        // initialisation
+
+        internal void InitNewMap(string newMapFolder) {
+            if (beatMap != null) {
+                mapEditor.ClearSelectedDifficulty();
+                ClearCoverImage();
+            }
+            beatMap = new RagnarockMap(newMapFolder, true);
+
+            // select and load an audio file
+            if (!SelectNewSong()) {
+                return;
+            }
+
+            // save the map
+            SaveBeatmap();
+
+            // open the newly created map
+            InitUI();
+        }
+
+        internal void InitOpenMap(string mapFolder) {
+            beatMap = new RagnarockMap(mapFolder, false);
+            LoadSong(); // song file
+            LoadCoverImage();
+            InitUI(); // cover image file
+
+            // bandaid fix to prevent WPF from committing unnecessarily large amounts of memory
+            new Thread(new ThreadStart(delegate {
+                Thread.Sleep(500);
+                this.Dispatcher.Invoke(() => DrawEditorGrid());
+            })).Start();
+        }
         // UI initialisation
         private void InitUI() {
             // reset variables
@@ -1720,14 +1709,6 @@ namespace Edda {
                 BackupAndSaveBeatmap();
             }
             return !(res == MessageBoxResult.Cancel);
-        }
-        private string RagnarockMapFolder() {
-            var index = int.Parse(userSettings.GetValueForKey(Const.UserSettings.MapSaveLocationIndex));
-            if (index == 0) {
-                return Helper.DefaultRagnarockMapPath();
-            } else {
-                return Path.Combine(userSettings.GetValueForKey(Const.UserSettings.MapSaveLocationPath), Const.Program.GameInstallRelativeMapFolder);
-            }
         }
         internal void RefreshBPMChanges() {
             var win = Helper.GetFirstWindow<ChangeBPMWindow>();
