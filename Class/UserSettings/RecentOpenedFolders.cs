@@ -20,7 +20,12 @@ public class RecentOpenedFolders {
         this.historySize = historySize;
     }
     public void AddRecentlyOpened(string name, string path) {
-        fileLines.Insert(0, $"{name}={path}");
+        var fileString = $"{name}={path}";
+        if (fileLines.Contains(fileString)) {
+            fileLines.Remove(fileString);
+        } 
+
+        fileLines.Insert(0, fileString);
         if (fileLines.Count > historySize) {
             fileLines.RemoveAt(fileLines.Count - 1);
         }

@@ -1,8 +1,10 @@
-﻿using NAudio.Vorbis;
+﻿using Edda.Class;
+using NAudio.Vorbis;
 using System.IO;
 using System.Windows;
 
-namespace Edda {
+namespace Edda
+{
     /// <summary>
     /// Interaction logic for SongPreviewWindow.xaml
     /// </summary>
@@ -30,10 +32,10 @@ namespace Edda {
 
             this.startMin = startMin;
             this.startSec = startSec;
-            endMin   = (startMin * 60 + startSec + Const.Audio.MaxPreviewLength) / 60;
-            endSec   = (startMin * 60 + startSec + Const.Audio.MaxPreviewLength) % 60;
-            fadeInDur = Const.Audio.DefaultPreviewFadeIn;
-            fadeOutDur  = Const.Audio.DefaultPreviewFadeOut;
+            endMin   = (startMin * 60 + startSec + Audio.MaxPreviewLength) / 60;
+            endSec   = (startMin * 60 + startSec + Audio.MaxPreviewLength) % 60;
+            fadeInDur = Audio.DefaultPreviewFadeIn;
+            fadeOutDur  = Audio.DefaultPreviewFadeOut;
 
             UpdateTextFields();
         }
@@ -158,13 +160,13 @@ namespace Edda {
             return TotalSec(startMin, startSec) <= TotalSec(endMin, endSec);
         }
         private bool TimeRangeDurationCheck() {
-            return TotalSec(endMin, endSec) - TotalSec(startMin, startSec) <= Const.Audio.MaxPreviewLength;
+            return TotalSec(endMin, endSec) - TotalSec(startMin, startSec) <= Audio.MaxPreviewLength;
         }
         private void ShowRangeError() {
             MessageBox.Show($"The input must be an integer from 0 to 59.", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
         }
         private bool ShowDurationError() {
-            return MessageBox.Show($"The preview duration should be less than {Const.Audio.MaxPreviewLength} seconds.\nContinue anyway?", "Warning", MessageBoxButton.YesNo, MessageBoxImage.Warning) == MessageBoxResult.Yes;
+            return MessageBox.Show($"The preview duration should be less than {Audio.MaxPreviewLength} seconds.\nContinue anyway?", "Warning", MessageBoxButton.YesNo, MessageBoxImage.Warning) == MessageBoxResult.Yes;
         }
     }
 }

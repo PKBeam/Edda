@@ -1,0 +1,39 @@
+﻿<Window x:Class="Edda.Windows.AboutWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:Edda.Windows"
+        mc:Ignorable="d"
+        WindowStartupLocation="CenterScreen"
+        Title="About Edda"
+        Background="Transparent" Height="300" Width="400" ResizeMode="NoResize"
+    >
+    <Grid>
+        <Grid.Background>
+            <LinearGradientBrush EndPoint="0.5,1" StartPoint="0.5,0">
+                <GradientStop Color="{DynamicResource {x:Static SystemColors.ActiveBorderColorKey}}" Offset="1"/>
+                <GradientStop Color="{DynamicResource {x:Static SystemColors.ControlColorKey}}" Offset="0"/>
+            </LinearGradientBrush>
+        </Grid.Background>
+        <StackPanel Margin="20">
+            <StackPanel Height="80" Orientation="Horizontal">
+                <Image Source="/Resources/icon.png"/>
+                <StackPanel Margin="15 0 0 0">
+                    <TextBlock Foreground="#002668" FontSize="48" FontWeight="Bold" HorizontalAlignment="Left" FontFamily="Bahnschrift">Edda</TextBlock>
+                    <TextBlock x:Name="TxtVersionNumber" FontSize="18" FontWeight="Bold" HorizontalAlignment="Center" FontFamily="Bahnschrift SemiLight" Margin="3 0 0 0">version X.X.X-betaX</TextBlock>
+                </StackPanel>
+            </StackPanel>
+            <Line X1="0" X2="1000" Margin="0 20 0 10" StrokeThickness="1.5" Stroke="{DynamicResource {x:Static SystemColors.ControlDarkDarkBrushKey}}" HorizontalAlignment="Center"></Line>
+            <StackPanel Orientation="Vertical" Margin="0 10 0 10">
+                <TextBlock>Edda is an open-source project hosted on GitHub.</TextBlock>
+                <TextBlock x:Name="TxtGithubLink" Foreground="{DynamicResource {x:Static SystemColors.HighlightBrushKey}}" MouseLeftButtonDown="TxtGithubLink_MouseLeftButtonDown" MouseEnter="TxtGithubLink_MouseEnter" MouseLeave="TxtGithubLink_MouseLeave">https://github.com/PKBeam/Edda</TextBlock>
+            </StackPanel>
+
+            <StackPanel Orientation="Vertical" Margin="0 10 0 10">
+                <TextBlock TextWrapping="Wrap">Join the Ragnacustoms community Discord server to discuss Edda, mapping, custom songs and more.</TextBlock>
+                <TextBlock x:Name="TxtRagnacustomsLink" Foreground="{DynamicResource {x:Static SystemColors.HighlightBrushKey}}" MouseLeftButtonDown="TxtRagnacustomsLink_MouseLeftButtonDown" MouseEnter="TxtRagnacustomsLink_MouseEnter" MouseLeave="TxtRagnacustomsLink_MouseLeave">https://ragnacustoms.com/</TextBlock>
+            </StackPanel>
+        </StackPanel>
+    </Grid>
+</Window>

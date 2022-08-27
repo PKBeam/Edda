@@ -1,5 +1,5 @@
-﻿using Const;
-using Edda;
+﻿using Edda;
+using Edda.Class;
 using Microsoft.WindowsAPICodePack.Dialogs;
 using Newtonsoft.Json.Linq;
 using System;
@@ -186,15 +186,15 @@ public class Helper {
         }
 
         HttpClient client = new HttpClient();
-        client.DefaultRequestHeaders.Add("User-Agent", "Edda-" + Const.Program.DisplayVersionString);
-        string res = client.GetStringAsync(Const.Program.ReleasesAPI).Result;
+        client.DefaultRequestHeaders.Add("User-Agent", "Edda-" + Program.DisplayVersionString);
+        string res = client.GetStringAsync(Program.ReleasesAPI).Result;
 
         // get most recent non-beta release
         var resJSON = JArray.Parse(res);
         var i = 0;
 
         // beta versions should show all versions as updates
-        if (!isBeta(Const.Program.VersionString)) {
+        if (!isBeta(Program.VersionString)) {
             // non-beta versions should not show beta versions as updates
             while (isBeta((string)resJSON[i]["tag_name"])) {
                 i++;
@@ -204,7 +204,7 @@ public class Helper {
 
         // check if this release is a newer version
         string newestVersion = (string)newestRelease["tag_name"];
-        string currentVersion = "v" + Const.Program.VersionString;
+        string currentVersion = "v" + Program.VersionString;
         if (numerifyVersionString(newestVersion) > numerifyVersionString(currentVersion)) {
             MessageBox.Show($"A new release of Edda is available.\n\nNewest version: {newestVersion}\nCurrent version: {currentVersion}", "New release available", MessageBoxButton.OK, MessageBoxImage.Information);
         }
@@ -281,12 +281,18 @@ public class Helper {
     }
 
     public static string GetRagnarockMapFolder() {
-        UserSettings userSettings = new UserSettings(Const.Program.SettingsFile);
-        var index = int.Parse(userSettings.GetValueForKey(Const.UserSettings.MapSaveLocationIndex));
+        UserSettings userSettings = new UserSettings(Program.SettingsFile);
+        var index = int.Parse(userSettings.GetValueForKey(Edda.Class.UserSettings.MapSaveLocationIndex));
         if (index == 0) {
             return Helper.DefaultRagnarockMapPath();
         } else {
-            return Path.Combine(userSettings.GetValueForKey(Const.UserSettings.MapSaveLocationPath), Const.Program.GameInstallRelativeMapFolder);
+            return Path.Combine(userSettings.GetValueForKey(Edda.Class.UserSettings.MapSaveLocationPath), Program.GameInstallRelativeMapFolder);
         }
+    }
+    public static void OpenWebUrl(string url) {
+        Process proc = new Process();
+        proc.StartInfo.UseShellExecute = true;
+        proc.StartInfo.FileName = url;
+        proc.Start();
     }
 }

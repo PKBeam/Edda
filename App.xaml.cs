@@ -5,8 +5,10 @@ using System.Data;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Windows;
+using Edda.Class;
 
-namespace RagnarockEditor {
+namespace RagnarockEditor
+{
     /// <summary>
     /// Interaction logic for App.xaml
     /// </summary>
@@ -16,14 +18,14 @@ namespace RagnarockEditor {
         internal DiscordClient DiscordClient;
 
         App() {
-            this.RecentMaps = new(Const.Program.RecentOpenedMapsFile, Const.Program.MaxRecentOpenedMaps);
-            this.UserSettings = new UserSettings(Const.Program.SettingsFile);
+            this.RecentMaps = new(Program.RecentOpenedMapsFile, Program.MaxRecentOpenedMaps);
+            this.UserSettings = new UserSettings(Program.SettingsFile);
             this.DiscordClient = new DiscordClient();
 
-            if (UserSettings.GetValueForKey(Const.UserSettings.EnableDiscordRPC) == null) {
-                UserSettings.SetValueForKey(Const.UserSettings.EnableDiscordRPC, Const.DefaultUserSettings.EnableDiscordRPC);
+            if (UserSettings.GetValueForKey(Edda.Class.UserSettings.EnableDiscordRPC) == null) {
+                UserSettings.SetValueForKey(Edda.Class.UserSettings.EnableDiscordRPC, DefaultUserSettings.EnableDiscordRPC);
             }
-            SetDiscordRPC(UserSettings.GetBoolForKey(Const.UserSettings.EnableDiscordRPC));
+            SetDiscordRPC(UserSettings.GetBoolForKey(Edda.Class.UserSettings.EnableDiscordRPC));
 
         }
 

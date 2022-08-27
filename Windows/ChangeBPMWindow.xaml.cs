@@ -2,8 +2,10 @@
 using System.Collections.Generic;
 using System.Windows;
 using System.Windows.Controls;
+using Edda.Class;
 
-namespace Edda {
+namespace Edda
+{
     /// <summary>
     /// Interaction logic for WindowChangeBPM.xaml
     /// </summary>
@@ -53,8 +55,8 @@ namespace Edda {
                     }
                 // grid division
                 } else if (col == dataBPMChange.Columns[2].Header.ToString()) {
-                    if ((int)pendingEdit != pendingEdit || !Helper.DoubleRangeCheck(pendingEdit, 1, Const.Editor.GridDivisionMax)) {
-                        throw new Exception($"The grid division amount must be an integer from 1 to {Const.Editor.GridDivisionMax}.");
+                    if ((int)pendingEdit != pendingEdit || !Helper.DoubleRangeCheck(pendingEdit, 1, Editor.GridDivisionMax)) {
+                        throw new Exception($"The grid division amount must be an integer from 1 to {Editor.GridDivisionMax}.");
                     }
                 }
                 

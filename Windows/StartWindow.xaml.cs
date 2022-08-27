@@ -13,10 +13,10 @@ using System.Windows.Interop;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Shapes;
-using System.Runtime.InteropServices;
-using System.Windows.Interop;
+using Edda.Class;
 
-namespace Edda {
+namespace Edda
+{
     /// <summary>
     /// Interaction logic for StartWindow.xaml
     /// </summary>
@@ -39,7 +39,7 @@ namespace Edda {
         public StartWindow() {
             InitializeComponent();
             ListViewRecentMaps.Items.Clear();
-            TxtVersionNumber.Text = $"version {Const.Program.DisplayVersionString}";
+            TxtVersionNumber.Text = $"version {Program.DisplayVersionString}";
             PopulateRecentlyOpenedMaps();
 
             // apply rounded corners

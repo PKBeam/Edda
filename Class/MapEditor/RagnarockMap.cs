@@ -4,6 +4,7 @@ using System.Globalization;
 using System.IO;
 using System.Linq;
 using Edda;
+using Edda.Class;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
@@ -82,28 +83,28 @@ public class RagnarockMap {
             _songAuthorName = "",
             _levelAuthorName = "",
             _explicit = "false",
-            _beatsPerMinute = Const.BeatmapDefaults.BeatsPerMinute,
-            _shuffle = Const.BeatmapDefaults.Shuffle,              // unused?
-            _shufflePeriod = Const.BeatmapDefaults.ShufflePeriod,  // unused?
+            _beatsPerMinute = BeatmapDefaults.BeatsPerMinute,
+            _shuffle = BeatmapDefaults.Shuffle,              // unused?
+            _shufflePeriod = BeatmapDefaults.ShufflePeriod,  // unused?
             _previewStartTime = 0,                          // unused?
             _previewDuration = 0,                           // unused?
             _songApproximativeDuration = 0,
-            _songFilename = Const.BeatmapDefaults.SongFilename,
+            _songFilename = BeatmapDefaults.SongFilename,
             _coverImageFilename = "",
-            _environmentName = Const.BeatmapDefaults.EnvironmentNames[0],
+            _environmentName = BeatmapDefaults.EnvironmentNames[0],
             _songTimeOffset = 0,
             _customData = new {
                 _contributors = new List<object>(),
                 _editors = new {
                     Edda = new {
-                        version = Const.Program.VersionString,
+                        version = Program.VersionString,
                     },
-                    _lastEditedBy = Const.Program.Name,
+                    _lastEditedBy = Program.Name,
                 },
             },
             _difficultyBeatmapSets = new[] {
                 new {
-                    _beatmapCharacteristicName = Const.BeatmapDefaults.BeatmapCharacteristicName,
+                    _beatmapCharacteristicName = BeatmapDefaults.BeatmapCharacteristicName,
                     _difficultyBeatmaps = new List<object> {},
                 },
             },
@@ -203,7 +204,7 @@ public class RagnarockMap {
                         var val = Helper.DoubleParseInvariant((string)dbItem[i.Key]);
                         // special case
                         if (i.Key == "_difficultyRank") {
-                            if (val < Const.Editor.DifficultyLevelMin || val > Const.Editor.DifficultyLevelMax) {
+                            if (val < Editor.DifficultyLevelMin || val > Editor.DifficultyLevelMax) {
                                 throw new Exception($"Bad value for key {i.Key}");
                             }
                         } else if (!Helper.DoubleRangeCheck(val, expectedValuesL3[i.Key].Item1, expectedValuesL3[i.Key].Item2)) {
@@ -225,7 +226,7 @@ public class RagnarockMap {
                 _contributors = new List<object>(),
                 _editors = new {
                     Edda = new {
-                        version = Const.Program.VersionString,
+                        version = Program.VersionString,
                     },
                     _lastEditedBy = "Edda"
                 },
@@ -239,14 +240,14 @@ public class RagnarockMap {
         if (customData["_editors"]?.Type != JTokenType.Object) {
             var editorsObject = new {
                 Edda = new {
-                    version = Const.Program.VersionString,
+                    version = Program.VersionString,
                 },
                 _lastEditedBy = "Edda"
             };
             customData["_editors"] = JToken.FromObject(editorsObject);
         }
         if (customData["_editors"]["Edda"]?.Type != JTokenType.Object) {
-            customData["_editors"]["Edda"] = JToken.FromObject(new { version = Const.Program.DisplayVersionString });
+            customData["_editors"]["Edda"] = JToken.FromObject(new { version = Program.DisplayVersionString });
         }
         //if (customData["_editors"]["_lastEditedBy"]?.Type != JTokenType.String) {
         customData["_editors"]["_lastEditedBy"] = JToken.FromObject("Edda");
@@ -272,8 +273,8 @@ public class RagnarockMap {
         Dictionary<string, float> defaultValues = new Dictionary<string, float> {
             {"_editorOffset",       0 },
             {"_editorOldOffset",    0 },
-            {"_editorGridSpacing",  (float)Const.Editor.DefaultGridSpacing },
-            {"_editorGridDivision", (float)Const.Editor.DefaultGridDivision },
+            {"_editorGridSpacing",  (float)Editor.DefaultGridSpacing },
+            {"_editorGridDivision", (float)Editor.DefaultGridDivision },
         };
 
         var beatmaps = obj["_difficultyBeatmapSets"][0]["_difficultyBeatmaps"];
@@ -282,7 +283,7 @@ public class RagnarockMap {
                 var customDataObject = new {
                     _editorOffset = 0,
                     _editorOldOffset = 0,
-                    _editorGridSpacing = Const.Editor.DefaultGridSpacing,
+                    _editorGridSpacing = Editor.DefaultGridSpacing,
                     _editorGridDivision = 4,
                     _warnings = new List<object>(),
                     _information = new List<object>(),
@@ -304,7 +305,7 @@ public class RagnarockMap {
                     var val = Helper.DoubleParseInvariant((string)mapCustomData[i.Key]);
                     // special case
                     if (i.Key == "_editorGridDivision") {
-                        if ((int)val != val || val < 1 || Const.Editor.GridDivisionMax < val) {
+                        if ((int)val != val || val < 1 || Editor.GridDivisionMax < val) {
                             mapCustomData[i.Key] = defaultValues[i.Key];
                         }
                     } else if (!Helper.DoubleRangeCheck(val, expectedValues[i.Key].Item1, expectedValues[i.Key].Item2)) {
@@ -318,8 +319,8 @@ public class RagnarockMap {
     }
     private void UpdateEddaVersion() {
         var obj = JObject.Parse(infoStr);
-        obj["_customData"]["_editors"]["Edda"]["version"] = Const.Program.DisplayVersionString;
-        obj["_customData"]["_editors"]["_lastEditedBy"] = Const.Program.Name;
+        obj["_customData"]["_editors"]["Edda"]["version"] = Program.DisplayVersionString;
+        obj["_customData"]["_editors"]["_lastEditedBy"] = Program.Name;
         infoStr = JsonConvert.SerializeObject(obj, Formatting.Indented);
     }
 
@@ -348,19 +349,19 @@ public class RagnarockMap {
         if (numDifficulties == 3) {
             return;
         }
-        var mapName = Const.BeatmapDefaults.DifficultyNames[numDifficulties];
+        var mapName = BeatmapDefaults.DifficultyNames[numDifficulties];
         var obj = JObject.Parse(infoStr);
         var beatmaps = (JArray)obj["_difficultyBeatmapSets"][0]["_difficultyBeatmaps"];
         var beatmapDat = new {
             _difficulty = mapName,
             _difficultyRank = 1,
             _beatmapFilename = $"{mapName}.dat",
-            _noteJumpMovementSpeed = Const.BeatmapDefaults.NoteJumpMovementSpeed,
+            _noteJumpMovementSpeed = BeatmapDefaults.NoteJumpMovementSpeed,
             _noteJumpStartBeatOffset = 0,
             _customData = new {
                 _editorOffset = 0,
                 _editorOldOffset = 0,
-                _editorGridSpacing = Const.Editor.DefaultGridSpacing,
+                _editorGridSpacing = Editor.DefaultGridSpacing,
                 _editorGridDivision = 4,
                 _warnings = new List<object>(),
                 _information = new List<object>(),
@@ -464,14 +465,14 @@ public class RagnarockMap {
     }
     private void RenameMaps() {
         for (int i = 0; i < numDifficulties; i++) {
-            var fileName = Const.BeatmapDefaults.DifficultyNames[i];
+            var fileName = BeatmapDefaults.DifficultyNames[i];
             var oldFile = (string)GetValueForMap(i, "_beatmapFilename");
             File.Move(PathOf(oldFile), PathOf($"{fileName}_temp.dat"));
             SetValueForMap(i, "_difficulty", fileName);
             SetValueForMap(i, "_beatmapFilename", $"{fileName}.dat");
         }
         for (int i = 0; i < numDifficulties; i++) {
-            var fileName = Const.BeatmapDefaults.DifficultyNames[i];
+            var fileName = BeatmapDefaults.DifficultyNames[i];
             File.Move(PathOf($"{fileName}_temp.dat"), PathOf($"{fileName}.dat"));
         }
     }

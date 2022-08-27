@@ -4,6 +4,7 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         mc:Ignorable="d"
+        WindowStartupLocation="CenterScreen"
         x:Name="AppMainWindow" Title="Edda" Height="870" Width="900" MinHeight="450" MinWidth="900" Closed="AppMainWindow_Closed" KeyDown="AppMainWindow_KeyDown" KeyUp="AppMainWindow_KeyUp" PreviewKeyDown="AppMainWindow_PreviewKeyDown" Closing="AppMainWindow_Closing" Loaded="AppMainWindow_Loaded" ContentRendered="AppMainWindow_ContentRendered">
     <DockPanel>
         <Border DockPanel.Dock="Top" Name="TopPanel" BorderBrush="{DynamicResource {x:Static SystemColors.ControlDarkDarkBrushKey}}" BorderThickness="0, 0, 0, 1">
@@ -35,15 +36,15 @@
                         <MenuItem Header="_Settings"/>
                     </MenuItem>
                     <MenuItem Header="_View">
-                        <MenuItem Header="_Toggle Left Sidebar" InputGestureText="Ctrl+["/>
-                        <MenuItem Header="_Toggle Right Sidebar" InputGestureText="Ctrl+]"/>
+                        <MenuItem x:Name="MenuItemToggleLeftBar" Header="_Toggle Left Sidebar" InputGestureText="Ctrl+[" Click="MenuItemToggleLeftBar_Click"/>
+                        <MenuItem x:Name="MenuItemToggleRightBar" Header="_Toggle Right Sidebar" InputGestureText="Ctrl+]" Click="MenuItemToggleRightBar_Click"/>
                     </MenuItem>
                     <MenuItem Header="_Tools">
-                        <MenuItem Header="_BPM Finder"/>
+                        <MenuItem x:Name="MenuItemBpmFinder" Header="_BPM Finder" Click="MenuItemBpmFinder_Click"/>
                     </MenuItem>
                     <MenuItem Header="_Help">
-                        <MenuItem Header="_User Guide"/>
-                        <MenuItem Header="_About Edda"/>
+                        <MenuItem x:Name="MenuItemUserGuide" Header="_User Guide" Click="MenuItemUserGuide_Click"/>
+                        <MenuItem x:Name="MenuItemAboutPage" Header="_About Edda" Click="MenuItemAboutPage_Click"/>
                     </MenuItem>
                 </Menu>
                 <DockPanel Visibility="Collapsed">

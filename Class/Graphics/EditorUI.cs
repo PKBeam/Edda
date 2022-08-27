@@ -14,6 +14,7 @@ using System.Windows.Media.Imaging;
 using Brushes = System.Windows.Media.Brushes;
 using System.Windows.Input;
 using Point = System.Windows.Point;
+using Edda.Class;
 
 public class EditorUI {
 
@@ -157,7 +158,7 @@ public class EditorUI {
         noteCanvas.SetBinding(Canvas.WidthProperty, new Binding("ActualWidth") { Source = EditorGrid });
         noteCanvas.SetBinding(Canvas.HeightProperty, new Binding("ActualHeight") { Source = EditorGrid });
 
-        imgPreviewNote.Opacity = Const.Editor.PreviewNoteOpacity;
+        imgPreviewNote.Opacity = Editor.PreviewNoteOpacity;
         imgPreviewNote.Width = unitLength;
         imgPreviewNote.Height = unitHeight;
         noteCanvas.Children.Add(imgPreviewNote);
@@ -171,8 +172,8 @@ public class EditorUI {
         lineGridMouseover.Opacity = 0;
         lineGridMouseover.X1 = 0;
         lineGridMouseover.SetBinding(Line.X2Property, new Binding("ActualWidth") { Source = EditorGrid });
-        lineGridMouseover.Stroke = (SolidColorBrush)new BrushConverter().ConvertFrom(Const.Editor.GridPreviewLine.Colour);
-        lineGridMouseover.StrokeThickness = Const.Editor.GridPreviewLine.Thickness;
+        lineGridMouseover.Stroke = (SolidColorBrush)new BrushConverter().ConvertFrom(Editor.GridPreviewLine.Colour);
+        lineGridMouseover.StrokeThickness = Editor.GridPreviewLine.Thickness;
         lineGridMouseover.Visibility = Visibility.Hidden;
         EditorGrid.Children.Add(lineGridMouseover);
     }
@@ -208,7 +209,7 @@ public class EditorUI {
         }
         ResizeMainWaveform();
         double height = EditorGrid.Height - scrollEditor.ActualHeight;
-        double width = EditorGrid.ActualWidth * Const.Editor.Waveform.Width;
+        double width = EditorGrid.ActualWidth * Editor.Waveform.Width;
         CreateMainWaveform(height, width);
     }
     public void UndrawMainWaveform() {
@@ -298,9 +299,9 @@ public class EditorUI {
         Line makeGridLine(double offset, bool isMajor = false) {
             var l = MakeLine(EditorGrid.ActualWidth, offset);
             l.Stroke = (SolidColorBrush)new BrushConverter().ConvertFrom(
-                isMajor ? Const.Editor.MajorGridlineColour : Const.Editor.MinorGridlineColour)
+                isMajor ? Editor.MajorGridlineColour : Editor.MinorGridlineColour)
             ;
-            l.StrokeThickness = isMajor ? Const.Editor.MajorGridlineThickness : Const.Editor.MinorGridlineThickness;
+            l.StrokeThickness = isMajor ? Editor.MajorGridlineThickness : Editor.MinorGridlineThickness;
             Canvas.SetBottom(l, offset + unitHeight / 2);
             return l;
         }
@@ -361,26 +362,26 @@ public class EditorUI {
             Canvas.SetBottom(bookmarkCanvas, unitLength * b.beat + unitHeight / 2);
 
             var l = MakeLine(EditorGrid.ActualWidth / 2, unitLength * b.beat);
-            l.Stroke = (SolidColorBrush)new BrushConverter().ConvertFrom(Const.Editor.GridBookmark.Colour);
-            l.StrokeThickness = Const.Editor.GridBookmark.Thickness;
-            l.Opacity = Const.Editor.GridBookmark.Opacity;
+            l.Stroke = (SolidColorBrush)new BrushConverter().ConvertFrom(Editor.GridBookmark.Colour);
+            l.StrokeThickness = Editor.GridBookmark.Thickness;
+            l.Opacity = Editor.GridBookmark.Opacity;
             Canvas.SetRight(l, 0);
             Canvas.SetBottom(l, 0);
             bookmarkCanvas.Children.Add(l);
 
             var txtBlock = new Label();
             txtBlock.Foreground = Brushes.White;
-            txtBlock.Background = (SolidColorBrush)new BrushConverter().ConvertFrom(Const.Editor.GridBookmark.NameColour);
-            txtBlock.Background.Opacity = Const.Editor.GridBookmark.Opacity;
+            txtBlock.Background = (SolidColorBrush)new BrushConverter().ConvertFrom(Editor.GridBookmark.NameColour);
+            txtBlock.Background.Opacity = Editor.GridBookmark.Opacity;
             txtBlock.Content = b.name;
-            txtBlock.FontSize = Const.Editor.GridBookmark.NameSize;
-            txtBlock.Padding = new Thickness(Const.Editor.GridBookmark.NamePadding);
+            txtBlock.FontSize = Editor.GridBookmark.NameSize;
+            txtBlock.Padding = new Thickness(Editor.GridBookmark.NamePadding);
             txtBlock.FontWeight = FontWeights.Bold;
             txtBlock.Opacity = 1.0;
             //txtBlock.IsReadOnly = true;
             txtBlock.Cursor = Cursors.Hand;
             Canvas.SetRight(txtBlock, 0);
-            Canvas.SetBottom(txtBlock, 0.75 * Const.Editor.GridBookmark.Thickness);
+            Canvas.SetBottom(txtBlock, 0.75 * Editor.GridBookmark.Thickness);
             txtBlock.MouseLeftButtonDown += new MouseButtonEventHandler((src, e) => {
                 e.Handled = true;
             });
@@ -410,9 +411,9 @@ public class EditorUI {
             txtBlock.MouseRightButtonUp += new MouseButtonEventHandler((src, e) => {
                 var txtBox = new TextBox();
                 txtBox.Text = b.name;
-                txtBox.FontSize = Const.Editor.GridBookmark.NameSize;
-                Canvas.SetRight(txtBox, Const.Editor.GridBookmark.NamePadding);
-                Canvas.SetBottom(txtBox, Canvas.GetBottom(bookmarkCanvas) + Const.Editor.GridBookmark.NamePadding);
+                txtBox.FontSize = Editor.GridBookmark.NameSize;
+                Canvas.SetRight(txtBox, Editor.GridBookmark.NamePadding);
+                Canvas.SetBottom(txtBox, Canvas.GetBottom(bookmarkCanvas) + Editor.GridBookmark.NamePadding);
                 txtBox.LostKeyboardFocus += new KeyboardFocusChangedEventHandler((src, e) => {
                     if (txtBox.Text != "") {
                         mapEditor.RenameBookmark(b, txtBox.Text);
@@ -442,11 +443,11 @@ public class EditorUI {
         Label makeBPMChangeLabel(string content) {
             var label = new Label();
             label.Foreground = Brushes.White;
-            label.Background = (SolidColorBrush)new BrushConverter().ConvertFrom(Const.Editor.BPMChange.NameColour);
-            label.Background.Opacity = Const.Editor.BPMChange.Opacity;
+            label.Background = (SolidColorBrush)new BrushConverter().ConvertFrom(Editor.BPMChange.NameColour);
+            label.Background.Opacity = Editor.BPMChange.Opacity;
             label.Content = content;
-            label.FontSize = Const.Editor.BPMChange.NameSize;
-            label.Padding = new Thickness(Const.Editor.BPMChange.NamePadding);
+            label.FontSize = Editor.BPMChange.NameSize;
+            label.Padding = new Thickness(Editor.BPMChange.NamePadding);
             label.FontWeight = FontWeights.Bold;
             label.Opacity = 1.0;
             label.Cursor = Cursors.Hand;
@@ -458,9 +459,9 @@ public class EditorUI {
             Canvas bpmChangeFlagCanvas = new();
 
             var line = MakeLine(EditorGrid.ActualWidth / 2, unitLength * b.globalBeat);
-            line.Stroke = (SolidColorBrush)new BrushConverter().ConvertFrom(Const.Editor.BPMChange.Colour);
-            line.StrokeThickness = Const.Editor.BPMChange.Thickness;
-            line.Opacity = Const.Editor.BPMChange.Opacity;
+            line.Stroke = (SolidColorBrush)new BrushConverter().ConvertFrom(Editor.BPMChange.Colour);
+            line.StrokeThickness = Editor.BPMChange.Thickness;
+            line.Opacity = Editor.BPMChange.Opacity;
             Canvas.SetBottom(line, 0);
             bpmChangeCanvas.Children.Add(line);
 
@@ -469,12 +470,12 @@ public class EditorUI {
                 isEditingMarker = true;
                 var txtBox = new TextBox();
                 txtBox.Text = b.gridDivision.ToString();
-                txtBox.FontSize = Const.Editor.BPMChange.NameSize;
+                txtBox.FontSize = Editor.BPMChange.NameSize;
                 Canvas.SetLeft(txtBox, 12);
                 Canvas.SetBottom(txtBox, line.StrokeThickness + 2);
                 txtBox.LostKeyboardFocus += new KeyboardFocusChangedEventHandler((src, e) => {
                     int div;
-                    if (int.TryParse(txtBox.Text, out div) && Helper.DoubleRangeCheck(div, 1, Const.Editor.GridDivisionMax)) {
+                    if (int.TryParse(txtBox.Text, out div) && Helper.DoubleRangeCheck(div, 1, Editor.GridDivisionMax)) {
                         mapEditor.RemoveBPMChange(b, false);
                         b.gridDivision = div;
                         mapEditor.AddBPMChange(b);
@@ -504,7 +505,7 @@ public class EditorUI {
                 isEditingMarker = true;
                 var txtBox = new TextBox();
                 txtBox.Text = b.BPM.ToString();
-                txtBox.FontSize = Const.Editor.BPMChange.NameSize;
+                txtBox.FontSize = Editor.BPMChange.NameSize;
                 Canvas.SetLeft(txtBox, 2);
                 Canvas.SetBottom(txtBox, line.StrokeThickness + 22);
                 txtBox.LostKeyboardFocus += new KeyboardFocusChangedEventHandler((src, e) => {
@@ -568,9 +569,9 @@ public class EditorUI {
         canvasBookmarkLabels.Children.Clear();
         foreach (Bookmark b in mapEditor.currentMapDifficulty.bookmarks) {
             var l = MakeLine(borderNavWaveform.ActualWidth, borderNavWaveform.ActualHeight * (1 - 60000 * b.beat / (mapEditor.globalBPM * parentWindow.songTotalTimeInSeconds * 1000)));
-            l.Stroke = (SolidColorBrush)new BrushConverter().ConvertFrom(Const.Editor.NavBookmark.Colour);
-            l.StrokeThickness = Const.Editor.NavBookmark.Thickness;
-            l.Opacity = Const.Editor.NavBookmark.Opacity;
+            l.Stroke = (SolidColorBrush)new BrushConverter().ConvertFrom(Editor.NavBookmark.Colour);
+            l.StrokeThickness = Editor.NavBookmark.Thickness;
+            l.Opacity = Editor.NavBookmark.Opacity;
             canvasBookmarks.Children.Add(l);
 
             var txtBlock = CreateBookmarkLabel(b);
@@ -818,7 +819,7 @@ public class EditorUI {
         } else if (lineSongMouseover.Opacity > 0) {
             beat = mapEditor.globalBPM * parentWindow.songTotalTimeInSeconds / 60000 * (1 - lineSongMouseover.Y1 / borderNavWaveform.ActualHeight);
         }
-        mapEditor.AddBookmark(new Bookmark(beat, Const.Editor.NavBookmark.DefaultName));
+        mapEditor.AddBookmark(new Bookmark(beat, Editor.NavBookmark.DefaultName));
     }
     internal void CreateBPMChange(bool snappedToGrid) {
         double beat = (snappedToGrid) ? mouseBeatSnapped : mouseBeatUnsnapped;
@@ -866,13 +867,13 @@ public class EditorUI {
     private Label CreateBookmarkLabel(Bookmark b) {
         var offset = borderNavWaveform.ActualHeight * (1 - 60000 * b.beat / (mapEditor.globalBPM * parentWindow.songTotalTimeInSeconds * 1000));
         var txtBlock = new Label();
-        txtBlock.Foreground = (SolidColorBrush)new BrushConverter().ConvertFrom(Const.Editor.NavBookmark.NameColour);
+        txtBlock.Foreground = (SolidColorBrush)new BrushConverter().ConvertFrom(Editor.NavBookmark.NameColour);
 
         txtBlock.Content = b.name;
-        txtBlock.FontSize = Const.Editor.NavBookmark.NameSize;
-        txtBlock.Padding = new Thickness(Const.Editor.NavBookmark.NamePadding);
+        txtBlock.FontSize = Editor.NavBookmark.NameSize;
+        txtBlock.Padding = new Thickness(Editor.NavBookmark.NamePadding);
         txtBlock.FontWeight = FontWeights.Bold;
-        txtBlock.Opacity = Const.Editor.NavBookmark.Opacity;
+        txtBlock.Opacity = Editor.NavBookmark.Opacity;
         //txtBlock.IsReadOnly = true;
         txtBlock.Cursor = Cursors.Hand;
         Canvas.SetBottom(txtBlock, borderNavWaveform.ActualHeight - offset);
@@ -896,7 +897,7 @@ public class EditorUI {
         txtBlock.MouseRightButtonUp += new MouseButtonEventHandler((src, e) => {
             var txtBox = new TextBox();
             txtBox.Text = b.name;
-            txtBox.FontSize = Const.Editor.NavBookmark.NameSize;
+            txtBox.FontSize = Editor.NavBookmark.NameSize;
             Canvas.SetBottom(txtBox, borderNavWaveform.ActualHeight - offset);
             txtBox.LostKeyboardFocus += new KeyboardFocusChangedEventHandler((src, e) => {
                 if (txtBox.Text != "") {

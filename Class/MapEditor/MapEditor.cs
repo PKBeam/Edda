@@ -1,4 +1,5 @@
 ﻿using Edda;
+using Edda.Class;
 using System;
 using System.Collections.Generic;
 
@@ -17,7 +18,7 @@ public class MapDifficulty {
         this.notes = notes;
         this.clipboard = clipboard;
         this.selectedNotes = new();
-        this.editorHistory = new(Const.Editor.HistoryMaxSize);
+        this.editorHistory = new(Editor.HistoryMaxSize);
     }
 }
 public class MapEditor {

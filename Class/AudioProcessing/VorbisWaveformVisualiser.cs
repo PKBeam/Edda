@@ -8,6 +8,7 @@ using System.Diagnostics;
 using System;
 using System.IO;
 using System.Threading;
+using Edda.Class;
 
 public class VorbisWaveformVisualiser {
 
@@ -26,8 +27,8 @@ public class VorbisWaveformVisualiser {
 		}
 		RecreateTokens();
 		var largest = Math.Max(height, width);
-		if (largest > Const.Editor.Waveform.MaxDimension) {
-			double scale = Const.Editor.Waveform.MaxDimension / largest;
+		if (largest > Editor.Waveform.MaxDimension) {
+			double scale = Editor.Waveform.MaxDimension / largest;
 			height *= scale;
 			width *= scale;
 		}
@@ -46,7 +47,7 @@ public class VorbisWaveformVisualiser {
 	    reader.Position = 0;
 		DrawingVisual dv = new DrawingVisual();
 		using (DrawingContext dc = dv.RenderOpen()) {
-			Pen bluePen = new Pen(new SolidColorBrush(Const.Editor.Waveform.ColourWPF), Const.Editor.Waveform.ThicknessWPF);
+			Pen bluePen = new Pen(new SolidColorBrush(Editor.Waveform.ColourWPF), Editor.Waveform.ThicknessWPF);
 			bluePen.Freeze();
 
 			int channels = reader.WaveFormat.Channels;
@@ -77,8 +78,8 @@ public class VorbisWaveformVisualiser {
 
 				var samples = new List<float>(buffer);
 				samples.Sort();
-				float lowPercent = (samples[(int)((samples.Count - 1) * (1 - Const.Editor.Waveform.SampleMaxPercentile))] + 1) / 2;
-				float highPercent = (samples[(int)((samples.Count - 1) * Const.Editor.Waveform.SampleMaxPercentile)] + 1) / 2;
+				float lowPercent = (samples[(int)((samples.Count - 1) * (1 - Editor.Waveform.SampleMaxPercentile))] + 1) / 2;
+				float highPercent = (samples[(int)((samples.Count - 1) * Editor.Waveform.SampleMaxPercentile)] + 1) / 2;
 				float lowValue = (float)width * lowPercent;
 				float highValue = (float)width * highPercent;
 				dc.DrawLine(

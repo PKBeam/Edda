@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Threading;
 using System.Threading.Tasks;
+using Edda.Class;
 
 public class AudioScanner {
     int scanIndex;
@@ -71,7 +72,7 @@ public class AudioScanner {
         // scan notes while song is still playing
         while (!ct.IsCancellationRequested) {
             ScanNotes();
-            Thread.Sleep(Const.Audio.NotePollRate);
+            Thread.Sleep(Audio.NotePollRate);
         }
     }
     private void ScanNotes() {
@@ -86,7 +87,7 @@ public class AudioScanner {
         var noteHits = 0;
 
         // check if any notes were missed
-        while (currentTime - noteTime >= Const.Audio.NoteDetectionDelta && scanIndex < notes.Count - 1) {
+        while (currentTime - noteTime >= Audio.NoteDetectionDelta && scanIndex < notes.Count - 1) {
             
             if (parallelAudioPlayer.Play(notes[scanIndex].col) == false) {
                 Helper.ThreadedPrint("WARNING: Scanner skipped a note that was already late");
@@ -100,7 +101,7 @@ public class AudioScanner {
         }
 
         // check if we need to play any notes
-        while (Math.Abs(currentTime - noteTime) < Const.Audio.NoteDetectionDelta) {
+        while (Math.Abs(currentTime - noteTime) < Audio.NoteDetectionDelta) {
 
             if (parallelAudioPlayer.Play(notes[scanIndex].col) == false) {
                 Helper.ThreadedPrint("WARNING: Scanner skipped a note");

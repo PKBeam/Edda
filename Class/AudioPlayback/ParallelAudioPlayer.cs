@@ -1,4 +1,5 @@
-﻿using NAudio.CoreAudioApi;
+﻿using Edda.Class;
+using NAudio.CoreAudioApi;
 using NAudio.Wave;
 using NAudio.Wave.SampleProviders;
 using System;
@@ -7,7 +8,7 @@ using System.IO;
 
 public class ParallelAudioPlayer: IDisposable {
     const int numChannels = 4;
-    const float maxPan = Const.Audio.MaxPanDistance;
+    const float maxPan = Audio.MaxPanDistance;
     int streams;
     int uniqueSamples;
     int lastPlayedStream;
@@ -103,6 +104,6 @@ public class ParallelAudioPlayer: IDisposable {
         }
     }
     private string GetFilePath(string basePath, int sampleNumber) {
-        return $"{Const.Program.ResourcesPath}{basePath}{sampleNumber}.wav";
+        return $"{Program.ResourcesPath}{basePath}{sampleNumber}.wav";
     }
 }
