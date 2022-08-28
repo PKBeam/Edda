@@ -245,35 +245,35 @@ namespace Edda
             // ctrl shortcuts
             if (ctrlKeyDown) {
                 // select all (Ctrl-A)
-                if (e.Key == Key.A) {
+                if (e.Key == Key.A && !songIsPlaying) {
                     mapEditor.SelectNewNotes(mapEditor.currentMapDifficulty.notes);
                 }
 
                 // copy (Ctrl-C)
-                if (e.Key == Key.C) {
+                if (e.Key == Key.C && !songIsPlaying) {
                     mapEditor.CopySelection();
                 }
                 // cut (Ctrl-X)
-                if (e.Key == Key.X) {
+                if (e.Key == Key.X && !songIsPlaying) {
                     mapEditor.CutSelection();
                 }
                 // paste (Ctrl-V)
-                if (e.Key == Key.V) {
+                if (e.Key == Key.V && !songIsPlaying) {
                     editorUI.PasteClipboardWithOffset();
                 }
 
                 // undo (Ctrl-Z)
-                if (e.Key == Key.Z) {
+                if (e.Key == Key.Z && !songIsPlaying) {
                     mapEditor.Undo();
                 }
                 // redo (Ctrl-Y, Ctrl-Shift-Z)
-                if ((e.Key == Key.Y) ||
-                    (e.Key == Key.Z && shiftKeyDown)) {
+                if (((e.Key == Key.Y) ||
+                    (e.Key == Key.Z && shiftKeyDown)) && !songIsPlaying) {
                     mapEditor.Redo();
                 }
 
                 // mirror selected notes (Ctrl-M)
-                if (e.Key == Key.M) {
+                if (e.Key == Key.M && !songIsPlaying) {
                     mapEditor.TransformSelection(NoteTransforms.Mirror());
                 }
 
@@ -542,6 +542,9 @@ namespace Edda
             txtDrumVol.Text = $"{(int)(sliderDrumVol.Value * 100)}%";
         }
         private void sliderSongTempo_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e) {
+            if (beatMap == null) {
+                return;
+            }
             double newTempo = sliderSongTempo.Value;
             songTempoStream.Tempo = newTempo;
             noteScanner.SetTempo(newTempo);
@@ -955,7 +958,7 @@ namespace Edda
             mapEditor.globalBPM = Helper.DoubleParseInvariant((string)beatMap.GetValue("_beatsPerMinute"));
             editorUI.mapEditor = mapEditor;
             editorUI.showWaveform = (checkWaveform.IsChecked == true);
-
+            songTempoStream.Tempo = sliderSongTempo.Value;
             var songPath = beatMap.PathOf((string)beatMap.GetValue("_songFilename"));
             editorUI.InitWaveforms(songPath);
 
@@ -1485,8 +1488,8 @@ namespace Edda
             noteScanner.Start((int)(sliderSongProgress.Value - editorAudioLatency), new List<Note>(mapEditor.currentMapDifficulty.notes), mapEditor.globalBPM);
             beatScanner.Start((int)(sliderSongProgress.Value - editorAudioLatency), editorUI.GetBeats(), mapEditor.globalBPM);
 
-            if (songStream.CurrentTime > new TimeSpan(0, 0, 0, 0, editorAudioLatency)) {
-                songStream.CurrentTime = songStream.CurrentTime - new TimeSpan(0, 0, 0, 0, editorAudioLatency);
+            if (songTempoStream.CurrentTime > new TimeSpan(0, 0, 0, 0, editorAudioLatency)) {
+                songTempoStream.CurrentTime = songTempoStream.CurrentTime - new TimeSpan(0, 0, 0, 0, editorAudioLatency);
                 songPlayer.Play();
             } else {
                 songPlaybackCancellationTokenSource.Dispose();

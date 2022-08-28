@@ -11,19 +11,23 @@ namespace Edda {
     public partial class MainWindow : Window {
         // File
         private void MenuItemNewMap_Click(object sender, RoutedEventArgs e) {
+            PauseSong();
             CreateNewMap();
         }
         private void MenuItemOpenMap_Click(object sender, RoutedEventArgs e) {
+            PauseSong();
             OpenMap();
         }
         private void MenuItemSaveMap_Click(object sender, RoutedEventArgs e) {
             BackupAndSaveBeatmap();
         }
         private void MenuItemCloseMap_Click(object sender, RoutedEventArgs e) {
+            PauseSong();
             returnToStartMenuOnClose = true;
             this.Close();
         }
         private void MenuItemExportMap_Click(object sender, RoutedEventArgs e) {
+            PauseSong();
             ExportMap();
         }
 
@@ -45,33 +49,57 @@ namespace Edda {
             drummer.Play(3);
         }
         private void MenuItemAddBookmark_Click(object sender, RoutedEventArgs e) {
+            PauseSong();
             editorUI.CreateBookmark(false);
         }
         private void MenuItemAddTimingChange_Click(object sender, RoutedEventArgs e) {
+            PauseSong();
             editorUI.CreateBPMChange(false, false);
         }
         private void MenuItemAddSnappedTimingChange_Click(object sender, RoutedEventArgs e) {
+            PauseSong();
             editorUI.CreateBPMChange(true, false);
         }
         private void MenuItemUndo_Click(object sender, RoutedEventArgs e) {
+            if (songIsPlaying) {
+                return;
+            }
             mapEditor.Undo();
         }
         private void MenuItemRedo_Click(object sender, RoutedEventArgs e) {
+            if (songIsPlaying) {
+                return;
+            }
             mapEditor.Redo();
         }
         private void MenuItemSelectAll_Click(object sender, RoutedEventArgs e) {
+            if (songIsPlaying) {
+                return;
+            }
             mapEditor.SelectNewNotes(mapEditor.currentMapDifficulty.notes);
         }
         private void MenuItemCut_Click(object sender, RoutedEventArgs e) {
+            if (songIsPlaying) {
+                return;
+            }
             mapEditor.CutSelection();
         }
         private void MenuItemCopy_Click(object sender, RoutedEventArgs e) {
+            if (songIsPlaying) {
+                return;
+            }
             mapEditor.CopySelection();
         }
         private void MenuItemPaste_Click(object sender, RoutedEventArgs e) {
+            if (songIsPlaying) {
+                return;
+            }
             editorUI.PasteClipboardWithOffset();
         }
         private void MenuItemMirrorSelected_Click(object sender, RoutedEventArgs e) {
+            if (songIsPlaying) {
+                return;
+            }
             mapEditor.TransformSelection(NoteTransforms.Mirror());
         }
         private void MenuItemSnapToGrid_Click(object sender, RoutedEventArgs e) {
