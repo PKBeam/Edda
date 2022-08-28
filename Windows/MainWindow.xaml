@@ -451,7 +451,7 @@
 
                             <Border Grid.Row="4" Grid.Column="1">
                                 <DockPanel>
-                                    <TextBlock x:Name="txtSongTempo" DockPanel.Dock="Right" Width="30" Margin="5 0 0 0">0%</TextBlock>
+                                    <TextBlock x:Name="txtSongTempo" DockPanel.Dock="Right" Width="30" Margin="5 0 0 0">1x</TextBlock>
                                     <Slider x:Name="sliderSongTempo" Maximum="1" IsMoveToPointEnabled="True" ValueChanged="sliderSongTempo_ValueChanged" Minimum="0.1"/>
                                 </DockPanel>
                             </Border>
