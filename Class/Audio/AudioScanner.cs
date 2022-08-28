@@ -40,7 +40,6 @@ public class AudioScanner {
         this.notes = notes;
         stopwatchOffset = millisecStart;
         SetScanStart();
-
         // start scanning for notes
         tokenSource = new CancellationTokenSource();
         token = tokenSource.Token;
