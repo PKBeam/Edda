@@ -295,6 +295,7 @@ public class EditorUI {
 
         // finally, draw the markers
         DrawBookmarks();
+        DrawNavBookmarks();
         DrawBPMChanges();
 
         Trace.WriteLine($"INFO: Redrew editor grid in {(DateTime.Now - start).TotalSeconds} seconds.");
@@ -696,14 +697,14 @@ public class EditorUI {
         }
     }
     internal void GridMouseUp(Point mousePos, bool snapMouseMovements) {
-        if (mouseGridCol >= 0) {
+        if (mouseGridCol >= 0 && mouseGridCol < 4) {
             SetPreviewNoteVisibility(Visibility.Visible);
         }
         if (currentlyDraggingMarker != null && !isEditingMarker) {
             FinaliseMarkerEdit(mousePos, snapMouseMovements);
         } else if (isDragging) {
             EndDragSelection(mousePos, snapMouseMovements);
-        } else if (EditorGrid.IsMouseCaptured && mouseGridCol >= 0) {
+        } else if (EditorGrid.IsMouseCaptured && mouseGridCol >= 0 && mouseGridCol < 4) {
 
             Note n = new Note(mouseBeat, mouseGridCol);
 

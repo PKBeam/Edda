@@ -36,6 +36,9 @@ namespace Edda {
             PauseSong();
             var res = MessageBox.Show("Copy over bookmarks and BPM changes from the currently selected map?", "Copy Existing Map Data?", MessageBoxButton.YesNo, MessageBoxImage.Question);
             mapEditor.CreateDifficulty(res == MessageBoxResult.Yes);
+            SwitchDifficultyMap(beatMap.numDifficulties - 1);
+            mapEditor.SortDifficulties();
+            DrawEditorGrid();
             UpdateDifficultyButtons();
         }
         private void BtnDeleteDifficulty_Click(object sender, RoutedEventArgs e) {
@@ -45,6 +48,10 @@ namespace Edda {
             }
             PauseSong();
             mapEditor.DeleteDifficulty();
+            if (mapEditor.currentDifficultyIndex >= beatMap.numDifficulties - 1) {
+                SwitchDifficultyMap(beatMap.numDifficulties - 1);
+            }
+            DrawEditorGrid();
             UpdateDifficultyButtons();
         }
         private void BtnChangeDifficulty0_Click(object sender, RoutedEventArgs e) {

@@ -40,7 +40,7 @@ namespace Edda
                 return songStream.CurrentTime.TotalMilliseconds;
             }
             set {
-                sliderSongProgress.Value = songSeekPosition;
+                sliderSongProgress.Value = value;
             }
         }
         public double songTotalTimeInSeconds {
@@ -626,6 +626,7 @@ namespace Edda
             }
             mapEditor.SaveMap();
             beatMap.SaveToFile();
+            /*
             this.Dispatcher.Invoke(() => {
                 //imgSaved.Opacity = 1;
                 var saveAnim = new DoubleAnimation();
@@ -639,6 +640,7 @@ namespace Edda
                 st.Children.Add(saveAnim);
                 st.Begin(this, true);
             });
+            */
         }
         private void BackupAndSaveBeatmap() {
             // https://stackoverflow.com/questions/329355/cannot-delete-directory-with-directory-deletepath-true

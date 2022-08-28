@@ -12,11 +12,11 @@ public class MapDifficulty {
     public List<Note> clipboard;
     public List<Note> selectedNotes;
     public EditHistory<Note> editorHistory;
-    public MapDifficulty(List<Note> notes, List<BPMChange> bpmChanges, List<Bookmark> bookmarks, List<Note> clipboard) {
-        this.bpmChanges = bpmChanges;
-        this.bookmarks = bookmarks;
-        this.notes = notes;
-        this.clipboard = clipboard;
+    public MapDifficulty(List<Note> notes = null, List<BPMChange> bpmChanges = null, List<Bookmark> bookmarks = null, List<Note> clipboard = null) {
+        this.bpmChanges = bpmChanges ?? new();
+        this.bookmarks = bookmarks ?? new();
+        this.notes = notes ?? new();
+        this.clipboard = clipboard ?? new();
         this.selectedNotes = new();
         this.editorHistory = new(Editor.HistoryMaxSize);
     }
@@ -72,7 +72,6 @@ public class MapEditor {
         difficultyMaps[difficultyMaps.Length - 1] = null;
 
         beatMap.DeleteMap(indx);
-        SelectDifficulty(Math.Min(indx, beatMap.numDifficulties - 1));
     }
     public void CreateDifficulty(bool copyFromCurrent) {
         beatMap.AddMap();
@@ -82,16 +81,15 @@ public class MapEditor {
             beatMap.SetBPMChangesForMap(newMap, beatMap.GetBPMChangesForMap(currentDifficultyIndex));
         }
         difficultyMaps[newMap] = new MapDifficulty(
-            beatMap.GetNotesForMap(currentDifficultyIndex),
-            beatMap.GetBPMChangesForMap(currentDifficultyIndex),
-            beatMap.GetBookmarksForMap(currentDifficultyIndex),
+            beatMap.GetNotesForMap(newMap),
+            beatMap.GetBPMChangesForMap(newMap),
+            beatMap.GetBookmarksForMap(newMap),
             parent.editorClipboard
         );
-        SelectDifficulty(newMap);
-        SortDifficulties();
     }
     public void SelectDifficulty(int indx) {
-        if (currentDifficultyIndex != -1) {
+        // before switching - save the notes for the current difficulty, if it still exists
+        if (currentDifficultyIndex != -1 && currentDifficultyIndex < beatMap.numDifficulties) {
             beatMap.SetNotesForMap(currentDifficultyIndex, currentMapDifficulty?.notes);
             beatMap.SetBookmarksForMap(currentDifficultyIndex, currentMapDifficulty?.bookmarks);
             beatMap.SetBPMChangesForMap(currentDifficultyIndex, currentMapDifficulty?.bpmChanges);
@@ -144,17 +142,14 @@ public class MapEditor {
     }
     public void AddBookmark(Bookmark b) {
         currentMapDifficulty?.bookmarks.Add(b);
-        parent.editorUI.DrawNavBookmarks();
         parent.DrawEditorGrid(false);
     }
     public void RemoveBookmark(Bookmark b) {
         currentMapDifficulty?.bookmarks.Remove(b);
-        parent.editorUI.DrawNavBookmarks();
         parent.DrawEditorGrid(false);
     }
     public void RenameBookmark(Bookmark b, string newName) {
         b.name = newName;
-        parent.editorUI.DrawNavBookmarks();
         parent.DrawEditorGrid(false);
     }
     public void AddNotes(List<Note> notes, bool updateHistory = true) {
