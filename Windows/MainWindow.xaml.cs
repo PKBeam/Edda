@@ -193,8 +193,7 @@ namespace Edda
             Trace.WriteLine("INFO: Audio resources disposed...");
 
             // TODO find other stuff to dispose so we don't cause a memory leak
-
-            Application.Current.Shutdown();
+            // Application.Current.Shutdown();
         }
         private void AppMainWindow_KeyDown(object sender, KeyEventArgs e) {
 
@@ -709,7 +708,9 @@ namespace Edda
             txtDistMedal2.Text = dist == 0 ? "Auto" : dist.ToString();
         }
         private void CheckGridSnap_Click(object sender, RoutedEventArgs e) {
-            editorUI.snapToGrid = (checkGridSnap.IsChecked == true);
+            bool newVal = checkGridSnap.IsChecked == true;
+            editorUI.snapToGrid = newVal;
+            MenuItemSnapToGrid.IsChecked = newVal;
         }
         private void TxtGridOffset_LostFocus(object sender, RoutedEventArgs e) {
             double prevOffset = Helper.DoubleParseInvariant((string)beatMap.GetCustomValueForMap(mapEditor.currentDifficultyIndex, "_editorOffset"));
@@ -949,7 +950,7 @@ namespace Edda
             checkExplicitContent.IsChecked = (string)beatMap.GetValue("_explicit") == "true";
 
             comboEnvironment.SelectedIndex = BeatmapDefaults.EnvironmentNames.IndexOf((string)beatMap.GetValue("_environmentName"));
-
+            MenuItemSnapToGrid.IsChecked = (checkGridSnap.IsChecked == true);
             mapEditor = new MapEditor(this);
             mapEditor.globalBPM = Helper.DoubleParseInvariant((string)beatMap.GetValue("_beatsPerMinute"));
             editorUI.mapEditor = mapEditor;
@@ -1415,7 +1416,10 @@ namespace Edda
             songChannel.Volume = (float)sliderSongVol.Value;
             songPlayer = new WasapiOut(AudioClientShareMode.Shared, Audio.WASAPILatencyTarget);
             songPlayer.Init(songChannel);
-            beatMap.SetValue("_songApproximativeDuration", (int)songStream.TotalTime.TotalSeconds + 1);
+            if ((int)beatMap.GetValue("_songApproximativeDuration") != (int)songStream.TotalTime.TotalSeconds + 1) {
+               beatMap.SetValue("_songApproximativeDuration", (int)songStream.TotalTime.TotalSeconds + 1);
+            }
+
             // subscribe to playbackstopped
             songPlayer.PlaybackStopped += (sender, args) => { PauseSong(); };
 
@@ -1664,6 +1668,7 @@ namespace Edda
             }
             return dist;
         }
+        // return value: whether or not to cancel the operation
         private bool PromptBeatmapSave() {
             if (beatMap == null) {
                 return true;

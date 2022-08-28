@@ -16,7 +16,7 @@
                     </LinearGradientBrush>
                 </Border.Background>
                 <StackPanel Orientation="Horizontal">
-                    <Label Padding="10 10 0 10" FontWeight="Bold" FontSize="14">Global BPM:</Label>
+                    <Label Padding="10 10 0 10" Margin="0 1 0 0" FontWeight="Bold" FontSize="16" FontFamily="Bahnschrift">Global BPM:</Label>
                     <Label x:Name="lblGlobalBPM" Padding="5 10 10 10" FontSize="14" >0</Label>
                 </StackPanel>
             </Border>
@@ -32,8 +32,8 @@
                 </StackPanel>
             </Border>
             <StackPanel Margin="15">
-                
-                <Label Padding="0 0 0 5" FontWeight="Bold">Timing Changes:</Label>
+
+                <Label Padding="0 0 0 5" FontWeight="Bold" FontFamily="Bahnschrift" FontSize="14">Timing Changes:</Label>
                 <DataGrid x:Name="dataBPMChange" Height="200" AutoGenerateColumns="False" CellEditEnding="dataBPMChange_CellEditEnding" CurrentCellChanged="dataBPMChange_CurrentCellChanged" RowEditEnding="dataBPMChange_RowEditEnding" AddingNewItem="dataBPMChange_AddingNewItem">
                     <DataGrid.Columns>
                         <DataGridTextColumn Header="Global Beat" Binding="{Binding globalBeat}" Width="*"/>
@@ -44,5 +44,5 @@
             </StackPanel>
         </DockPanel>
     </Grid>
-    
+
 </Window>

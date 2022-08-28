@@ -38,8 +38,8 @@
                 <StackPanel Margin="5" VerticalAlignment="Center">
                     <Label Padding="0" FontSize="14" HorizontalAlignment="Center">Average</Label>
                     <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
-                        <Label x:Name="lblAvgBPM" Padding="0" FontSize="36" FontWeight="Bold">0</Label>
-                        <Label FontSize="14" Padding="5 0 0 6" VerticalAlignment="Bottom">BPM</Label>
+                        <Label x:Name="lblAvgBPM" Padding="0" Margin="0 1 0 -2" FontSize="36" FontWeight="Bold" FontFamily="Bahnschrift">0</Label>
+                        <Label FontSize="14" Padding="5 0 0 6" VerticalAlignment="Bottom" FontFamily="Bahnschrift">BPM</Label>
                     </StackPanel>
                     <Label x:Name="lblUnroundedAvgBPM" HorizontalAlignment="Center" Padding="0" FontSize="16">(0.00)</Label>
                     <!--

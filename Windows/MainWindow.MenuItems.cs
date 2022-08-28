@@ -28,6 +28,31 @@ namespace Edda {
         }
 
         // Edit
+        private void MenuItemAddNote1_Click(object sender, RoutedEventArgs e) {
+            editorUI.CreateNote(0, false);
+            drummer.Play(0);
+        }
+        private void MenuItemAddNote2_Click(object sender, RoutedEventArgs e) {
+            editorUI.CreateNote(1, false);
+            drummer.Play(1);
+        }
+        private void MenuItemAddNote3_Click(object sender, RoutedEventArgs e) {
+            editorUI.CreateNote(2, false);
+            drummer.Play(2);
+        }
+        private void MenuItemAddNote4_Click(object sender, RoutedEventArgs e) {
+            editorUI.CreateNote(3, false);
+            drummer.Play(3);
+        }
+        private void MenuItemAddBookmark_Click(object sender, RoutedEventArgs e) {
+            editorUI.CreateBookmark(false);
+        }
+        private void MenuItemAddTimingChange_Click(object sender, RoutedEventArgs e) {
+            editorUI.CreateBPMChange(false, false);
+        }
+        private void MenuItemAddSnappedTimingChange_Click(object sender, RoutedEventArgs e) {
+            editorUI.CreateBPMChange(true, false);
+        }
         private void MenuItemUndo_Click(object sender, RoutedEventArgs e) {
             mapEditor.Undo();
         }
@@ -49,8 +74,10 @@ namespace Edda {
         private void MenuItemMirrorSelected_Click(object sender, RoutedEventArgs e) {
             mapEditor.TransformSelection(NoteTransforms.Mirror());
         }
-        private void MenuItemSettings_Click(object sender, RoutedEventArgs e) {
-            ShowUniqueWindow(() => new SettingsWindow(this, userSettings));
+        private void MenuItemSnapToGrid_Click(object sender, RoutedEventArgs e) {
+            bool newVal = MenuItemSnapToGrid.IsChecked == true;
+            checkGridSnap.IsChecked = newVal;
+            editorUI.snapToGrid = newVal;
         }
 
         // View
@@ -64,6 +91,9 @@ namespace Edda {
         // Tools
         private void MenuItemBpmFinder_Click(object sender, RoutedEventArgs e) {
             ShowUniqueWindow(() => new BPMCalcWindow());
+        }
+        private void MenuItemSettings_Click(object sender, RoutedEventArgs e) {
+            ShowUniqueWindow(() => new SettingsWindow(this, userSettings));
         }
         
         // Help

@@ -13,16 +13,16 @@ namespace Edda.Const
         public const string RepositoryURL = "https://github.com/PKBeam/Edda";
         public const string ReleasesAPI = "https://api.github.com/repos/PKBeam/Edda/releases";
         public const string VersionString = "1.1.0b1";
-        public const string DisplayVersionString =
-#if DEBUG
-                VersionString + "-dev";
-#else
-                VersionString;
-#endif
+        public static string DisplayVersionString =>
+            #if DEBUG
+                VersionString.Replace("b", " Beta ") + " (Dev)";
+            #else
+                VersionString.Replace("b", " Beta ");
+            #endif
         public static string ProgramDataDir => Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "Edda");
         public static string SettingsFile => Path.Combine(ProgramDataDir, "settings.txt");
         public static string RecentOpenedMapsFile => Path.Combine(ProgramDataDir, "recentMaps.txt");
-        public const int MaxRecentOpenedMaps = 5;
+        public const int MaxRecentOpenedMaps = 10;
         public static string DocumentsMapFolder => Path.Combine(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), "Ragnarock"), "CustomSongs");
         public static string GameInstallRelativeMapFolder => Path.Combine("Ragnarock", "CustomSongs");
         public const string UserGuideURL = "https://pkbeam.github.io/Edda/";

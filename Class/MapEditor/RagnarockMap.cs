@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Globalization;
 using System.IO;
 using System.Linq;
 using Edda;
@@ -163,7 +162,7 @@ public class RagnarockMap {
         var obj = JObject.Parse(infoStr);
         foreach (var i in expectedTypesL1) {
             // validate type
-            if (i.Key == "_songApproximativeDuration" && obj[i.Key]?.Type != JTokenType.Object) {
+            if (i.Key == "_songApproximativeDuration" && obj[i.Key]?.Type != JTokenType.Integer) {
                 SetValue("_songApproximativeDuration", 1);
                 continue;
             }
@@ -416,7 +415,6 @@ public class RagnarockMap {
         if (i == j) {
             return;
         }
-
         var temp = difficultyMaps[i];
         difficultyMaps[i] = difficultyMaps[j];
         difficultyMaps[j] = temp;

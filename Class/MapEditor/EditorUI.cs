@@ -83,6 +83,11 @@ public class EditorUI {
     double unitHeight {
         get { return referenceRow.ActualHeight; }
     }
+    double currentSeekBeat {
+        get {
+            return BeatForPosition(scrollEditor.VerticalOffset + scrollEditor.ActualHeight - unitLengthUnscaled / 2, snapToGrid);
+        }
+    }
 
     // info on currently selected beat/col from mouse position
     int mouseGridCol;
@@ -794,7 +799,7 @@ public class EditorUI {
 
         // set preview note visibility
         if (!isDragging) {
-            if (mouseGridCol < 0) {
+            if (mouseGridCol < 0 || mouseGridCol > 3) {
                 SetPreviewNoteVisibility(Visibility.Hidden);
             } else {
                 SetPreviewNoteVisibility(Visibility.Visible);
@@ -812,17 +817,23 @@ public class EditorUI {
     internal void PasteClipboardWithOffset() {
         mapEditor.PasteClipboard(mouseBeatSnapped);
     }
-    internal void CreateBookmark() {
-        double beat = BeatForPosition(scrollEditor.VerticalOffset + scrollEditor.ActualHeight - unitLengthUnscaled / 2, snapToGrid);
-        if (isMouseOnEditingGrid) {
-            beat = snapToGrid ? mouseBeatSnapped : mouseBeatUnsnapped;
-        } else if (lineSongMouseover.Opacity > 0) {
-            beat = mapEditor.globalBPM * parentWindow.songTotalTimeInSeconds / 60000 * (1 - lineSongMouseover.Y1 / borderNavWaveform.ActualHeight);
+    internal void CreateBookmark(bool onMouse = true) {
+        double beat = currentSeekBeat;
+        if (onMouse) {
+            if (isMouseOnEditingGrid) {
+                beat = snapToGrid ? mouseBeatSnapped : mouseBeatUnsnapped;
+                // add bookmark on nav waveform
+            } else if (lineSongMouseover.Opacity > 0) {
+                beat = mapEditor.globalBPM * parentWindow.songTotalTimeInSeconds / 60000 * (1 - lineSongMouseover.Y1 / borderNavWaveform.ActualHeight);
+            }
         }
         mapEditor.AddBookmark(new Bookmark(beat, Editor.NavBookmark.DefaultName));
     }
-    internal void CreateBPMChange(bool snappedToGrid) {
+    internal void CreateBPMChange(bool snappedToGrid, bool onMouse = true) {
         double beat = (snappedToGrid) ? mouseBeatSnapped : mouseBeatUnsnapped;
+        if (!onMouse) {
+            beat = currentSeekBeat;
+        }
         BPMChange previous = new BPMChange(0, mapEditor.globalBPM, gridDivision);
         foreach (var b in mapEditor.currentMapDifficulty.bpmChanges) {
             if (b.globalBeat < beat) {
@@ -833,8 +844,7 @@ public class EditorUI {
     }
     internal void CreateNote(int col, bool onMouse) {
         double mouseInput = snapToGrid ? mouseBeatSnapped : mouseBeatUnsnapped;
-        double defaultInput = BeatForPosition(scrollEditor.VerticalOffset + scrollEditor.ActualHeight - unitLengthUnscaled / 2, snapToGrid);
-        Note n = new Note(onMouse ? mouseInput: defaultInput, col);
+        Note n = new Note(onMouse ? mouseInput: currentSeekBeat, col);
         mapEditor.AddNotes(n);
     }
     
@@ -932,6 +942,8 @@ public class EditorUI {
             col = 2;
         } else if (12.5 <= subLength && subLength <= 17.0) {
             col = 3;
+        } else if (17.0 < subLength) {
+            col = 4;
         }
         return col;
     }

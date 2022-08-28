@@ -7,7 +7,7 @@
         mc:Ignorable="d"
         WindowStartupLocation="CenterScreen"
         Title="About Edda"
-        Background="Transparent" Height="300" Width="400" ResizeMode="NoResize"
+        Background="Transparent" Height="320" Width="400" ResizeMode="NoResize"
     >
     <Grid>
         <Grid.Background>
@@ -26,13 +26,13 @@
             </StackPanel>
             <Line X1="0" X2="1000" Margin="0 20 0 10" StrokeThickness="1.5" Stroke="{DynamicResource {x:Static SystemColors.ControlDarkDarkBrushKey}}" HorizontalAlignment="Center"></Line>
             <StackPanel Orientation="Vertical" Margin="0 10 0 10">
-                <TextBlock>Edda is an open-source project hosted on GitHub.</TextBlock>
-                <TextBlock x:Name="TxtGithubLink" Foreground="{DynamicResource {x:Static SystemColors.HighlightBrushKey}}" MouseLeftButtonDown="TxtGithubLink_MouseLeftButtonDown" MouseEnter="TxtGithubLink_MouseEnter" MouseLeave="TxtGithubLink_MouseLeave">https://github.com/PKBeam/Edda</TextBlock>
+                <TextBlock FontSize="14">Edda is an open-source project hosted on GitHub.</TextBlock>
+                <TextBlock x:Name="TxtGithubLink" Foreground="{DynamicResource {x:Static SystemColors.HighlightBrushKey}}" MouseLeftButtonDown="TxtGithubLink_MouseLeftButtonDown" MouseEnter="TxtGithubLink_MouseEnter" MouseLeave="TxtGithubLink_MouseLeave" FontSize="14">https://github.com/PKBeam/Edda</TextBlock>
             </StackPanel>
 
             <StackPanel Orientation="Vertical" Margin="0 10 0 10">
-                <TextBlock TextWrapping="Wrap">Join the Ragnacustoms community Discord server to discuss Edda, mapping, custom songs and more.</TextBlock>
-                <TextBlock x:Name="TxtRagnacustomsLink" Foreground="{DynamicResource {x:Static SystemColors.HighlightBrushKey}}" MouseLeftButtonDown="TxtRagnacustomsLink_MouseLeftButtonDown" MouseEnter="TxtRagnacustomsLink_MouseEnter" MouseLeave="TxtRagnacustomsLink_MouseLeave">https://ragnacustoms.com/</TextBlock>
+                <TextBlock TextWrapping="Wrap" FontSize="14">Join the Ragnacustoms community Discord server to discuss Edda, mapping, custom songs and more.</TextBlock>
+                <TextBlock x:Name="TxtRagnacustomsLink" Foreground="{DynamicResource {x:Static SystemColors.HighlightBrushKey}}" MouseLeftButtonDown="TxtRagnacustomsLink_MouseLeftButtonDown" MouseEnter="TxtRagnacustomsLink_MouseEnter" MouseLeave="TxtRagnacustomsLink_MouseLeave" FontSize="14">https://ragnacustoms.com/</TextBlock>
             </StackPanel>
         </StackPanel>
     </Grid>
