@@ -12,13 +12,19 @@ namespace Edda.Const
         public const string Name = "Edda";
         public const string RepositoryURL = "https://github.com/PKBeam/Edda";
         public const string ReleasesAPI = "https://api.github.com/repos/PKBeam/Edda/releases";
-        public const string VersionString = "1.1.0b1";
+        public const string BaseVersionString = "1.1.0b1";
+        public const string VersionString =
+#if DEBUG
+            BaseVersionString + "-dev";
+#else
+            BaseVersionString;
+#endif
         public static string DisplayVersionString =>
-            #if DEBUG
-                VersionString.Replace("b", " Beta ") + " (Dev)";
-            #else
-                VersionString.Replace("b", " Beta ");
-            #endif
+#if DEBUG
+            VersionString.Replace("b", " Beta ") + " (Dev)";
+#else
+            VersionString.Replace("b", " Beta ");
+#endif
         public static string ProgramDataDir => Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "Edda");
         public static string SettingsFile => Path.Combine(ProgramDataDir, "settings.txt");
         public static string RecentOpenedMapsFile => Path.Combine(ProgramDataDir, "recentMaps.txt");
@@ -165,7 +171,7 @@ namespace Edda.Const
         public const int Shuffle = 0;           // what do
         public const double ShufflePeriod = 0.5;         // these do??
         public const string BeatmapCharacteristicName = "Standard";
-        public const double NoteJumpMovementSpeed = 15;
+        public const double NoteJumpMovementSpeed = 20;
         public static List<string> DifficultyNames => new() { "Easy", "Normal", "Hard" };
         public static List<string> EnvironmentNames => new() { "Midgard", "Alfheim", "Nidavellir", "Asgard", "Muspelheim", "Helheim", "Hellfest" };
         //public const string DefaultEnvironmentAlias = "Midgard";

@@ -318,7 +318,7 @@ public class RagnarockMap {
     }
     private void UpdateEddaVersion() {
         var obj = JObject.Parse(infoStr);
-        obj["_customData"]["_editors"]["Edda"]["version"] = Program.DisplayVersionString;
+        obj["_customData"]["_editors"]["Edda"]["version"] = Program.VersionString;
         obj["_customData"]["_editors"]["_lastEditedBy"] = Program.Name;
         infoStr = JsonConvert.SerializeObject(obj, Formatting.Indented);
     }
