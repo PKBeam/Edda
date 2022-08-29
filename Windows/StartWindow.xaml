@@ -8,7 +8,7 @@
         WindowStartupLocation="CenterScreen"
         AllowsTransparency ="True"
         WindowStyle="None"
-        Background="Transparent" Height="450" Width="800" ResizeMode="NoResize" MouseLeftButtonDown="Window_MouseLeftButtonDown">
+        Background="Transparent" Height="470" Width="800" ResizeMode="NoResize" MouseLeftButtonDown="Window_MouseLeftButtonDown">
     <Grid>
         <Grid.Background>
             <LinearGradientBrush EndPoint="0.5,1" StartPoint="0.5,0">
@@ -51,7 +51,7 @@
             </Button>
             <Line X1="0" X2="1000" Margin="0 5 0 10" StrokeThickness="1.5" Stroke="{DynamicResource {x:Static SystemColors.ControlDarkDarkBrushKey}}" HorizontalAlignment="Center"></Line>
             <TextBlock Foreground="#002668" FontSize="18" FontWeight="Bold" FontFamily="Bahnschrift" Margin="0 0 0 10">Recent Maps</TextBlock>
-            <ListView x:Name="ListViewRecentMaps" Height="200" ScrollViewer.HorizontalScrollBarVisibility="Auto">
+            <ListView x:Name="ListViewRecentMaps" Height="220" ScrollViewer.VerticalScrollBarVisibility="Hidden">
                 <ListView.Background>
                     <LinearGradientBrush EndPoint="0.5,1" StartPoint="0.5,0">
                         <GradientStop Color="{DynamicResource {x:Static SystemColors.ControlLightColorKey}}" Offset="0"/>

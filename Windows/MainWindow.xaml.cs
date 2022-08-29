@@ -477,18 +477,17 @@ namespace Edda
                 mapEditor.ClearSelectedDifficulty();
                 ClearCoverImage();
             }
-            beatMap = new RagnarockMap(newMapFolder, true);
-
-            // select and load an audio file
-            if (!SelectNewSong()) {
+            
+            // select an audio file
+            string file = SelectSongDialog();
+            if (file == null) {
                 return;
             }
 
-            // save the map
-            SaveBeatmap();
+            beatMap = new RagnarockMap(newMapFolder, true);
 
-            // open the newly created map
-            InitUI();
+            // load audio file
+            LoadSong(file);
 
             recentMaps.AddRecentlyOpened((string)beatMap.GetValue("_songName"), newMapFolder);
             recentMaps.Write();
@@ -929,21 +928,23 @@ namespace Edda
             editorUI.DrawNavBookmarks();
             DrawEditorGrid();
         }
-
         // song/note playback
-        private bool SelectNewSong() {
+        private string SelectSongDialog() {
             // select audio file
             var d = new Microsoft.Win32.OpenFileDialog();
             d.Title = "Select a song to map";
             d.DefaultExt = ".ogg";
             d.Filter = "OGG Vorbis (*.ogg)|*.ogg";
-
-            if (d.ShowDialog() != true) {
-                return false;
+            if (d.ShowDialog() == true) {
+                return d.FileName;
+            } else {
+                return null;
             }
+        }
+        private bool LoadSong(string file) {
             VorbisWaveReader vorbisStream;
             try {
-                vorbisStream = new VorbisWaveReader(d.FileName);
+                vorbisStream = new VorbisWaveReader(file);
             } catch (Exception) {
                 MessageBox.Show("The .ogg file is corrupted.", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
                 return false;
@@ -954,11 +955,11 @@ namespace Edda
             }
 
             // check for same file
-            var songFile = System.IO.Path.GetFileName(Helper.SanitiseSongFileName(d.FileName));
+            var songFile = System.IO.Path.GetFileName(Helper.SanitiseSongFileName(file));
             var songFilePath = beatMap.PathOf(songFile);
             var prevSongFile = beatMap.PathOf((string)beatMap.GetValue("_songFilename"));
 
-            if (d.FileName == prevSongFile) {
+            if (file == prevSongFile) {
                 return false;
             }
 
@@ -966,7 +967,6 @@ namespace Edda
             UnloadSong();
             beatMap.SetValue("_songApproximativeDuration", (int)vorbisStream.TotalTime.TotalSeconds + 1);
             beatMap.SetValue("_songFilename", songFile);
-            SaveBeatmap();
             vorbisStream.Dispose();
 
             // do file I/O
@@ -978,7 +978,7 @@ namespace Edda
             if (File.Exists(songFilePath)) {
                 File.Delete(songFilePath);
             }
-            File.Copy(d.FileName, songFilePath);
+            File.Copy(file, songFilePath);
 
             LoadSong();
             
@@ -988,6 +988,12 @@ namespace Edda
                 editorUI.DrawMainWaveform();
             }
             editorUI.DrawNavWaveform();
+
+            // reload map and editor
+            InitUI();
+
+            // save map to lock in the new song
+            SaveBeatmap();
 
             return true;
         }

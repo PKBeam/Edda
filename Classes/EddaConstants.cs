@@ -21,7 +21,7 @@ namespace Edda.Const
 #endif
         public static string DisplayVersionString =>
 #if DEBUG
-            VersionString.Replace("b", " Beta ") + " (Dev)";
+            VersionString.Replace("b", " Beta ").Replace("-dev", " (Dev)");
 #else
             VersionString.Replace("b", " Beta ");
 #endif

@@ -8,7 +8,11 @@ namespace Edda {
     public partial class MainWindow : Window {
         private void BtnPickSong_Click(object sender, RoutedEventArgs e) {
             PauseSong();
-            SelectNewSong();
+            string file = SelectSongDialog();
+            if (file == null) {
+                return;
+            }
+            LoadSong(file);
         }
         private void BtnMakePreview_Click(object sender, RoutedEventArgs e) {
             var win = Helper.GetFirstWindow<SongPreviewWindow>();

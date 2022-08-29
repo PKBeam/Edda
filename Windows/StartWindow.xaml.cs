@@ -76,7 +76,10 @@ namespace Edda
             tb1.FontSize = 14;
             tb1.FontWeight = FontWeights.Bold;
             tb1.FontFamily = new("Bahnschrift");
-            tb1.Text = name;
+            if (string.IsNullOrWhiteSpace(name)) {
+                tb1.FontStyle = FontStyles.Italic;
+            }
+            tb1.Text = string.IsNullOrWhiteSpace(name) ? "Untitled Map" : name;
 
             TextBlock tb2 = new();
             tb2.FontSize = 11;
@@ -135,7 +138,13 @@ namespace Edda
             this.Close();
             // NOTE: the window must be shown first before any processing can be done
             main.Show();
-            main.InitOpenMap(folder);
+            try {
+                main.InitOpenMap(folder);
+            } catch (Exception ex) {
+                MessageBox.Show($"An error occured while opening the map:\n{ex.Message}.", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                new StartWindow().Show();
+                main.Close();
+            }
         }
     }
 }
