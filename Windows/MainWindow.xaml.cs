@@ -1128,7 +1128,11 @@ namespace Edda
             //bool isPanned = userSettings.GetBoolForKey(Const.UserSettings.PanDrumSounds);
             //InitDrummer(userSettings.GetValueForKey(Const.UserSettings.DrumSampleFile), isPanned);
         }
-        private void AnimateDrum(int num) {
+        internal void AnimateDrum(int num) {
+            // this feature doesn't work properly for now
+            // (drum sizes break on window resize after the animation is performed)
+            return;
+
             if (!Helper.DoubleRangeCheck(num, 0, 3)) {
                 return;
             }
@@ -1139,21 +1143,21 @@ namespace Edda
             heightAnim.To = DrumRow.ActualHeight;
             heightAnim.Duration = duration;
             Storyboard.SetTargetProperty(heightAnim, new PropertyPath("(Image.Height)"));
-            Storyboard.SetTargetName(heightAnim, $"Drum{num}");
+            Storyboard.SetTargetName(heightAnim, $"AnimatedDrum{num}");
 
             var widthAnim = new DoubleAnimation();
             widthAnim.From = DrumCol.ActualWidth * Editor.DrumHitScaleFactor;
             widthAnim.To = DrumCol.ActualWidth;
             widthAnim.Duration = duration;
             Storyboard.SetTargetProperty(widthAnim, new PropertyPath("(Image.Width)"));
-            Storyboard.SetTargetName(widthAnim, $"Drum{num}");
+            Storyboard.SetTargetName(widthAnim, $"AnimatedDrum{num}");
 
             var heightStackAnim = new DoubleAnimation();
             heightStackAnim.From = DrumRow.ActualHeight * (1 - Editor.DrumHitScaleFactor) / 2;
             heightStackAnim.To = 0;
             heightStackAnim.Duration = duration;
             Storyboard.SetTargetProperty(heightStackAnim, new PropertyPath("(StackPanel.Height)"));
-            Storyboard.SetTargetName(heightStackAnim, $"DrumStack{num}");
+            Storyboard.SetTargetName(heightStackAnim, $"AnimatedDrumStack{num}");
 
             var st = new Storyboard();
             st.Children.Add(heightAnim);

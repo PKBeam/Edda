@@ -29,6 +29,7 @@ public class NoteScanner: AudioScanner {
     protected override void OnNoteScanFinish() {
         foreach (Note n in notesPlayed) {
             caller.Dispatcher.Invoke(() => {
+                caller.AnimateDrum(n.col);
                 caller.AnimateNote(n);
             });
         }
