@@ -83,7 +83,7 @@ namespace Edda {
             songTempoStream.Tempo = newTempo;
             noteScanner.SetTempo(newTempo);
             beatScanner.SetTempo(newTempo);
-            txtSongTempo.Text = $"{Math.Round(newTempo, 2)}x";
+            txtSongTempo.Text = $"{Math.Round(newTempo, 2).ToString("0.00")}x";
         }
         private void CheckMetronome_Click(object sender, RoutedEventArgs e) {
             metronome.isEnabled = (checkMetronome.IsChecked == true);

@@ -14,6 +14,7 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Shapes;
 using Edda.Const;
+using NAudio.Gui;
 
 namespace Edda
 {
@@ -21,6 +22,7 @@ namespace Edda
     /// Interaction logic for StartWindow.xaml
     /// </summary>
     public partial class StartWindow : Window {
+        RecentOpenedFolders RecentMaps = ((RagnarockEditor.App)Application.Current).RecentMaps;
 
         // these definitions are to apply Windows 11-style rounded corners
         // https://docs.microsoft.com/en-us/windows/apps/desktop/modernize/apply-rounded-corners
@@ -38,7 +40,6 @@ namespace Edda
 
         public StartWindow() {
             InitializeComponent();
-            ListViewRecentMaps.Items.Clear();
             TxtVersionNumber.Text = $"version {Program.DisplayVersionString}";
             PopulateRecentlyOpenedMaps();
 
@@ -94,14 +95,24 @@ namespace Edda
 
             ListViewItem item = new();
             item.Content = sp1;
-            item.MouseUp += new MouseButtonEventHandler((sender, e) => { item.IsSelected = false; OpenMap(path); });
+            item.MouseLeftButtonUp += new MouseButtonEventHandler((sender, e) => { 
+                item.IsSelected = false; 
+                OpenMap(path); 
+            });
+            item.MouseRightButtonUp += new MouseButtonEventHandler((sender, e) => { 
+                var res = MessageBox.Show("Are you sure you want to remove this map from the list of recently opened maps?", "Confirm Removal", MessageBoxButton.YesNoCancel, MessageBoxImage.Warning);
+                if (res == MessageBoxResult.Yes) {
+                    ListViewRecentMaps.Items.Remove(item);
+                    RecentMaps.RemoveRecentlyOpened(path);
+                    RecentMaps.Write();
+                }
+            });
             ListViewRecentMaps.Items.Add(item);
         }
 
         private void PopulateRecentlyOpenedMaps() {
-
-            var recentMaps = ((RagnarockEditor.App)Application.Current).RecentMaps;
-            foreach (var recentMap in recentMaps.GetRecentlyOpened()) {
+            ListViewRecentMaps.Items.Clear();
+            foreach (var recentMap in RecentMaps.GetRecentlyOpened()) {
                 CreateRecentMapItem(recentMap.Item1, recentMap.Item2);
             }
         }
@@ -130,7 +141,7 @@ namespace Edda
             OpenMap(mapFolder);
         }
 
-        private void OpenMap(string folder) {
+        private void OpenMap(string folder, string mapName = null) {
             if (folder == null) {
                 return;
             }
@@ -142,8 +153,13 @@ namespace Edda
                 main.InitOpenMap(folder);
             } catch (Exception ex) {
                 MessageBox.Show($"An error occured while opening the map:\n{ex.Message}.", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                
+                RecentMaps.RemoveRecentlyOpened(folder);
+                RecentMaps.Write();
+                
                 new StartWindow().Show();
                 main.Close();
+
             }
         }
     }

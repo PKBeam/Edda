@@ -20,14 +20,19 @@ public class RecentOpenedFolders {
         this.historySize = historySize;
     }
     public void AddRecentlyOpened(string name, string path) {
-        var fileString = $"{name}={path}";
-        if (fileLines.Contains(fileString)) {
-            fileLines.Remove(fileString);
-        } 
+        RemoveRecentlyOpened(path);
 
-        fileLines.Insert(0, fileString);
+        fileLines.Insert(0, $"{name}={path}");
         if (fileLines.Count > historySize) {
             fileLines.RemoveAt(fileLines.Count - 1);
+        }
+    }
+    public void RemoveRecentlyOpened(string path) {
+        foreach (var line in fileLines) {
+            if (line.Split("=")[1] == path) {
+                fileLines.Remove(line);
+                break;
+            }
         }
     }
     // most recent first
