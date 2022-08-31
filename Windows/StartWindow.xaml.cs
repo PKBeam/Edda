@@ -44,10 +44,14 @@ namespace Edda
             PopulateRecentlyOpenedMaps();
 
             // apply rounded corners
-            IntPtr hWnd = new WindowInteropHelper(GetWindow(this)).EnsureHandle();
-            var attribute = DWMWINDOWATTRIBUTE.DWMWA_WINDOW_CORNER_PREFERENCE;
-            var preference = DWM_WINDOW_CORNER_PREFERENCE.DWMWCP_ROUND;
-            DwmSetWindowAttribute(hWnd, attribute, ref preference, sizeof(uint));
+            try {
+                IntPtr hWnd = new WindowInteropHelper(GetWindow(this)).EnsureHandle();
+                var attribute = DWMWINDOWATTRIBUTE.DWMWA_WINDOW_CORNER_PREFERENCE;
+                var preference = DWM_WINDOW_CORNER_PREFERENCE.DWMWCP_ROUND;
+                DwmSetWindowAttribute(hWnd, attribute, ref preference, sizeof(uint));
+            } catch {
+                Console.WriteLine("INFO: Could not set window corner preferences.");
+            }
         }
 
         private void CreateRecentMapItem(string name, string path) {
@@ -77,10 +81,11 @@ namespace Edda
             tb1.FontSize = 14;
             tb1.FontWeight = FontWeights.Bold;
             tb1.FontFamily = new("Bahnschrift");
+            tb1.Text = name;
             if (string.IsNullOrWhiteSpace(name)) {
                 tb1.FontStyle = FontStyles.Italic;
+                tb1.Text = "Untitled Map";
             }
-            tb1.Text = string.IsNullOrWhiteSpace(name) ? "Untitled Map" : name;
 
             TextBlock tb2 = new();
             tb2.FontSize = 11;
