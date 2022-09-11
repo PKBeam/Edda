@@ -1074,10 +1074,11 @@ namespace Edda
             noteScanner.Start((int)(sliderSongProgress.Value - editorAudioLatency), new List<Note>(mapEditor.currentMapDifficulty.notes), mapEditor.globalBPM);
             beatScanner.Start((int)(sliderSongProgress.Value - editorAudioLatency), editorUI.GetBeats(), mapEditor.globalBPM);
 
-            if (songTempoStream.CurrentTime > new TimeSpan(0, 0, 0, 0, editorAudioLatency)) {
+            if (editorAudioLatency == 0 || songTempoStream.CurrentTime > new TimeSpan(0, 0, 0, 0, editorAudioLatency)) {
                 songTempoStream.CurrentTime = songTempoStream.CurrentTime - new TimeSpan(0, 0, 0, 0, editorAudioLatency);
                 songPlayer.Play();
             } else {
+                songTempoStream.CurrentTime = new TimeSpan(0);
                 songPlaybackCancellationTokenSource.Dispose();
                 songPlaybackCancellationTokenSource = new();
                 Task.Delay(new TimeSpan(0, 0, 0, 0, editorAudioLatency)).ContinueWith(o => {
