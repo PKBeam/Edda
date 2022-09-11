@@ -163,6 +163,11 @@ namespace Edda {
         }
         private void TxtSongName_TextChanged(object sender, TextChangedEventArgs e) {
             beatMap.SetValue("_songName", txtSongName.Text);
+
+            // update the name of the map in recently opened folders
+            recentMaps.RemoveRecentlyOpened(beatMap.GetPath());
+            recentMaps.AddRecentlyOpened((string)beatMap.GetValue("_songName"), beatMap.GetPath());
+
         }
         private void TxtSongName_LostFocus(object sender, RoutedEventArgs e) {
             txtSongName.ScrollToHome();
@@ -406,6 +411,9 @@ namespace Edda {
             lblSelectedBeat.Content = "";
         }
         private void scrollEditor_PreviewMouseLeftButtonDown(object sender, MouseButtonEventArgs e) {
+            if (Keyboard.FocusedElement is TextBox) {
+                return;
+            }
             Point mousePos = e.GetPosition(EditorGrid);
             editorDragSelectStart = mousePos;
             editorUI.GridMouseDown(mousePos);
