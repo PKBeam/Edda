@@ -286,14 +286,12 @@ public class Helper {
         return d2.FileName;
     }
 
-    public static string GetRagnarockMapFolder() {
-        UserSettings userSettings = new UserSettings(Program.SettingsFile);
-        var index = int.Parse(userSettings.GetValueForKey(Edda.Const.UserSettings.MapSaveLocationIndex));
-        if (index == 0) {
-            return Helper.DefaultRagnarockMapPath();
-        } else {
-            return Path.Combine(userSettings.GetValueForKey(Edda.Const.UserSettings.MapSaveLocationPath), Program.GameInstallRelativeMapFolder);
-        }
+    public static string GetRagnarockMapFolder()
+    {
+        var userSettings = new UserSettings(Program.SettingsFile);
+        return int.TryParse(userSettings.GetValueForKey(Edda.Const.UserSettings.MapSaveLocationIndex), out var index) && index > 0
+            ? Path.Combine(userSettings.GetValueForKey(Edda.Const.UserSettings.MapSaveLocationPath), Program.GameInstallRelativeMapFolder)
+            : Helper.DefaultRagnarockMapPath();
     }
     public static void OpenWebUrl(string url) {
         Process proc = new Process();
