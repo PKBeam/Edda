@@ -126,12 +126,19 @@ public class Helper {
         File.WriteAllBytes(path, Edda.Properties.Resources.ffmpeg);
 
         var p = Process.Start(path, arg);
+        //p.StartInfo.RedirectStandardOutput = true;
+        //p.StartInfo.RedirectStandardError = true;
+        p.Start();
+        //var output = p.StandardOutput.ReadToEnd();
+        //var err = p.StandardError.ReadToEnd();
+        //File.WriteAllText(dir + "/out.txt", err);
+        //File.WriteAllText(dir + "/err.txt", err);
         p.WaitForExit();
 
         try {
             File.Delete(path);
-        } catch {
-            // ???
+        } catch (Exception e) {
+            MessageBox.Show($"Couldn't delete file at {path}. {e}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
         }
     }
     public static void CmdCopyFile(string src, string dst) {

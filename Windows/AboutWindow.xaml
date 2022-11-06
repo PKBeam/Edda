@@ -21,7 +21,7 @@
                 <Image Source="/Resources/icon.png"/>
                 <StackPanel Margin="15 0 0 0">
                     <TextBlock Foreground="#002668" FontSize="48" FontWeight="Bold" HorizontalAlignment="Left" FontFamily="Bahnschrift">Edda</TextBlock>
-                    <TextBlock x:Name="TxtVersionNumber" FontSize="18" FontWeight="Bold" HorizontalAlignment="Center" FontFamily="Bahnschrift SemiLight" Margin="3 0 0 0">version X.X.X-betaX</TextBlock>
+                    <TextBlock x:Name="TxtVersionNumber" FontSize="18" FontWeight="Bold" HorizontalAlignment="Left" FontFamily="Bahnschrift SemiLight" Margin="3 0 0 0">version X.X.X-betaX</TextBlock>
                 </StackPanel>
             </StackPanel>
             <Line X1="0" X2="1000" Margin="0 20 0 10" StrokeThickness="1.5" Stroke="{DynamicResource {x:Static SystemColors.ControlDarkDarkBrushKey}}" HorizontalAlignment="Center"></Line>
