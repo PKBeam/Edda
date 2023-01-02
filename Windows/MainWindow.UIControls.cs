@@ -168,6 +168,7 @@ namespace Edda {
             // update the name of the map in recently opened folders
             recentMaps.RemoveRecentlyOpened(beatMap.GetPath());
             recentMaps.AddRecentlyOpened((string)beatMap.GetValue("_songName"), beatMap.GetPath());
+            recentMaps.Write();
 
         }
         private void TxtSongName_LostFocus(object sender, RoutedEventArgs e) {
