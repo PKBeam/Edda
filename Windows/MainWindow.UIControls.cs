@@ -1,5 +1,6 @@
 ﻿using Edda.Const;
 using System;
+using System.Diagnostics;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
@@ -12,7 +13,7 @@ namespace Edda {
             if (file == null) {
                 return;
             }
-            LoadSong(file);
+            LoadSongFile(file);
         }
         private void BtnMakePreview_Click(object sender, RoutedEventArgs e) {
             var win = Helper.GetFirstWindow<SongPreviewWindow>();
@@ -387,6 +388,7 @@ namespace Edda {
 
         }
         private void scrollEditor_MouseMove(object sender, MouseEventArgs e) {
+
             Point mousePos = e.GetPosition(EditorGrid);
             editorUI.GridMouseMove(mousePos, shiftKeyDown);
 

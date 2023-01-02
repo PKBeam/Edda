@@ -52,6 +52,7 @@ public class EditorUI {
     Image imgPreviewNote = new();
 
     // editing grid
+    bool mouseOutOfBounds;
     List<double> gridBeatLines = new();
     List<double> majorGridBeatLines = new();
 
@@ -269,7 +270,7 @@ public class EditorUI {
 
         // draw gridlines
         EditorGrid.Children.Add(lineGridMouseover);
-        DrawGridLines(EditorGrid.Height);
+        DrawGridLines(EditorGrid.Height - scrollEditor.ActualHeight);
 
         // then draw the waveform
         if (showWaveform) {
@@ -665,6 +666,9 @@ public class EditorUI {
     }
     // mouse input handling
     internal void GridMouseMove(Point mousePos, bool snapMouseMovements) {
+        // check if mouse is out of bounds of the song map
+        mouseOutOfBounds = mousePos.Y < scrollEditor.ActualHeight - unitHeight / 2;
+        
         UpdateMousePosition(mousePos);
 
         double noteX = (1 + 4 * mouseGridCol) * unitSubLength;
@@ -676,19 +680,36 @@ public class EditorUI {
         var adjustedMousePos = EditorGrid.ActualHeight - mousePos.Y - unitHeight / 2;
         double gridLength = unitLength / gridDivision;
 
-        // place preview note   
-        double previewNoteBottom = snapToGrid ? (mouseBeatSnapped * gridLength * gridDivision + userOffset) : Math.Max(adjustedMousePos, userOffset);
-        ImageSource previewNoteSource = RuneForBeat(userOffsetBeat + (snapToGrid ? mouseBeatSnapped : mouseBeatUnsnapped));
-        double previewNoteLeft = noteX - unknownNoteXAdjustment + editorMarginGrid.Margin.Left;
-        SetPreviewNote(previewNoteBottom, previewNoteLeft, previewNoteSource);
+        if (mouseOutOfBounds) {
+            SetMouseoverLineVisibility(Visibility.Hidden);
+            SetPreviewNoteVisibility(Visibility.Hidden);
+        } else {
+            SetMouseoverLineVisibility(Visibility.Visible);
 
-        // place preview line
-        SetMouseoverLinePosition(mousePos.Y - markerDragOffset);
+            // calculate column
+            mouseGridCol = ColForPosition(mousePos.X);
 
-        
+            // set preview note visibility
+            if (!isDragging) {
+                if (mouseGridCol < 0 || mouseGridCol > 3) {
+                    SetPreviewNoteVisibility(Visibility.Hidden);
+                } else {
+                    SetPreviewNoteVisibility(Visibility.Visible);
+                }
+            }
+
+            // place preview note   
+            double previewNoteBottom = snapToGrid ? (mouseBeatSnapped * gridLength * gridDivision + userOffset) : Math.Max(adjustedMousePos, userOffset);
+            ImageSource previewNoteSource = RuneForBeat(userOffsetBeat + (snapToGrid ? mouseBeatSnapped : mouseBeatUnsnapped));
+            double previewNoteLeft = noteX - unknownNoteXAdjustment + editorMarginGrid.Margin.Left;
+            SetPreviewNote(previewNoteBottom, previewNoteLeft, previewNoteSource);
+
+            // place preview line
+            SetMouseoverLinePosition(mousePos.Y - markerDragOffset);
+        }
 
         // move markers if one is being dragged right now
-        if (currentlyDraggingMarker != null && !isEditingMarker) {
+        if (!mouseOutOfBounds && currentlyDraggingMarker != null && !isEditingMarker) {
             MoveMarker(mousePos, snapMouseMovements);
             parentWindow.Cursor = Cursors.Hand;
         // otherwise, update existing drag operations
@@ -697,14 +718,19 @@ public class EditorUI {
         }
     }
     internal void GridMouseUp(Point mousePos, bool snapMouseMovements) {
+
         if (mouseGridCol >= 0 && mouseGridCol < 4) {
             SetPreviewNoteVisibility(Visibility.Visible);
         }
         if (currentlyDraggingMarker != null && !isEditingMarker) {
-            FinaliseMarkerEdit(mousePos, snapMouseMovements);
+            var markerPos = mousePos;
+            if (mouseOutOfBounds) {
+                markerPos.Y = scrollEditor.ActualHeight - unitHeight / 2;
+            }
+            FinaliseMarkerEdit(markerPos, snapMouseMovements);
         } else if (isDragging) {
             EndDragSelection(mousePos, snapMouseMovements);
-        } else if (EditorGrid.IsMouseCaptured && mouseGridCol >= 0 && mouseGridCol < 4) {
+        } else if (!mouseOutOfBounds && EditorGrid.IsMouseCaptured && mouseGridCol >= 0 && mouseGridCol < 4) {
 
             Note n = new Note(mouseBeat, mouseGridCol);
 
@@ -736,6 +762,8 @@ public class EditorUI {
         imgPreviewNote.Visibility = Visibility.Hidden;
         dragSelectBorder.Visibility = Visibility.Visible;
         UpdateDragSelection(mousePos);
+        dragSelectBorder.Width = 0;
+        dragSelectBorder.Height = 0;
         isDragging = true;
     }
     internal void EndDragSelection(Point mousePos, bool snapMouseMovements) {
@@ -793,18 +821,6 @@ public class EditorUI {
         } catch {
             mouseBeatSnapped = 0;
             mouseBeatUnsnapped = 0;
-        }
-
-        // calculate column
-        mouseGridCol = ColForPosition(mousePos.X);
-
-        // set preview note visibility
-        if (!isDragging) {
-            if (mouseGridCol < 0 || mouseGridCol > 3) {
-                SetPreviewNoteVisibility(Visibility.Hidden);
-            } else {
-                SetPreviewNoteVisibility(Visibility.Visible);
-            }
         }
     }
     private void EditBookmark(double beat) {
@@ -962,7 +978,7 @@ public class EditorUI {
             if (binarySearch > 0) {
                 return gridBeatLines[binarySearch];
             }
-            int indx1 = -binarySearch - 1;
+            int indx1 = Math.Min(gridBeatLines.Count - 1, - binarySearch - 1);
             int indx2 = Math.Max(0, indx1 - 1);
             snapped = (gridBeatLines[indx1] - unsnapped) < (unsnapped - gridBeatLines[indx2]) ? gridBeatLines[indx1] : gridBeatLines[indx2];
         }

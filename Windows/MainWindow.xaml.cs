@@ -487,7 +487,7 @@ namespace Edda
             beatMap = new RagnarockMap(newMapFolder, true);
 
             // load audio file
-            LoadSong(file);
+            LoadSongFile(file);
 
             recentMaps.AddRecentlyOpened((string)beatMap.GetValue("_songName"), newMapFolder);
             recentMaps.Write();
@@ -532,6 +532,7 @@ namespace Edda
             comboEnvironment.SelectedIndex = BeatmapDefaults.EnvironmentNames.IndexOf((string)beatMap.GetValue("_environmentName"));
             MenuItemSnapToGrid.IsChecked = (checkGridSnap.IsChecked == true);
             mapEditor = new MapEditor(this);
+            mapEditor.songDuration = songStream.TotalTime.TotalSeconds;
             mapEditor.globalBPM = Helper.DoubleParseInvariant((string)beatMap.GetValue("_beatsPerMinute"));
             editorUI.mapEditor = mapEditor;
             editorUI.showWaveform = (checkWaveform.IsChecked == true);
@@ -941,7 +942,7 @@ namespace Edda
                 return null;
             }
         }
-        private bool LoadSong(string file) {
+        private bool LoadSongFile(string file) {
             VorbisWaveReader vorbisStream;
             try {
                 vorbisStream = new VorbisWaveReader(file);
@@ -1033,6 +1034,11 @@ namespace Edda
             }
         }
         private void PlaySong() {
+            // don't play the song if we're at the end already
+            if (Helper.DoubleApproxGreaterEqual(sliderSongProgress.Value, songStream.TotalTime.TotalMilliseconds)) {
+                return;
+            }
+
             songIsPlaying = true;
             // toggle button appearance
             imgPlayerButton.Source = Helper.BitmapGenerator("pauseButton.png");

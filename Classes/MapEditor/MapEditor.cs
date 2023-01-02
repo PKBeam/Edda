@@ -25,6 +25,7 @@ public class MapEditor {
     RagnarockMap beatMap;
     MainWindow parent;
     public double globalBPM;
+    public double songDuration; // duration of song in seconds
     public int currentDifficultyIndex = -1;
     MapDifficulty?[] difficultyMaps = new MapDifficulty[3];
     public MapDifficulty? currentMapDifficulty {
@@ -255,7 +256,14 @@ public class MapEditor {
         double offset = beatOffset - currentMapDifficulty.clipboard[0].beat;
         List<Note> notes = new List<Note>();
         for (int i = 0; i < currentMapDifficulty.clipboard.Count; i++) {
-            Note n = new Note(currentMapDifficulty.clipboard[i].beat + offset, currentMapDifficulty.clipboard[i].col);
+            double newBeat = currentMapDifficulty.clipboard[i].beat + offset;
+
+            // don't paste the note if it goes beyond the duration of the song
+            if (newBeat > globalBPM * songDuration / 60) {
+                continue;
+            }
+
+            Note n = new Note(newBeat, currentMapDifficulty.clipboard[i].col);
             notes.Add(n);
         }
         AddNotes(notes);
