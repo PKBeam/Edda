@@ -680,14 +680,15 @@ public class EditorUI {
         var adjustedMousePos = EditorGrid.ActualHeight - mousePos.Y - unitHeight / 2;
         double gridLength = unitLength / gridDivision;
 
+        // calculate column
+        mouseGridCol = ColForPosition(mousePos.X);
+
         if (mouseOutOfBounds) {
             SetMouseoverLineVisibility(Visibility.Hidden);
             SetPreviewNoteVisibility(Visibility.Hidden);
         } else {
             SetMouseoverLineVisibility(Visibility.Visible);
 
-            // calculate column
-            mouseGridCol = ColForPosition(mousePos.X);
 
             // set preview note visibility
             if (!isDragging) {
