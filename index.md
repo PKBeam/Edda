@@ -1,7 +1,7 @@
 ---
 ---
 
-> **NOTE**: This website was last updated for Edda v1.0.1.
+> **NOTE**: This website was last updated for Edda v1.1.0.
 
 # About Edda
 Edda is a beatmap editor for the VR rhythm game [Ragnarock](https://store.steampowered.com/app/1345820/Ragnarock/).  
@@ -21,5 +21,4 @@ This is why Edda was created - to offer a more intuitive experience tailored to 
 ## Get in touch
 Do you have suggestions, bug reports, or something else to say?  
 
-Feel free to make a new [GitHub issue](https://github.com/PKBeam/Edda/issues) or come and discuss it over on the [Ragnacustoms](https://ragnacustoms.com) Discord server.
-
+Feel free to make a new [GitHub issue](https://github.com/PKBeam/Edda/issues) or come and discuss it over on the [Ragnacustoms](https://ragnacustoms.com) Discord server. Pull requests are also welcome.

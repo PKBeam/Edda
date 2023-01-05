@@ -2,8 +2,11 @@
 ---
 # Using Edda
 
-Now that you have Edda installed and a song file ready to go, let's make a map!
+Now that you have Edda installed, let's make a map!
 
+- [Setting up your song](#setting-up-your-song)
+  - [Choosing a good song](#choosing-a-good-song)
+  - [Getting a song file](#getting-a-song-file)
 - [Getting to know the UI](#getting-to-know-the-ui)
 - [Creating a map](#creating-a-map)
 - [Setting up song timing](#setting-up-song-timing)
@@ -14,8 +17,6 @@ Now that you have Edda installed and a song file ready to go, let's make a map!
   - [Map Settings and metadata](#map-settings-and-metadata)
   - [Song Preview (optional)](#song-preview-optional)
   - [Bookmarks](#bookmarks)
-    - [The navigational waveform](#the-navigational-waveform)
-    - [Managing bookmarks](#managing-bookmarks)
   - [Difficulty Settings](#difficulty-settings)
 - [Mapping Notes](#mapping-notes)
   - [Basic controls](#basic-controls)
@@ -23,13 +24,72 @@ Now that you have Edda installed and a song file ready to go, let's make a map!
   - [Note playback](#note-playback)
   - [Exporting your map](#exporting-your-map)
   
+ 
+## Setting up your song
+### Choosing a good song
+Every map needs a good track, so before we start placing notes we need to pick a good song.  
+
+Ragnarock is designed for metal genres but works great with many kinds of loud, energetic songs.  
+
+Be careful when mapping quiet songs, such as background music or "chill" songs - they may not work as well as you expect.
+
+### Getting a song file
+Once you've settled on a song, you need to get an appropriate file to use for mapping.  
+
+Edda requires the song file to be in Vorbis format. Files with the Vorbis format are characterised by a `.ogg` file extension.  
+
+> **NOTE**: Some `.ogg` files may rarely use the Opus codec, which is not supported by Edda.  
+> If you have `ffmpeg` installed, you can quickly check the codec by using `ffmpeg -i input.ogg` and reading the output.
+
+If you can't find an `.ogg` file, you'll have to make one yourself by converting from an audio file with a different format (such as `.wav` or `.mp3`).  
+
+There are plenty of applications that can do this:
+- [Audacity](https://www.audacityteam.org) is a popular user-friendly tool.  
+- If you know how to use command-line tools, [ffmpeg](https://ffmpeg.org) will do the job faster.   
+
+> **NOTE**: If you use a music streaming service like Spotify or Apple Music, you can play the song you want on your computer and record it to a file. 
+> You can do this in Audacity by setting your microphone input to your headphone/speaker output and starting a recording with the song playing.
+
+#### Lossless encoding
+
+If possible, you should obtain a lossless audio file (e.g. `.wav` or `.flac`) and transcode it into Vorbis format (`.ogg`).
+
+You should aim for a quality preset somewhere from 5 to 9.
+
+The quality 10 preset produces unnecessarily large files, and anything under quality 5 may sound noticeably poor. For reference, Spotify Premium uses quality 9.
+
+You can set the quality
+- in Audacity, by using the slider in the file save dialog (after you click "Export to OGG").
+- in ffmpeg, by using the `-q` flag, e.g. `ffmpeg -i input.wav -q 9 out.ogg`.
+
+#### Lossy encoding
+If you can't get a lossless file, you may have to make do with a lossy file (e.g. `.mp3`).  
+
+The easiest way to get one is via YouTube. There are plenty of websites that will take a YouTube link and turn it into an `.mp3` file for you.
+
+You can then transcode to Vorbis format by using Audacity or ffmpeg as described above in [Lossless encoding](#lossless-encoding).
+
+> **NOTE**: If possible, you should aim to get lossless files. Lossy files and in particular lossy-to-lossy transcoding will result in worse sound quality.  
+> If you can't find a lossless file, don't worry. It will be hard for most players to tell the difference, especially with Ragnarock's drum sounds playing over the music.   
+
 ## Getting to know the UI 
 
 Go to the folder you extracted Edda to, and open `Edda.exe`.  
 
-This is what Edda's UI looks like.
+You'll be greeted with a start screen. 
 
+![](assets/img/Edda0.png)
+
+Let's start off by clicking the "New Map" button at the top.
+
+First select a folder to store your map in. Ragnarock uses the directory `Documents/Ragnarock/CustomSongs`, so a good starting point is to create a folder in there and use it.
+
+Select your song file, in `.ogg` Vorbis format.
+
+Edda's main editor window will pop up. It's time to start mapping!
 ![](assets/img/Edda1.png)
+
+> **NOTE**: As of v1.1.0, the toolbar is replaced with a traditional menu bar. The menu bar offers the same functionalities as the toolbar, in addition to exposing useful shortcuts for other functions.
 
 Let's have a closer look at the editing grid, since we'll be working with it a lot.
 
@@ -49,23 +109,13 @@ We call this a *Beat Division* of 4 (or 1/4), which you can specify in the right
 The *Grid Spacing* is a multiplier that affects the space between gridlines.  
 This can also be found in the right sidebar. The default value is 2, but you can increase this if the gridlines are too cramped, or lower it if you want to fit more of the map on the editing grid. 
 
-## Creating a map
-
-Click the "New Map" button in the toolbar.
-
-Select a folder to store your map in. Ragnarock uses the directory `Documents/Ragnarock/CustomSongs`, so a good starting point is to create a folder in there and use it.
-
-Select the `.ogg` Vorbis file you want to map.
-
-Your map is now set up and ready to edit!
-
 ## Setting up song timing
 
 ### Finding the song BPM
 
 Let's find out the BPM of our song.
 
-Click the "BPM Finder" button at the top of Edda's main window.
+Go to "Tools" > "BPM Finder" in the menu bar.
 
 Play the song in Edda, then bring up the BPM finder window and tap any key to the beat.
 
@@ -226,9 +276,11 @@ You can use the media controls to do so, or press `Space` to play/pause the song
 
 It may be helpful to adjust the *Song Volume* and *Note Volume* in the right sidebar to help you hear notes properly.
 
+To slow down or speed up the song, adjust the *Song Speed* slider in the right sidebar.
+
 ### Exporting your map
 
-Once you're done with mapping, you can press the "Export Map" button, and Edda will create a .zip file for you that can be uploaded to [Ragnacustoms](https://ragnacustoms.com).  
+Once you're done with mapping, you can go to "File" > "Export Map" in the menu bar, and Edda will create a .zip file for you that can be uploaded to [Ragnacustoms](https://ragnacustoms.com).  
 
 Backups made by Edda will not be copied over into the .zip file.
 
