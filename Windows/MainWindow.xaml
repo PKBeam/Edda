@@ -43,6 +43,7 @@
                         <MenuItem x:Name="MenuItemCut" Header="_Cut" InputGestureText="Ctrl+X" Click="MenuItemCut_Click"/>
                         <MenuItem x:Name="MenuItemCopy" Header="_Copy" InputGestureText="Ctrl+C" Click="MenuItemCopy_Click"/>
                         <MenuItem x:Name="MenuItemPaste" Header="_Paste" InputGestureText="Ctrl+V" Click="MenuItemPaste_Click"/>
+                        <MenuItem x:Name="MenuItemPasteOnColumn" Header="_Paste On Column" InputGestureText="Ctrl+Shift+V" Click="MenuItemPasteOnColumn_Click"/>
                         <Separator />
                         <MenuItem x:Name="MenuItemSelectAll" Header="_Select All" InputGestureText="Ctrl+A" Click="MenuItemSelectAll_Click"/>
                         <MenuItem x:Name="MenuItemMirrorSelected" Header="_Mirror Selected" InputGestureText="Ctrl+M" Click="MenuItemMirrorSelected_Click"/>

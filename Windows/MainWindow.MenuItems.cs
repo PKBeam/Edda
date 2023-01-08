@@ -94,7 +94,14 @@ namespace Edda {
             if (songIsPlaying) {
                 return;
             }
-            editorUI.PasteClipboardWithOffset();
+            editorUI.PasteClipboardWithOffset(false);
+        }
+
+        private void MenuItemPasteOnColumn_Click(object sender, RoutedEventArgs e) {
+            if (songIsPlaying) {
+                return;
+            }
+            editorUI.PasteClipboardWithOffset(true);
         }
         private void MenuItemMirrorSelected_Click(object sender, RoutedEventArgs e) {
             if (songIsPlaying) {

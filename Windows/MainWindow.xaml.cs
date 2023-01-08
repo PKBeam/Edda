@@ -256,7 +256,7 @@ namespace Edda
                 }
                 // paste (Ctrl-V)
                 if (e.Key == Key.V && !songIsPlaying) {
-                    editorUI.PasteClipboardWithOffset();
+                    editorUI.PasteClipboardWithOffset(shiftKeyDown);
                 }
 
                 // undo (Ctrl-Z)
@@ -1140,6 +1140,7 @@ namespace Edda
             // (drum sizes break on window resize after the animation is performed)
             return;
 
+            /*
             if (!Helper.DoubleRangeCheck(num, 0, 3)) {
                 return;
             }
@@ -1171,7 +1172,7 @@ namespace Edda
             st.Children.Add(widthAnim);
             st.Children.Add(heightStackAnim);
             st.Begin(this, true);
-
+            */
         }
         internal void AnimateNote(Note n) {
             var duration = new Duration(new TimeSpan(0, 0, 0, 0, Editor.NoteHitDuration));

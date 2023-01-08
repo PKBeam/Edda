@@ -248,22 +248,29 @@ public class MapEditor {
         CopySelection();
         RemoveNotes(currentMapDifficulty.selectedNotes);
     }
-    public void PasteClipboard(double beatOffset) {
+    public void PasteClipboard(double beatOffset, int? colStart) {
         if (currentMapDifficulty == null || currentMapDifficulty.clipboard.Count == 0) {
             return;
         }
         // paste notes so that the first note lands on the given beat offset
-        double offset = beatOffset - currentMapDifficulty.clipboard[0].beat;
+        double rowOffset = beatOffset - currentMapDifficulty.clipboard[0].beat;
+        int colOffset = colStart == null ? 0 : (int)colStart - currentMapDifficulty.clipboard[0].col;
         List<Note> notes = new List<Note>();
         for (int i = 0; i < currentMapDifficulty.clipboard.Count; i++) {
-            double newBeat = currentMapDifficulty.clipboard[i].beat + offset;
+            double newBeat = currentMapDifficulty.clipboard[i].beat + rowOffset;
+            int newCol = currentMapDifficulty.clipboard[i].col + colOffset;
 
             // don't paste the note if it goes beyond the duration of the song
             if (newBeat > globalBPM * songDuration / 60) {
                 continue;
             }
 
-            Note n = new Note(newBeat, currentMapDifficulty.clipboard[i].col);
+            // don't paste the note if it overflows on the columns
+            if (newCol < 0 || 3 < newCol) {
+                continue;
+            }
+
+            Note n = new Note(newBeat, newCol);
             notes.Add(n);
         }
         AddNotes(notes);

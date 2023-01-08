@@ -832,8 +832,8 @@ public class EditorUI {
     }
 
     // keyboard shortcut functions
-    internal void PasteClipboardWithOffset() {
-        mapEditor.PasteClipboard(mouseBeatSnapped);
+    internal void PasteClipboardWithOffset(bool onMouseColumn) {
+        mapEditor.PasteClipboard(mouseBeatSnapped, onMouseColumn ? mouseColumn : null);
     }
     internal void CreateBookmark(bool onMouse = true) {
         double beat = currentSeekBeat;
