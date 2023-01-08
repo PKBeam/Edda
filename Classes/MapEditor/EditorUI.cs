@@ -664,6 +664,7 @@ public class EditorUI {
     internal List<double> GetBeats() {
         return majorGridBeatLines;
     }
+
     // mouse input handling
     internal void GridMouseMove(Point mousePos, bool snapMouseMovements) {
         // check if mouse is out of bounds of the song map

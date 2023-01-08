@@ -12,7 +12,7 @@ public class MapDifficulty {
     public List<Note> clipboard;
     public List<Note> selectedNotes;
     public EditHistory<Note> editorHistory;
-    public MapDifficulty(List<Note> notes = null, List<BPMChange> bpmChanges = null, List<Bookmark> bookmarks = null, List<Note> clipboard = null) {
+    public MapDifficulty(List<Note> notes, List<BPMChange> bpmChanges, List<Bookmark> bookmarks, List<Note> clipboard) {
         this.bpmChanges = bpmChanges ?? new();
         this.bookmarks = bookmarks ?? new();
         this.notes = notes ?? new();
@@ -54,9 +54,12 @@ public class MapEditor {
         SaveMap(currentDifficultyIndex);
     }
     public void SaveMap(int indx) {
-        beatMap.SetBPMChangesForMap(indx, difficultyMaps[indx].bpmChanges);
-        beatMap.SetBookmarksForMap(indx, difficultyMaps[indx].bookmarks);
-        beatMap.SetNotesForMap(indx, difficultyMaps[indx].notes);
+        var thisDifficultyMap = difficultyMaps[indx];
+        if (thisDifficultyMap != null) {
+            beatMap.SetBPMChangesForMap(indx, thisDifficultyMap.bpmChanges);
+            beatMap.SetBookmarksForMap(indx, thisDifficultyMap.bookmarks);
+            beatMap.SetNotesForMap(indx, thisDifficultyMap.notes);
+        }
     }
     public void ClearSelectedDifficulty() {
         currentMapDifficulty?.notes.Clear();
