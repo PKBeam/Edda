@@ -3,8 +3,6 @@
 <img src="https://img.shields.io/github/downloads/PKBeam/Edda/total"> 
 <hr/>
 
-**Latest releases**  
-
 **Latest releases**   
 | **Stable** | <img src="https://img.shields.io/github/v/release/PKBeam/Edda"> | <img src="https://img.shields.io/github/downloads/PKBeam/Edda/latest/total">  |
 |---|:---|---|
