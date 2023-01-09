@@ -5,10 +5,10 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-public class UserSettings {
+public class UserSettingsManager {
     List<string> fileLines;
     string filePath;
-    public UserSettings(string file) {
+    public UserSettingsManager(string file) {
         this.filePath = file;
         try {
             fileLines = File.ReadAllLines(filePath).ToList();

@@ -121,7 +121,7 @@ public class Helper {
     }
     public static string GetRagnarockMapFolder()
     {
-        var userSettings = new UserSettings(Program.SettingsFile);
+        var userSettings = new UserSettingsManager(Program.SettingsFile);
         return int.TryParse(userSettings.GetValueForKey(Edda.Const.UserSettings.MapSaveLocationIndex), out var index) && index > 0
             ? Path.Combine(userSettings.GetValueForKey(Edda.Const.UserSettings.MapSaveLocationPath), Program.GameInstallRelativeMapFolder)
             : Helper.DefaultRagnarockMapPath();

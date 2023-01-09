@@ -67,7 +67,7 @@ namespace Edda
         public MapEditor mapEditor;
         public EditorGridController gridController;
         Timer autosaveTimer;
-        UserSettings userSettings;
+        UserSettingsManager userSettings;
         bool shiftKeyDown;
         bool ctrlKeyDown;
         bool returnToStartMenuOnClose = false;
@@ -178,216 +178,6 @@ namespace Edda
             );
         }
 
-        // UI bindings
-        private void AppMainWindow_Loaded(object sender, RoutedEventArgs e) {
-            // disable hardware acceleration - for debugging
-            //System.Windows.Interop.HwndSource hwndSource = PresentationSource.FromVisual(this) as System.Windows.Interop.HwndSource;
-            //System.Windows.Interop.HwndTarget hwndTarget = hwndSource.CompositionTarget;
-            //hwndTarget.RenderMode = System.Windows.Interop.RenderMode.SoftwareOnly;
-        }
-        private void AppMainWindow_Closing(object sender, System.ComponentModel.CancelEventArgs e) {
-            if (PromptBeatmapSave()) {
-                if (returnToStartMenuOnClose) {
-                    new StartWindow().Show();
-                }
-                discordClient.SetPresence();
-            } else {
-                returnToStartMenuOnClose = false;
-                e.Cancel = true;
-            }
-        }
-        private void AppMainWindow_Closed(object sender, EventArgs e) {
-            Trace.WriteLine("INFO: Closing main window...");
-            songPlayer?.Stop();
-            songPlayer?.Dispose();
-            songStream?.Dispose();
-            noteScanner?.Stop();
-            beatScanner?.Stop();
-            drummer?.Dispose();
-            metronome?.Dispose();
-            Trace.WriteLine("INFO: Audio resources disposed...");
-
-            // TODO find other stuff to dispose so we don't cause a memory leak
-            // Application.Current.Shutdown();
-        }
-        private void AppMainWindow_KeyDown(object sender, KeyEventArgs e) {
-
-            /*=====================*
-             |  GENERAL SHORTCUTS  |
-             *=====================*/
-
-            if (e.Key == Key.LeftCtrl || e.Key == Key.RightCtrl) {
-                ctrlKeyDown = true;
-            }
-            if (e.Key == Key.LeftShift || e.Key == Key.RightShift) {
-                shiftKeyDown = true;
-            }
-
-            // ctrl shortcuts
-            if (ctrlKeyDown) {
-                // new map (Ctrl-N)
-                if (e.Key == Key.N) {
-                    CreateNewMap();
-                }
-                // open map (Ctrl-O)
-                if (e.Key == Key.O) {
-                    OpenMap();
-                }
-                // save map (Ctrl-S)
-                if (e.Key == Key.S) {
-                    BackupAndSaveBeatmap();
-                }
-
-                // toggle left dock (Ctrl-[)
-                if (e.Key == Key.OemOpenBrackets) {
-                    ToggleLeftDock();
-                }
-
-                // toggle right dock (Ctrl-])
-                if (e.Key == Key.OemCloseBrackets) {
-                    ToggleRightDock();
-                }
-            }
-
-            /*====================*
-             |  EDITOR SHORTCUTS  |
-             *====================*/
-
-            if (!gridController.isMapDifficultySelected) {
-                return;
-            }
-
-            // ctrl shortcuts
-            if (ctrlKeyDown) {
-                // select all (Ctrl-A)
-                if (e.Key == Key.A && !songIsPlaying) {
-                    mapEditor.SelectAllNotes();
-                }
-
-                // copy (Ctrl-C)
-                if (e.Key == Key.C && !songIsPlaying) {
-                    mapEditor.CopySelection();
-                }
-                // cut (Ctrl-X)
-                if (e.Key == Key.X && !songIsPlaying) {
-                    mapEditor.CutSelection();
-                }
-                // paste (Ctrl-V)
-                if (e.Key == Key.V && !songIsPlaying) {
-                    gridController.PasteClipboardWithOffset(shiftKeyDown);
-                }
-
-                // undo (Ctrl-Z)
-                if (e.Key == Key.Z && !songIsPlaying) {
-                    mapEditor.Undo();
-                }
-                // redo (Ctrl-Y, Ctrl-Shift-Z)
-                if (((e.Key == Key.Y) ||
-                    (e.Key == Key.Z && shiftKeyDown)) && !songIsPlaying) {
-                    mapEditor.Redo();
-                }
-
-                // mirror selected notes (Ctrl-M)
-                if (e.Key == Key.M && !songIsPlaying) {
-                    mapEditor.MirrorSelection();
-                }
-
-                // add bookmark (Ctrl-B)
-                if (e.Key == Key.B && !songIsPlaying) {
-                    gridController.CreateBookmark();
-                }
-
-                // add timing change (Ctrl-T)
-                if (e.Key == Key.T && !songIsPlaying) {
-                    gridController.CreateBPMChange(shiftKeyDown);
-                }
-
-                // toggle grid snap (Ctrl-G)
-                if (e.Key == Key.G) {
-                    checkGridSnap.IsChecked = !(checkGridSnap.IsChecked == true);
-                    CheckGridSnap_Click(null, null);
-                }
-            }
-
-            if ((e.Key == Key.D1 || e.Key == Key.D2 || e.Key == Key.D3 || e.Key == Key.D4) &&
-                (songIsPlaying || gridController.isMouseOnEditingGrid) &&
-                    !(FocusManager.GetFocusedElement(this) is TextBox)){
-                
-                int col = e.Key - Key.D1;
-                gridController.AddNoteAt(col, !songIsPlaying);
-                drummer.Play(col);
-            }
-            
-            // delete selected notes
-            if (e.Key == Key.Delete) {
-                mapEditor.RemoveSelectedNotes();
-            }
-            // unselect all notes
-            if (e.Key == Key.Escape) {
-                mapEditor.UnselectAllNotes();
-            }                                           
-
-        }
-        private void AppMainWindow_KeyUp(object sender, KeyEventArgs e) {
-            if (e.Key == Key.LeftCtrl || e.Key == Key.RightCtrl) {
-                ctrlKeyDown = false;
-            }
-            if (e.Key == Key.LeftShift || e.Key == Key.RightShift) {
-                shiftKeyDown = false;
-            }
-        }
-        private void AppMainWindow_PreviewKeyDown(object sender, KeyEventArgs e) {
-
-            // these need to be handled by tunnelling because some UIElements intercept these keys
-
-            /*====================*
-             |  EDITOR SHORTCUTS  |
-             *====================*/
-
-            if (!gridController.isMapDifficultySelected) {
-                return;
-            }
-
-            var keyStr = e.Key.ToString();
-            if (shiftKeyDown) {
-                if (keyStr == "Up") {
-                    gridController.ShiftSelectionByRow(1);
-                    e.Handled = true;
-                }
-                if (keyStr == "Down") {
-                    gridController.ShiftSelectionByRow(-1);
-                    e.Handled = true;
-                }
-            }
-            if (ctrlKeyDown) {
-                if (keyStr == "Up") {
-                    gridController.ShiftSelectionByRow(gridController.gridDivision);
-                    e.Handled = true;
-                }
-                if (keyStr == "Down") {
-                    gridController.ShiftSelectionByRow(-gridController.gridDivision);
-                    e.Handled = true;
-                }
-            }
-            if (shiftKeyDown || ctrlKeyDown) {
-                if (keyStr == "Left") {
-                    mapEditor.ShiftSelectionByCol(-1);
-                    e.Handled = true;
-                }
-                if (keyStr == "Right") {
-                    mapEditor.ShiftSelectionByCol(1);
-                    e.Handled = true;
-                }
-            }
-
-            // play/pause song
-            if (keyStr == "Space" && !(FocusManager.GetFocusedElement(this) is TextBox)) {
-                if (btnSongPlayer.IsEnabled) {
-                    BtnSongPlayer_Click(null, null);
-                }
-                e.Handled = true;
-            }
-        }
        
         // map file I/O functions
 
@@ -755,7 +545,13 @@ namespace Edda
             }
         }
         internal void LoadSettingsFile() {
-            userSettings = new UserSettings(Program.SettingsFile);
+            userSettings = new UserSettingsManager(Program.SettingsFile);
+
+            try {
+                double.Parse(userSettings.GetValueForKey(Const.UserSettings.DefaultNoteSpeed));
+            } catch {
+                userSettings.SetValueForKey(Const.UserSettings.DefaultNoteSpeed, DefaultUserSettings.DefaultNoteSpeed);
+            }
 
             if (!int.TryParse(userSettings.GetValueForKey(Const.UserSettings.EditorAudioLatency), out editorAudioLatency)) {
                 userSettings.SetValueForKey(Const.UserSettings.EditorAudioLatency, DefaultUserSettings.AudioLatency);

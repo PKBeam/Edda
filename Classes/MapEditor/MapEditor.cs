@@ -14,7 +14,7 @@ public class MapDifficulty {
     public List<Note> clipboard;
     public List<Note> selectedNotes;
     public EditHistory<Note> editorHistory;
-    public MapDifficulty(List<Note> notes, List<BPMChange> bpmChanges, List<Bookmark> bookmarks, List<Note> clipboard) {
+    public MapDifficulty(List<Note> notes, List<BPMChange> bpmChanges, List<Bookmark> bookmarks) {
         this.bpmChanges = bpmChanges ?? new();
         this.bookmarks = bookmarks ?? new();
         this.notes = notes ?? new();

@@ -351,7 +351,7 @@ public class RagnarockMap {
             _difficulty = mapName,
             _difficultyRank = 1,
             _beatmapFilename = $"{mapName}.dat",
-            _noteJumpMovementSpeed = BeatmapDefaults.NoteJumpMovementSpeed,
+            _noteJumpMovementSpeed = BeatmapDefaults.GetPreferredNoteJumpMovementSpeed(),
             _noteJumpStartBeatOffset = 0,
             _customData = new {
                 _editorOldOffset = 0,

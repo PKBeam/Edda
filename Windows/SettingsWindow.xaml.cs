@@ -24,13 +24,14 @@ namespace Edda
     /// </summary>
     public partial class SettingsWindow : Window {
         MainWindow caller;
-        UserSettings userSettings;
+        UserSettingsManager userSettings;
         bool doneInit = false;
-        public SettingsWindow(MainWindow caller, UserSettings userSettings) {
+        public SettingsWindow(MainWindow caller, UserSettingsManager userSettings) {
             InitializeComponent();
             this.caller = caller;
             this.userSettings = userSettings;
-            InitComboDrumSample();  
+            InitComboDrumSample();
+            txtDefaultNoteSpeed.Text = userSettings.GetValueForKey(Const.UserSettings.DefaultNoteSpeed);
             txtAudioLatency.Text = userSettings.GetValueForKey(Const.UserSettings.EditorAudioLatency);
             checkPanNotes.IsChecked = userSettings.GetBoolForKey(Const.UserSettings.PanDrumSounds);
             sliderSongVol.Value = float.Parse(userSettings.GetValueForKey(Const.UserSettings.DefaultSongVolume));
@@ -46,6 +47,18 @@ namespace Edda
             doneInit = true;
         }
 
+        private void TxtDefaultNoteSpeed_LostFocus(object sender, RoutedEventArgs e) {
+            double noteSpeed;
+            double prevNoteSpeed = double.Parse(userSettings.GetValueForKey(Const.UserSettings.DefaultNoteSpeed));
+            if (double.TryParse(txtDefaultNoteSpeed.Text, out noteSpeed)) {
+                userSettings.SetValueForKey(Const.UserSettings.DefaultNoteSpeed, noteSpeed);
+                UpdateSettings();
+            } else {
+                MessageBox.Show($"The note speed must be numerical.", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                noteSpeed = prevNoteSpeed;
+            }
+            txtAudioLatency.Text = noteSpeed.ToString();
+        }
         private void TxtAudioLatency_LostFocus(object sender, RoutedEventArgs e) {
             double latency;
             double prevLatency = double.Parse(userSettings.GetValueForKey(Const.UserSettings.EditorAudioLatency));
