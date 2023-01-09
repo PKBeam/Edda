@@ -44,6 +44,7 @@
                         <MenuItem x:Name="MenuItemCut" Header="_Cut" InputGestureText="Ctrl+X" Click="MenuItemCut_Click"/>
                         <MenuItem x:Name="MenuItemCopy" Header="_Copy" InputGestureText="Ctrl+C" Click="MenuItemCopy_Click"/>
                         <MenuItem x:Name="MenuItemPaste" Header="_Paste" InputGestureText="Ctrl+V" Click="MenuItemPaste_Click"/>
+                        <MenuItem x:Name="MenuItemPasteOnColumn" Header="_Paste On Column" InputGestureText="Ctrl+Shift+V" Click="MenuItemPasteOnColumn_Click"/>
                         <Separator />
                         <MenuItem x:Name="MenuItemSelectAll" Header="_Select All" InputGestureText="Ctrl+A" Click="MenuItemSelectAll_Click"/>
                         <MenuItem x:Name="MenuItemMirrorSelected" Header="_Mirror Selected" InputGestureText="Ctrl+M" Click="MenuItemMirrorSelected_Click"/>
@@ -492,28 +493,19 @@
                                 </StackPanel>
                             </Border>
 
-                            <!-- Hide this; it's deprecated and broken -->
-                            <Border Grid.Row="9" Grid.Column="0" Visibility="Collapsed">
-                                <TextBlock Padding="10 0 0 0" VerticalAlignment="Center">Grid Offset</TextBlock>
-                            </Border>
-
-                            <Border Grid.Row="9" Grid.Column="1" Visibility="Collapsed" Padding="5 5 10 5">
-                                <TextBox x:Name="txtGridOffset" Width="30" HorizontalAlignment="Left" LostFocus="TxtGridOffset_LostFocus"/>
-                            </Border>
-
-                            <Border Grid.Row="10" Grid.Column="0">
+                            <Border Grid.Row="9" Grid.Column="0">
                                 <TextBlock Padding="10 0 0 0" VerticalAlignment="Center">Grid Spacing</TextBlock>
                             </Border>
 
-                            <Border Grid.Row="10" Grid.Column="1" Padding="5 5 10 5">
+                            <Border Grid.Row="9" Grid.Column="1" Padding="5 5 10 5">
                                 <TextBox x:Name="txtGridSpacing" HorizontalAlignment="Left" Width="30" LostFocus="TxtGridSpacing_LostFocus"/>
                             </Border>
 
-                            <Border Grid.Row="11" Grid.Column="0">
+                            <Border Grid.Row="10" Grid.Column="0">
                                 <TextBlock Padding="10 0 0 0" FontSize="11" VerticalAlignment="Bottom">Grid Waveform</TextBlock>
                             </Border>
 
-                            <Border Grid.Row="11" Grid.Column="1">
+                            <Border Grid.Row="10" Grid.Column="1">
                                 <StackPanel Orientation="Horizontal">
                                     <CheckBox x:Name="checkWaveform" VerticalAlignment="Center" Click="CheckWaveform_Click" IsChecked="True"></CheckBox>
                                 </StackPanel>

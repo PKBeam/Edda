@@ -37,32 +37,32 @@ namespace Edda {
 
         // Edit
         private void MenuItemAddNote1_Click(object sender, RoutedEventArgs e) {
-            editorUI.CreateNote(0, false);
+            gridController.AddNoteAt(0, false);
             drummer.Play(0);
         }
         private void MenuItemAddNote2_Click(object sender, RoutedEventArgs e) {
-            editorUI.CreateNote(1, false);
+            gridController.AddNoteAt(1, false);
             drummer.Play(1);
         }
         private void MenuItemAddNote3_Click(object sender, RoutedEventArgs e) {
-            editorUI.CreateNote(2, false);
+            gridController.AddNoteAt(2, false);
             drummer.Play(2);
         }
         private void MenuItemAddNote4_Click(object sender, RoutedEventArgs e) {
-            editorUI.CreateNote(3, false);
+            gridController.AddNoteAt(3, false);
             drummer.Play(3);
         }
         private void MenuItemAddBookmark_Click(object sender, RoutedEventArgs e) {
             PauseSong();
-            editorUI.CreateBookmark(false);
+            gridController.CreateBookmark(false);
         }
         private void MenuItemAddTimingChange_Click(object sender, RoutedEventArgs e) {
             PauseSong();
-            editorUI.CreateBPMChange(false, false);
+            gridController.CreateBPMChange(false, false);
         }
         private void MenuItemAddSnappedTimingChange_Click(object sender, RoutedEventArgs e) {
             PauseSong();
-            editorUI.CreateBPMChange(true, false);
+            gridController.CreateBPMChange(true, false);
         }
         private void MenuItemUndo_Click(object sender, RoutedEventArgs e) {
             if (songIsPlaying) {
@@ -80,7 +80,7 @@ namespace Edda {
             if (songIsPlaying) {
                 return;
             }
-            mapEditor.SelectNewNotes(mapEditor.currentMapDifficulty.notes);
+            mapEditor.SelectAllNotes();
         }
         private void MenuItemCut_Click(object sender, RoutedEventArgs e) {
             if (songIsPlaying) {
@@ -98,18 +98,25 @@ namespace Edda {
             if (songIsPlaying) {
                 return;
             }
-            editorUI.PasteClipboardWithOffset();
+            gridController.PasteClipboardWithOffset(false);
+        }
+
+        private void MenuItemPasteOnColumn_Click(object sender, RoutedEventArgs e) {
+            if (songIsPlaying) {
+                return;
+            }
+            gridController.PasteClipboardWithOffset(true);
         }
         private void MenuItemMirrorSelected_Click(object sender, RoutedEventArgs e) {
             if (songIsPlaying) {
                 return;
             }
-            mapEditor.TransformSelection(NoteTransforms.Mirror());
+            mapEditor.MirrorSelection();
         }
         private void MenuItemSnapToGrid_Click(object sender, RoutedEventArgs e) {
             bool newVal = MenuItemSnapToGrid.IsChecked == true;
             checkGridSnap.IsChecked = newVal;
-            editorUI.snapToGrid = newVal;
+            gridController.snapToGrid = newVal;
         }
 
         // View

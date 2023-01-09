@@ -15,12 +15,12 @@ namespace RagnarockEditor
     /// </summary>
     public partial class App : Application {
         internal RecentOpenedFolders RecentMaps;
-        internal UserSettings UserSettings;
+        internal UserSettingsManager UserSettings;
         internal DiscordClient DiscordClient;
 
         App() {
             this.RecentMaps = new(Program.RecentOpenedMapsFile, Program.MaxRecentOpenedMaps);
-            this.UserSettings = new UserSettings(Program.SettingsFile);
+            this.UserSettings = new UserSettingsManager(Program.SettingsFile);
             this.DiscordClient = new DiscordClient();
 
             if (UserSettings.GetValueForKey(Edda.Const.UserSettings.EnableDiscordRPC) == null) {

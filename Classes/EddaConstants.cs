@@ -40,6 +40,7 @@ namespace Edda.Const
     }
     public static class DefaultUserSettings
     {
+        public const int DefaultNoteSpeed = 15;
         public const int AudioLatency = -20; // ms
         public const string DrumSampleFile = "snaredrum";
         public const float DefaultSongVolume = 0.4F;
@@ -52,8 +53,8 @@ namespace Edda.Const
         public const string MapSaveLocationPath = "";
     }
 
-    public static class UserSettings
-    {
+    public static class UserSettings {
+        public const string DefaultNoteSpeed = "defaultNoteSpeed";
         public const string EditorAudioLatency = "editorAudioLatency";
         public const string DrumSampleFile = "drumSampleFile";
         public const string PanDrumSounds = "panDrumSounds";
@@ -171,10 +172,19 @@ namespace Edda.Const
         public const int Shuffle = 0;           // what do
         public const double ShufflePeriod = 0.5;         // these do??
         public const string BeatmapCharacteristicName = "Standard";
-        public const double NoteJumpMovementSpeed = 20;
+        private const double NoteJumpMovementSpeed = 20;
         public static List<string> DifficultyNames => new() { "Easy", "Normal", "Hard" };
         public static List<string> EnvironmentNames => new() { "Midgard", "Alfheim", "Nidavellir", "Asgard", "Muspelheim", "Helheim", "Hellfest", "DarkEmpty" };
         //public const string DefaultEnvironmentAlias = "Midgard";
+
+        public static double GetPreferredNoteJumpMovementSpeed() {
+            var userSettings = new UserSettingsManager(Program.SettingsFile);
+            try {
+                return double.Parse(userSettings.GetValueForKey(Const.UserSettings.DefaultNoteSpeed));
+            } catch {
+                return NoteJumpMovementSpeed;
+            }
+        }
     }
 
     public static class DiscordRPC
