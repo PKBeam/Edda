@@ -219,8 +219,7 @@ namespace Edda
                 return;
             }
 
-            mapEditor = new MapEditor(this, importMapFolder, true);
-            gridController.InitMap(mapEditor);
+            RagnarockMap beatmap = new RagnarockMap(importMapFolder, true);
 
             // convert imported map
             IMapConverter converter;
@@ -232,8 +231,8 @@ namespace Edda
                 }
                 default: throw new FileFormatException("Selected file is not in a supported format for import.");
             }
-            converter.Convert(file, mapEditor);
-            mapEditor.SaveMap();
+            converter.Convert(file, beatmap);
+            beatmap.SaveToFile();
 
             InitOpenMap(importMapFolder);
         }
