@@ -96,7 +96,7 @@ public class StepManiaMapConverter : IMapConverter
                 beatmap.AddMap();
             }
             // Set difficulty rank
-            beatmap.SetValueForMap(difficultyIndex, "_difficultyRank", steps.DifficultyRating);
+            beatmap.SetValueForDifficultyMap(difficultyIndex, "_difficultyRank", steps.DifficultyRating);
 
             // Set notes
             List<Note> notes = ParseNotes(steps);
@@ -218,7 +218,7 @@ public class StepManiaMapConverter : IMapConverter
             int endMin = (int)((sampleStart + sampleLength) / 60);
             int endSec = (int)(sampleStart + sampleLength - 60 * endMin);
             // TODO: for some reason, two windows open for ffmpeg and they clash with each other.
-            Helper.FFmpeg(beatmap.GetPath(), $"-i \"{songURL}\" -y -ss 00:{startMin:D2}:{startSec:D2} -to 00:{endMin:D2}:{endSec:D2} -vn -af \"{saveURL}\"");
+            Helper.FFmpeg(beatmap.PathOf(""), $"-i \"{songURL}\" -y -ss 00:{startMin:D2}:{startSec:D2} -to 00:{endMin:D2}:{endSec:D2} -vn -af \"{saveURL}\"");
         }
     }
 
