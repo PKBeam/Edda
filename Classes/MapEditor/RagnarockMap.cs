@@ -254,7 +254,6 @@ public class RagnarockMap {
 
         // per beatmap custom data
         Dictionary<string, List<JTokenType?>> expectedTypes = new Dictionary<string, List<JTokenType?>> {
-            {"_editorOffset",       numericTypes },
             {"_editorOldOffset",    numericTypes },
             {"_editorGridSpacing",  numericTypes },
             {"_editorGridDivision", numericTypes },
@@ -264,13 +263,11 @@ public class RagnarockMap {
             {"_requirements",       arrayTypes }
         };
         Dictionary<string, (float, float)> expectedValues = new Dictionary<string, (float, float)> {
-            {"_editorOffset",       anyNumeric },
             {"_editorOldOffset",    anyNumeric },
             {"_editorGridSpacing",  positiveNumeric },
             {"_editorGridDivision", positiveNumeric },
         };
         Dictionary<string, float> defaultValues = new Dictionary<string, float> {
-            {"_editorOffset",       0 },
             {"_editorOldOffset",    0 },
             {"_editorGridSpacing",  (float)Editor.DefaultGridSpacing },
             {"_editorGridDivision", (float)Editor.DefaultGridDivision },
@@ -280,7 +277,6 @@ public class RagnarockMap {
         foreach (var map in beatmaps) {
             if (map["_customData"]?.Type != JTokenType.Object) {
                 var customDataObject = new {
-                    _editorOffset = 0,
                     _editorOldOffset = 0,
                     _editorGridSpacing = Editor.DefaultGridSpacing,
                     _editorGridDivision = 4,
@@ -324,22 +320,22 @@ public class RagnarockMap {
     }
 
     // per-map operations
-    public void SetValueForMap(int indx, string key, object value) {
+    public void SetValueForDifficultyMap(int indx, string key, object value) {
         var obj = JObject.Parse(infoStr);
         obj["_difficultyBeatmapSets"][0]["_difficultyBeatmaps"][indx][key] = JToken.FromObject(value);
         infoStr = JsonConvert.SerializeObject(obj, Formatting.Indented);
     }
-    public JToken GetValueForMap(int indx, string key) {
+    public JToken GetValueForDifficultyMap(int indx, string key) {
         var obj = JObject.Parse(infoStr);
         var res = obj["_difficultyBeatmapSets"][0]["_difficultyBeatmaps"][indx][key];
         return res;
     }
-    public void SetCustomValueForMap(int indx, string key, object value) {
+    public void SetCustomValueForDifficultyMap(int indx, string key, object value) {
         var obj = JObject.Parse(infoStr);
         obj["_difficultyBeatmapSets"][0]["_difficultyBeatmaps"][indx]["_customData"][key] = JToken.FromObject(value);
         infoStr = JsonConvert.SerializeObject(obj, Formatting.Indented);
     }
-    public JToken GetCustomValueForMap(int indx, string key) {
+    public JToken GetCustomValueForDifficultyMap(int indx, string key) {
         var obj = JObject.Parse(infoStr);
         var res = obj["_difficultyBeatmapSets"][0]["_difficultyBeatmaps"][indx]["_customData"][key];
         return res;
@@ -358,7 +354,6 @@ public class RagnarockMap {
             _noteJumpMovementSpeed = BeatmapDefaults.NoteJumpMovementSpeed,
             _noteJumpStartBeatOffset = 0,
             _customData = new {
-                _editorOffset = 0,
                 _editorOldOffset = 0,
                 _editorGridSpacing = Editor.DefaultGridSpacing,
                 _editorGridDivision = 4,
@@ -386,18 +381,18 @@ public class RagnarockMap {
         WriteMap(numDifficulties - 1);
     }
     public void ReadMap(int indx) {
-        var filename = (string)GetValueForMap(indx, "_beatmapFilename");
+        var filename = (string)GetValueForDifficultyMap(indx, "_beatmapFilename");
         difficultyMaps[indx] = File.ReadAllText(PathOf(filename));
     }
     public void WriteMap(int indx) {
-        var filename = (string)GetValueForMap(indx, "_beatmapFilename");
+        var filename = (string)GetValueForDifficultyMap(indx, "_beatmapFilename");
         File.WriteAllText(PathOf(filename), difficultyMaps[indx]);
     }
     public void DeleteMap(int indx) {
         if (numDifficulties == 1) {
             return;
         }
-        var filename = (string)GetValueForMap(indx, "_beatmapFilename");
+        var filename = (string)GetValueForDifficultyMap(indx, "_beatmapFilename");
         File.Delete(PathOf(filename));
         for (int i = indx; i < numDifficulties - 1; i++) {
             difficultyMaps[i] = difficultyMaps[i + 1];
@@ -464,10 +459,10 @@ public class RagnarockMap {
     private void RenameMaps() {
         for (int i = 0; i < numDifficulties; i++) {
             var fileName = BeatmapDefaults.DifficultyNames[i];
-            var oldFile = (string)GetValueForMap(i, "_beatmapFilename");
+            var oldFile = (string)GetValueForDifficultyMap(i, "_beatmapFilename");
             File.Move(PathOf(oldFile), PathOf($"{fileName}_temp.dat"));
-            SetValueForMap(i, "_difficulty", fileName);
-            SetValueForMap(i, "_beatmapFilename", $"{fileName}.dat");
+            SetValueForDifficultyMap(i, "_difficulty", fileName);
+            SetValueForDifficultyMap(i, "_beatmapFilename", $"{fileName}.dat");
         }
         for (int i = 0; i < numDifficulties; i++) {
             var fileName = BeatmapDefaults.DifficultyNames[i];
@@ -562,11 +557,8 @@ public class RagnarockMap {
     public string PathOf(string f) {
         return Path.Combine(folderPath, f);
     }
-    public string GetPath() {
-        return folderPath;
-    }
     public int GetMedalDistanceForMap(int indx, int medal) {
-        JArray info = (JArray)GetCustomValueForMap(indx, "_information");
+        JArray info = (JArray)GetCustomValueForDifficultyMap(indx, "_information");
         string splitter = $"medal_{medal}=";
         foreach (JToken t in info) {
             string s = (string)t;
@@ -577,7 +569,7 @@ public class RagnarockMap {
         return 0;
     }
     public void SetMedalDistanceForMap(int indx, int medal, int dist) {
-        JArray info = (JArray)GetCustomValueForMap(indx, "_information");
+        JArray info = (JArray)GetCustomValueForDifficultyMap(indx, "_information");
         string splitter = $"medal_{medal}=";
         JToken insert = JToken.FromObject($"{splitter}{dist}");
         bool found = false;
@@ -596,7 +588,7 @@ public class RagnarockMap {
         if (!found && dist != 0) {
             info.Add(insert);
         }
-        SetCustomValueForMap(indx, "_information", info);
+        SetCustomValueForDifficultyMap(indx, "_information", info);
     }
     public List<BPMChange> GetBPMChangesForMap(int indx) {
         List<BPMChange> BPMChanges = new List<BPMChange>();

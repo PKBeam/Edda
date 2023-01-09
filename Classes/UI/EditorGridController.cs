@@ -16,11 +16,12 @@ using System.Windows.Input;
 using Point = System.Windows.Point;
 using Edda.Const;
 
-public class EditorUI {
+public class EditorGridController {
+
+    MapEditor mapEditor;
 
     // constructor variables
     MainWindow parentWindow;
-    public MapEditor mapEditor;
     Canvas EditorGrid;
     ScrollViewer scrollEditor;
     ColumnDefinition referenceCol;
@@ -39,7 +40,6 @@ public class EditorUI {
 
     // user-defined settings 
     public double gridSpacing;
-    public double gridOffset;
     public int gridDivision;
     public bool showWaveform;
     public bool snapToGrid = true;
@@ -70,6 +70,28 @@ public class EditorUI {
     // dragging variables
     bool isDragging = false;
     Point dragSelectStart;
+
+    // other
+    public bool isMapDifficultySelected {
+        get {
+            return mapEditor?.currentMapDifficulty != null;
+        }
+    }
+    public int currentMapDifficultyIndex {
+        get {
+            return mapEditor.currentDifficultyIndex;
+        }
+    }
+    public List<Note> currentMapDifficultyNotes {
+        get {
+            return mapEditor?.currentMapDifficulty?.notes;
+        }
+    }
+    public List<BPMChange> currentMapDifficultyBpmChanges {
+        get {
+            return mapEditor.currentMapDifficulty.bpmChanges;
+        }
+    }
 
     // grid measurements
     double unitLength {
@@ -126,12 +148,11 @@ public class EditorUI {
     }
 
     // constructor
-    public EditorUI (
+    public EditorGridController(
         MainWindow parentWindow,
-        MapEditor mapEditor,
-        Canvas EditorGrid, 
-        ScrollViewer scrollEditor, 
-        ColumnDefinition referenceCol, 
+        Canvas EditorGrid,
+        ScrollViewer scrollEditor,
+        ColumnDefinition referenceCol,
         RowDefinition referenceRow,
         Border borderNavWaveform,
         ColumnDefinition colWaveformVertical,
@@ -143,7 +164,6 @@ public class EditorUI {
         Line lineSongMouseover
     ) {
         this.parentWindow = parentWindow;
-        this.mapEditor = mapEditor;
         this.EditorGrid = EditorGrid;
         this.referenceCol = referenceCol;
         this.referenceRow = referenceRow;
@@ -182,6 +202,10 @@ public class EditorUI {
         lineGridMouseover.StrokeThickness = Editor.GridPreviewLine.Thickness;
         lineGridMouseover.Visibility = Visibility.Hidden;
         EditorGrid.Children.Add(lineGridMouseover);
+    }
+
+    public void InitMap(MapEditor me) {
+        this.mapEditor = me;
     }
 
     public void SetMouseoverLinePosition(double newPos) {
@@ -316,11 +340,8 @@ public class EditorUI {
         majorGridBeatLines.Clear();
         gridBeatLines.Clear();
 
-        // calculate grid offset
-        double userOffset = gridOffset * mapEditor.globalBPM / 60 * unitLength;
-
-        // the position to place gridlines, starting at the user-specified grid offset
-        var offset = userOffset;
+        // the position to place gridlines
+        var offset = 0.0;
 
         var localBPM = mapEditor.globalBPM;
         var localGridDiv = gridDivision;
@@ -335,18 +356,18 @@ public class EditorUI {
             var l = makeGridLine(offset, isMajor);
             EditorGrid.Children.Add(l);
             if (isMajor) {
-                majorGridBeatLines.Add((offset - userOffset) / unitLength);
+                majorGridBeatLines.Add((offset) / unitLength);
             }
-            gridBeatLines.Add((offset - userOffset) / unitLength);
+            gridBeatLines.Add((offset) / unitLength);
 
             offset += mapEditor.globalBPM / localBPM * unitLength / localGridDiv;
             counter++;
 
             // check for BPM change
-            if (bpmChangeCounter < mapEditor.currentMapDifficulty.bpmChanges.Count && Helper.DoubleApproxGreaterEqual((offset - userOffset) / unitLength, mapEditor.currentMapDifficulty.bpmChanges[bpmChangeCounter].globalBeat)) {
+            if (bpmChangeCounter < mapEditor.currentMapDifficulty.bpmChanges.Count && Helper.DoubleApproxGreaterEqual((offset) / unitLength, mapEditor.currentMapDifficulty.bpmChanges[bpmChangeCounter].globalBeat)) {
                 BPMChange next = mapEditor.currentMapDifficulty.bpmChanges[bpmChangeCounter];
 
-                offset = next.globalBeat * unitLength + userOffset;
+                offset = next.globalBeat * unitLength;
                 localBPM = next.BPM;
                 localGridDiv = next.gridDivision;
 
@@ -676,8 +697,6 @@ public class EditorUI {
         // for some reason Canvas.SetLeft(0) doesn't correspond to the leftmost of the canvas, so we need to do some unknown adjustment to line it up
         var unknownNoteXAdjustment = (unitLength / unitLengthUnscaled - 1) * unitLengthUnscaled / 2;
 
-        double userOffsetBeat = gridOffset * mapEditor.globalBPM / 60;
-        double userOffset = userOffsetBeat * unitLength;
         var adjustedMousePos = EditorGrid.ActualHeight - mousePos.Y - unitHeight / 2;
         double gridLength = unitLength / gridDivision;
 
@@ -701,8 +720,8 @@ public class EditorUI {
             }
 
             // place preview note   
-            double previewNoteBottom = snapToGrid ? (mouseBeatSnapped * gridLength * gridDivision + userOffset) : Math.Max(adjustedMousePos, userOffset);
-            ImageSource previewNoteSource = RuneForBeat(userOffsetBeat + (snapToGrid ? mouseBeatSnapped : mouseBeatUnsnapped));
+            double previewNoteBottom = snapToGrid ? (mouseBeatSnapped * gridLength * gridDivision) : Math.Max(adjustedMousePos, 0);
+            ImageSource previewNoteSource = RuneForBeat((snapToGrid ? mouseBeatSnapped : mouseBeatUnsnapped));
             double previewNoteLeft = noteX - unknownNoteXAdjustment + editorMarginGrid.Margin.Left;
             SetPreviewNote(previewNoteBottom, previewNoteLeft, previewNoteSource);
 
@@ -752,6 +771,11 @@ public class EditorUI {
 
         EditorGrid.ReleaseMouseCapture();
         isDragging = false;
+    }
+    internal void GridRightMouseUp() {
+        // remove the note
+        Note n = mouseNote;
+        mapEditor.RemoveNote(n);
     }
     internal void GridMouseDown(Point mousePos) {
         dragSelectStart = mousePos;
@@ -861,12 +885,30 @@ public class EditorUI {
         }
         mapEditor.AddBPMChange(new BPMChange(beat, previous.BPM, previous.gridDivision));
     }
-    internal void CreateNote(int col, bool onMouse) {
+    internal void AddNoteAt(int col, bool onMouse) {
         double mouseInput = snapToGrid ? mouseBeatSnapped : mouseBeatUnsnapped;
         Note n = new Note(onMouse ? mouseInput: currentSeekBeat, col);
         mapEditor.AddNotes(n);
     }
-    
+    internal void ShiftSelectionByRow(int rows) {
+        mapEditor.ShiftSelectionByBeat(BeatForRow(rows));
+    }
+    // other
+    internal void ResnapAllNotes(double newOffset) {
+        var offsetDelta = newOffset;
+        var beatOffset = mapEditor.globalBPM / 60 * offsetDelta;
+        for (int i = 0; i < mapEditor.currentMapDifficulty.notes.Count; i++) {
+            Note n = new Note();
+            n.beat = mapEditor.currentMapDifficulty.notes[i].beat + beatOffset;
+            n.col = mapEditor.currentMapDifficulty.notes[i].col;
+            mapEditor.currentMapDifficulty.notes[i] = n;
+        }
+        // invalidate selections
+        mapEditor.UnselectAllNotes();   
+    }
+
+
+
     // helper functions
     private Line MakeLine(double width, double offset) {
         var l = new Line();
@@ -967,15 +1009,13 @@ public class EditorUI {
         return col;
     }
     private double BeatForPosition(double position, bool snap) {
-        double userOffsetBeat = gridOffset * mapEditor.globalBPM / 60;
-        double userOffset = userOffsetBeat * unitLength;
         var pos = EditorGrid.ActualHeight - position - unitHeight / 2;
         double gridLength = unitLength / gridDivision;
         // check if mouse position would correspond to a negative row index
         double snapped = 0;
         double unsnapped = 0;
-        if (pos >= userOffset) {
-            unsnapped = (pos - userOffset) / unitLength;
+        if (pos >= 0) {
+            unsnapped = pos / unitLength;
             int binarySearch = gridBeatLines.BinarySearch(unsnapped);
             if (binarySearch > 0) {
                 return gridBeatLines[binarySearch];
@@ -998,5 +1038,8 @@ public class EditorUI {
         Canvas.SetTop(dragSelectBorder, p1.Y);
         dragSelectBorder.Width = delta.X;
         dragSelectBorder.Height = delta.Y;
+    }
+    private double BeatForRow(double row) {
+        return row / (double)gridDivision;
     }
 }
