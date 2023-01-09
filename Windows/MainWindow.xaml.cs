@@ -389,6 +389,27 @@ namespace Edda
 
             InitNewMap(newMapFolder);
         }
+        private void ImportMap() {
+            // check if map already open
+            if (beatMap != null) {
+                if (!PromptBeatmapSave()) {
+                    return;
+                }
+
+                PauseSong();
+            }
+
+            string importMapFolder = Helper.ChooseNewMapFolder();
+            if (importMapFolder == null) {
+                return;
+            }
+
+            try {
+                InitImportMap(importMapFolder);
+            } catch (Exception ex) {
+                MessageBox.Show($"An error occured while importing the simfile:\n{ex.Message}.\n{ex.StackTrace}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+        }
         private void OpenMap() {
             // check if map already open
             if (beatMap != null) {
@@ -491,6 +512,41 @@ namespace Edda
 
             recentMaps.AddRecentlyOpened((string)beatMap.GetValue("_songName"), newMapFolder);
             recentMaps.Write();
+        }
+
+        internal void InitImportMap(string importMapFolder) {
+            if (beatMap != null) {
+                mapEditor.ClearSelectedDifficulty();
+                ClearCoverImage();
+                UnloadSong();
+            }
+
+            // select simfile to import
+            string file = null;
+            var d = new Microsoft.Win32.OpenFileDialog() { Filter = "StepMania simfile|*.sm;*.ssc" };
+            d.Title = "Select a simfile to import";
+            if (d.ShowDialog() == true) {
+                file = d.FileName;
+            } else {
+                return;
+            }
+
+            beatMap = new RagnarockMap(importMapFolder, true);
+
+            // convert imported map
+            IMapConverter converter;
+            switch (Path.GetExtension(file)) {
+                case ".sm":
+                case ".ssc": {
+                    converter = new StepManiaMapConverter();
+                    break;
+                }
+                default: throw new FileFormatException("Selected file is not in a supported format for import.");
+            }
+            converter.Convert(file, beatMap);
+            beatMap.SaveToFile();
+
+            InitOpenMap(importMapFolder);
         }
 
         internal void InitOpenMap(string mapFolder) {

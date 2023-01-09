@@ -19,6 +19,7 @@
                     <MenuItem Header="_File">
                         <MenuItem x:Name="MenuItemNewMap" Header="_New Map" InputGestureText="Ctrl+N" Click="MenuItemNewMap_Click"/>
                         <MenuItem x:Name="MenuItemOpenMap" Header="_Open Map" InputGestureText="Ctrl+O" Click="MenuItemOpenMap_Click"/>
+                        <MenuItem x:Name="MenuItemImportMap" Header="_Import Map" Click="MenuItemImportMap_Click"/>
                         <MenuItem x:Name="MenuItemCloseMap" Header="_Close Map" Click="MenuItemCloseMap_Click"/>
                         <MenuItem x:Name="MenuItemSaveMap" Header="_Save Map" InputGestureText="Ctrl+S" Click="MenuItemSaveMap_Click"/>
                         <Separator />
@@ -633,4 +634,3 @@
         </Grid>
     </DockPanel>
 </Window>
-

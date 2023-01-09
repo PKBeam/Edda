@@ -141,6 +141,22 @@ namespace Edda
             }
         }
 
+        private void ButtonImportMap_Click(object sender, RoutedEventArgs e) {
+            string importMapFolder = Helper.ChooseNewMapFolder();
+            if (importMapFolder == null) {
+                return;
+            }
+            MainWindow main = new();
+            this.Close();
+            // NOTE: the window must be shown first before any processing can be done
+            main.Show();
+            try {
+                main.InitImportMap(importMapFolder);
+            } catch (Exception ex) {
+                MessageBox.Show($"An error occured while importing the simfile:\n{ex.Message}.\n{ex.StackTrace}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+        }
+
         private void ButtonOpenMap_Click(object sender, RoutedEventArgs e) {
             string mapFolder = Helper.ChooseOpenMapFolder();
             OpenMap(mapFolder);
