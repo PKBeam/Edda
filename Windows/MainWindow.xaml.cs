@@ -27,8 +27,7 @@ using Edda.Const;
 /// </summary>
 /// 
 
-namespace Edda
-{
+namespace Edda {
     public partial class MainWindow : Window {
 
         // COMPUTED PROPERTIES
@@ -107,6 +106,7 @@ namespace Edda
             //imgSaved.Opacity = 0;
             imgWaveformVertical.Opacity = Editor.NavWaveformOpacity;
             imgWaveformVertical.Stretch = Stretch.Fill;
+            imgSpectrogram.Stretch = Stretch.Fill;
             lineSongMouseover.Opacity = 0;
             DisableUI();
 
@@ -130,7 +130,7 @@ namespace Edda
                 Audio.WASAPILatencyTarget, 
                 checkMetronome.IsChecked == true, 
                 false,
-                float.Parse(userSettings.GetValueForKey(Const.UserSettings.DefaultNoteVolume))
+                float.Parse(userSettings.GetValueForKey(Const.UserSettingsKey.DefaultNoteVolume))
             );
 
             // load editor UI
@@ -141,8 +141,14 @@ namespace Edda
                 DrumCol, 
                 DrumRow, 
                 borderNavWaveform, 
-                colWaveformVertical, 
-                imgWaveformVertical, 
+                colWaveformVertical,
+                imgWaveformVertical,
+                scrollSpectrogram,
+                imgSpectrogram,
+                rowSpectrogramLowerOffset,
+                rowSpectrogramUpperOffset,
+                canvasSpectrogramLowerOffset,
+                canvasSpectrogramUpperOffset,
                 EditorMarginGrid, 
                 canvasNavInputBox, 
                 canvasBookmarks, 
@@ -176,6 +182,9 @@ namespace Edda
                     BorderNavWaveform_SizeChanged(eventPattern.Sender, eventPattern.EventArgs)
                 )
             );
+
+            var vsg = new VorbisSpectrogramGenerator("C:\\Users\\Vincent Liu\\Documents\\Ragnarock\\CustomSongsWIP\\TheRedBaron\\song.ogg");
+            vsg.Draw(0, 0);
         }
 
        
@@ -412,8 +421,8 @@ namespace Edda
             lineSongProgress.Y1 = borderNavWaveform.ActualHeight;
             lineSongProgress.Y2 = borderNavWaveform.ActualHeight;
 
-            sliderSongVol.Value = float.Parse(userSettings.GetValueForKey(Const.UserSettings.DefaultSongVolume));
-            sliderDrumVol.Value = float.Parse(userSettings.GetValueForKey(Const.UserSettings.DefaultNoteVolume));
+            sliderSongVol.Value = float.Parse(userSettings.GetValueForKey(Const.UserSettingsKey.DefaultSongVolume));
+            sliderDrumVol.Value = float.Parse(userSettings.GetValueForKey(Const.UserSettingsKey.DefaultNoteVolume));
 
             // map settings
             txtSongName.Text   = (string)mapEditor.GetMapValue("_songName");
@@ -548,73 +557,73 @@ namespace Edda
             userSettings = new UserSettingsManager(Program.SettingsFile);
 
             try {
-                double.Parse(userSettings.GetValueForKey(Const.UserSettings.DefaultNoteSpeed));
+                double.Parse(userSettings.GetValueForKey(UserSettingsKey.DefaultNoteSpeed));
             } catch {
-                userSettings.SetValueForKey(Const.UserSettings.DefaultNoteSpeed, DefaultUserSettings.DefaultNoteSpeed);
+                userSettings.SetValueForKey(UserSettingsKey.DefaultNoteSpeed, DefaultUserSettings.DefaultNoteSpeed);
             }
 
-            if (!int.TryParse(userSettings.GetValueForKey(Const.UserSettings.EditorAudioLatency), out editorAudioLatency)) {
-                userSettings.SetValueForKey(Const.UserSettings.EditorAudioLatency, DefaultUserSettings.AudioLatency);
+            if (!int.TryParse(userSettings.GetValueForKey(UserSettingsKey.EditorAudioLatency), out editorAudioLatency)) {
+                userSettings.SetValueForKey(UserSettingsKey.EditorAudioLatency, DefaultUserSettings.AudioLatency);
                 editorAudioLatency = DefaultUserSettings.AudioLatency;
             }
 
-            if (userSettings.GetValueForKey(Const.UserSettings.PanDrumSounds) == null) {
-                userSettings.SetValueForKey(Const.UserSettings.PanDrumSounds, DefaultUserSettings.PanDrumSounds);
+            if (userSettings.GetValueForKey(UserSettingsKey.PanDrumSounds) == null) {
+                userSettings.SetValueForKey(UserSettingsKey.PanDrumSounds, DefaultUserSettings.PanDrumSounds);
             }
-            bool isPanned = userSettings.GetBoolForKey(Const.UserSettings.PanDrumSounds);
+            bool isPanned = userSettings.GetBoolForKey(UserSettingsKey.PanDrumSounds);
 
             try {
-                float.Parse(userSettings.GetValueForKey(Const.UserSettings.DefaultNoteVolume));
+                float.Parse(userSettings.GetValueForKey(UserSettingsKey.DefaultNoteVolume));
             } catch {
-                userSettings.SetValueForKey(Const.UserSettings.DefaultNoteVolume, DefaultUserSettings.DefaultNoteVolume);
-            }
-
-            try {
-                float.Parse(userSettings.GetValueForKey(Const.UserSettings.DefaultSongVolume));
-            } catch {
-                userSettings.SetValueForKey(Const.UserSettings.DefaultSongVolume, DefaultUserSettings.DefaultSongVolume);
+                userSettings.SetValueForKey(UserSettingsKey.DefaultNoteVolume, DefaultUserSettings.DefaultNoteVolume);
             }
 
             try {
-                InitDrummer(userSettings.GetValueForKey(Const.UserSettings.DrumSampleFile), isPanned);
+                float.Parse(userSettings.GetValueForKey(UserSettingsKey.DefaultSongVolume));
             } catch {
-                userSettings.SetValueForKey(Const.UserSettings.DrumSampleFile, DefaultUserSettings.DrumSampleFile);
+                userSettings.SetValueForKey(UserSettingsKey.DefaultSongVolume, DefaultUserSettings.DefaultSongVolume);
+            }
+
+            try {
+                InitDrummer(userSettings.GetValueForKey(UserSettingsKey.DrumSampleFile), isPanned);
+            } catch {
+                userSettings.SetValueForKey(UserSettingsKey.DrumSampleFile, DefaultUserSettings.DrumSampleFile);
                 InitDrummer(DefaultUserSettings.DrumSampleFile, isPanned);
             }
 
-            if (userSettings.GetValueForKey(Const.UserSettings.DefaultSongVolume) == null) {
-                userSettings.SetValueForKey(Const.UserSettings.DefaultSongVolume, DefaultUserSettings.DefaultSongVolume);
+            if (userSettings.GetValueForKey(UserSettingsKey.DefaultSongVolume) == null) {
+                userSettings.SetValueForKey(UserSettingsKey.DefaultSongVolume, DefaultUserSettings.DefaultSongVolume);
             }
 
-            if (userSettings.GetValueForKey(Const.UserSettings.DefaultNoteVolume) == null) {
-                userSettings.SetValueForKey(Const.UserSettings.DefaultNoteVolume, DefaultUserSettings.DefaultNoteVolume);
+            if (userSettings.GetValueForKey(UserSettingsKey.DefaultNoteVolume) == null) {
+                userSettings.SetValueForKey(UserSettingsKey.DefaultNoteVolume, DefaultUserSettings.DefaultNoteVolume);
             }
 
-            if (userSettings.GetValueForKey(Const.UserSettings.EnableAutosave) == null) {
-                userSettings.SetValueForKey(Const.UserSettings.EnableAutosave, DefaultUserSettings.EnableAutosave);
+            if (userSettings.GetValueForKey(UserSettingsKey.EnableAutosave) == null) {
+                userSettings.SetValueForKey(UserSettingsKey.EnableAutosave, DefaultUserSettings.EnableAutosave);
             }
-            autosaveTimer.Enabled = userSettings.GetBoolForKey(Const.UserSettings.EnableAutosave);
+            autosaveTimer.Enabled = userSettings.GetBoolForKey(Const.UserSettingsKey.EnableAutosave);
 
-            if (userSettings.GetValueForKey(Const.UserSettings.CheckForUpdates) == null) {
-                userSettings.SetValueForKey(Const.UserSettings.CheckForUpdates, DefaultUserSettings.CheckForUpdates);
+            if (userSettings.GetValueForKey(UserSettingsKey.CheckForUpdates) == null) {
+                userSettings.SetValueForKey(UserSettingsKey.CheckForUpdates, DefaultUserSettings.CheckForUpdates);
             }
 
             try {
-                var index = int.Parse(userSettings.GetValueForKey(Const.UserSettings.MapSaveLocationIndex));
+                var index = int.Parse(userSettings.GetValueForKey(UserSettingsKey.MapSaveLocationIndex));
                 // game install directory chosen
-                var gameInstallPath = userSettings.GetValueForKey(Const.UserSettings.MapSaveLocationPath);
+                var gameInstallPath = userSettings.GetValueForKey(UserSettingsKey.MapSaveLocationPath);
                 if (index == 1 && !Directory.Exists(gameInstallPath)) {
                     throw new Exception();
                 }
             } catch {
-                userSettings.SetValueForKey(Const.UserSettings.MapSaveLocationIndex, DefaultUserSettings.MapSaveLocationIndex);
-                userSettings.SetValueForKey(Const.UserSettings.MapSaveLocationPath, DefaultUserSettings.MapSaveLocationPath);
+                userSettings.SetValueForKey(UserSettingsKey.MapSaveLocationIndex, DefaultUserSettings.MapSaveLocationIndex);
+                userSettings.SetValueForKey(UserSettingsKey.MapSaveLocationPath, DefaultUserSettings.MapSaveLocationPath);
             }
 
             try {
-                int.Parse(userSettings.GetValueForKey(Const.UserSettings.MapSaveLocationIndex));
+                int.Parse(userSettings.GetValueForKey(UserSettingsKey.MapSaveLocationIndex));
             } catch {
-                userSettings.SetValueForKey(Const.UserSettings.MapSaveLocationIndex, DefaultUserSettings.MapSaveLocationIndex);
+                userSettings.SetValueForKey(UserSettingsKey.MapSaveLocationIndex, DefaultUserSettings.MapSaveLocationIndex);
             }
 
             userSettings.Write();
@@ -790,6 +799,7 @@ namespace Edda
                 gridController.UndrawMainWaveform();
                 gridController.DrawMainWaveform();
             }
+            gridController.DrawSpectrogram();
             gridController.DrawNavWaveform();
 
             // reload map and editor
@@ -1018,7 +1028,7 @@ namespace Edda
                 Audio.NotePlaybackStreams, 
                 Audio.WASAPILatencyTarget,
                 isPanned,
-                float.Parse(userSettings.GetValueForKey(Const.UserSettings.DefaultNoteVolume))
+                float.Parse(userSettings.GetValueForKey(Const.UserSettingsKey.DefaultNoteVolume))
             );
             drummer.ChangeVolume(sliderDrumVol.Value);
             noteScanner?.SetAudioPlayer(drummer);
