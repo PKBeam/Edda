@@ -5,7 +5,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         mc:Ignorable="d"
         WindowStartupLocation="CenterScreen"
-        x:Name="AppMainWindow" Title="Edda" Height="870" Width="900" MinHeight="450" MinWidth="900" Closed="AppMainWindow_Closed" KeyDown="AppMainWindow_KeyDown" KeyUp="AppMainWindow_KeyUp" PreviewKeyDown="AppMainWindow_PreviewKeyDown" Closing="AppMainWindow_Closing" Loaded="AppMainWindow_Loaded">
+        x:Name="AppMainWindow" Title="Edda" Height="870" Width="1000" MinHeight="450" MinWidth="1000" Closed="AppMainWindow_Closed" KeyDown="AppMainWindow_KeyDown" KeyUp="AppMainWindow_KeyUp" PreviewKeyDown="AppMainWindow_PreviewKeyDown" Closing="AppMainWindow_Closing" Loaded="AppMainWindow_Loaded">
     <DockPanel>
         <Border DockPanel.Dock="Top" Name="TopPanel" BorderBrush="{DynamicResource {x:Static SystemColors.ControlDarkDarkBrushKey}}" BorderThickness="0, 0, 0, 1">
             <Border.Background>

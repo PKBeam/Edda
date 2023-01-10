@@ -48,6 +48,7 @@ public class EditorGridController {
     public double gridSpacing;
     public int gridDivision;
     public bool showWaveform;
+    public bool? showSpectrogram = null;
     public bool snapToGrid = true;
 
     // dynamically added controls
@@ -198,6 +199,13 @@ public class EditorGridController {
 
         dispatcher = parentWindow.Dispatcher;
 
+        imgWaveformVertical.Opacity = Editor.NavWaveformOpacity;
+        imgWaveformVertical.Stretch = Stretch.Fill;
+
+        imgSpectrogram.Stretch = Stretch.Fill;
+
+        lineSongMouseover.Opacity = 0;
+
         RenderOptions.SetBitmapScalingMode(imgAudioWaveform, BitmapScalingMode.NearestNeighbor);
 
         noteCanvas.SetBinding(Canvas.WidthProperty, new Binding("ActualWidth") { Source = EditorGrid });
@@ -252,6 +260,14 @@ public class EditorGridController {
         audioSpectrogram = new VorbisSpectrogramGenerator(songPath);
         audioWaveform = new VorbisWaveformGenerator(songPath);
         navWaveform = new VorbisWaveformGenerator(songPath);
+    }
+    public void DrawScrollingWaveforms() {
+        if (showWaveform) {
+            DrawMainWaveform();
+        }
+        if (showSpectrogram == true) {
+            DrawSpectrogram();
+        }
     }
     public void DrawMainWaveform() {
         if (!EditorGrid.Children.Contains(imgAudioWaveform)) {
@@ -354,10 +370,7 @@ public class EditorGridController {
             EditorGrid.Children.Add(imgAudioWaveform);
         }
         if (redrawWaveform && EditorGrid.Height - scrollEditor.ActualHeight > 0) {
-            DrawSpectrogram();
-            if (showWaveform) {
-                DrawMainWaveform();
-            }
+            DrawScrollingWaveforms();
         }
 
         // then draw the notes

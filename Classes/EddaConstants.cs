@@ -40,6 +40,7 @@ namespace Edda.Const {
     }
     public static class DefaultUserSettings
     {
+        public const bool EnableSpectrogram = true;
         public const int DefaultNoteSpeed = 15;
         public const int AudioLatency = -20; // ms
         public const string DrumSampleFile = "snaredrum";
@@ -54,6 +55,7 @@ namespace Edda.Const {
     }
 
     public static class UserSettingsKey {
+        public const string EnableSpectrogram = "enableSpectrogram";
         public const string DefaultNoteSpeed = "defaultNoteSpeed";
         public const string EditorAudioLatency = "editorAudioLatency";
         public const string DrumSampleFile = "drumSampleFile";

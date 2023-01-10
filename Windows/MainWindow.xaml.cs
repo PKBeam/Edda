@@ -103,14 +103,9 @@ namespace Edda {
             InitializeComponent();
 
             // disable parts of UI, as no map is loaded
-            //imgSaved.Opacity = 0;
-            imgWaveformVertical.Opacity = Editor.NavWaveformOpacity;
-            imgWaveformVertical.Stretch = Stretch.Fill;
-            imgSpectrogram.Stretch = Stretch.Fill;
-            lineSongMouseover.Opacity = 0;
             DisableUI();
 
-            autosaveTimer = new System.Timers.Timer(1000 * Editor.AutosaveInterval);
+            autosaveTimer = new Timer(1000 * Editor.AutosaveInterval);
             autosaveTimer.Enabled = false;
             autosaveTimer.Elapsed += (source, e) => {
                 try {
@@ -119,19 +114,6 @@ namespace Edda {
                     Trace.WriteLine("INFO: Unable to autosave beatmap");
                 }
             };
-            
-
-            InitSettings();
-            LoadSettingsFile();
-
-            metronome = new ParallelAudioPlayer(
-                Audio.MetronomeFilename, 
-                Audio.MetronomeStreams, 
-                Audio.WASAPILatencyTarget, 
-                checkMetronome.IsChecked == true, 
-                false,
-                float.Parse(userSettings.GetValueForKey(Const.UserSettingsKey.DefaultNoteVolume))
-            );
 
             // load editor UI
             gridController = new EditorGridController(
@@ -154,6 +136,17 @@ namespace Edda {
                 canvasBookmarks, 
                 canvasBookmarkLabels, 
                 lineSongMouseover
+            );
+
+            InitSettings();
+
+            metronome = new ParallelAudioPlayer(
+                Audio.MetronomeFilename, 
+                Audio.MetronomeStreams, 
+                Audio.WASAPILatencyTarget, 
+                checkMetronome.IsChecked == true, 
+                false,
+                float.Parse(userSettings.GetValueForKey(UserSettingsKey.DefaultNoteVolume))
             );
 
             // load editor preview note
@@ -552,9 +545,16 @@ namespace Edda {
             if (File.Exists(Program.OldSettingsFile)) {
                 File.Move(Program.OldSettingsFile, Program.SettingsFile);
             }
+
+            ValidateSettingsFile();
+            LoadSettingsFile();
         }
-        internal void LoadSettingsFile() {
+        internal void ValidateSettingsFile() {
             userSettings = new UserSettingsManager(Program.SettingsFile);
+
+            if (userSettings.GetValueForKey(UserSettingsKey.EnableSpectrogram) == null) {
+                userSettings.SetValueForKey(UserSettingsKey.EnableSpectrogram, DefaultUserSettings.EnableSpectrogram);
+            }
 
             try {
                 double.Parse(userSettings.GetValueForKey(UserSettingsKey.DefaultNoteSpeed));
@@ -562,15 +562,15 @@ namespace Edda {
                 userSettings.SetValueForKey(UserSettingsKey.DefaultNoteSpeed, DefaultUserSettings.DefaultNoteSpeed);
             }
 
-            if (!int.TryParse(userSettings.GetValueForKey(UserSettingsKey.EditorAudioLatency), out editorAudioLatency)) {
+            try {
+                int.Parse(userSettings.GetValueForKey(UserSettingsKey.EditorAudioLatency));
+            } catch {
                 userSettings.SetValueForKey(UserSettingsKey.EditorAudioLatency, DefaultUserSettings.AudioLatency);
-                editorAudioLatency = DefaultUserSettings.AudioLatency;
             }
 
             if (userSettings.GetValueForKey(UserSettingsKey.PanDrumSounds) == null) {
                 userSettings.SetValueForKey(UserSettingsKey.PanDrumSounds, DefaultUserSettings.PanDrumSounds);
             }
-            bool isPanned = userSettings.GetBoolForKey(UserSettingsKey.PanDrumSounds);
 
             try {
                 float.Parse(userSettings.GetValueForKey(UserSettingsKey.DefaultNoteVolume));
@@ -584,11 +584,8 @@ namespace Edda {
                 userSettings.SetValueForKey(UserSettingsKey.DefaultSongVolume, DefaultUserSettings.DefaultSongVolume);
             }
 
-            try {
-                InitDrummer(userSettings.GetValueForKey(UserSettingsKey.DrumSampleFile), isPanned);
-            } catch {
+            if (userSettings.GetValueForKey(UserSettingsKey.DrumSampleFile) == null) {
                 userSettings.SetValueForKey(UserSettingsKey.DrumSampleFile, DefaultUserSettings.DrumSampleFile);
-                InitDrummer(DefaultUserSettings.DrumSampleFile, isPanned);
             }
 
             if (userSettings.GetValueForKey(UserSettingsKey.DefaultSongVolume) == null) {
@@ -602,7 +599,6 @@ namespace Edda {
             if (userSettings.GetValueForKey(UserSettingsKey.EnableAutosave) == null) {
                 userSettings.SetValueForKey(UserSettingsKey.EnableAutosave, DefaultUserSettings.EnableAutosave);
             }
-            autosaveTimer.Enabled = userSettings.GetBoolForKey(Const.UserSettingsKey.EnableAutosave);
 
             if (userSettings.GetValueForKey(UserSettingsKey.CheckForUpdates) == null) {
                 userSettings.SetValueForKey(UserSettingsKey.CheckForUpdates, DefaultUserSettings.CheckForUpdates);
@@ -627,6 +623,27 @@ namespace Edda {
             }
 
             userSettings.Write();
+        }
+        internal void LoadSettingsFile() {
+
+            userSettings = new UserSettingsManager(Program.SettingsFile);
+
+            var showSpectrogram = userSettings.GetBoolForKey(UserSettingsKey.EnableSpectrogram);
+            var oldValue = gridController.showSpectrogram;
+            gridController.showSpectrogram = showSpectrogram;
+            if (showSpectrogram) {
+                colSpectrogram.Width = new GridLength(1, GridUnitType.Star);
+            } else {
+                colSpectrogram.Width = new GridLength(0);
+            }
+
+            int.TryParse(userSettings.GetValueForKey(UserSettingsKey.EditorAudioLatency), out editorAudioLatency);
+
+            bool isPanned = userSettings.GetBoolForKey(UserSettingsKey.PanDrumSounds);
+            InitDrummer(userSettings.GetValueForKey(UserSettingsKey.DrumSampleFile), isPanned);
+
+            autosaveTimer.Enabled = userSettings.GetBoolForKey(UserSettingsKey.EnableAutosave);
+
         }
 
         // song cover image
@@ -795,11 +812,8 @@ namespace Edda {
             LoadSong();
             
             // redraw waveforms
-            if (gridController.showWaveform) {
-                gridController.UndrawMainWaveform();
-                gridController.DrawMainWaveform();
-            }
-            gridController.DrawSpectrogram();
+            gridController.UndrawMainWaveform();
+            gridController.DrawScrollingWaveforms();
             gridController.DrawNavWaveform();
 
             // reload map and editor

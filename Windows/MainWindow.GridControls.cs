@@ -1,5 +1,6 @@
 ﻿using Edda.Const;
 using System;
+using System.Diagnostics;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
@@ -55,10 +56,7 @@ namespace Edda {
                     DrawEditorGrid();
                 }
             } else if (mapIsLoaded) {
-                gridController.DrawSpectrogram();
-                if (gridController.showWaveform) {
-                    gridController.DrawMainWaveform();
-                }
+                gridController.DrawScrollingWaveforms();
             }
         }
         private void ScrollEditor_ScrollChanged(object sender, ScrollChangedEventArgs e) {
