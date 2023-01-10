@@ -23,13 +23,13 @@ namespace RagnarockEditor
             this.UserSettings = new UserSettingsManager(Program.SettingsFile);
             this.DiscordClient = new DiscordClient();
 
-            if (UserSettings.GetValueForKey(Edda.Const.UserSettings.EnableDiscordRPC) == null) {
-                UserSettings.SetValueForKey(Edda.Const.UserSettings.EnableDiscordRPC, DefaultUserSettings.EnableDiscordRPC);
+            if (UserSettings.GetValueForKey(Edda.Const.UserSettingsKey.EnableDiscordRPC) == null) {
+                UserSettings.SetValueForKey(Edda.Const.UserSettingsKey.EnableDiscordRPC, DefaultUserSettings.EnableDiscordRPC);
             }
-            SetDiscordRPC(UserSettings.GetBoolForKey(Edda.Const.UserSettings.EnableDiscordRPC));
+            SetDiscordRPC(UserSettings.GetBoolForKey(Edda.Const.UserSettingsKey.EnableDiscordRPC));
 
             try {
-                if (UserSettings.GetValueForKey(Edda.Const.UserSettings.CheckForUpdates) == true.ToString()) {
+                if (UserSettings.GetValueForKey(Edda.Const.UserSettingsKey.CheckForUpdates) == true.ToString()) {
                     //#if !DEBUG
                     Helper.CheckForUpdates();
                     //#endif

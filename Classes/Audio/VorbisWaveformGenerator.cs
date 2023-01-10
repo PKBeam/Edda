@@ -10,12 +10,12 @@ using System.IO;
 using System.Threading;
 using Edda.Const;
 
-public class VorbisWaveformVisualiser {
+public class VorbisWaveformGenerator {
 
 	private CancellationTokenSource tokenSource;
 	private string filePath;
 	private bool isDrawing;
-	public VorbisWaveformVisualiser(string filePath) {
+	public VorbisWaveformGenerator(string filePath) {
 		RecreateTokens();
 		this.filePath = filePath;
 		this.isDrawing = false;

@@ -1,5 +1,6 @@
 ﻿using Edda.Const;
 using System;
+using System.Diagnostics;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
@@ -54,8 +55,8 @@ namespace Edda {
                 if (mapIsLoaded) {
                     DrawEditorGrid();
                 }
-            } else if (mapIsLoaded && gridController.showWaveform) {
-                gridController.DrawMainWaveform();
+            } else if (mapIsLoaded) {
+                gridController.DrawScrollingWaveforms();
             }
         }
         private void ScrollEditor_ScrollChanged(object sender, ScrollChangedEventArgs e) {
@@ -71,6 +72,8 @@ namespace Edda {
             } else if (range != 0) {
                 prevScrollPercent = (1 - curr / range);
             }
+
+            scrollSpectrogram.ScrollToVerticalOffset(e.VerticalOffset);
         }
         private void ScrollEditor_PreviewMouseWheel(object sender, MouseWheelEventArgs e) {
 

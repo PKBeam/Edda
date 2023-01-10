@@ -5,7 +5,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         mc:Ignorable="d"
         WindowStartupLocation="CenterScreen"
-        x:Name="AppMainWindow" Title="Edda" Height="870" Width="900" MinHeight="450" MinWidth="900" Closed="AppMainWindow_Closed" KeyDown="AppMainWindow_KeyDown" KeyUp="AppMainWindow_KeyUp" PreviewKeyDown="AppMainWindow_PreviewKeyDown" Closing="AppMainWindow_Closing" Loaded="AppMainWindow_Loaded">
+        x:Name="AppMainWindow" Title="Edda" Height="870" Width="1000" MinHeight="450" MinWidth="1000" Closed="AppMainWindow_Closed" KeyDown="AppMainWindow_KeyDown" KeyUp="AppMainWindow_KeyUp" PreviewKeyDown="AppMainWindow_PreviewKeyDown" Closing="AppMainWindow_Closing" Loaded="AppMainWindow_Loaded">
     <DockPanel>
         <Border DockPanel.Dock="Top" Name="TopPanel" BorderBrush="{DynamicResource {x:Static SystemColors.ControlDarkDarkBrushKey}}" BorderThickness="0, 0, 0, 1">
             <Border.Background>
@@ -507,7 +507,7 @@
 
                             <Border Grid.Row="10" Grid.Column="1">
                                 <StackPanel Orientation="Horizontal">
-                                    <CheckBox x:Name="checkWaveform" VerticalAlignment="Center" Click="CheckWaveform_Click" IsChecked="True"></CheckBox>
+                                    <CheckBox x:Name="checkWaveform" VerticalAlignment="Center" Click="CheckWaveform_Click" IsChecked="False"></CheckBox>
                                 </StackPanel>
                             </Border>
                         </Grid>
@@ -520,10 +520,11 @@
                 <ImageBrush ImageSource="/Resources/waterTexture.png" TileMode="Tile" ViewportUnits="Absolute" Viewport="0,0,256,256"/>
             </Grid.Background>
             <Grid.ColumnDefinitions>
+                <ColumnDefinition x:Name="colSpectrogram" Width="*" MaxWidth="100"/>
                 <ColumnDefinition Width="5*"/>
                 <ColumnDefinition x:Name="colWaveformVertical" Width="*" MaxWidth="100"/>
             </Grid.ColumnDefinitions>
-            <Border x:Name="borderNavWaveform" Grid.Column="1" BorderBrush="{DynamicResource {x:Static SystemColors.ControlDarkDarkBrushKey}}" BorderThickness="1 0 0 0" Background="#20000000" MouseMove="BorderNavWaveform_MouseMove" MouseEnter="BorderNavWaveform_MouseEnter" MouseLeave="BorderNavWaveform_MouseLeave" MouseLeftButtonDown="BorderNavWaveform_MouseLeftButtonDown" MouseLeftButtonUp="BorderNavWaveform_MouseLeftButtonUp">
+            <Border x:Name="borderNavWaveform" Grid.Column="2" BorderBrush="{DynamicResource {x:Static SystemColors.ControlDarkDarkBrushKey}}" BorderThickness="1 0 0 0" Background="#20000000" MouseMove="BorderNavWaveform_MouseMove" MouseEnter="BorderNavWaveform_MouseEnter" MouseLeave="BorderNavWaveform_MouseLeave" MouseLeftButtonDown="BorderNavWaveform_MouseLeftButtonDown" MouseLeftButtonUp="BorderNavWaveform_MouseLeftButtonUp">
                 <Grid>
                     <Image x:Name="imgWaveformVertical" Width="{Binding ElementName=borderNavWaveform, Path=ActualWidth}"/>
                     <Line x:Name="lineSongMouseover" StrokeThickness="1" X2="{Binding ElementName=borderNavWaveform, Path=ActualWidth}"></Line>
@@ -533,7 +534,23 @@
                     <Canvas x:Name="canvasNavInputBox"/>
                 </Grid>
             </Border>
-            <Grid MaxWidth="600">
+            <Border BorderBrush="{DynamicResource {x:Static SystemColors.ControlDarkDarkBrushKey}}" BorderThickness="0 0 1 0">
+                <Grid Grid.Column="0">
+                    <ScrollViewer x:Name="scrollSpectrogram" VerticalScrollBarVisibility="Hidden" CanContentScroll="False">
+                        <Grid Height="{Binding ElementName=EditorGrid, Path=ActualHeight}">
+                            <Grid.RowDefinitions>
+                                <RowDefinition x:Name="rowSpectrogramUpperOffset"/>
+                                <RowDefinition Height="*"/>
+                                <RowDefinition x:Name="rowSpectrogramLowerOffset"/>
+                            </Grid.RowDefinitions>
+                            <Canvas Grid.Row="2" Margin="-1" x:Name="canvasSpectrogramLowerOffset" />
+                            <Image Grid.Row="1" x:Name="imgSpectrogram"/>
+                            <Canvas Grid.Row="0" Margin="-1" x:Name="canvasSpectrogramUpperOffset" />
+                        </Grid>
+                    </ScrollViewer>
+                </Grid>
+            </Border>
+            <Grid Grid.Column="1" MaxWidth="600">
                 <!-- Static Renders -->
                 <Grid x:Name="EditorMarginGrid" Margin="50 0 50 0">
                     <Grid Background="#0A000000">

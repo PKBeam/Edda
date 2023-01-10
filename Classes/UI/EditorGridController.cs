@@ -29,6 +29,12 @@ public class EditorGridController {
     Border borderNavWaveform;
     ColumnDefinition colWaveformVertical;
     Image imgWaveformVertical;
+    ScrollViewer scrollSpectrogram;
+    Image imgSpectrogram;
+    RowDefinition rowSpectrogramLowerOffset;
+    RowDefinition rowSpectrogramUpperOffset;
+    Canvas canvasSpectrogramLowerOffset;
+    Canvas canvasSpectrogramUpperOffset;
     Grid editorMarginGrid;
     Canvas canvasNavInputBox;
     Canvas canvasBookmarks;
@@ -42,6 +48,7 @@ public class EditorGridController {
     public double gridSpacing;
     public int gridDivision;
     public bool showWaveform;
+    public bool? showSpectrogram = null;
     public bool snapToGrid = true;
 
     // dynamically added controls
@@ -57,8 +64,9 @@ public class EditorGridController {
     List<double> majorGridBeatLines = new();
 
     // waveform
-    VorbisWaveformVisualiser audioWaveform;
-    VorbisWaveformVisualiser navWaveform;
+    VorbisSpectrogramGenerator audioSpectrogram;
+    VorbisWaveformGenerator audioWaveform;
+    VorbisWaveformGenerator navWaveform;
 
     // marker editing
     bool isEditingMarker = false;
@@ -157,6 +165,12 @@ public class EditorGridController {
         Border borderNavWaveform,
         ColumnDefinition colWaveformVertical,
         Image imgWaveformVertical,
+        ScrollViewer scrollSpectrogram,
+        Image imgSpectrogram,
+        RowDefinition rowSpectrogramLowerOffset,
+        RowDefinition rowSpectrogramUpperOffset,
+        Canvas canvasSpectrogramLowerOffset,
+        Canvas canvasSpectrogramUpperOffset,
         Grid editorMarginGrid,
         Canvas canvasNavInputBox,
         Canvas canvasBookmarks,
@@ -171,6 +185,12 @@ public class EditorGridController {
         this.borderNavWaveform = borderNavWaveform;
         this.colWaveformVertical = colWaveformVertical;
         this.imgWaveformVertical = imgWaveformVertical;
+        this.scrollSpectrogram = scrollSpectrogram;
+        this.imgSpectrogram = imgSpectrogram;
+        this.rowSpectrogramLowerOffset = rowSpectrogramLowerOffset;
+        this.rowSpectrogramUpperOffset = rowSpectrogramUpperOffset;
+        this.canvasSpectrogramLowerOffset = canvasSpectrogramLowerOffset;
+        this.canvasSpectrogramUpperOffset = canvasSpectrogramUpperOffset;
         this.editorMarginGrid = editorMarginGrid;
         this.canvasNavInputBox = canvasNavInputBox;
         this.canvasBookmarks = canvasBookmarks;
@@ -178,6 +198,13 @@ public class EditorGridController {
         this.lineSongMouseover = lineSongMouseover;
 
         dispatcher = parentWindow.Dispatcher;
+
+        imgWaveformVertical.Opacity = Editor.NavWaveformOpacity;
+        imgWaveformVertical.Stretch = Stretch.Fill;
+
+        imgSpectrogram.Stretch = Stretch.Fill;
+
+        lineSongMouseover.Opacity = 0;
 
         RenderOptions.SetBitmapScalingMode(imgAudioWaveform, BitmapScalingMode.NearestNeighbor);
 
@@ -230,8 +257,17 @@ public class EditorGridController {
 
     // waveform drawing
     public void InitWaveforms(string songPath) {
-        audioWaveform = new VorbisWaveformVisualiser(songPath);
-        navWaveform = new VorbisWaveformVisualiser(songPath);
+        audioSpectrogram = new VorbisSpectrogramGenerator(songPath);
+        audioWaveform = new VorbisWaveformGenerator(songPath);
+        navWaveform = new VorbisWaveformGenerator(songPath);
+    }
+    public void DrawScrollingWaveforms() {
+        if (showWaveform) {
+            DrawMainWaveform();
+        }
+        if (showSpectrogram == true) {
+            DrawSpectrogram();
+        }
     }
     public void DrawMainWaveform() {
         if (!EditorGrid.Children.Contains(imgAudioWaveform)) {
@@ -250,18 +286,6 @@ public class EditorGridController {
         imgAudioWaveform.Width = EditorGrid.ActualWidth;
         Canvas.SetBottom(imgAudioWaveform, unitHeight / 2);
     }
-    internal void DrawNavWaveform() {
-        Task.Run(() => {
-            DateTime before = DateTime.Now;
-            ImageSource bmp = navWaveform.Draw(borderNavWaveform.ActualHeight, colWaveformVertical.ActualWidth);
-            Trace.WriteLine($"INFO: Drew nav waveform in {(DateTime.Now - before).TotalSeconds} sec");
-            if (bmp != null) {
-                this.dispatcher.Invoke(() => {
-                    imgWaveformVertical.Source = bmp;
-                });
-            }
-        });
-    }
     private void CreateMainWaveform(double height, double width) {
         Task.Run(() => {
             DateTime before = DateTime.Now;
@@ -274,6 +298,45 @@ public class EditorGridController {
                     ResizeMainWaveform();
                 }
             });
+        });
+    }
+    internal void DrawNavWaveform() {
+        Task.Run(() => {
+            DateTime before = DateTime.Now;
+            ImageSource bmp = navWaveform.Draw(borderNavWaveform.ActualHeight, colWaveformVertical.ActualWidth);
+            Trace.WriteLine($"INFO: Drew nav waveform in {(DateTime.Now - before).TotalSeconds} sec");
+
+            if (bmp != null) {
+                this.dispatcher.Invoke(() => {
+                    imgWaveformVertical.Source = bmp;
+                });
+            }
+        });
+    }
+    private void ResizeSpectrogram() {
+        imgSpectrogram.Height = EditorGrid.Height - scrollEditor.ActualHeight;
+        imgSpectrogram.Width = scrollSpectrogram.ActualWidth;
+        rowSpectrogramLowerOffset.Height = new GridLength(unitHeight / 2);
+        rowSpectrogramUpperOffset.Height = new GridLength(scrollEditor.ActualHeight - (unitHeight / 2));        
+    }
+    internal void DrawSpectrogram() {
+        ResizeSpectrogram();
+        CreateSpectrogram();
+    }
+    private void CreateSpectrogram() {
+        Task.Run(() => {
+            DateTime before = DateTime.Now;
+            ImageSource bmp = audioSpectrogram.Draw(EditorGrid.ActualHeight, scrollSpectrogram.ActualWidth);
+            Trace.WriteLine($"INFO: Drew spectrogram in {(DateTime.Now - before).TotalSeconds} sec");
+
+            if (bmp != null) {
+                this.dispatcher.Invoke(() => {
+                    imgSpectrogram.Source = bmp;
+                    var spectrogramBackgroundBrush = (SolidColorBrush)new BrushConverter().ConvertFrom(Editor.Spectrogram.BackgroundColor);
+                    canvasSpectrogramLowerOffset.Background = spectrogramBackgroundBrush;
+                    canvasSpectrogramUpperOffset.Background = spectrogramBackgroundBrush;
+                });
+            }
         });
     }
 
@@ -296,12 +359,18 @@ public class EditorGridController {
         EditorGrid.Children.Add(lineGridMouseover);
         DrawGridLines(EditorGrid.Height - scrollEditor.ActualHeight);
 
+        // end of song marker
+        var l = MakeLine(EditorGrid.ActualWidth, scrollEditor.ActualHeight - (unitHeight / 2));
+        l.Stroke = (SolidColorBrush)new BrushConverter().ConvertFrom(Editor.MajorGridlineColour);
+        l.StrokeThickness = Editor.MajorGridlineThickness;
+        EditorGrid.Children.Add(l);
+
         // then draw the waveform
         if (showWaveform) {
             EditorGrid.Children.Add(imgAudioWaveform);
         }
-        if (redrawWaveform && showWaveform && EditorGrid.Height - scrollEditor.ActualHeight > 0) {
-            DrawMainWaveform();
+        if (redrawWaveform && EditorGrid.Height - scrollEditor.ActualHeight > 0) {
+            DrawScrollingWaveforms();
         }
 
         // then draw the notes

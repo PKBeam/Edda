@@ -42,6 +42,12 @@ namespace Edda {
         }
         private void AppMainWindow_KeyDown(object sender, KeyEventArgs e) {
 
+        #if DEBUG
+            if (e.Key == Key.D) {
+                Trace.WriteLine(colSpectrogram.Width.Value);
+            }
+        #endif
+
             /*=====================*
              |  GENERAL SHORTCUTS  |
              *=====================*/

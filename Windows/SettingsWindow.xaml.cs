@@ -31,27 +31,34 @@ namespace Edda
             this.caller = caller;
             this.userSettings = userSettings;
             InitComboDrumSample();
-            txtDefaultNoteSpeed.Text = userSettings.GetValueForKey(Const.UserSettings.DefaultNoteSpeed);
-            txtAudioLatency.Text = userSettings.GetValueForKey(Const.UserSettings.EditorAudioLatency);
-            checkPanNotes.IsChecked = userSettings.GetBoolForKey(Const.UserSettings.PanDrumSounds);
-            sliderSongVol.Value = float.Parse(userSettings.GetValueForKey(Const.UserSettings.DefaultSongVolume));
-            sliderDrumVol.Value = float.Parse(userSettings.GetValueForKey(Const.UserSettings.DefaultNoteVolume));
-            checkDiscord.IsChecked = userSettings.GetBoolForKey(Const.UserSettings.EnableDiscordRPC);
-            CheckAutosave.IsChecked = userSettings.GetBoolForKey(Const.UserSettings.EnableAutosave);
-            checkStartupUpdate.IsChecked = userSettings.GetBoolForKey(Const.UserSettings.CheckForUpdates);
-            comboMapSaveFolder.SelectedIndex = int.Parse(userSettings.GetValueForKey(Const.UserSettings.MapSaveLocationIndex));
-            txtMapSaveFolderPath.Text = (comboMapSaveFolder.SelectedIndex == 0) ? Program.DocumentsMapFolder : userSettings.GetValueForKey(Const.UserSettings.MapSaveLocationPath);
+            txtDefaultNoteSpeed.Text = userSettings.GetValueForKey(UserSettingsKey.DefaultNoteSpeed);
+            txtAudioLatency.Text = userSettings.GetValueForKey(UserSettingsKey.EditorAudioLatency);
+            checkPanNotes.IsChecked = userSettings.GetBoolForKey(UserSettingsKey.PanDrumSounds);
+            sliderSongVol.Value = float.Parse(userSettings.GetValueForKey(UserSettingsKey.DefaultSongVolume));
+            sliderDrumVol.Value = float.Parse(userSettings.GetValueForKey(UserSettingsKey.DefaultNoteVolume));
+            checkDiscord.IsChecked = userSettings.GetBoolForKey(UserSettingsKey.EnableDiscordRPC);
+            CheckAutosave.IsChecked = userSettings.GetBoolForKey(UserSettingsKey.EnableAutosave);
+            CheckShowSpectrogram.IsChecked = userSettings.GetBoolForKey(UserSettingsKey.EnableSpectrogram);
+            checkStartupUpdate.IsChecked = userSettings.GetBoolForKey(UserSettingsKey.CheckForUpdates);
+            comboMapSaveFolder.SelectedIndex = int.Parse(userSettings.GetValueForKey(UserSettingsKey.MapSaveLocationIndex));
+            txtMapSaveFolderPath.Text = (comboMapSaveFolder.SelectedIndex == 0) ? Program.DocumentsMapFolder : userSettings.GetValueForKey(UserSettingsKey.MapSaveLocationPath);
             txtMapSaveFolderPath.TextTrimming = TextTrimming.CharacterEllipsis;
             txtMapSaveFolderPath.Cursor = Cursors.Hand;
             ToggleMapPathVisibility();
             doneInit = true;
         }
 
+        private void CheckShowSpectrogram_Click(object sender, RoutedEventArgs e) {
+            bool newStatus = CheckShowSpectrogram.IsChecked ?? false;
+            userSettings.SetValueForKey(UserSettingsKey.EnableSpectrogram, newStatus);
+            UpdateSettings();
+        }
+
         private void TxtDefaultNoteSpeed_LostFocus(object sender, RoutedEventArgs e) {
             double noteSpeed;
-            double prevNoteSpeed = double.Parse(userSettings.GetValueForKey(Const.UserSettings.DefaultNoteSpeed));
+            double prevNoteSpeed = double.Parse(userSettings.GetValueForKey(UserSettingsKey.DefaultNoteSpeed));
             if (double.TryParse(txtDefaultNoteSpeed.Text, out noteSpeed)) {
-                userSettings.SetValueForKey(Const.UserSettings.DefaultNoteSpeed, noteSpeed);
+                userSettings.SetValueForKey(UserSettingsKey.DefaultNoteSpeed, noteSpeed);
                 UpdateSettings();
             } else {
                 MessageBox.Show($"The note speed must be numerical.", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
@@ -61,9 +68,9 @@ namespace Edda
         }
         private void TxtAudioLatency_LostFocus(object sender, RoutedEventArgs e) {
             double latency;
-            double prevLatency = double.Parse(userSettings.GetValueForKey(Const.UserSettings.EditorAudioLatency));
+            double prevLatency = double.Parse(userSettings.GetValueForKey(UserSettingsKey.EditorAudioLatency));
             if (double.TryParse(txtAudioLatency.Text, out latency)) {
-                userSettings.SetValueForKey(Const.UserSettings.EditorAudioLatency, latency);
+                userSettings.SetValueForKey(UserSettingsKey.EditorAudioLatency, latency);
                 UpdateSettings();
                 caller.PauseSong();
             } else {
@@ -73,13 +80,13 @@ namespace Edda
             txtAudioLatency.Text = latency.ToString();
         }
         private void ComboDrumSample_SelectionChanged(object sender, SelectionChangedEventArgs e) {
-            userSettings.SetValueForKey(Const.UserSettings.DrumSampleFile, comboDrumSample.SelectedItem.ToString());
+            userSettings.SetValueForKey(UserSettingsKey.DrumSampleFile, comboDrumSample.SelectedItem.ToString());
             if (doneInit) {
                 UpdateSettings();
             }
         }
         private void InitComboDrumSample() {
-            string selectedSampleFile = userSettings.GetValueForKey(Const.UserSettings.DrumSampleFile);
+            string selectedSampleFile = userSettings.GetValueForKey(UserSettingsKey.DrumSampleFile);
             var files = Directory.GetFiles(Program.ResourcesPath);
             foreach (var file in files) {
                 if (file.EndsWith("1.wav") || file.EndsWith("1.mp3")) {
@@ -95,7 +102,7 @@ namespace Edda
         }
         private void checkPanNotes_Click(object sender, RoutedEventArgs e) {
             bool newStatus = checkPanNotes.IsChecked ?? false;
-            userSettings.SetValueForKey(Const.UserSettings.PanDrumSounds, newStatus);
+            userSettings.SetValueForKey(UserSettingsKey.PanDrumSounds, newStatus);
             UpdateSettings();
         }
 
@@ -104,42 +111,42 @@ namespace Edda
         }
 
         private void sliderSongVol_MouseLeftButtonUp(object sender, MouseButtonEventArgs e) {
-            userSettings.SetValueForKey(Const.UserSettings.DefaultSongVolume, sliderSongVol.Value);
+            userSettings.SetValueForKey(UserSettingsKey.DefaultSongVolume, sliderSongVol.Value);
             UpdateSettings();
         }
 
         private void sliderSongVol_DragCompleted(object sender, DragCompletedEventArgs e) {
-            userSettings.SetValueForKey(Const.UserSettings.DefaultSongVolume, sliderSongVol.Value);
+            userSettings.SetValueForKey(UserSettingsKey.DefaultSongVolume, sliderSongVol.Value);
             UpdateSettings();
         }
 
         private void SliderDrumVol_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e) {
             txtDrumVol.Text = $"{(int)(sliderDrumVol.Value * 100)}%";
-            
+            UpdateSettings();
         }
         private void sliderDrumVol_MouseLeftButtonUp(object sender, MouseButtonEventArgs e) {
-            userSettings.SetValueForKey(Const.UserSettings.DefaultNoteVolume, sliderDrumVol.Value);
+            userSettings.SetValueForKey(UserSettingsKey.DefaultNoteVolume, sliderDrumVol.Value);
             UpdateSettings();
         }
 
         private void sliderDrumVol_DragCompleted(object sender, DragCompletedEventArgs e) {
-            userSettings.SetValueForKey(Const.UserSettings.DefaultNoteVolume, sliderDrumVol.Value);
+            userSettings.SetValueForKey(UserSettingsKey.DefaultNoteVolume, sliderDrumVol.Value);
             UpdateSettings();
         }
         
         private void CheckDiscord_Click(object sender, RoutedEventArgs e) {
             bool newStatus = checkDiscord.IsChecked ?? false;
-            userSettings.SetValueForKey(Const.UserSettings.EnableDiscordRPC, newStatus);
+            userSettings.SetValueForKey(UserSettingsKey.EnableDiscordRPC, newStatus);
             UpdateSettings();
         }
         private void CheckAutosave_Click(object sender, RoutedEventArgs e) {
             bool newStatus = CheckAutosave.IsChecked ?? false;
-            userSettings.SetValueForKey(Const.UserSettings.EnableAutosave, newStatus);
+            userSettings.SetValueForKey(UserSettingsKey.EnableAutosave, newStatus);
             UpdateSettings();
         }
         private void CheckStartupUpdate_Click(object sender, RoutedEventArgs e) {
             bool newStatus = checkStartupUpdate.IsChecked ?? false;
-            userSettings.SetValueForKey(Const.UserSettings.CheckForUpdates, newStatus);
+            userSettings.SetValueForKey(UserSettingsKey.CheckForUpdates, newStatus);
             UpdateSettings();
         }
 
@@ -149,15 +156,15 @@ namespace Edda
                 string gameInstall = PickGameFolder();
                 if (gameInstall == null) {
                     comboMapSaveFolder.SelectedIndex = 0;
-                    userSettings.SetValueForKey(Const.UserSettings.MapSaveLocationPath, DefaultUserSettings.MapSaveLocationPath);
+                    userSettings.SetValueForKey(UserSettingsKey.MapSaveLocationPath, DefaultUserSettings.MapSaveLocationPath);
                 } else {
                     txtMapSaveFolderPath.Text = gameInstall; 
-                    userSettings.SetValueForKey(Const.UserSettings.MapSaveLocationPath, gameInstall);
+                    userSettings.SetValueForKey(UserSettingsKey.MapSaveLocationPath, gameInstall);
                 }
             }
 
             ToggleMapPathVisibility();
-            userSettings.SetValueForKey(Const.UserSettings.MapSaveLocationIndex, comboMapSaveFolder.SelectedIndex.ToString());
+            userSettings.SetValueForKey(UserSettingsKey.MapSaveLocationIndex, comboMapSaveFolder.SelectedIndex.ToString());
             UpdateSettings();
         }
 
@@ -175,7 +182,7 @@ namespace Edda
             if (gameInstall == null) {
                 return;
             } else {
-                userSettings.SetValueForKey(Const.UserSettings.MapSaveLocationPath, gameInstall);
+                userSettings.SetValueForKey(UserSettingsKey.MapSaveLocationPath, gameInstall);
             }
             UpdateSettings();
         }
@@ -184,7 +191,7 @@ namespace Edda
             var d = new CommonOpenFileDialog();
             d.Title = "Select the folder that Ragnarock is installed in";
             d.IsFolderPicker = true;
-            var prevGamePath = userSettings.GetValueForKey(Const.UserSettings.MapSaveLocationPath);
+            var prevGamePath = userSettings.GetValueForKey(UserSettingsKey.MapSaveLocationPath);
             if (Directory.Exists(prevGamePath)) {
                 d.InitialDirectory = prevGamePath;
             }
