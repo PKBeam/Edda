@@ -217,8 +217,7 @@ public class StepManiaMapConverter : IMapConverter
             int startSec = (int)(sampleStart - 60 * startMin);
             int endMin = (int)((sampleStart + sampleLength) / 60);
             int endSec = (int)(sampleStart + sampleLength - 60 * endMin);
-            // TODO: for some reason, two windows open for ffmpeg and they clash with each other.
-            Helper.FFmpeg(beatmap.PathOf(""), $"-i \"{songURL}\" -y -ss 00:{startMin:D2}:{startSec:D2} -to 00:{endMin:D2}:{endSec:D2} -vn -af \"{saveURL}\"");
+            Helper.FFmpeg(beatmap.PathOf(""), $"-i \"{songURL}\" -y -ss 00:{startMin:D2}:{startSec:D2} -to 00:{endMin:D2}:{endSec:D2} -vn \"{saveURL}\"");
         }
     }
 
