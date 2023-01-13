@@ -10,6 +10,7 @@ using System.Collections.Generic;
 using System.Linq;
 using static System.Formats.Asn1.AsnWriter;
 using System.Windows.Controls;
+using System.Globalization;
 
 namespace Edda.Windows {
     /// <summary>
@@ -147,18 +148,25 @@ namespace Edda.Windows {
             };
             var reader = File.OpenText(path);
             var pmmlDocument = new PMMLDocument(reader);
-            var supportVector = new SupportVectorMachineModelEvaluator(pmmlDocument);
-            var predictedResult = supportVector.GetResult(features, null);
-            supportVector.Dispose();
+            // Syncfusion package uses current culture for parsing doubles, so we need to make sure it's consistent.
+            var currentCulture = CultureInfo.CurrentCulture;
+            CultureInfo.CurrentCulture = CultureInfo.InvariantCulture;
+            try {
+                var supportVector = new SupportVectorMachineModelEvaluator(pmmlDocument);
+                var predictedResult = supportVector.GetResult(features, null);
+                supportVector.Dispose();
 
-            XmlDocument xmlDoc = new XmlDocument();
-            xmlDoc.Load(path);
+                XmlDocument xmlDoc = new XmlDocument();
+                xmlDoc.Load(path);
 
-            // Syncfusion package has a bug where it ignores rescaling of output value... so we have to do it ourselves
-            XmlNodeList constants = xmlDoc.GetElementsByTagName("Constant");
-            var unvariance = double.Parse(constants[0].InnerText);
-            var unmean = double.Parse(constants[1].InnerText);
-            return ((double)predictedResult.PredictedValue * unvariance) + unmean;
+                // Syncfusion package has a bug where it ignores rescaling of output value... so we have to do it ourselves
+                XmlNodeList constants = xmlDoc.GetElementsByTagName("Constant");
+                var unvariance = double.Parse(constants[0].InnerText);
+                var unmean = double.Parse(constants[1].InnerText);
+                return ((double)predictedResult.PredictedValue * unvariance) + unmean;
+            } finally {
+                CultureInfo.CurrentCulture = currentCulture;
+            }
         }
     }
 }
