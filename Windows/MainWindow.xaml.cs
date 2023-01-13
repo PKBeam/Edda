@@ -414,8 +414,8 @@ namespace Edda {
             lineSongProgress.Y1 = borderNavWaveform.ActualHeight;
             lineSongProgress.Y2 = borderNavWaveform.ActualHeight;
 
-            sliderSongVol.Value = float.Parse(userSettings.GetValueForKey(Const.UserSettingsKey.DefaultSongVolume));
-            sliderDrumVol.Value = float.Parse(userSettings.GetValueForKey(Const.UserSettingsKey.DefaultNoteVolume));
+            sliderSongVol.Value = float.Parse(userSettings.GetValueForKey(UserSettingsKey.DefaultSongVolume));
+            sliderDrumVol.Value = float.Parse(userSettings.GetValueForKey(UserSettingsKey.DefaultNoteVolume));
 
             // map settings
             txtSongName.Text   = (string)mapEditor.GetMapValue("_songName");
@@ -424,7 +424,7 @@ namespace Edda {
             txtSongBPM.Text    = (string)mapEditor.GetMapValue("_beatsPerMinute");
             txtSongOffset.Text = (string)mapEditor.GetMapValue("_songTimeOffset");
             checkExplicitContent.IsChecked = (string)mapEditor.GetMapValue("_explicit") == "true";
-
+            checkWaveform.IsChecked = userSettings.GetBoolForKey(UserSettingsKey.EnableSpectrogram) != true;
             comboEnvironment.SelectedIndex = BeatmapDefaults.EnvironmentNames.IndexOf((string)mapEditor.GetMapValue("_environmentName"));
             MenuItemSnapToGrid.IsChecked = (checkGridSnap.IsChecked == true);
             mapEditor.songDuration = songStream.TotalTime.TotalSeconds;

@@ -1,0 +1,108 @@
+﻿<Window x:Class="Edda.Windows.DifficultyPredictorWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:Edda.Windows"
+        mc:Ignorable="d"
+        Title="Difficulty Predictor" Height="320" Width="350" ResizeMode="NoResize" WindowStartupLocation="CenterOwner" Background="{DynamicResource {x:Static SystemColors.ControlDarkBrushKey}}" >
+    <Grid>
+        <DockPanel>
+            <Border DockPanel.Dock="Top" BorderBrush="{DynamicResource {x:Static SystemColors.ControlDarkDarkBrushKey}}" BorderThickness="0, 0, 0, 1" Padding="10">
+                <Border.Background>
+                    <LinearGradientBrush EndPoint="0.5,1" StartPoint="0.5,0">
+                        <GradientStop Color="{DynamicResource {x:Static SystemColors.ControlLightColorKey}}"/>
+                        <GradientStop Color="{DynamicResource {x:Static SystemColors.ControlDarkColorKey}}" Offset="1"/>
+                    </LinearGradientBrush>
+                </Border.Background>
+                <StackPanel>
+                    <TextBlock VerticalAlignment="Center">The difficulty predictor uses a machine learning model. </TextBlock>
+                    <TextBlock VerticalAlignment="Center">The model is trained on Ranked maps from Ragnacustoms.</TextBlock>
+                    <TextBlock FontWeight="SemiBold" VerticalAlignment="Center" Margin="0 10 0 0">For best results, run the predictor on completed maps.</TextBlock>
+
+                </StackPanel>
+            </Border>
+
+            <Border DockPanel.Dock="Bottom" BorderBrush="{DynamicResource {x:Static SystemColors.ControlDarkDarkBrushKey}}" BorderThickness="0, 1, 0, 0">
+                <Border.Background>
+                    <LinearGradientBrush EndPoint="0.5,1" StartPoint="0.5,0">
+                        <GradientStop Color="{DynamicResource {x:Static SystemColors.ControlLightColorKey}}"/>
+                        <GradientStop Color="{DynamicResource {x:Static SystemColors.ControlDarkColorKey}}" Offset="1"/>
+                    </LinearGradientBrush>
+                </Border.Background>
+                <StackPanel>
+                    <Button x:Name="btnPredict" Margin="0 10 10 10" Width="70" HorizontalAlignment="Right" Click="BtnPredict_Click">Predict</Button>
+                </StackPanel>
+            </Border>
+            <StackPanel HorizontalAlignment="Center">
+                <Grid VerticalAlignment="Center" Margin="0 20 0 15">
+                    <Grid.Resources>
+                        <Style TargetType="Border" >
+                            <Setter Property="Padding" Value="5,5,5,5" />
+                        </Style>
+                    </Grid.Resources>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="*" />
+                        <RowDefinition Height="*" />
+                        <RowDefinition Height="*" />
+                        <RowDefinition Height="*" />
+                        <RowDefinition Height="*" />
+                        <RowDefinition Height="*" />
+                        <RowDefinition Height="*" />
+                        <RowDefinition Height="*" />
+                        <RowDefinition Height="*" />
+                    </Grid.RowDefinitions>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="150" />
+                        <ColumnDefinition Width="25" />
+                    </Grid.ColumnDefinitions>
+
+                    <Border Grid.Row="1" Grid.Column="0">
+                        <TextBlock VerticalAlignment="Center">Treat maps as WIP</TextBlock>
+                    </Border>
+
+                    <Border Grid.Row="1" Grid.Column="1">
+                        <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+                            <CheckBox x:Name="CheckTreatMapsWip" VerticalAlignment="Center"/>
+                        </StackPanel>
+                    </Border>
+
+                    <Border Grid.Row="2" Grid.Column="0">
+                        <TextBlock VerticalAlignment="Center">Show precise values</TextBlock>
+                    </Border>
+
+                    <Border Grid.Row="2" Grid.Column="1">
+                        <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+                            <CheckBox x:Name="CheckShowPreciseValues" VerticalAlignment="Center" />
+                        </StackPanel>
+                    </Border>
+                </Grid>
+                <StackPanel x:Name="PanelPredictionResults" HorizontalAlignment="Center" Visibility="Hidden">
+                    <TextBlock FontSize="10" Margin="0 0 0 5" >Predicted Difficulty Ranks:</TextBlock>
+                    <StackPanel Orientation="Horizontal">
+                        <StackPanel x:Name="DifficultyChangePanel" Orientation="Horizontal">
+                            <Button x:Name="btnDifficulty0" Width="55" Height="40">
+                                <Grid Width="50">
+                                    <Image Source="pack://application:,,,/Edda;component/resources/difficulty1.png" RenderOptions.BitmapScalingMode="Fant"/>
+                                    <Label x:Name="lblDifficultyRank1" VerticalAlignment="Bottom" Padding="0 0 2 1" HorizontalAlignment="Right" FontWeight="Bold"></Label>
+                                </Grid>
+                            </Button>
+                            <Button x:Name="btnDifficulty1" Width="55" Height="40">
+                                <Grid Width="50">
+                                    <Image Source="pack://application:,,,/Edda;component/resources/difficulty2.png" RenderOptions.BitmapScalingMode="Fant"/>
+                                    <Label x:Name="lblDifficultyRank2" VerticalAlignment="Bottom" Padding="0 0 2 1" HorizontalAlignment="Right" FontWeight="Bold"></Label>
+                                </Grid>
+                            </Button>
+                            <Button x:Name="btnDifficulty2" Width="55" Height="40">
+                                <Grid Width="50">
+                                    <Image Source="pack://application:,,,/Edda;component/resources/difficulty3.png" RenderOptions.BitmapScalingMode="Fant"/>
+                                    <Label x:Name="lblDifficultyRank3" VerticalAlignment="Bottom" Padding="0 0 2 1" HorizontalAlignment="Right" FontWeight="Bold"></Label>
+                                </Grid>
+                            </Button>
+                        </StackPanel>
+                    </StackPanel>
+                </StackPanel>
+            </StackPanel>
+        </DockPanel>
+    </Grid>
+</Window>

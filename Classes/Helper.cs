@@ -2,12 +2,14 @@
 using Microsoft.WindowsAPICodePack.Dialogs;
 using Newtonsoft.Json.Linq;
 using System;
+using System.CodeDom;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Net.Http;
+using System.Numerics;
 using System.Text.RegularExpressions;
 using System.Windows;
 using System.Windows.Media.Imaging;
@@ -42,6 +44,45 @@ public class Helper {
     }
     public static string TimeFormat(double seconds) {
         return TimeFormat((int)seconds);
+    }
+    public static double LpNorm(List<int> vector, int p) {
+        return LpNorm(vector.ConvertAll(x => (double)x), p);
+    }
+    public static double LpNorm(List<double> vector, int p) {
+        var total = 0.0;
+        foreach (var x in vector) {
+            total += Math.Pow(Math.Abs(x), p);
+        }
+        return Math.Pow(total, 1.0 / p);
+    }
+    public static List<double> LpNormalise(List<int> vector, int p) {
+        return LpNormalise(vector.ConvertAll(x => (double)x), p);
+    }
+    public static List<double> LpNormalise(List<double> vector, int p) {
+        var norm = LpNorm(vector, p);
+        var normalisedVec = new List<double>();
+        foreach (var x in vector) {
+            normalisedVec.Add(x / norm);
+        }
+        return normalisedVec;
+    }
+    public static double LpDistance(List<double> v, List<double> w, int p) {
+        var distVec = new List<double>(); 
+        for (int i = 0; i < v.Count; i++) {
+            distVec.Add(v[i] - w[i]);
+        }
+        return LpNorm(distVec, p);
+    }
+    public static double GetQuantile(List<double> x, double q) {
+        x.Sort();
+        var indx = (x.Count - 1) * q;
+        if ((int)indx == indx) {
+            return x[(int)indx];
+        } else {
+            var i = (int)Math.Floor(indx);
+            var j = (int)Math.Ceiling(indx);
+            return x[i] + (x[j] - x[i]) * q;
+        }
     }
 
     // File I/O

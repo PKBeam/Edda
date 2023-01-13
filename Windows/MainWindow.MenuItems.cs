@@ -127,6 +127,10 @@ namespace Edda {
         private void MenuItemBpmFinder_Click(object sender, RoutedEventArgs e) {
             ShowUniqueWindow(() => new BPMCalcWindow());
         }
+        private void MenuItemDifficultyPredictor_Click(object sender, RoutedEventArgs e) {
+            ShowUniqueWindow(() => new DifficultyPredictorWindow(this));
+        }
+        
         private void MenuItemSettings_Click(object sender, RoutedEventArgs e) {
             ShowUniqueWindow(() => new SettingsWindow(this, userSettings));
         }

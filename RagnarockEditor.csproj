@@ -93,6 +93,7 @@
     <PackageReference Include="Newtonsoft.Json" Version="13.0.2" />
     <PackageReference Include="SoundTouch.Net.NAudioSupport.Core" Version="2.3.2" />
     <PackageReference Include="Spectrogram" Version="1.6.1" />
+    <PackageReference Include="Syncfusion.PMML.Net.Core" Version="20.4.0.43" />
     <PackageReference Include="System.Reactive" Version="5.0.0" />
   </ItemGroup>
 

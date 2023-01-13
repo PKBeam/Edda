@@ -73,7 +73,7 @@ namespace Edda {
                 prevScrollPercent = (1 - curr / range);
             }
 
-            scrollSpectrogram.ScrollToVerticalOffset(e.VerticalOffset);
+            scrollSpectrogram.ScrollToVerticalOffset(scrollEditor.VerticalOffset);
         }
         private void ScrollEditor_PreviewMouseWheel(object sender, MouseWheelEventArgs e) {
 

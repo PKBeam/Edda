@@ -71,6 +71,9 @@ public class MapEditor {
             );
         }
     }
+    public MapDifficulty? GetDifficulty(int indx) {
+        return difficultyMaps[indx];
+    }
     public void SaveMap() {
         SaveMap(currentDifficultyIndex);
         beatMap.SaveToFile();
