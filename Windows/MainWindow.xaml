@@ -537,7 +537,7 @@
             </Border>
             <Border BorderBrush="{DynamicResource {x:Static SystemColors.ControlDarkDarkBrushKey}}" BorderThickness="0 0 1 0">
                 <Grid Grid.Column="0">
-                    <ScrollViewer x:Name="scrollSpectrogram" VerticalScrollBarVisibility="Hidden" CanContentScroll="False">
+                    <ScrollViewer x:Name="scrollSpectrogram" VerticalScrollBarVisibility="Hidden" CanContentScroll="False" IsEnabled="False">
                         <Grid Height="{Binding ElementName=EditorGrid, Path=ActualHeight}">
                             <Grid.RowDefinitions>
                                 <RowDefinition x:Name="rowSpectrogramUpperOffset"/>
