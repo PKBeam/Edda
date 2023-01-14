@@ -47,6 +47,10 @@
     <None Remove="Resources\medalSilver.png" />
     <None Remove="Resources\metronome1.wav" />
     <None Remove="Resources\Minus.png" />
+    <None Remove="Resources\mmatick1.wav" />
+    <None Remove="Resources\mmatick2.wav" />
+    <None Remove="Resources\mmatick3.wav" />
+    <None Remove="Resources\mmatick4.wav" />
     <None Remove="Resources\musicNote.png" />
     <None Remove="Resources\newMap.png" />
     <None Remove="Resources\openMap.png" />
@@ -146,6 +150,18 @@
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
     <Resource Include="Resources\Minus.png" />
+    <Content Include="Resources\mmatick1.wav">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Resources\mmatick2.wav">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Resources\mmatick3.wav">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Resources\mmatick4.wav">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
     <Resource Include="Resources\musicNote.png" />
     <Resource Include="Resources\newMap.png" />
     <Resource Include="Resources\openMap.png" />

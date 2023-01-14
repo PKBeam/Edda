@@ -46,7 +46,7 @@ public class ParallelAudioPlayer: IDisposable {
                 Volume = defaultVolume
             };
             notePlayers[i] = new WasapiOut(AudioClientShareMode.Shared, desiredLatency);
-            if (isPanned) {
+            if (isPanned && basePath != "mmatick") {
                 var mono = new StereoToMonoSampleProvider(noteStreams[i]);
                 if (basePath == "bassdrum") {
                     mono.LeftVolume = 1.0f;
