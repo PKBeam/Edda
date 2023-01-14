@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Configuration;
-using System.Data;
-using System.Diagnostics;
-using System.Linq;
-using System.Threading.Tasks;
+﻿using System.Diagnostics;
 using System.Windows;
 using Edda.Const;
 
@@ -23,13 +17,16 @@ namespace RagnarockEditor
             this.UserSettings = new UserSettingsManager(Program.SettingsFile);
             this.DiscordClient = new DiscordClient();
 
-            if (UserSettings.GetValueForKey(Edda.Const.UserSettingsKey.EnableDiscordRPC) == null) {
-                UserSettings.SetValueForKey(Edda.Const.UserSettingsKey.EnableDiscordRPC, DefaultUserSettings.EnableDiscordRPC);
+            if (UserSettings.GetValueForKey(UserSettingsKey.EnableDiscordRPC) == null) {
+                UserSettings.SetValueForKey(UserSettingsKey.EnableDiscordRPC, DefaultUserSettings.EnableDiscordRPC);
             }
-            SetDiscordRPC(UserSettings.GetBoolForKey(Edda.Const.UserSettingsKey.EnableDiscordRPC));
+            SetDiscordRPC(UserSettings.GetBoolForKey(UserSettingsKey.EnableDiscordRPC));
+
+            // for testing cultures
+            //CultureInfo.CurrentCulture = CultureInfo.GetCultureInfoByIetfLanguageTag("fr-FR");
 
             try {
-                if (UserSettings.GetValueForKey(Edda.Const.UserSettingsKey.CheckForUpdates) == true.ToString()) {
+                if (UserSettings.GetValueForKey(UserSettingsKey.CheckForUpdates) == true.ToString()) {
                     //#if !DEBUG
                     Helper.CheckForUpdates();
                     //#endif

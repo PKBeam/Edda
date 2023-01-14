@@ -18,7 +18,8 @@ public class Helper {
 
     // Math
     private static double threshold = 0.0001;
-
+    // these should be used when parsing numerical strings that do not necessarily come from the user's culture
+    // e.g. externally downloaded maps (where the JSON standard uses , for decimal separators)
     public static double DoubleParseInvariant(string s) {
         return double.Parse(s, CultureInfo.InvariantCulture);
     }
@@ -245,7 +246,7 @@ public class Helper {
                 numerify += '0';
                 counter++;
             }
-            return double.Parse(numerify);
+            return Helper.DoubleParseInvariant(numerify);
         }
 
         bool isBeta(string version) {

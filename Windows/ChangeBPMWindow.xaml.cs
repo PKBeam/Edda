@@ -42,7 +42,7 @@ namespace Edda
             string pendingEditText = ((TextBox)e.EditingElement).Text;
             // data validation
             try {
-                double pendingEdit = Helper.DoubleParseInvariant(pendingEditText);
+                double pendingEdit = double.Parse(pendingEditText);
                 // global beat
                 if (col == dataBPMChange.Columns[0].Header.ToString()) {
                     if (pendingEdit < 0) {

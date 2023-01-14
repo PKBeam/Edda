@@ -5,7 +5,6 @@ using System.IO;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Media.Animation;
@@ -151,7 +150,7 @@ namespace Edda {
 
             // load editor preview note
             InitNavMouseoverLine();
-
+            
             // init environment combobox
             InitComboEnvironment();
             songPlaybackCancellationTokenSource = new();
@@ -754,7 +753,7 @@ namespace Edda {
             
             // set internal values
             gridController.gridDivision = int.Parse(txtGridDivision.Text);
-            gridController.gridSpacing = Helper.DoubleParseInvariant(txtGridSpacing.Text);
+            gridController.gridSpacing = double.Parse(txtGridSpacing.Text);
 
             UpdateDifficultyButtons();
             gridController.DrawNavBookmarks();
