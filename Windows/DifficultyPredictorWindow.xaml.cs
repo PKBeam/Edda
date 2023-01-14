@@ -49,8 +49,9 @@ namespace Edda.Windows {
                     case 2: diffLabel = lblDifficultyRank3; btnDifficulty2.IsEnabled = true; break;
                     default: diffLabel = null; break;
                 }
-                var predictionDisplay = Math.Round(predictedDiff, CheckShowPreciseValues.IsChecked == true ? 1 : 0);
-                diffLabel.Content = $"{predictionDisplay.ToString("##.00")}";
+                var showPreciseValue = CheckShowPreciseValues.IsChecked == true;
+                var predictionDisplay = Math.Round(predictedDiff, showPreciseValue ? 1 : 0);
+                diffLabel.Content = $"{predictionDisplay.ToString(showPreciseValue ? "##.00" : null)}";
             }
             PanelPredictionResults.Visibility = Visibility.Visible;
         }
