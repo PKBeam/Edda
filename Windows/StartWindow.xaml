@@ -31,15 +31,30 @@
             <TextBlock x:Name="TxtVersionNumber" FontSize="18" FontWeight="Bold" HorizontalAlignment="Center" FontFamily="Bahnschrift SemiLight">version X.X.X-betaX</TextBlock>
         </StackPanel>
         <StackPanel x:Name="RightPanel" Grid.Column="1" Margin="0 40 35 30">
-            <Button x:Name="ButtonNewMap" HorizontalContentAlignment="Left" Margin="0 0 0 15" Click="ButtonNewMap_Click">
-                <StackPanel Height="35" Margin="7" Orientation="Horizontal">
-                    <Image Source="/Resources/newMap.png"/>
-                    <StackPanel Margin="5 0 0 0" VerticalAlignment="Center">
-                        <TextBlock Foreground="#002668" FontSize="18" FontWeight="Bold" FontFamily="Bahnschrift">New Map</TextBlock>
-                        <TextBlock FontSize="14" FontFamily="Bahnschrift SemiLight">Create a new beat map for Ragnaröck VR</TextBlock>
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="1*"/>
+                    <ColumnDefinition Width="1*"/>
+                </Grid.ColumnDefinitions>
+                <Button Grid.Row="0" Grid.Column="0" x:Name="ButtonNewMap" HorizontalContentAlignment="Left" Margin="0 0 5 15" Click="ButtonNewMap_Click">
+                    <StackPanel Height="35" Margin="7" Orientation="Horizontal">
+                        <Image Source="/Resources/newMap.png"/>
+                        <StackPanel Margin="5 0 0 0" VerticalAlignment="Center">
+                            <TextBlock Foreground="#002668" FontSize="18" FontWeight="Bold" FontFamily="Bahnschrift">New Map</TextBlock>
+                            <TextBlock FontSize="14" FontFamily="Bahnschrift SemiLight">Create a new beat map</TextBlock>
+                        </StackPanel>
                     </StackPanel>
-                </StackPanel>
-            </Button>
+                </Button>
+                <Button Grid.Row="0" Grid.Column="1" x:Name="ButtonImportMap" HorizontalContentAlignment="Left" Margin="5 0 0 15" Click="ButtonImportMap_Click">
+                    <StackPanel Height="35" Margin="7" Orientation="Horizontal">
+                        <Image Source="/Resources/newMap.png"/> <!-- TODO: replace with a matching icon -->
+                        <StackPanel Margin="5 0 0 0" VerticalAlignment="Center">
+                            <TextBlock Foreground="#002668" FontSize="18" FontWeight="Bold" FontFamily="Bahnschrift">Import Map</TextBlock>
+                            <TextBlock FontSize="14" FontFamily="Bahnschrift SemiLight">Import .sm or .ssc simfile</TextBlock>
+                        </StackPanel>
+                    </StackPanel>
+                </Button>
+            </Grid>
             <Button x:Name="ButtonOpenMap" HorizontalContentAlignment="Left" Margin="0 0 0 15" Click="ButtonOpenMap_Click">
                 <StackPanel Height="35" Margin="5" Orientation="Horizontal">
                     <Image Source="/Resources/openMap.png"/>
