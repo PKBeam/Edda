@@ -41,16 +41,16 @@
                         <Image Source="/Resources/newMap.png"/>
                         <StackPanel Margin="5 0 0 0" VerticalAlignment="Center">
                             <TextBlock Foreground="#002668" FontSize="18" FontWeight="Bold" FontFamily="Bahnschrift">New Map</TextBlock>
-                            <TextBlock FontSize="14" FontFamily="Bahnschrift SemiLight">Create a new beat map</TextBlock>
+                            <TextBlock FontSize="13" FontFamily="Bahnschrift SemiLight">Create a new map</TextBlock>
                         </StackPanel>
                     </StackPanel>
                 </Button>
                 <Button Grid.Row="0" Grid.Column="1" x:Name="ButtonImportMap" HorizontalContentAlignment="Left" Margin="5 0 0 15" Click="ButtonImportMap_Click">
                     <StackPanel Height="35" Margin="7" Orientation="Horizontal">
-                        <Image Source="/Resources/newMap.png"/> <!-- TODO: replace with a matching icon -->
+                        <Image Source="/Resources/importMap.png"/>
                         <StackPanel Margin="5 0 0 0" VerticalAlignment="Center">
                             <TextBlock Foreground="#002668" FontSize="18" FontWeight="Bold" FontFamily="Bahnschrift">Import Map</TextBlock>
-                            <TextBlock FontSize="14" FontFamily="Bahnschrift SemiLight">Import .sm or .ssc simfile</TextBlock>
+                            <TextBlock FontSize="13" FontFamily="Bahnschrift SemiLight">Import StepMania simfiles</TextBlock>
                         </StackPanel>
                     </StackPanel>
                 </Button>
@@ -60,7 +60,7 @@
                     <Image Source="/Resources/openMap.png"/>
                     <StackPanel Margin="7 0 0 0" VerticalAlignment="Center">
                         <TextBlock Foreground="#002668" FontSize="18" FontWeight="Bold" FontFamily="Bahnschrift">Open Map</TextBlock>
-                        <TextBlock FontSize="14" FontFamily="Bahnschrift SemiLight">Continue working on an existing beat map</TextBlock>
+                        <TextBlock FontSize="13" FontFamily="Bahnschrift SemiLight">Continue working on an existing map</TextBlock>
                     </StackPanel>
                 </StackPanel>
             </Button>

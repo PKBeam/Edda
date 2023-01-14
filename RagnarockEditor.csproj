@@ -41,6 +41,7 @@
     <None Remove="Resources\hihat3.wav" />
     <None Remove="Resources\hihat4.wav" />
     <None Remove="Resources\icon.png" />
+    <None Remove="Resources\importMap.png" />
     <None Remove="Resources\medalBronze.png" />
     <None Remove="Resources\medalGold.png" />
     <None Remove="Resources\medalSilver.png" />
@@ -137,6 +138,7 @@
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Resource>
     <Resource Include="Resources\icon.png" />
+    <Resource Include="Resources\importMap.png" />
     <Resource Include="Resources\medalBronze.png" />
     <Resource Include="Resources\medalGold.png" />
     <Resource Include="Resources\medalSilver.png" />
