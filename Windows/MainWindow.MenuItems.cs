@@ -18,6 +18,10 @@ namespace Edda {
             PauseSong();
             OpenMap();
         }
+        private void MenuItemImportMap_Click(object sender, RoutedEventArgs e) {
+            PauseSong();
+            ImportMap();
+        }
         private void MenuItemSaveMap_Click(object sender, RoutedEventArgs e) {
             BackupAndSaveBeatmap();
         }
