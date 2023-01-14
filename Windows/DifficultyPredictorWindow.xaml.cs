@@ -38,9 +38,9 @@ namespace Edda.Windows {
                 // treat the song as ending on the last placed note if map is WIP
                 var songDuration = CheckTreatMapsWip.IsChecked == true ? 60 / globalBpm * diffNotes.Last().beat : globalSongDuration; 
                 var noteDensity = GetNoteDensity(diffNotes, songDuration);
-                var maxLocalNoteDensity = GetMaxLocalNoteDensity(diffNotes, songDuration, globalBpm);
-                var upperColumnVariety = GetUpperQuartileColumnVariety(diffNotes, songDuration, globalBpm);
-                var predictedDiff = EvaluateModel(mapEditor.globalBPM, noteDensity, maxLocalNoteDensity, upperColumnVariety);
+                var localNoteDensity = GetLocalNoteDensity(diffNotes, songDuration, globalBpm);
+                var highLocalNoteDensity = Helper.GetQuantile(localNoteDensity, 0.95);
+                var predictedDiff = EvaluateModel(mapEditor.globalBPM, noteDensity, highLocalNoteDensity);
 
                 Label diffLabel;
                 switch (i) {
@@ -50,7 +50,7 @@ namespace Edda.Windows {
                     default: diffLabel = null; break;
                 }
                 var predictionDisplay = Math.Round(predictedDiff, CheckShowPreciseValues.IsChecked == true ? 1 : 0);
-                diffLabel.Content = $"{predictionDisplay}";
+                diffLabel.Content = $"{predictionDisplay.ToString("##.00")}";
             }
             PanelPredictionResults.Visibility = Visibility.Visible;
         }
@@ -84,7 +84,7 @@ namespace Edda.Windows {
         private double GetNoteDensity(List<Note> notes, double songDuration) {
             return notes.Count / songDuration;
         }
-        private double GetMaxLocalNoteDensity(List<Note> notes, double songDuration, double globalBpm, double windowLength = 2.75, double step = 0.25) {
+        private List<double> GetLocalNoteDensity(List<Note> notes, double songDuration, double globalBpm, double windowLength = 2.75, double step = 0.25) {
             var densities = new List<double>();
             var beatsPerWindow = globalBpm / 60 * windowLength;
             var windowLower = 0.0;
@@ -101,7 +101,7 @@ namespace Edda.Windows {
                 windowLower += step;
                 windowUpper += step;
             }
-            return densities.Max();
+            return densities;
         }
         // upper 25%
         private double GetUpperQuartileColumnVariety(List<Note> notes, double songDuration, double globalBpm, double windowLength = 2.75, double step = 0.25) {
@@ -136,15 +136,14 @@ namespace Edda.Windows {
             }
             return Helper.GetQuantile(variety, 0.75);
         }
-        private double EvaluateModel(double bpm, double noteDensity, double peakNoteDensity, double peakColumnVariety) {
+        private double EvaluateModel(double bpm, double noteDensity, double peakNoteDensity) {
             string path = Path.Combine(Path.GetTempPath(), "Edda-MLDP_temp.pmml");
             File.WriteAllBytes(path, Properties.Resources.Edda_MLDP);
 
             var features = new {
                 BPM = bpm,
                 NoteDensity = noteDensity,
-                PeakNoteDensity = peakNoteDensity,
-                PeakColumnVariety = peakColumnVariety
+                HighNoteDensity2s = peakNoteDensity,
             };
             var reader = File.OpenText(path);
             var pmmlDocument = new PMMLDocument(reader);
@@ -166,6 +165,7 @@ namespace Edda.Windows {
                 return ((double)predictedResult.PredictedValue * unvariance) + unmean;
             } finally {
                 CultureInfo.CurrentCulture = currentCulture;
+                reader.Close();
             }
         }
     }

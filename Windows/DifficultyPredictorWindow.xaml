@@ -17,7 +17,7 @@
                 </Border.Background>
                 <StackPanel>
                     <TextBlock VerticalAlignment="Center">The difficulty predictor uses a machine learning model. </TextBlock>
-                    <TextBlock VerticalAlignment="Center">The model is trained on Ranked maps from Ragnacustoms.</TextBlock>
+                    <TextBlock VerticalAlignment="Center">The model is trained on custom maps from Ragnacustoms.</TextBlock>
                     <TextBlock FontWeight="SemiBold" VerticalAlignment="Center" Margin="0 10 0 0">For best results, run the predictor on completed maps.</TextBlock>
 
                 </StackPanel>
