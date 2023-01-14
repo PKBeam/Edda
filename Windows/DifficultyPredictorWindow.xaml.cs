@@ -161,8 +161,8 @@ namespace Edda.Windows {
 
                 // Syncfusion package has a bug where it ignores rescaling of output value... so we have to do it ourselves
                 XmlNodeList constants = xmlDoc.GetElementsByTagName("Constant");
-                var unvariance = double.Parse(constants[0].InnerText);
-                var unmean = double.Parse(constants[1].InnerText);
+                var unvariance = Helper.DoubleParseInvariant(constants[0].InnerText);
+                var unmean = Helper.DoubleParseInvariant(constants[1].InnerText);
                 return ((double)predictedResult.PredictedValue * unvariance) + unmean;
             } finally {
                 CultureInfo.CurrentCulture = currentCulture;
