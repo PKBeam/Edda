@@ -360,7 +360,8 @@ public class EditorGridController {
         DrawGridLines(EditorGrid.Height - scrollEditor.ActualHeight);
 
         // end of song marker
-        var l = MakeLine(EditorGrid.ActualWidth, scrollEditor.ActualHeight - (unitHeight / 2));
+        var l = MakeLine(EditorGrid.ActualWidth, 0);
+        Canvas.SetBottom(l, mapEditor.globalBPM / 60 * mapEditor.songDuration * unitLength + unitHeight / 2);
         l.Stroke = (SolidColorBrush)new BrushConverter().ConvertFrom(Editor.MajorGridlineColour);
         l.StrokeThickness = Editor.MajorGridlineThickness;
         EditorGrid.Children.Add(l);

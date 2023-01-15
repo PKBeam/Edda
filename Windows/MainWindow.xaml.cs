@@ -687,8 +687,10 @@ namespace Edda {
             gridController.showSpectrogram = showSpectrogram;
             if (showSpectrogram) {
                 colSpectrogram.Width = new GridLength(1, GridUnitType.Star);
+                scrollSpectrogram.Visibility = Visibility.Visible;
             } else {
                 colSpectrogram.Width = new GridLength(0);
+                scrollSpectrogram.Visibility = Visibility.Collapsed;
             }
 
             int.TryParse(userSettings.GetValueForKey(UserSettingsKey.EditorAudioLatency), out editorAudioLatency);
