@@ -11,14 +11,12 @@ public class MapDifficulty {
     public List<Note> notes;
     public List<Bookmark> bookmarks;
     public List<BPMChange> bpmChanges;
-    public List<Note> clipboard;
     public List<Note> selectedNotes;
     public EditHistory<Note> editorHistory;
     public MapDifficulty(List<Note> notes, List<BPMChange> bpmChanges, List<Bookmark> bookmarks) {
         this.bpmChanges = bpmChanges ?? new();
         this.bookmarks = bookmarks ?? new();
         this.notes = notes ?? new();
-        this.clipboard = new();
         this.selectedNotes = new();
         this.editorHistory = new(Editor.HistoryMaxSize);
     }
@@ -43,6 +41,7 @@ public class MapEditor {
     public double songDuration; // duration of song in seconds
     public int currentDifficultyIndex = -1;
     MapDifficulty?[] difficultyMaps = new MapDifficulty[3];
+    List<Note> clipboard;
 
     public int numDifficulties {
         get {
@@ -70,6 +69,7 @@ public class MapEditor {
                 beatMap.GetBookmarksForMap(indx)
             );
         }
+        this.clipboard = new();
     }
     public MapDifficulty? GetDifficulty(int indx) {
         return difficultyMaps[indx];
@@ -279,9 +279,9 @@ public class MapEditor {
         if (currentMapDifficulty == null) {
             return;
         }
-        currentMapDifficulty.clipboard.Clear();
-        currentMapDifficulty.clipboard.AddRange(currentMapDifficulty.selectedNotes);
-        currentMapDifficulty.clipboard.Sort();
+        clipboard.Clear();
+        clipboard.AddRange(currentMapDifficulty.selectedNotes);
+        clipboard.Sort();
     }
     public void CutSelection() {
         if (currentMapDifficulty == null) {
@@ -291,16 +291,16 @@ public class MapEditor {
         RemoveNotes(currentMapDifficulty.selectedNotes);
     }
     public void PasteClipboard(double beatOffset, int? colStart) {
-        if (currentMapDifficulty == null || currentMapDifficulty.clipboard.Count == 0) {
+        if (currentMapDifficulty == null || clipboard.Count == 0) {
             return;
         }
         // paste notes so that the first note lands on the given beat offset
-        double rowOffset = beatOffset - currentMapDifficulty.clipboard[0].beat;
-        int colOffset = colStart == null ? 0 : (int)colStart - currentMapDifficulty.clipboard[0].col;
+        double rowOffset = beatOffset - clipboard[0].beat;
+        int colOffset = colStart == null ? 0 : (int)colStart - clipboard[0].col;
         List<Note> notes = new List<Note>();
-        for (int i = 0; i < currentMapDifficulty.clipboard.Count; i++) {
-            double newBeat = currentMapDifficulty.clipboard[i].beat + rowOffset;
-            int newCol = currentMapDifficulty.clipboard[i].col + colOffset;
+        for (int i = 0; i < clipboard.Count; i++) {
+            double newBeat = clipboard[i].beat + rowOffset;
+            int newCol = clipboard[i].col + colOffset;
 
             // don't paste the note if it goes beyond the duration of the song
             if (newBeat > globalBPM * songDuration / 60) {
