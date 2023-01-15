@@ -87,12 +87,11 @@ namespace Edda.Windows {
         }
         private List<double> GetLocalNoteDensity(List<Note> notes, double songDuration, double globalBpm, double windowLength = 2.75, double step = 0.25) {
             var densities = new List<double>();
-            var beatsPerWindow = globalBpm / 60 * windowLength;
             var windowLower = 0.0;
             var windowUpper = windowLength;
-            while (windowUpper < songDuration) {
+            do { // we would like this to run at least once so we have some data when songDuration < windowLength
                 var numNotes = 0;
-                foreach (var n in notes) { 
+                foreach (var n in notes) {
                     var noteTime = 60 / globalBpm * n.beat;
                     if (windowLower <= noteTime && noteTime <= windowUpper) {
                         numNotes += 1;
@@ -101,7 +100,7 @@ namespace Edda.Windows {
                 densities.Add(numNotes / windowLength);
                 windowLower += step;
                 windowUpper += step;
-            }
+            } while (windowUpper < songDuration);
             return densities;
         }
         // upper 25%

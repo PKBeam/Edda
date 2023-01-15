@@ -75,6 +75,9 @@ public class Helper {
         return LpNorm(distVec, p);
     }
     public static double GetQuantile(List<double> x, double q) {
+        if (x.Count == 0) {
+            return 0;
+        }
         x.Sort();
         var indx = (x.Count - 1) * q;
         if ((int)indx == indx) {
