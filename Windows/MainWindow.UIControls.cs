@@ -54,6 +54,9 @@ namespace Edda {
 
             if (e.Key == Key.LeftCtrl || e.Key == Key.RightCtrl) {
                 ctrlKeyDown = true;
+                if (!ctrlScrollGridDivision.HasValue) {
+                    ctrlScrollGridDivision = double.Parse((string)mapEditor.GetMapValue("_editorGridDivision", RagnarockMapDifficulties.Current, custom: true));
+                }
             }
             if (e.Key == Key.LeftShift || e.Key == Key.RightShift) {
                 shiftKeyDown = true;
@@ -167,6 +170,10 @@ namespace Edda {
         private void AppMainWindow_KeyUp(object sender, KeyEventArgs e) {
             if (e.Key == Key.LeftCtrl || e.Key == Key.RightCtrl) {
                 ctrlKeyDown = false;
+                if (ctrlScrollGridDivision.HasValue) {
+                    TxtGridDivision_LostFocus(sender, null);
+                    ctrlScrollGridDivision = null;
+                }
             }
             if (e.Key == Key.LeftShift || e.Key == Key.RightShift) {
                 shiftKeyDown = false;
@@ -222,6 +229,15 @@ namespace Edda {
                     BtnSongPlayer_Click(null, null);
                 }
                 e.Handled = true;
+            }
+        }
+
+        private void AppMainWindow_PreviewMouseWheel(object sender, MouseWheelEventArgs e) {
+            if (ctrlKeyDown) {
+                var delta = Helper.DoubleRangeTruncate(e.Delta, -1, 1);
+                ctrlScrollGridDivision = Helper.DoubleRangeTruncate(ctrlScrollGridDivision.Value + delta, 1, Editor.GridDivisionMax); 
+                txtGridDivision.Text = ((int)ctrlScrollGridDivision).ToString();
+                e.Handled = true; // Mark tunneling event as handled to prevent scrolling on the grid while changing the division.
             }
         }
 
@@ -352,6 +368,11 @@ namespace Edda {
             }
             txtSongBPM.Text = BPM.ToString();
         }
+        private void TxtSongBPM_KeyDown(object sender, KeyEventArgs e) {
+            if (e.Key == Key.Return) {
+                TxtSongBPM_LostFocus(sender, e);
+            }
+        }
         private void BtnChangeBPM_Click(object sender, RoutedEventArgs e) {
             var win = Helper.GetFirstWindow<ChangeBPMWindow>();
             if (win == null) {
@@ -415,6 +436,11 @@ namespace Edda {
                 level = prevLevel;
             }
             txtDifficultyNumber.Text = level.ToString();
+        }
+        private void TxtDifficultyNumber_KeyDown(object sender, KeyEventArgs e) {
+            if (e.Key == Key.Return) {
+                TxtDifficultyNumber_LostFocus(sender, null);
+            }
         }
         private void TxtNoteSpeed_LostFocus(object sender, RoutedEventArgs e) {
             double prevSpeed = int.Parse((string)mapEditor.GetMapValue("_noteJumpMovementSpeed", RagnarockMapDifficulties.Current));
@@ -483,6 +509,11 @@ namespace Edda {
             }
             txtGridSpacing.Text = spacing.ToString();
         }
+        private void TxtGridSpacing_KeyDown(object sender, KeyEventArgs e) {
+            if (e.Key == Key.Return) {
+                TxtGridSpacing_LostFocus(sender, null);
+            }
+        }
         private void TxtGridDivision_LostFocus(object sender, RoutedEventArgs e) {
             int prevDiv = int.Parse((string)mapEditor.GetMapValue("_editorGridDivision", RagnarockMapDifficulties.Current, custom: true));
             int div;
@@ -498,6 +529,11 @@ namespace Edda {
                 div = prevDiv;
             }
             txtGridDivision.Text = div.ToString();
+        }
+        private void TxtGridDivision_KeyDown(object sender, KeyEventArgs e) {
+            if (e.Key == Key.Return) {
+                TxtGridDivision_LostFocus(sender, null);
+            }
         }
         private void CheckWaveform_Click(object sender, RoutedEventArgs e) {
             if (checkWaveform.IsChecked == true) {

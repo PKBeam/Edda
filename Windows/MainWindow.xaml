@@ -5,7 +5,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         mc:Ignorable="d"
         WindowStartupLocation="CenterScreen"
-        x:Name="AppMainWindow" Title="Edda" Height="870" Width="1000" MinHeight="450" MinWidth="1000" Closed="AppMainWindow_Closed" KeyDown="AppMainWindow_KeyDown" KeyUp="AppMainWindow_KeyUp" PreviewKeyDown="AppMainWindow_PreviewKeyDown" Closing="AppMainWindow_Closing" Loaded="AppMainWindow_Loaded">
+        x:Name="AppMainWindow" Title="Edda" Height="870" Width="1000" MinHeight="450" MinWidth="1000" Closed="AppMainWindow_Closed" KeyDown="AppMainWindow_KeyDown" KeyUp="AppMainWindow_KeyUp" PreviewKeyDown="AppMainWindow_PreviewKeyDown" PreviewMouseWheel="AppMainWindow_PreviewMouseWheel" Closing="AppMainWindow_Closing" Loaded="AppMainWindow_Loaded">
     <DockPanel>
         <Border DockPanel.Dock="Top" Name="TopPanel" BorderBrush="{DynamicResource {x:Static SystemColors.ControlDarkDarkBrushKey}}" BorderThickness="0, 0, 0, 1">
             <Border.Background>
@@ -166,7 +166,7 @@
 
                         <Border Grid.Row="4" Grid.Column="1" >
                             <StackPanel Orientation="Horizontal">
-                                <TextBox Width="40" x:Name="txtSongBPM" Grid.Row="0" Grid.Column="1" LostFocus="TxtSongBPM_LostFocus"/>
+                                <TextBox Width="40" x:Name="txtSongBPM" Grid.Row="0" Grid.Column="1" LostFocus="TxtSongBPM_LostFocus" KeyDown="TxtSongBPM_KeyDown"/>
                                 <TextBlock VerticalAlignment="Center" Width="25" Margin="5 0 5 0">BPM</TextBlock>
                             </StackPanel>
                         </Border>
@@ -332,7 +332,7 @@
                             </Border>
 
                             <Border Grid.Row="0" Grid.Column="1" Padding="5 5 10 5">
-                                <TextBox x:Name="txtDifficultyNumber" Width="30" HorizontalAlignment="Left" LostFocus="TxtDifficultyNumber_LostFocus"/>
+                                <TextBox x:Name="txtDifficultyNumber" Width="30" HorizontalAlignment="Left" LostFocus="TxtDifficultyNumber_LostFocus" KeyDown="TxtDifficultyNumber_KeyDown"/>
                             </Border>
 
                             <Border Grid.Row="1" Grid.Column="0">
@@ -491,7 +491,7 @@
                             <Border Grid.Row="8" Grid.Column="1">
                                 <StackPanel Orientation="Horizontal">
                                     <TextBlock Margin="0 0 3 0" VerticalAlignment="Center">1/</TextBlock>
-                                    <TextBox Width="30" x:Name="txtGridDivision" LostFocus="TxtGridDivision_LostFocus" VerticalAlignment="Center"/>
+                                    <TextBox Width="30" x:Name="txtGridDivision" LostFocus="TxtGridDivision_LostFocus" KeyDown="TxtGridDivision_KeyDown" VerticalAlignment="Center"/>
                                 </StackPanel>
                             </Border>
 
@@ -500,7 +500,7 @@
                             </Border>
 
                             <Border Grid.Row="9" Grid.Column="1" Padding="5 5 10 5">
-                                <TextBox x:Name="txtGridSpacing" HorizontalAlignment="Left" Width="30" LostFocus="TxtGridSpacing_LostFocus"/>
+                                <TextBox x:Name="txtGridSpacing" HorizontalAlignment="Left" Width="30" LostFocus="TxtGridSpacing_LostFocus" KeyDown="TxtGridSpacing_KeyDown"/>
                             </Border>
 
                             <Border Grid.Row="10" Grid.Column="0">
