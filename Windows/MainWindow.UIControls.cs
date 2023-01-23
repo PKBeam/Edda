@@ -54,9 +54,6 @@ namespace Edda {
 
             if (e.Key == Key.LeftCtrl || e.Key == Key.RightCtrl) {
                 ctrlKeyDown = true;
-                if (!ctrlScrollGridDivision.HasValue) {
-                    ctrlScrollGridDivision = double.Parse((string)mapEditor.GetMapValue("_editorGridDivision", RagnarockMapDifficulties.Current, custom: true));
-                }
             }
             if (e.Key == Key.LeftShift || e.Key == Key.RightShift) {
                 shiftKeyDown = true;
@@ -170,10 +167,7 @@ namespace Edda {
         private void AppMainWindow_KeyUp(object sender, KeyEventArgs e) {
             if (e.Key == Key.LeftCtrl || e.Key == Key.RightCtrl) {
                 ctrlKeyDown = false;
-                if (ctrlScrollGridDivision.HasValue) {
-                    TxtGridDivision_LostFocus(sender, null);
-                    ctrlScrollGridDivision = null;
-                }
+                TxtGridDivision_LostFocus(sender, null);
             }
             if (e.Key == Key.LeftShift || e.Key == Key.RightShift) {
                 shiftKeyDown = false;
@@ -234,9 +228,10 @@ namespace Edda {
 
         private void AppMainWindow_PreviewMouseWheel(object sender, MouseWheelEventArgs e) {
             if (ctrlKeyDown) {
-                var delta = Helper.DoubleRangeTruncate(e.Delta, -1, 1);
-                ctrlScrollGridDivision = Helper.DoubleRangeTruncate(ctrlScrollGridDivision.Value + delta, 1, Editor.GridDivisionMax); 
-                txtGridDivision.Text = ((int)ctrlScrollGridDivision).ToString();
+                var delta = (int) Helper.DoubleRangeTruncate(e.Delta, -1, 1);
+                var currentBeatDivision = (int) double.Parse((string)mapEditor.GetMapValue("_editorGridDivision", RagnarockMapDifficulties.Current, custom: true));
+                int.TryParse(txtGridDivision.Text, out currentBeatDivision);
+                txtGridDivision.Text = ((int)Helper.DoubleRangeTruncate(int.Parse(txtGridDivision.Text) + delta, 1, Editor.GridDivisionMax)).ToString();
                 e.Handled = true; // Mark tunneling event as handled to prevent scrolling on the grid while changing the division.
             }
         }

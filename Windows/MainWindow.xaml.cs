@@ -68,7 +68,6 @@ namespace Edda {
         UserSettingsManager userSettings;
         bool shiftKeyDown;
         bool ctrlKeyDown;
-        double? ctrlScrollGridDivision;
         bool returnToStartMenuOnClose = false;
 
         DoubleAnimation songPlayAnim;            // used for animating scroll when playing a song
