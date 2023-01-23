@@ -229,9 +229,9 @@ namespace Edda {
         private void AppMainWindow_PreviewMouseWheel(object sender, MouseWheelEventArgs e) {
             if (ctrlKeyDown) {
                 var delta = (int) Helper.DoubleRangeTruncate(e.Delta, -1, 1);
-                var currentBeatDivision = (int) double.Parse((string)mapEditor.GetMapValue("_editorGridDivision", RagnarockMapDifficulties.Current, custom: true));
+                int currentBeatDivision;
                 int.TryParse(txtGridDivision.Text, out currentBeatDivision);
-                txtGridDivision.Text = ((int)Helper.DoubleRangeTruncate(int.Parse(txtGridDivision.Text) + delta, 1, Editor.GridDivisionMax)).ToString();
+                txtGridDivision.Text = ((int)Helper.DoubleRangeTruncate(currentBeatDivision + delta, 1, Editor.GridDivisionMax)).ToString();
                 e.Handled = true; // Mark tunneling event as handled to prevent scrolling on the grid while changing the division.
             }
         }
