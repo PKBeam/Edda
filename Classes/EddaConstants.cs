@@ -58,6 +58,7 @@ namespace Edda.Const {
         public const string EnableSpectrogram = "enableSpectrogram";
         public const string DefaultNoteSpeed = "defaultNoteSpeed";
         public const string EditorAudioLatency = "editorAudioLatency";
+        public const string PlaybackDeviceID = "playbackDeviceID";
         public const string DrumSampleFile = "drumSampleFile";
         public const string PanDrumSounds = "panDrumSounds";
         public const string DefaultSongVolume = "defaultSongVolume";

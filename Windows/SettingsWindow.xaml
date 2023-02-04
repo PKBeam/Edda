@@ -95,48 +95,56 @@
                     </Grid.ColumnDefinitions>
 
                     <Border Grid.Row="0" Grid.Column="0">
-                        <TextBlock VerticalAlignment="Center">Audio Latency</TextBlock>
+                        <TextBlock VerticalAlignment="Center">Output Device</TextBlock>
                     </Border>
 
                     <Border Grid.Row="0" Grid.Column="1">
+                        <ComboBox x:Name="comboPlaybackDevice" DisplayMemberPath="Name" SelectionChanged="ComboPlaybackDevice_SelectionChanged" VerticalAlignment="Center"/>
+                    </Border>
+
+                    <Border Grid.Row="1" Grid.Column="0">
+                        <TextBlock VerticalAlignment="Center">Audio Latency</TextBlock>
+                    </Border>
+
+                    <Border Grid.Row="1" Grid.Column="1">
                         <StackPanel Orientation="Horizontal">
                             <TextBox x:Name="txtAudioLatency" Width="80" LostFocus="TxtAudioLatency_LostFocus" VerticalAlignment="Center"/>
                             <Label>ms</Label>
                         </StackPanel>
                     </Border>
 
-                    <Border Grid.Row="1" Grid.Column="0">
+                    <Border Grid.Row="2" Grid.Column="0">
                         <TextBlock VerticalAlignment="Center">Note Sound</TextBlock>
                     </Border>
 
-                    <Border Grid.Row="1" Grid.Column="1">
+                    <Border Grid.Row="2" Grid.Column="1">
                         <ComboBox x:Name="comboDrumSample" SelectionChanged="ComboDrumSample_SelectionChanged" VerticalAlignment="Center"/>
                     </Border>
 
-                    <Border Grid.Row="2" Grid.Column="0">
+                    <Border Grid.Row="3" Grid.Column="0">
                         <TextBlock VerticalAlignment="Center">Pan Note Sounds</TextBlock>
                     </Border>
 
-                    <Border Grid.Row="2" Grid.Column="1">
+                    <Border Grid.Row="3" Grid.Column="1">
                         <CheckBox x:Name="checkPanNotes" Click="checkPanNotes_Click"/>
                     </Border>
 
-                    <Border Grid.Row="3" Grid.Column="0">
+                    <Border Grid.Row="4" Grid.Column="0">
                         <TextBlock FontSize="10.5"  VerticalAlignment="Center">Default Song Volume</TextBlock>
                     </Border>
 
-                    <Border Grid.Row="3" Grid.Column="1">
+                    <Border Grid.Row="4" Grid.Column="1">
                         <DockPanel>
                             <TextBlock x:Name="txtSongVol" DockPanel.Dock="Right" Width="30" Margin="5 0 0 0">0%</TextBlock>
                             <Slider x:Name="sliderSongVol" Maximum="1" ValueChanged="SliderSongVol_ValueChanged" IsMoveToPointEnabled="True" MouseLeftButtonUp="sliderSongVol_MouseLeftButtonUp" Thumb.DragCompleted="sliderSongVol_DragCompleted"/>
                         </DockPanel>
                     </Border>
 
-                    <Border Grid.Row="4" Grid.Column="0">
+                    <Border Grid.Row="5" Grid.Column="0">
                         <TextBlock FontSize="10.5" VerticalAlignment="Center">Default Note Volume</TextBlock>
                     </Border>
 
-                    <Border Grid.Row="4" Grid.Column="1">
+                    <Border Grid.Row="5" Grid.Column="1">
                         <DockPanel>
                             <TextBlock x:Name="txtDrumVol" DockPanel.Dock="Right" Width="30" Margin="5 0 0 0">0%</TextBlock>
                             <Slider x:Name="sliderDrumVol" Maximum="1" ValueChanged="SliderDrumVol_ValueChanged" IsMoveToPointEnabled="True" MouseLeftButtonUp="sliderDrumVol_MouseLeftButtonUp" Thumb.DragCompleted="sliderDrumVol_DragCompleted"/>

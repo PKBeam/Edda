@@ -60,6 +60,30 @@ namespace Edda {
                 mapEditor.globalBPM = value;
             }
         }
+        public string userPreferredPlaybackDeviceID {
+            get {
+                return userSettings.GetValueForKey(UserSettingsKey.PlaybackDeviceID);
+            }
+        }
+        MMDevice playbackDevice {
+            get {
+                if (!string.IsNullOrEmpty(playbackDeviceID)) {
+                    try {
+                        return deviceEnumerator.GetDevice(playbackDeviceID);
+                    } catch (Exception ex) {
+                        Trace.WriteLine($"WARNING: Couldn't get the playback device with ID {playbackDeviceID} due to an error:\n{ex.Message}.\n{ex.StackTrace}", "Warning");
+                        playbackDeviceID = null;
+                    }
+                }
+                playingOnDefaultDevice = true;
+                return deviceEnumerator.GetDefaultAudioEndpoint(DataFlow.Render, Role.Multimedia);
+            }
+        }
+        public MMDeviceCollection availablePlaybackDevices {
+            get {
+                return deviceEnumerator.EnumerateAudioEndPoints(DataFlow.Render, DeviceState.Active);
+            }
+        }
 
         // STATE VARIABLES
         public MapEditor mapEditor;
@@ -76,6 +100,16 @@ namespace Edda {
         // audio playback
         CancellationTokenSource songPlaybackCancellationTokenSource;
         int editorAudioLatency; // ms
+        MMDeviceEnumerator deviceEnumerator = new MMDeviceEnumerator();
+        DeviceChangeListener deviceChangeListener;
+        public string playbackDeviceID {
+            get;
+            private set;
+        }
+        public bool playingOnDefaultDevice {
+            get;
+            private set;
+        } = false;
         SampleChannel songChannel;
         public VorbisWaveReader songStream;
         SoundTouchWaveStream songTempoStream;
@@ -139,14 +173,11 @@ namespace Edda {
 
             InitSettings();
 
-            metronome = new ParallelAudioPlayer(
-                Audio.MetronomeFilename, 
-                Audio.MetronomeStreams, 
-                Audio.WASAPILatencyTarget, 
-                checkMetronome.IsChecked == true, 
-                false,
-                float.Parse(userSettings.GetValueForKey(UserSettingsKey.DefaultNoteVolume))
-            );
+            deviceChangeListener = new DeviceChangeListener(this);
+            deviceEnumerator.RegisterEndpointNotificationCallback(deviceChangeListener);
+
+            InitDrummer();
+            InitMetronome();
 
             // load editor preview note
             InitNavMouseoverLine();
@@ -695,8 +726,7 @@ namespace Edda {
 
             int.TryParse(userSettings.GetValueForKey(UserSettingsKey.EditorAudioLatency), out editorAudioLatency);
 
-            bool isPanned = userSettings.GetBoolForKey(UserSettingsKey.PanDrumSounds);
-            InitDrummer(userSettings.GetValueForKey(UserSettingsKey.DrumSampleFile), isPanned);
+            playbackDeviceID = userPreferredPlaybackDeviceID;
 
             autosaveTimer.Enabled = userSettings.GetBoolForKey(UserSettingsKey.EnableAutosave);
 
@@ -818,6 +848,24 @@ namespace Edda {
         }
 
         // song/note playback
+        public void UpdatePlaybackDevice(string newPlaybackDeviceID, bool isDefaultDevice) {
+            playbackDeviceID = newPlaybackDeviceID;
+            playingOnDefaultDevice = isDefaultDevice;
+            // Unfortunately, song is paused, so we can clean up old objects in peace. 
+            // When trying to do this while the song is still playing, there's some hart-to-track issues with 
+            // objects not being disposed correctly, resulting in memory leaks.
+            PauseSong();
+            if (songPlayer != null) {
+                songPlayer.Dispose();
+                InitSongPlayer();
+            }
+            if (drummer != null) {
+                RestartDrummer();
+            }
+            if (metronome != null) {
+                RestartMetronome();
+            }
+        }
         private string SelectSongDialog() {
             // select audio file
             var d = new Microsoft.Win32.OpenFileDialog();
@@ -886,14 +934,10 @@ namespace Edda {
             songTempoStream = new SoundTouchWaveStream(songStream);
             songChannel = new SampleChannel(songTempoStream);
             songChannel.Volume = (float)sliderSongVol.Value;
-            songPlayer = new WasapiOut(AudioClientShareMode.Shared, Audio.WASAPILatencyTarget);
-            songPlayer.Init(songChannel);
+            InitSongPlayer();
             if ((int)mapEditor.GetMapValue("_songApproximativeDuration") != (int)songStream.TotalTime.TotalSeconds + 1) {
                 mapEditor.SetMapValue("_songApproximativeDuration", (int)songStream.TotalTime.TotalSeconds + 1);
             }
-
-            // subscribe to playbackstopped
-            songPlayer.PlaybackStopped += (sender, args) => { PauseSong(); };
 
             // load UI
             sliderSongProgress.Minimum = 0;
@@ -906,6 +950,13 @@ namespace Edda {
                 gridController.InitWaveforms(songPath);
             }
             //awd = new AudioVisualiser_Float32(new VorbisWaveReader(songPath));
+        }
+        private void InitSongPlayer() {
+            songPlayer = new WasapiOut(playbackDevice, AudioClientShareMode.Shared, true, Audio.WASAPILatencyTarget);
+            songPlayer.Init(songChannel);
+
+            // subscribe to playbackstopped
+            songPlayer.PlaybackStopped += (sender, args) => { PauseSong(); };
         }
         private void UnloadSong() {
             if (songStream != null) {
@@ -1092,12 +1143,33 @@ namespace Edda {
             lineSongMouseover.Stroke = (SolidColorBrush)new BrushConverter().ConvertFrom(Editor.NavPreviewLine.Colour);
             lineSongMouseover.StrokeThickness = Editor.NavPreviewLine.Thickness;
         }
-        private void InitDrummer(string basePath, bool isPanned) {
+        public void RestartMetronome() {
+            metronome?.Dispose();
+            InitMetronome();
+        }
+        private void InitMetronome() {
+            metronome = new ParallelAudioPlayer(
+                playbackDevice,
+                Audio.MetronomeFilename, 
+                Audio.MetronomeStreams, 
+                Audio.WASAPILatencyTarget, 
+                checkMetronome.IsChecked == true, 
+                false,
+                float.Parse(userSettings.GetValueForKey(UserSettingsKey.DefaultNoteVolume))
+            );
+            beatScanner?.SetAudioPlayer(metronome);
+        }
+        public void RestartDrummer() {
+            drummer?.Dispose();
+            InitDrummer();
+        }
+        private void InitDrummer() {
             drummer = new ParallelAudioPlayer(
-                basePath, 
+                playbackDevice,
+                userSettings.GetValueForKey(UserSettingsKey.DrumSampleFile), 
                 Audio.NotePlaybackStreams, 
                 Audio.WASAPILatencyTarget,
-                isPanned,
+                userSettings.GetBoolForKey(UserSettingsKey.PanDrumSounds),
                 float.Parse(userSettings.GetValueForKey(Const.UserSettingsKey.DefaultNoteVolume))
             );
             drummer.ChangeVolume(sliderDrumVol.Value);
