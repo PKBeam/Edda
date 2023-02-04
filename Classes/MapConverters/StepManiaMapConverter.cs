@@ -190,14 +190,15 @@ public class StepManiaMapConverter : IMapConverter
         string coverImageFilename = smFile[SmFileAttribute.BANNER];
         if (coverImageFilename != string.Empty)
         {
-            string coverUrl = beatmap.PathOf(coverImageFilename);
+            string newCoverFilename = Helper.SanitiseCoverFileName(coverImageFilename);
+            string newCoverUrl = beatmap.PathOf(newCoverFilename);
             // can't copy over an existing file
-            if (File.Exists(coverUrl))
+            if (File.Exists(newCoverUrl))
             {
-                File.Delete(coverUrl);
+                File.Delete(newCoverUrl);
             }
-            File.Copy(Path.Combine(smFile.Directory, coverImageFilename), coverUrl);
-            beatmap.SetValue("_coverImageFilename", coverImageFilename);
+            File.Copy(Path.Combine(smFile.Directory, coverImageFilename), newCoverUrl);
+            beatmap.SetValue("_coverImageFilename", newCoverFilename);
         }
     }
 

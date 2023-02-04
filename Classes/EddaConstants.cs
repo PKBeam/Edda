@@ -173,6 +173,7 @@ namespace Edda.Const {
     public static class BeatmapDefaults {
         public const double BeatsPerMinute = 120;
         public const string SongFilename = "song.ogg";
+        public const string CoverFilename = "cover";
         public const int Shuffle = 0;           // what do
         public const double ShufflePeriod = 0.5;         // these do??
         public const string BeatmapCharacteristicName = "Standard";
