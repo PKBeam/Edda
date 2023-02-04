@@ -852,7 +852,7 @@ namespace Edda {
             playbackDeviceID = newPlaybackDeviceID;
             playingOnDefaultDevice = isDefaultDevice;
             // Unfortunately, song is paused, so we can clean up old objects in peace. 
-            // When trying to do this while the song is still playing, there's some hart-to-track issues with 
+            // When trying to do this while the song is still playing, there's some hard-to-track issues with 
             // objects not being disposed correctly, resulting in memory leaks.
             PauseSong();
             if (songPlayer != null) {
