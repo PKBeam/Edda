@@ -69,6 +69,7 @@ namespace Edda {
         bool shiftKeyDown;
         bool ctrlKeyDown;
         bool returnToStartMenuOnClose = false;
+        bool doneInit = false;
 
         DoubleAnimation songPlayAnim;            // used for animating scroll when playing a song
         double prevScrollPercent = 0;       // percentage of scroll progress before the scroll viewport was changed
@@ -464,6 +465,7 @@ namespace Edda {
         private void InitUI() {
             // reset variables
             prevScrollPercent = 0;
+            doneInit = false;
 
             lineSongProgress.Y1 = borderNavWaveform.ActualHeight;
             lineSongProgress.Y2 = borderNavWaveform.ActualHeight;
@@ -498,6 +500,8 @@ namespace Edda {
             DrawEditorGrid();
             scrollEditor.ScrollToBottom();
             gridController.DrawNavWaveform();
+
+            doneInit = true;
         }
         private void EnableUI() {
             btnChangeDifficulty0.IsEnabled = true;
@@ -788,6 +792,7 @@ namespace Edda {
             btnAddDifficulty.IsEnabled = (mapEditor.numDifficulties < 3);
         }
         private void SwitchDifficultyMap(int indx) {
+            doneInit = false;
             PauseSong();
 
             mapEditor.SelectDifficulty(indx);
@@ -815,6 +820,7 @@ namespace Edda {
             UpdateDifficultyButtons();
             gridController.DrawNavBookmarks();
             DrawEditorGrid();
+            doneInit = true;
         }
 
         // song/note playback
@@ -1124,11 +1130,11 @@ namespace Edda {
             if (!mapIsLoaded) {
                 return true;
             }
-            var res = MessageBox.Show("Save the currently opened map?", "Warning", MessageBoxButton.YesNoCancel, MessageBoxImage.Warning);
-            if (res == MessageBoxResult.Yes) {
+            MessageBoxResult? res = null;
+            if (mapEditor.saveIsNeeded && (res = MessageBox.Show("There are some unsaved changes in the currently opened map. Do you want to save them?", "Warning", MessageBoxButton.YesNoCancel, MessageBoxImage.Warning)) == MessageBoxResult.Yes) {
                 BackupAndSaveBeatmap();
             }
-            return !(res == MessageBoxResult.Cancel);
+            return !(res.HasValue && res.Value == MessageBoxResult.Cancel);
         }
         internal void RefreshBPMChanges() {
             var win = Helper.GetFirstWindow<ChangeBPMWindow>();

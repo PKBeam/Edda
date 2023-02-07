@@ -375,25 +375,31 @@ namespace Edda {
             txtSongOffset.Text = offset.ToString();
         }
         private void TxtSongName_TextChanged(object sender, TextChangedEventArgs e) {
-            mapEditor.SetMapValue("_songName", txtSongName.Text);
+            if (doneInit) {
+                mapEditor.SetMapValue("_songName", txtSongName.Text);
 
-            // update the name of the map in recently opened folders
-            recentMaps.RemoveRecentlyOpened(mapEditor.mapFolder);
-            recentMaps.AddRecentlyOpened((string)mapEditor.GetMapValue("_songName"), mapEditor.mapFolder);
-            recentMaps.Write();
+                // update the name of the map in recently opened folders
+                recentMaps.RemoveRecentlyOpened(mapEditor.mapFolder);
+                recentMaps.AddRecentlyOpened((string)mapEditor.GetMapValue("_songName"), mapEditor.mapFolder);
+                recentMaps.Write();
+            }
 
         }
         private void TxtSongName_LostFocus(object sender, RoutedEventArgs e) {
             txtSongName.ScrollToHome();
         }
         private void TxtArtistName_TextChanged(object sender, TextChangedEventArgs e) {
-            mapEditor.SetMapValue("_songAuthorName", txtArtistName.Text);
+            if (doneInit) {
+                mapEditor.SetMapValue("_songAuthorName", txtArtistName.Text);
+            }
         }
         private void TxtArtistName_LostFocus(object sender, RoutedEventArgs e) {
             txtArtistName.ScrollToHome();
         }
         private void TxtMapperName_TextChanged(object sender, TextChangedEventArgs e) {
-            mapEditor.SetMapValue("_levelAuthorName", txtMapperName.Text);
+            if (doneInit) {
+                mapEditor.SetMapValue("_levelAuthorName", txtMapperName.Text);
+            }
         }
         private void TxtMapperName_LostFocus(object sender, RoutedEventArgs e) {
             txtMapperName.ScrollToHome();
@@ -513,7 +519,9 @@ namespace Edda {
             //if (env == Constants.BeatmapDefaults.DefaultEnvironmentAlias) {
             //    env = "DefaultEnvironment";
             //}
-            mapEditor.SetMapValue("_environmentName", (string)comboEnvironment.SelectedItem);
+            if (doneInit) {
+                mapEditor.SetMapValue("_environmentName", (string)comboEnvironment.SelectedItem);
+            }
         }
     }
 }

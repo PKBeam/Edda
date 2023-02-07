@@ -67,6 +67,7 @@ namespace Edda
         }
 
         private void dataBPMChange_CurrentCellChanged(object sender, EventArgs e) {
+            caller.mapEditor.currentMapDifficulty?.MarkDirty(); // This might be too aggressive - triggers even when just clicking on the data cell
             caller.DrawEditorGrid(false);
         }
 
@@ -79,12 +80,14 @@ namespace Edda
 
             dataBPMChange.ItemsSource = null;
             BPMChanges.Sort();
+            caller.mapEditor.currentMapDifficulty?.MarkDirty();
             caller.DrawEditorGrid(false);
             dataBPMChange.ItemsSource = this.BPMChanges;
         }
 
         private void dataBPMChange_AddingNewItem(object sender, AddingNewItemEventArgs e) {
             e.NewItem = new BPMChange(Math.Round(caller.sliderSongProgress.Value / 60000 * globalBPM, 3), caller.globalBPM, caller.gridController.gridDivision);
+            caller.mapEditor.currentMapDifficulty?.MarkDirty();
         }
     }
 }
