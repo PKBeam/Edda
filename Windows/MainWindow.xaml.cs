@@ -69,7 +69,6 @@ namespace Edda {
         bool shiftKeyDown;
         bool ctrlKeyDown;
         bool returnToStartMenuOnClose = false;
-        bool doneInit = false;
 
         DoubleAnimation songPlayAnim;            // used for animating scroll when playing a song
         double prevScrollPercent = 0;       // percentage of scroll progress before the scroll viewport was changed
@@ -465,7 +464,8 @@ namespace Edda {
         private void InitUI() {
             // reset variables
             prevScrollPercent = 0;
-            doneInit = false;
+            
+            bool mapDirtyState = mapEditor.needsSave; // Store the "dirty" state of the map, so we can restore it after UI is initialized.
 
             lineSongProgress.Y1 = borderNavWaveform.ActualHeight;
             lineSongProgress.Y2 = borderNavWaveform.ActualHeight;
@@ -501,7 +501,7 @@ namespace Edda {
             scrollEditor.ScrollToBottom();
             gridController.DrawNavWaveform();
 
-            doneInit = true;
+            mapEditor.needsSave = mapDirtyState;
         }
         private void EnableUI() {
             btnChangeDifficulty0.IsEnabled = true;
@@ -792,10 +792,10 @@ namespace Edda {
             btnAddDifficulty.IsEnabled = (mapEditor.numDifficulties < 3);
         }
         private void SwitchDifficultyMap(int indx) {
-            doneInit = false;
             PauseSong();
 
             mapEditor.SelectDifficulty(indx);
+            bool difficultyDirtyState = mapEditor.currentMapDifficulty.needsSave; // Store the "dirty" state of the difficulty map, so we can restore it after UI is initialized.
 
             noteScanner = new NoteScanner(this, drummer);
             beatScanner = new BeatScanner(metronome);
@@ -820,7 +820,7 @@ namespace Edda {
             UpdateDifficultyButtons();
             gridController.DrawNavBookmarks();
             DrawEditorGrid();
-            doneInit = true;
+            mapEditor.currentMapDifficulty.needsSave = difficultyDirtyState; // Restore the "dirty" state before UI initialization.
         }
 
         // song/note playback

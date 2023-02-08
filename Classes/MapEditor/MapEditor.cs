@@ -13,10 +13,7 @@ public class MapDifficulty {
     public List<BPMChange> bpmChanges;
     public List<Note> selectedNotes;
     public EditHistory<Note> editorHistory;
-    public bool needsSave {
-        get;
-        private set;
-    } = false;
+    public bool needsSave = false;
     public MapDifficulty(List<Note> notes, List<BPMChange> bpmChanges, List<Bookmark> bookmarks) {
         this.bpmChanges = bpmChanges ?? new();
         this.bookmarks = bookmarks ?? new();
@@ -24,6 +21,7 @@ public class MapDifficulty {
         this.selectedNotes = new();
         this.editorHistory = new(Editor.HistoryMaxSize);
     }
+    // Utility functions for syntax clarity with MapDifficulty? variables.
     public void MarkDirty() {
         this.needsSave = true;
     }
@@ -53,7 +51,7 @@ public class MapEditor {
     MapDifficulty?[] difficultyMaps = new MapDifficulty[3];
     List<Note> clipboard;
 
-    bool needsSave = false;
+    public bool needsSave = false;
 
     public int numDifficulties {
         get {
