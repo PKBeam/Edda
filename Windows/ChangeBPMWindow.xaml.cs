@@ -67,7 +67,6 @@ namespace Edda
         }
 
         private void dataBPMChange_CurrentCellChanged(object sender, EventArgs e) {
-            caller.mapEditor.currentMapDifficulty?.MarkDirty(); // This might be too aggressive - triggers even when just clicking on the data cell
             caller.DrawEditorGrid(false);
         }
 
