@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Input;
 using Edda.Const;
 
 namespace Edda
@@ -87,6 +88,12 @@ namespace Edda
         private void dataBPMChange_AddingNewItem(object sender, AddingNewItemEventArgs e) {
             e.NewItem = new BPMChange(Math.Round(caller.sliderSongProgress.Value / 60000 * globalBPM, 3), caller.globalBPM, caller.gridController.gridDivision);
             caller.mapEditor.currentMapDifficulty?.MarkDirty();
+        }
+
+        private void dataBPMChange_PreviewExecuted(object sender, ExecutedRoutedEventArgs e) {
+            if (e.Command == DataGrid.DeleteCommand) {
+                caller.mapEditor.currentMapDifficulty?.MarkDirty();
+            }
         }
     }
 }
