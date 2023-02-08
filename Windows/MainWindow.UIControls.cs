@@ -381,6 +381,7 @@ namespace Edda {
             recentMaps.RemoveRecentlyOpened(mapEditor.mapFolder);
             recentMaps.AddRecentlyOpened((string)mapEditor.GetMapValue("_songName"), mapEditor.mapFolder);
             recentMaps.Write();
+
         }
         private void TxtSongName_LostFocus(object sender, RoutedEventArgs e) {
             txtSongName.ScrollToHome();
