@@ -37,6 +37,9 @@ public class Helper {
         double higher = Math.Max(x, y);
         return lower <= a && a <= higher;
     }
+    public static double DoubleRangeTruncate(double a, double x, double y) {
+        return Math.Min(Math.Max(a, x), y);
+    }
     public static string TimeFormat(int seconds) {
         int min = seconds / 60;
         int sec = seconds % 60;
