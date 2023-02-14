@@ -495,6 +495,8 @@ namespace Edda {
         private void InitUI() {
             // reset variables
             prevScrollPercent = 0;
+            
+            bool mapDirtyState = mapEditor.needsSave; // Store the "dirty" state of the map, so we can restore it after UI is initialized.
 
             lineSongProgress.Y1 = borderNavWaveform.ActualHeight;
             lineSongProgress.Y2 = borderNavWaveform.ActualHeight;
@@ -529,6 +531,8 @@ namespace Edda {
             DrawEditorGrid();
             scrollEditor.ScrollToBottom();
             gridController.DrawNavWaveform();
+
+            mapEditor.needsSave = mapDirtyState;
         }
         private void EnableUI() {
             btnChangeDifficulty0.IsEnabled = true;
@@ -821,6 +825,7 @@ namespace Edda {
             PauseSong();
 
             mapEditor.SelectDifficulty(indx);
+            bool difficultyDirtyState = mapEditor.currentMapDifficulty.needsSave; // Store the "dirty" state of the difficulty map, so we can restore it after UI is initialized.
 
             noteScanner = new NoteScanner(this, drummer);
             beatScanner = new BeatScanner(metronome);
@@ -845,6 +850,7 @@ namespace Edda {
             UpdateDifficultyButtons();
             gridController.DrawNavBookmarks();
             DrawEditorGrid();
+            mapEditor.currentMapDifficulty.needsSave = difficultyDirtyState; // Restore the "dirty" state before UI initialization.
         }
 
         // song/note playback
@@ -1196,11 +1202,11 @@ namespace Edda {
             if (!mapIsLoaded) {
                 return true;
             }
-            var res = MessageBox.Show("Save the currently opened map?", "Warning", MessageBoxButton.YesNoCancel, MessageBoxImage.Warning);
-            if (res == MessageBoxResult.Yes) {
+            MessageBoxResult? res = null;
+            if (mapEditor.saveIsNeeded && (res = MessageBox.Show("There are some unsaved changes in the currently opened map. Do you want to save them?", "Warning", MessageBoxButton.YesNoCancel, MessageBoxImage.Warning)) == MessageBoxResult.Yes) {
                 BackupAndSaveBeatmap();
             }
-            return !(res == MessageBoxResult.Cancel);
+            return !(res.HasValue && res.Value == MessageBoxResult.Cancel);
         }
         internal void RefreshBPMChanges() {
             var win = Helper.GetFirstWindow<ChangeBPMWindow>();

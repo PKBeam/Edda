@@ -34,7 +34,7 @@
             <StackPanel Margin="15">
 
                 <Label Padding="0 0 0 5" FontWeight="Bold" FontFamily="Bahnschrift" FontSize="14">Timing Changes:</Label>
-                <DataGrid x:Name="dataBPMChange" Height="200" AutoGenerateColumns="False" CellEditEnding="dataBPMChange_CellEditEnding" CurrentCellChanged="dataBPMChange_CurrentCellChanged" RowEditEnding="dataBPMChange_RowEditEnding" AddingNewItem="dataBPMChange_AddingNewItem">
+                <DataGrid x:Name="dataBPMChange" Height="200" AutoGenerateColumns="False" CellEditEnding="dataBPMChange_CellEditEnding" CurrentCellChanged="dataBPMChange_CurrentCellChanged" RowEditEnding="dataBPMChange_RowEditEnding" AddingNewItem="dataBPMChange_AddingNewItem" CommandManager.PreviewExecuted="dataBPMChange_PreviewExecuted">
                     <DataGrid.Columns>
                         <DataGridTextColumn Header="Global Beat" Binding="{Binding globalBeat}" Width="*"/>
                         <DataGridTextColumn Header="BPM" Binding="{Binding BPM}" Width="*"/>

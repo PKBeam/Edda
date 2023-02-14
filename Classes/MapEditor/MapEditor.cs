@@ -13,12 +13,20 @@ public class MapDifficulty {
     public List<BPMChange> bpmChanges;
     public List<Note> selectedNotes;
     public EditHistory<Note> editorHistory;
+    public bool needsSave = false;
     public MapDifficulty(List<Note> notes, List<BPMChange> bpmChanges, List<Bookmark> bookmarks) {
         this.bpmChanges = bpmChanges ?? new();
         this.bookmarks = bookmarks ?? new();
         this.notes = notes ?? new();
         this.selectedNotes = new();
         this.editorHistory = new(Editor.HistoryMaxSize);
+    }
+    // Utility functions for syntax clarity with MapDifficulty? variables.
+    public void MarkDirty() {
+        this.needsSave = true;
+    }
+    public void MarkSaved() {
+        this.needsSave = false;
     }
 }
 public enum RagnarockMapDifficulties {
@@ -43,6 +51,8 @@ public class MapEditor {
     MapDifficulty?[] difficultyMaps = new MapDifficulty[3];
     List<Note> clipboard;
 
+    public bool needsSave = false;
+
     public int numDifficulties {
         get {
             return beatMap.numDifficulties;
@@ -55,6 +65,15 @@ public class MapEditor {
             }  else {
                 return difficultyMaps[currentDifficultyIndex];
             }
+        }
+    }
+    public bool saveIsNeeded {
+        get {
+            bool save = needsSave;
+            for (int i = 0; i < numDifficulties; ++i) {
+                save = save || (difficultyMaps[i]?.needsSave ?? false);
+            }
+            return save;
         }
     }
 
@@ -77,6 +96,10 @@ public class MapEditor {
     public void SaveMap() {
         SaveMap(currentDifficultyIndex);
         beatMap.SaveToFile();
+        needsSave = false;
+        for (int i = 0; i < numDifficulties; i++) {
+            difficultyMaps[i]?.MarkSaved();
+        }
     }
     public void SaveMap(int indx) {
         var thisDifficultyMap = difficultyMaps[indx];
@@ -87,6 +110,7 @@ public class MapEditor {
         }
     }
     public void ClearSelectedDifficulty() {
+        currentMapDifficulty?.MarkDirty();
         currentMapDifficulty?.notes.Clear();
         currentMapDifficulty?.bookmarks.Clear();
         currentMapDifficulty?.bpmChanges.Clear();
@@ -101,10 +125,12 @@ public class MapEditor {
         difficultyMaps[difficultyMaps.Length - 1] = null;
 
         beatMap.DeleteMap(indx);
+        needsSave = false; // beatMap.DeleteMap force-saves info.dat
 
         return currentDifficultyIndex <= beatMap.numDifficulties - 1;
     }
     public void CreateDifficulty(bool copyCurrentMarkers) {
+        needsSave = true; // beatMap.AddMap doesn't save info.dat (even though SwapMaps can do that later when sorting difficulties)
         beatMap.AddMap();
         int newMap = beatMap.numDifficulties - 1;
         if (copyCurrentMarkers) {
@@ -116,6 +142,9 @@ public class MapEditor {
             beatMap.GetBPMChangesForMap(newMap),
             beatMap.GetBookmarksForMap(newMap)
         );
+        if (copyCurrentMarkers) {
+            difficultyMaps[newMap]?.MarkDirty();
+        }
     }
     public void SelectDifficulty(int indx) {
         // before switching - save the notes for the current difficulty, if it still exists
@@ -127,6 +156,8 @@ public class MapEditor {
         currentDifficultyIndex = indx;
     }
     public void SortDifficulties() {
+        //needsSave = true; - not needed, SwapDifficulties updates info.dat if anything changes
+
         // bubble sort
         bool swap;
         do {
@@ -153,9 +184,11 @@ public class MapEditor {
         difficultyMaps[j] = temp;
 
         beatMap.SwapMaps(i, j);
+        needsSave = false; // beatMap.SwapMaps force-saves the info.dat
         parent.UpdateDifficultyButtons();
     }
     public void AddBPMChange(BPMChange b, bool redraw = true) {
+        currentMapDifficulty?.MarkDirty();
         currentMapDifficulty?.bpmChanges.Add(b);
         currentMapDifficulty?.bpmChanges.Sort();
         if (redraw) {
@@ -164,6 +197,7 @@ public class MapEditor {
         parent.RefreshBPMChanges();
     }
     public void RemoveBPMChange(BPMChange b, bool redraw = true) {
+        currentMapDifficulty?.MarkDirty();
         currentMapDifficulty?.bpmChanges.Remove(b);
         if (redraw) {
             parent.DrawEditorGrid(false);
@@ -171,18 +205,22 @@ public class MapEditor {
         parent.RefreshBPMChanges();
     }
     public void AddBookmark(Bookmark b) {
+        currentMapDifficulty?.MarkDirty();
         currentMapDifficulty?.bookmarks.Add(b);
         parent.DrawEditorGrid(false);
     }
     public void RemoveBookmark(Bookmark b) {
+        currentMapDifficulty?.MarkDirty();
         currentMapDifficulty?.bookmarks.Remove(b);
         parent.DrawEditorGrid(false);
     }
     public void RenameBookmark(Bookmark b, string newName) {
+        currentMapDifficulty?.MarkDirty();
         b.name = newName;
         parent.DrawEditorGrid(false);
     }
     public void AddNotes(List<Note> notes, bool updateHistory = true) {
+        currentMapDifficulty?.MarkDirty();
         List<Note> drawNotes = new();
         foreach (Note n in notes) {
             if (Helper.InsertSortedUnique(this.currentMapDifficulty?.notes, n)) {
@@ -203,7 +241,7 @@ public class MapEditor {
         AddNotes(new List<Note>() { n }, updateHistory);
     }
     public void RemoveNotes(List<Note> notes, bool updateHistory = true) {
-
+        currentMapDifficulty?.MarkDirty();
         // undraw the added notes
         parent.gridController.UndrawNotes(notes);
 
@@ -375,7 +413,11 @@ public class MapEditor {
         return beatMap.GetMedalDistanceForMap(MapDifficultyIndex(difficulty), (int)medal);
     }
     public void SetMedalDistance(RagnarockScoreMedals medal, int distance, RagnarockMapDifficulties? difficulty = null) {
-        beatMap.SetMedalDistanceForMap(MapDifficultyIndex(difficulty), (int)medal, distance);
+        int index = MapDifficultyIndex(difficulty);
+        if (index != -1) {
+            difficultyMaps[index]?.MarkDirty();
+        }
+        beatMap.SetMedalDistanceForMap(index, (int)medal, distance);
     }
     public JToken GetMapValue(string key, RagnarockMapDifficulties? difficulty = null, bool custom = false) {
         JToken result;
@@ -394,12 +436,14 @@ public class MapEditor {
     public void SetMapValue(string key, JToken value, RagnarockMapDifficulties? difficulty = null, bool custom = false) {
         if (difficulty != null) {
             int indx = difficulty == RagnarockMapDifficulties.Current ? currentDifficultyIndex : (int)difficulty;
+            difficultyMaps[indx]?.MarkDirty();
             if (custom) {
                 beatMap.SetCustomValueForDifficultyMap(indx, key, value);
             } else {
                 beatMap.SetValueForDifficultyMap(indx, key, value);
             }
         } else {
+            needsSave = true;
             beatMap.SetValue(key, value);
         }
     }
@@ -413,6 +457,7 @@ public class MapEditor {
         if (currentMapDifficulty == null) {
             return;
         }
+        currentMapDifficulty.MarkDirty();
 
         double scaleFactor = newBPM / oldBPM;
         foreach (var bc in currentMapDifficulty.bpmChanges) {
