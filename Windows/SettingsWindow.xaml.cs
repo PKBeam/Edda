@@ -16,6 +16,7 @@ using Microsoft.WindowsAPICodePack.Dialogs;
 using Path = System.IO.Path;
 using System.Windows.Controls.Primitives;
 using Edda.Const;
+using NAudio.CoreAudioApi;
 
 namespace Edda
 {
@@ -30,6 +31,7 @@ namespace Edda
             InitializeComponent();
             this.caller = caller;
             this.userSettings = userSettings;
+            InitComboPlaybackDevices();
             InitComboDrumSample();
             txtDefaultNoteSpeed.Text = userSettings.GetValueForKey(UserSettingsKey.DefaultNoteSpeed);
             txtAudioLatency.Text = userSettings.GetValueForKey(UserSettingsKey.EditorAudioLatency);
@@ -66,6 +68,25 @@ namespace Edda
             }
             txtAudioLatency.Text = noteSpeed.ToString();
         }
+        private void ComboPlaybackDevice_SelectionChanged(object sender, SelectionChangedEventArgs e) {
+            if (doneInit) {
+                var newPlaybackDeviceID = ((PlaybackDevice)comboPlaybackDevice.SelectedItem).ID;
+                caller.UpdatePlaybackDevice(newPlaybackDeviceID, string.IsNullOrEmpty(newPlaybackDeviceID));
+                userSettings.SetValueForKey(UserSettingsKey.PlaybackDeviceID, newPlaybackDeviceID);
+                UpdateSettings();
+            }
+        }
+        private void InitComboPlaybackDevices() {
+            int i = comboPlaybackDevice.Items.Add(new PlaybackDevice(null, "Default"));
+            comboPlaybackDevice.SelectedIndex = i;
+            foreach (var device in caller.availablePlaybackDevices) {
+                // Having MMDevice as Item lags the ComboBox quite a bit, so we use a simple data class instead.
+                i = comboPlaybackDevice.Items.Add(new PlaybackDevice(device));
+                if (!caller.playingOnDefaultDevice && device.ID == caller.playbackDeviceID) {
+                    comboPlaybackDevice.SelectedIndex = i;
+                }
+            }
+        }
         private void TxtAudioLatency_LostFocus(object sender, RoutedEventArgs e) {
             double latency;
             double prevLatency = double.Parse(userSettings.GetValueForKey(UserSettingsKey.EditorAudioLatency));
@@ -83,6 +104,8 @@ namespace Edda
             userSettings.SetValueForKey(UserSettingsKey.DrumSampleFile, comboDrumSample.SelectedItem.ToString());
             if (doneInit) {
                 UpdateSettings();
+                caller.PauseSong();
+                caller.RestartDrummer();
             }
         }
         private void InitComboDrumSample() {
@@ -104,6 +127,8 @@ namespace Edda
             bool newStatus = checkPanNotes.IsChecked ?? false;
             userSettings.SetValueForKey(UserSettingsKey.PanDrumSounds, newStatus);
             UpdateSettings();
+            caller.PauseSong();
+            caller.RestartDrummer();
         }
 
         private void SliderSongVol_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e) {   
@@ -213,6 +238,19 @@ namespace Edda
                 txtMapSaveFolderPath.Visibility = Visibility.Collapsed;
             } else {
                 txtMapSaveFolderPath.Visibility = Visibility.Visible;
+            }
+        }
+
+        class PlaybackDevice {
+            public string ID {get; private set;}
+            public string Name {get; private set;}
+            public PlaybackDevice(string ID, string Name) {
+                this.ID = ID;
+                this.Name = Name;
+            }
+            public PlaybackDevice(MMDevice device) {
+                this.ID = device.ID;
+                this.Name = device.FriendlyName;
             }
         }
     }

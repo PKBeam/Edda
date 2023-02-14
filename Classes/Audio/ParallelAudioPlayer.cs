@@ -14,19 +14,21 @@ public class ParallelAudioPlayer: IDisposable {
     int lastPlayedStream;
     int desiredLatency;
     string basePath;
+    MMDevice playbackDevice;
     DateTime[] lastPlayedTimes;
     AudioFileReader[] noteStreams;
     WasapiOut[] notePlayers;    
     public bool isEnabled { get; set; }
     public bool isPanned { get; set; }
 
-    public ParallelAudioPlayer(string basePath, int streams, int desiredLatency, bool isEnabled, bool isPanned, float defaultVolume) {
+    public ParallelAudioPlayer(MMDevice playbackDevice, string basePath, int streams, int desiredLatency, bool isEnabled, bool isPanned, float defaultVolume) {
         this.lastPlayedStream = 0;
         this.streams = streams;
         this.isEnabled = isEnabled;
         this.isPanned = isPanned;
         this.desiredLatency = desiredLatency;
         this.basePath = basePath;
+        this.playbackDevice = playbackDevice;
         this.uniqueSamples = 0;
         while (File.Exists(GetFilePath(basePath, this.uniqueSamples + 1))) {
             this.uniqueSamples++;
@@ -45,7 +47,7 @@ public class ParallelAudioPlayer: IDisposable {
             noteStreams[i] = new AudioFileReader(GetFilePath(basePath, (i % numChannels % uniqueSamples) + 1)) {
                 Volume = defaultVolume
             };
-            notePlayers[i] = new WasapiOut(AudioClientShareMode.Shared, desiredLatency);
+            notePlayers[i] = new WasapiOut(playbackDevice, AudioClientShareMode.Shared, true, desiredLatency);
             if (isPanned && basePath != "mmatick") {
                 var mono = new StereoToMonoSampleProvider(noteStreams[i]);
                 if (basePath == "bassdrum") {
@@ -64,7 +66,7 @@ public class ParallelAudioPlayer: IDisposable {
             }
         }
     }
-    public ParallelAudioPlayer(string basePath, int streams, int desiredLatency, bool isPanned, float defaultVolume) : this(basePath, streams, desiredLatency, true, isPanned, defaultVolume) { }
+    public ParallelAudioPlayer(MMDevice playbackDevice, string basePath, int streams, int desiredLatency, bool isPanned, float defaultVolume) : this(playbackDevice, basePath, streams, desiredLatency, true, isPanned, defaultVolume) { }
 
     public virtual bool Play() {
         return Play(0);
