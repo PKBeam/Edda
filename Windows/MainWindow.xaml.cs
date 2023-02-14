@@ -704,7 +704,7 @@ namespace Edda {
 
         // song cover image
         private void SelectNewCoverImage() {
-            var d = new Microsoft.Win32.OpenFileDialog() { Filter = "JPEG Files|*.jpg;*.jpeg" };
+            var d = new Microsoft.Win32.OpenFileDialog() { Filter = "JPEG Files|*.jpg;*.jpeg;*.jfif" };
             d.Title = "Select a song to map";
 
             if (d.ShowDialog() != true) {
@@ -714,7 +714,7 @@ namespace Edda {
             imgCover.Source = null;
 
             string prevPath = Path.Combine(mapEditor.mapFolder, (string)mapEditor.GetMapValue("_coverImageFilename"));
-            string newFile = Path.GetFileName(d.FileName);
+            string newFile = Helper.SanitiseCoverFileName(d.FileName);
             string newPath = Path.Combine(mapEditor.mapFolder, newFile);
 
             // load new cover image, if necessary

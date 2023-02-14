@@ -95,7 +95,16 @@ public class Helper {
     // File I/O
     public static string SanitiseSongFileName(string fileName) {
         //return fileName.Replace(" ", "-");
-        return "song.ogg";
+        return BeatmapDefaults.SongFilename;
+    }
+    public static string SanitiseCoverFileName(string fileName) {
+        // We'd like to use cover.* instead of the actual filename, as RagnaCustoms doesn't allow too long filenames there.
+        string coverExtension = Path.GetExtension(fileName);
+        if (coverExtension == ".jfif") {
+            // .jfif extension is not directly supported in RagnaRock, but the file can be easily converted into supported .jpeg by just renaming it.
+            coverExtension = ".jpeg";
+        }
+        return BeatmapDefaults.CoverFilename + coverExtension;
     }
     public static string DefaultRagnarockMapPath() {
         string docPath = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
