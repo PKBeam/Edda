@@ -149,6 +149,11 @@ namespace Edda {
                     checkGridSnap.IsChecked = !(checkGridSnap.IsChecked == true);
                     CheckGridSnap_Click(null, null);
                 }
+
+                // quantize selection (Ctrl-C)
+                if (e.Key == Key.Q && !songIsPlaying) {
+                    mapEditor.QuantizeSelection();
+                }
             }
 
             if ((e.Key == Key.D1 || e.Key == Key.D2 || e.Key == Key.D3 || e.Key == Key.D4) &&

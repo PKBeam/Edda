@@ -355,6 +355,28 @@ public class MapEditor {
         }
         AddNotes(notes);
     }
+
+    public void QuantizeSelection() {
+        if (currentMapDifficulty == null) {
+            return;
+        }
+
+        double secondsPerBeat = 60.0 / globalBPM;
+        List<Note> notes = new List<Note>();
+        foreach (Note n in currentMapDifficulty.selectedNotes) {
+            double newBeat = Math.Round(n.beat / secondsPerBeat) * secondsPerBeat;
+            Note newNote = new Note(newBeat, n.col);
+
+            if (notes.Contains(newNote)) {
+                continue;
+            }
+            notes.Add(newNote);
+        }
+
+        AddNotes(notes);            
+        RemoveNotes(currentMapDifficulty.selectedNotes);
+    }
+
     private void ApplyEdit(EditList<Note> e) {
         foreach (var edit in e.items) {
             if (edit.isAdd) {
