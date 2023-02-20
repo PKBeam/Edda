@@ -150,7 +150,7 @@ namespace Edda {
                     CheckGridSnap_Click(null, null);
                 }
 
-                // quantize selection (Ctrl-C)
+                // quantize selection (Ctrl-Q)
                 if (e.Key == Key.Q && !songIsPlaying) {
                     mapEditor.QuantizeSelection();
                 }
