@@ -361,20 +361,21 @@ public class MapEditor {
             return;
         }
 
-        double secondsPerBeat = 60.0 / globalBPM;
-        List<Note> notes = new List<Note>();
-        foreach (Note n in currentMapDifficulty.selectedNotes) {
-            double newBeat = Math.Round(n.beat / secondsPerBeat) * secondsPerBeat;
-            Note newNote = new Note(newBeat, n.col);
+        double beats = 60.0 / (globalBPM * 2);
+        List<Note> notesToAdd = new List<Note>();
+        List<Note> notesToRemove = new List<Note>();
 
-            if (notes.Contains(newNote)) {
-                continue;
+        foreach (Note n in currentMapDifficulty.selectedNotes) {
+            double newBeat = Math.Round(n.beat / beats) * beats;
+            if (newBeat != n.beat) {
+                Note newNote = new Note(newBeat, n.col);
+                notesToAdd.Add(newNote);
+                notesToRemove.Add(n);
             }
-            notes.Add(newNote);
         }
 
-        AddNotes(notes);            
-        RemoveNotes(currentMapDifficulty.selectedNotes);
+        AddNotes(notesToAdd);            
+        RemoveNotes(notesToRemove);
     }
 
     private void ApplyEdit(EditList<Note> e) {
