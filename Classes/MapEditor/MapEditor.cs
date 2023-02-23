@@ -3,6 +3,7 @@ using Edda.Const;
 using Newtonsoft.Json.Linq;
 using SoundTouch;
 using System;
+using System.Linq;
 using System.Collections.Generic;
 
 #nullable enable
@@ -356,17 +357,46 @@ public class MapEditor {
         AddNotes(notes);
     }
 
-    public void QuantizeSelection() {
+public void QuantizeSelection() {
         if (currentMapDifficulty == null) {
             return;
         }
 
-        double beats = 60.0 / (globalBPM * 2);
+        // default value of 1/4 tact if no bpm and grid change is made
+        int defaultGridDivision = 4;
+        double defaultBeats = 60.0 / (globalBPM * (defaultGridDivision / 2));
+
         List<Note> notesToAdd = new List<Note>();
         List<Note> notesToRemove = new List<Note>();
 
+
         foreach (Note n in currentMapDifficulty.selectedNotes) {
-            double newBeat = Math.Round(n.beat / beats) * beats;
+            BPMChange? currentBeat = currentMapDifficulty
+                .bpmChanges
+                .OrderByDescending(obj => obj.globalBeat)
+                .Where(obj => obj.globalBeat <= n.beat)
+                .Select(obj => obj)
+                .FirstOrDefault();
+            
+            double offset = 0.0;
+
+            // beat has been changed
+            if (currentBeat != null){
+
+                // use current values for defaultBeats calculation
+                defaultBeats = 60.0 / (currentBeat.BPM * (currentBeat.gridDivision / 2));
+
+                // calculate time difference petween old beat and start time
+                double differenceDefaultNew = Math.Floor(currentBeat.globalBeat / defaultBeats) * defaultBeats;
+                offset = currentBeat.globalBeat - differenceDefaultNew;
+
+                // calculate offset
+                offset = currentBeat.globalBeat - differenceDefaultNew;
+
+            }
+            double newBeat = Math.Round(n.beat / defaultBeats) * defaultBeats;
+            newBeat += offset;
+
             if (newBeat != n.beat) {
                 Note newNote = new Note(newBeat, n.col);
                 notesToAdd.Add(newNote);
