@@ -388,7 +388,6 @@ public void QuantizeSelection() {
 
                 // calculate time difference petween old beat and start time
                 double differenceDefaultNew = Math.Floor(currentBeat.globalBeat / defaultBeats) * defaultBeats;
-                offset = currentBeat.globalBeat - differenceDefaultNew;
 
                 // calculate offset
                 offset = currentBeat.globalBeat - differenceDefaultNew;
