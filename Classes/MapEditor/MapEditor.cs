@@ -47,6 +47,7 @@ public class MapEditor {
     RagnarockMap beatMap;
     MainWindow parent;
     public double globalBPM;
+    public int defaultGridDivision;
     public double songDuration; // duration of song in seconds
     public int currentDifficultyIndex = -1;
     MapDifficulty?[] difficultyMaps = new MapDifficulty[3];
@@ -357,13 +358,11 @@ public class MapEditor {
         AddNotes(notes);
     }
 
-public void QuantizeSelection() {
+    public void QuantizeSelection() {
         if (currentMapDifficulty == null) {
             return;
         }
-
-        // default value of 1/4 tact if no bpm and grid change is made
-        int defaultGridDivision = 4;
+        
         double defaultBeats = 60.0 / (globalBPM * (defaultGridDivision / 2));
 
         List<Note> notesToAdd = new List<Note>();
@@ -386,7 +385,7 @@ public void QuantizeSelection() {
                 // use current values for defaultBeats calculation
                 defaultBeats = 60.0 / (currentBeat.BPM * (currentBeat.gridDivision / 2));
 
-                // calculate time difference petween old beat and start time
+                // calculate time difference between old beat and start time
                 double differenceDefaultNew = Math.Floor(currentBeat.globalBeat / defaultBeats) * defaultBeats;
 
                 // calculate offset

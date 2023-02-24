@@ -528,6 +528,7 @@ namespace Edda {
                 if (div != prevDiv) {
                     gridController.gridDivision = div;
                     mapEditor.SetMapValue("_editorGridDivision", div, RagnarockMapDifficulties.Current, custom: true);
+                    defaultGridDivision = div;
                     DrawEditorGrid(false);
                 }
             } else {
