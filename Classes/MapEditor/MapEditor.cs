@@ -363,7 +363,7 @@ public class MapEditor {
             return;
         }
         
-        double defaultBeats = 60.0 / (globalBPM * (defaultGridDivision / 2));
+        double defaultBeats = GetDefaultBeats(defaultGridDivision , globalBPM);
 
         List<Note> notesToAdd = new List<Note>();
         List<Note> notesToRemove = new List<Note>();
@@ -383,7 +383,7 @@ public class MapEditor {
             if (currentBeat != null){
 
                 // use current values for defaultBeats calculation
-                defaultBeats = 60.0 / (currentBeat.BPM * (currentBeat.gridDivision / 2));
+                defaultBeats = GetDefaultBeats(currentBeat.gridDivision , currentBeat.BPM);
 
                 // calculate time difference between old beat and start time
                 double differenceDefaultNew = Math.Floor(currentBeat.globalBeat / defaultBeats) * defaultBeats;
@@ -392,7 +392,7 @@ public class MapEditor {
                 offset = currentBeat.globalBeat - differenceDefaultNew;
 
             }
-            double newBeat = Math.Round(n.beat / defaultBeats) * defaultBeats;
+            double newBeat = Math.Floor(n.beat / defaultBeats) * defaultBeats;
             newBeat += offset;
 
             if (newBeat != n.beat) {
@@ -404,6 +404,11 @@ public class MapEditor {
 
         AddNotes(notesToAdd);            
         RemoveNotes(notesToRemove);
+    }
+
+    private double GetDefaultBeats(int gridDivision, double bpm) {
+        int division = gridDivision % 2 == 0 ? gridDivision / 2 : gridDivision;
+        return 60.0 / (bpm * division);
     }
 
     private void ApplyEdit(EditList<Note> e) {
