@@ -343,13 +343,13 @@ public class EditorGridController {
     // grid drawing
     public void UpdateGridHeight() {
         // resize editor grid height to fit scrollEditor height
-        double beats = mapEditor.globalBPM / 60 * parentWindow.songTotalTimeInSeconds;
-        EditorGrid.Height = beats * unitLength + scrollEditor.ActualHeight;
+        if (parentWindow.songTotalTimeInSeconds.HasValue) {
+            double beats = mapEditor.globalBPM / 60 * parentWindow.songTotalTimeInSeconds.Value;
+            EditorGrid.Height = beats * unitLength + scrollEditor.ActualHeight;
+        }
     }
     public void DrawGrid(bool redrawWaveform = true) {
-        // resize editor grid height to fit scrollEditor height
-        double beats = mapEditor.globalBPM / 60 * parentWindow.songTotalTimeInSeconds;
-        EditorGrid.Height = beats * unitLength + scrollEditor.ActualHeight;
+        UpdateGridHeight();
 
         EditorGrid.Children.Clear();
 
@@ -663,10 +663,13 @@ public class EditorGridController {
         }
     }
     internal void DrawNavBookmarks() {
+        if (!parentWindow.songTotalTimeInSeconds.HasValue) {
+            return;
+        }
         canvasBookmarks.Children.Clear();
         canvasBookmarkLabels.Children.Clear();
         foreach (Bookmark b in mapEditor.currentMapDifficulty.bookmarks) {
-            var l = MakeLine(borderNavWaveform.ActualWidth, borderNavWaveform.ActualHeight * (1 - 60000 * b.beat / (mapEditor.globalBPM * parentWindow.songTotalTimeInSeconds * 1000)));
+            var l = MakeLine(borderNavWaveform.ActualWidth, borderNavWaveform.ActualHeight * (1 - 60000 * b.beat / (mapEditor.globalBPM * parentWindow.songTotalTimeInSeconds.Value * 1000)));
             l.Stroke = (SolidColorBrush)new BrushConverter().ConvertFrom(Editor.NavBookmark.Colour);
             l.StrokeThickness = Editor.NavBookmark.Thickness;
             l.Opacity = Editor.NavBookmark.Opacity;
@@ -936,8 +939,8 @@ public class EditorGridController {
             if (isMouseOnEditingGrid) {
                 beat = snapToGrid ? mouseBeatSnapped : mouseBeatUnsnapped;
                 // add bookmark on nav waveform
-            } else if (lineSongMouseover.Opacity > 0) {
-                beat = mapEditor.globalBPM * parentWindow.songTotalTimeInSeconds / 60000 * (1 - lineSongMouseover.Y1 / borderNavWaveform.ActualHeight);
+            } else if (lineSongMouseover.Opacity > 0 && parentWindow.songTotalTimeInSeconds.HasValue) {
+                beat = mapEditor.globalBPM * parentWindow.songTotalTimeInSeconds.Value / 60000 * (1 - lineSongMouseover.Y1 / borderNavWaveform.ActualHeight);
             }
         }
         mapEditor.AddBookmark(new Bookmark(beat, Editor.NavBookmark.DefaultName));
@@ -1006,7 +1009,7 @@ public class EditorGridController {
         return Helper.BitmapImageForBeat(beatNormalised, highlight);
     }
     private Label CreateBookmarkLabel(Bookmark b) {
-        var offset = borderNavWaveform.ActualHeight * (1 - 60000 * b.beat / (mapEditor.globalBPM * parentWindow.songTotalTimeInSeconds * 1000));
+        var offset = borderNavWaveform.ActualHeight * (1 - 60000 * b.beat / (mapEditor.globalBPM * parentWindow.songTotalTimeInSeconds.Value * 1000));
         var txtBlock = new Label();
         txtBlock.Foreground = (SolidColorBrush)new BrushConverter().ConvertFrom(Editor.NavBookmark.NameColour);
 

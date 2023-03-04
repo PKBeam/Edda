@@ -42,9 +42,9 @@ namespace Edda {
                 sliderSongProgress.Value = value;
             }
         }
-        public double songTotalTimeInSeconds {
+        public double? songTotalTimeInSeconds {
             get {
-                return songStream.TotalTime.TotalSeconds;
+                return songStream?.TotalTime.TotalSeconds;
             }
         }
         bool mapIsLoaded {
@@ -205,9 +205,6 @@ namespace Edda {
                     BorderNavWaveform_SizeChanged(eventPattern.Sender, eventPattern.EventArgs)
                 )
             );
-
-            var vsg = new VorbisSpectrogramGenerator("C:\\Users\\Vincent Liu\\Documents\\Ragnarock\\CustomSongsWIP\\TheRedBaron\\song.ogg");
-            vsg.Draw(0, 0);
         }
 
        
@@ -862,8 +859,9 @@ namespace Edda {
             // objects not being disposed correctly, resulting in memory leaks.
             PauseSong();
             if (songPlayer != null) {
-                songPlayer.Dispose();
+                var oldSongPlayer = songPlayer;
                 InitSongPlayer();
+                oldSongPlayer.Dispose();
             }
             if (drummer != null) {
                 RestartDrummer();
@@ -966,10 +964,14 @@ namespace Edda {
         }
         private void UnloadSong() {
             if (songStream != null) {
-                songStream.Dispose();
+                var oldSongStream = songStream;
+                songStream = null;
+                oldSongStream.Dispose();
             }
             if (songPlayer != null) {
-                songPlayer.Dispose();
+                var oldSongPlayer = songPlayer;
+                songPlayer = null;
+                oldSongPlayer.Dispose();
             }
         }
         private void PlaySong() {
@@ -1023,8 +1025,9 @@ namespace Edda {
                 songPlayer.Play();
             } else {
                 songTempoStream.CurrentTime = new TimeSpan(0);
-                songPlaybackCancellationTokenSource.Dispose();
+                var oldSongPlaybackCancellationTokenSource = songPlaybackCancellationTokenSource;
                 songPlaybackCancellationTokenSource = new();
+                oldSongPlaybackCancellationTokenSource.Dispose();
                 Task.Delay(new TimeSpan(0, 0, 0, 0, editorAudioLatency)).ContinueWith(o => {
                     if (!songPlaybackCancellationTokenSource.IsCancellationRequested) {
                         songPlayer.Play();
@@ -1150,8 +1153,9 @@ namespace Edda {
             lineSongMouseover.StrokeThickness = Editor.NavPreviewLine.Thickness;
         }
         public void RestartMetronome() {
-            metronome?.Dispose();
+            var oldMetronome = metronome;
             InitMetronome();
+            oldMetronome?.Dispose();
         }
         private void InitMetronome() {
             metronome = new ParallelAudioPlayer(
@@ -1166,8 +1170,9 @@ namespace Edda {
             beatScanner?.SetAudioPlayer(metronome);
         }
         public void RestartDrummer() {
-            drummer?.Dispose();
+            var oldDrummer = drummer;
             InitDrummer();
+            oldDrummer?.Dispose();
         }
         private void InitDrummer() {
             drummer = new ParallelAudioPlayer(
