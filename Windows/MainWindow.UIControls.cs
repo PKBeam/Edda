@@ -249,6 +249,7 @@ namespace Edda {
             if (file == null) {
                 return;
             }
+            gridController.ClearCachedWaveforms();
             LoadSongFile(file);
         }
         private void BtnMakePreview_Click(object sender, RoutedEventArgs e) {

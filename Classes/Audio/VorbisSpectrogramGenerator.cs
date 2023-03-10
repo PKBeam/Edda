@@ -21,9 +21,18 @@ public class VorbisSpectrogramGenerator {
     private CancellationTokenSource tokenSource;
     private string filePath;
     private bool isDrawing;
+    // Since the BMP generated for spectrogram doesn't depend on the component height/width FOR NOW, we can cache it to save on calculations.
+    private ImageSource cachedSpectrogram;
+    private string cachedBmpSpectrogramPath;
+
     public VorbisSpectrogramGenerator(string filePath) {
         RecreateTokens();
         this.filePath = filePath;
+        var cacheDirectoryPath = Path.Combine(Path.GetDirectoryName(filePath), Program.CachePath);
+        if (!Directory.Exists(cacheDirectoryPath)) {
+            Directory.CreateDirectory(cacheDirectoryPath);
+        }
+        this.cachedBmpSpectrogramPath = Path.Combine(cacheDirectoryPath, Editor.Spectrogram.CachedBmpFilename);
         this.isDrawing = false;
     }
     public ImageSource Draw(double height, double width) {
@@ -42,14 +51,21 @@ public class VorbisSpectrogramGenerator {
             height *= scale;
             width *= scale;
         }
-        ImageSource b = null;
-        try {
-            b = _Draw(height, width, tokenSource.Token);
-        } catch (Exception ex) {
-            isDrawing = false;
-            Trace.WriteLine(ex);
+        if (cachedSpectrogram == null) {
+            try {
+                // check for existing BMP first
+                if (File.Exists(cachedBmpSpectrogramPath)) {
+                    Bitmap bmp = (Bitmap) Bitmap.FromFile(cachedBmpSpectrogramPath);
+                    cachedSpectrogram = TransformBitmap(bmp);
+                } else {
+                    cachedSpectrogram = _Draw(height, width, tokenSource.Token);
+                }
+            } catch (Exception ex) {
+                isDrawing = false;
+                Trace.WriteLine(ex);
+            }
         }
-        return b;
+        return cachedSpectrogram;
     }
     private ImageSource _Draw(double height, double width, CancellationToken ct) {
         isDrawing = true;
@@ -77,9 +93,13 @@ public class VorbisSpectrogramGenerator {
         sg.Add(audioBufferDouble);
 
         Bitmap bmp = sg.GetBitmapMel(melBinCount: Editor.Spectrogram.Width);
-        //Bitmap bmp = sg.GetBitmap();
-        //bmp.Save("halMel.png", ImageFormat.Png);
+        bmp.Save(cachedBmpSpectrogramPath, ImageFormat.Png);
         sg = null;
+        isDrawing = false;
+
+        return TransformBitmap(bmp);
+    }
+    private ImageSource TransformBitmap(Bitmap bmp) {
         BitmapSource wpfBmp = System.Windows.Interop.Imaging.CreateBitmapSourceFromHBitmap(
            bmp.GetHbitmap(),
            IntPtr.Zero,
@@ -95,6 +115,13 @@ public class VorbisSpectrogramGenerator {
 
         return flipBmp;
     }
+    public void ClearCache() {
+        cachedSpectrogram = null;
+        if (File.Exists(cachedBmpSpectrogramPath)) {
+            File.Delete(cachedBmpSpectrogramPath);
+        }
+    }
+
     private static void RenderTargetToDisk(RenderTargetBitmap input) {
         // https://stackoverflow.com/questions/13987408/convert-rendertargetbitmap-to-bitmapimage#13988871
         var bitmapEncoder = new PngBitmapEncoder();

@@ -522,7 +522,7 @@
                 <ImageBrush ImageSource="/Resources/waterTexture.png" TileMode="Tile" ViewportUnits="Absolute" Viewport="0,0,256,256"/>
             </Grid.Background>
             <Grid.ColumnDefinitions>
-                <ColumnDefinition x:Name="colSpectrogram" Width="*" MaxWidth="100"/>
+                <ColumnDefinition x:Name="colSpectrogram" Width="Auto"/>
                 <ColumnDefinition Width="5*"/>
                 <ColumnDefinition x:Name="colWaveformVertical" Width="*" MaxWidth="100"/>
             </Grid.ColumnDefinitions>
@@ -534,22 +534,6 @@
                     <Line x:Name="lineSongProgress" Stroke="Navy" StrokeThickness="1" X2="{Binding ElementName=borderNavWaveform, Path=ActualWidth}" Y1="{Binding ElementName=borderNavWaveform, Path=ActualHeight}" Y2="{Binding ElementName=borderNavWaveform, Path=ActualHeight}"/>
                     <Canvas x:Name="canvasBookmarkLabels"/>
                     <Canvas x:Name="canvasNavInputBox"/>
-                </Grid>
-            </Border>
-            <Border BorderBrush="{DynamicResource {x:Static SystemColors.ControlDarkDarkBrushKey}}" BorderThickness="0 0 1 0">
-                <Grid Grid.Column="0">
-                    <ScrollViewer x:Name="scrollSpectrogram" VerticalScrollBarVisibility="Hidden" CanContentScroll="False" IsEnabled="False">
-                        <Grid Height="{Binding ElementName=EditorGrid, Path=ActualHeight}">
-                            <Grid.RowDefinitions>
-                                <RowDefinition x:Name="rowSpectrogramUpperOffset"/>
-                                <RowDefinition Height="*"/>
-                                <RowDefinition x:Name="rowSpectrogramLowerOffset"/>
-                            </Grid.RowDefinitions>
-                            <Canvas Grid.Row="2" Margin="-1" x:Name="canvasSpectrogramLowerOffset" />
-                            <Image Grid.Row="1" x:Name="imgSpectrogram"/>
-                            <Canvas Grid.Row="0" Margin="-1" x:Name="canvasSpectrogramUpperOffset" />
-                        </Grid>
-                    </ScrollViewer>
                 </Grid>
             </Border>
             <Grid Grid.Column="1" MaxWidth="600">
@@ -641,6 +625,29 @@
                 <ScrollViewer x:Name="scrollEditor" VerticalScrollBarVisibility="Hidden" CanContentScroll="False" ScrollChanged="ScrollEditor_ScrollChanged" PreviewMouseWheel="ScrollEditor_PreviewMouseWheel" MouseMove="scrollEditor_MouseMove" MouseEnter="scrollEditor_MouseEnter" MouseLeave="scrollEditor_MouseLeave" PreviewMouseLeftButtonDown="scrollEditor_PreviewMouseLeftButtonDown" MouseLeftButtonUp="scrollEditor_PreviewMouseLeftButtonUp" MouseRightButtonUp="scrollEditor_PreviewMouseRightButtonUp">
                     <Canvas x:Name="EditorGrid"/>
                 </ScrollViewer>
+            </Grid>
+            <Grid x:Name="gridSpectrogram" Grid.Column="0">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="100" MinWidth="20"/>
+                    <ColumnDefinition Width="3"/>
+                </Grid.ColumnDefinitions>
+                <Border x:Name="borderSpectrogram" Grid.Column="0" BorderBrush="{DynamicResource {x:Static SystemColors.ControlDarkDarkBrushKey}}" BorderThickness="0 0 1 0">
+                    <Grid>
+                        <ScrollViewer x:Name="scrollSpectrogram" VerticalScrollBarVisibility="Hidden" CanContentScroll="False" IsEnabled="False">
+                            <Grid Height="{Binding ElementName=EditorGrid, Path=ActualHeight}">
+                                <Grid.RowDefinitions>
+                                    <RowDefinition x:Name="rowSpectrogramUpperOffset"/>
+                                    <RowDefinition Height="*"/>
+                                    <RowDefinition x:Name="rowSpectrogramLowerOffset"/>
+                                </Grid.RowDefinitions>
+                                <Canvas Grid.Row="2" Margin="-1" x:Name="canvasSpectrogramLowerOffset" />
+                                <Image Grid.Row="1" x:Name="imgSpectrogram"/>
+                                <Canvas Grid.Row="0" Margin="-1" x:Name="canvasSpectrogramUpperOffset" />
+                            </Grid>
+                        </ScrollViewer>
+                    </Grid>
+                </Border>
+                <GridSplitter x:Name="spectrogramResize" Grid.Column="1" ResizeBehavior="PreviousAndCurrent" HorizontalAlignment="Center" VerticalAlignment="Stretch" ShowsPreview="True" Width="3"/>
             </Grid>
         </Grid>
     </DockPanel>

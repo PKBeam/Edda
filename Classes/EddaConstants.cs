@@ -35,6 +35,7 @@ namespace Edda.Const {
         public const string OldSettingsFile = "settings.txt";
         public const string ResourcesPath = "Resources/";
         public const string BackupPath = "autosaves";
+        public const string CachePath = "cache";
         public const int MaxBackups = 10;
 
     }
@@ -152,6 +153,7 @@ namespace Edda.Const {
             public const int FftSizeExp = 11; // FFT Size = 2^FftSizeExp
             public const int StepSize = 500; // samples
             public const string BackgroundColor = "#002655";
+            public const string CachedBmpFilename = "spectrogram.png";
         }
 
     }

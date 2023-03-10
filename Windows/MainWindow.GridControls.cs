@@ -47,6 +47,11 @@ namespace Edda {
             lineSongMouseover.Opacity = 0;
             lblSelectedBeat.Content = "";
         }
+        private void BorderSpectrogram_SizeChanged(object sender, SizeChangedEventArgs e) {
+            if (mapIsLoaded) {
+                gridController.DrawSpectrogram();
+            }
+        }
         private void ScrollEditor_SizeChanged(object sender, SizeChangedEventArgs e) {
             if (mapIsLoaded) {
                 gridController.UpdateGridHeight();

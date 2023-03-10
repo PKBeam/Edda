@@ -261,6 +261,9 @@ public class EditorGridController {
         audioWaveform = new VorbisWaveformGenerator(songPath);
         navWaveform = new VorbisWaveformGenerator(songPath);
     }
+    public void ClearCachedWaveforms() {
+        audioSpectrogram?.ClearCache();
+    }
     public void DrawScrollingWaveforms() {
         if (showWaveform) {
             DrawMainWaveform();

@@ -206,8 +206,15 @@ namespace Edda {
                 )
             );
 
-            var vsg = new VorbisSpectrogramGenerator("C:\\Users\\Vincent Liu\\Documents\\Ragnarock\\CustomSongsWIP\\TheRedBaron\\song.ogg");
-            vsg.Draw(0, 0);
+            Observable
+            .FromEventPattern<SizeChangedEventArgs>(borderSpectrogram, nameof(SizeChanged))
+            .Throttle(TimeSpan.FromMilliseconds(Editor.DrawDebounceInterval))
+            .ObserveOn(SynchronizationContext.Current)
+            .Subscribe(eventPattern =>
+                AppMainWindow.Dispatcher.Invoke(() =>
+                    BorderSpectrogram_SizeChanged(eventPattern.Sender, eventPattern.EventArgs)
+                )
+            );
         }
 
        
@@ -718,14 +725,11 @@ namespace Edda {
             userSettings = new UserSettingsManager(Program.SettingsFile);
 
             var showSpectrogram = userSettings.GetBoolForKey(UserSettingsKey.EnableSpectrogram);
-            var oldValue = gridController.showSpectrogram;
             gridController.showSpectrogram = showSpectrogram;
             if (showSpectrogram) {
-                colSpectrogram.Width = new GridLength(1, GridUnitType.Star);
-                scrollSpectrogram.Visibility = Visibility.Visible;
+                gridSpectrogram.Visibility = Visibility.Visible;
             } else {
-                colSpectrogram.Width = new GridLength(0);
-                scrollSpectrogram.Visibility = Visibility.Collapsed;
+                gridSpectrogram.Visibility = Visibility.Collapsed;
             }
 
             int.TryParse(userSettings.GetValueForKey(UserSettingsKey.EditorAudioLatency), out editorAudioLatency);
