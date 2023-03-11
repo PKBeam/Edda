@@ -647,7 +647,7 @@
                         </ScrollViewer>
                     </Grid>
                 </Border>
-                <GridSplitter x:Name="spectrogramResize" Grid.Column="1" ResizeBehavior="PreviousAndCurrent" HorizontalAlignment="Center" VerticalAlignment="Stretch" ShowsPreview="True" Width="3"/>
+                <GridSplitter x:Name="spectrogramResize" Grid.Column="1" ResizeBehavior="PreviousAndCurrent" HorizontalAlignment="Center" VerticalAlignment="Stretch" ShowsPreview="False" Width="3"/>
             </Grid>
         </Grid>
     </DockPanel>
