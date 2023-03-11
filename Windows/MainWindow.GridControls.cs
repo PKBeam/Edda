@@ -12,6 +12,7 @@ namespace Edda {
         Point editorDragSelectStart;
         internal bool navMouseDown = false;
         bool editorMouseDown = false;
+        bool editorIsLoaded = false;
 
         private void BorderNavWaveform_SizeChanged(object sender, SizeChangedEventArgs e) {
             if (mapIsLoaded) {
@@ -79,7 +80,9 @@ namespace Edda {
 
         }
         private void scrollEditor_MouseMove(object sender, MouseEventArgs e) {
-
+            if (!editorIsLoaded) {
+                return;
+            }
             Point mousePos = e.GetPosition(EditorGrid);
             gridController.GridMouseMove(mousePos, shiftKeyDown);
 
@@ -95,16 +98,22 @@ namespace Edda {
             }
         }
         private void scrollEditor_MouseEnter(object sender, MouseEventArgs e) {
+            if (!editorIsLoaded) {
+                return;
+            }
             gridController.SetPreviewNoteVisibility(Visibility.Visible);
             gridController.SetMouseoverLineVisibility(Visibility.Visible);
         }
         private void scrollEditor_MouseLeave(object sender, MouseEventArgs e) {
+            if (!editorIsLoaded) {
+                return;
+            }
             gridController.SetPreviewNoteVisibility(Visibility.Hidden);
             gridController.SetMouseoverLineVisibility(Visibility.Hidden);
             lblSelectedBeat.Content = "";
         }
         private void scrollEditor_PreviewMouseLeftButtonDown(object sender, MouseButtonEventArgs e) {
-            if (Keyboard.FocusedElement is TextBox) {
+            if (Keyboard.FocusedElement is TextBox || !editorIsLoaded) {
                 return;
             }
             Point mousePos = e.GetPosition(EditorGrid);
@@ -113,12 +122,25 @@ namespace Edda {
             editorMouseDown = true;
         }
         private void scrollEditor_PreviewMouseLeftButtonUp(object sender, MouseButtonEventArgs e) {
+            if (!editorIsLoaded) {
+                return;
+            }
             Point mousePos = e.GetPosition(EditorGrid);
             gridController.GridMouseUp(mousePos, shiftKeyDown);
             editorMouseDown = false;
         }
         private void scrollEditor_PreviewMouseRightButtonUp(object sender, MouseButtonEventArgs e) {
+            if (!editorIsLoaded) {
+                return;
+            }
             gridController.GridRightMouseUp();
+        }
+        private void scrollEditor_Loaded(object sender, RoutedEventArgs e) {
+            // Wait for all the background operations to finish before accepting input for the grid.
+            // This is a fix for an annoying bug, where mouse clicks were registered while the window or grid is still loading, which resulted in unintended notes being placed right after opening the map.
+            Dispatcher.BeginInvoke(new Action(() => {
+                editorIsLoaded = true;
+            }), System.Windows.Threading.DispatcherPriority.ContextIdle);
         }
     }
 }

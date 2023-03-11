@@ -34,13 +34,25 @@ namespace Edda {
                 }
                 deviceEnumerator.Dispose();
             }
-            songPlayer?.Stop();
-            songPlayer?.Dispose();
-            songStream?.Dispose();
+            var oldSongPlayer = songPlayer;
+            songPlayer = null;
+            oldSongPlayer?.Stop();
+            oldSongPlayer?.Dispose();
+
+            var oldSongStream = songStream;
+            songStream = null;
+            oldSongStream?.Dispose();
+
             noteScanner?.Stop();
             beatScanner?.Stop();
-            drummer?.Dispose();
-            metronome?.Dispose();
+
+            var oldDrummer = drummer;
+            drummer = null;
+            oldDrummer?.Dispose();
+
+            var oldMetronome = metronome;
+            metronome = null;
+            oldMetronome?.Dispose();
             Trace.WriteLine("INFO: Audio resources disposed...");
 
             // TODO find other stuff to dispose so we don't cause a memory leak
