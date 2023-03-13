@@ -48,6 +48,10 @@ namespace Edda.Const {
         public const float DefaultSongVolume = 0.4F;
         public const float DefaultNoteVolume = 1;
         public const bool PanDrumSounds = true;
+        public const bool SpectrogramCache = true;
+        public const string SpectrogramType = "Standard";
+        public const int SpectrogramFrequency = Editor.Spectrogram.DefaultFreq;
+        public const string SpectrogramColormap = "Blues";
         public const bool EnableDiscordRPC = true;
         public const bool EnableAutosave = true;
         public const bool CheckForUpdates = true;
@@ -64,6 +68,10 @@ namespace Edda.Const {
         public const string PanDrumSounds = "panDrumSounds";
         public const string DefaultSongVolume = "defaultSongVolume";
         public const string DefaultNoteVolume = "defaultNoteVolume";
+        public const string SpectrogramCache = "spectrogramCache";
+        public const string SpectrogramType = "spectrogramType";
+        public const string SpectrogramFrequency = "spectrogramFrequency";
+        public const string SpectrogramColormap = "spectrogramColormap";
         public const string EnableDiscordRPC = "enableDiscordRPC";
         public const string EnableAutosave = "enableAutosave";
         public const string CheckForUpdates = "checkForUpdates";
@@ -147,13 +155,13 @@ namespace Edda.Const {
         }
 
         public static class Spectrogram {
-            public const int AmplitudeScale = 16_000;
-            public const int Width = 100;
-            public const int MaxFreq = 16_000; // Hz
+            public const int MelBinCount = 100;
+            public const int MinFreq = 100; // Hz
+            public const int MaxFreq = 22_000; // Hz
+            public const int DefaultFreq = 11_000; // Hz
             public const int FftSizeExp = 11; // FFT Size = 2^FftSizeExp
             public const int StepSize = 500; // samples
-            public const string BackgroundColor = "#002655";
-            public const string CachedBmpFilename = "spectrogram.png";
+            public const string CachedBmpFilenameFormat = "spectrogram_{0}_{1}_{2}.png";
         }
 
     }

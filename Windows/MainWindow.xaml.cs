@@ -692,6 +692,24 @@ namespace Edda {
                 userSettings.SetValueForKey(UserSettingsKey.DefaultNoteVolume, DefaultUserSettings.DefaultNoteVolume);
             }
 
+            if (userSettings.GetValueForKey(UserSettingsKey.SpectrogramCache) == null) {
+                userSettings.SetValueForKey(UserSettingsKey.SpectrogramCache, DefaultUserSettings.SpectrogramCache);
+            }
+
+            if (userSettings.GetValueForKey(UserSettingsKey.SpectrogramType) == null) {
+                userSettings.SetValueForKey(UserSettingsKey.SpectrogramType, DefaultUserSettings.SpectrogramType);
+            }
+
+            try {
+                int.Parse(userSettings.GetValueForKey(UserSettingsKey.SpectrogramFrequency));
+            } catch {
+                userSettings.SetValueForKey(UserSettingsKey.SpectrogramFrequency, DefaultUserSettings.SpectrogramFrequency);
+            }
+
+            if (userSettings.GetValueForKey(UserSettingsKey.SpectrogramColormap) == null) {
+                userSettings.SetValueForKey(UserSettingsKey.SpectrogramColormap, DefaultUserSettings.SpectrogramColormap);
+            }
+
             if (userSettings.GetValueForKey(UserSettingsKey.EnableAutosave) == null) {
                 userSettings.SetValueForKey(UserSettingsKey.EnableAutosave, DefaultUserSettings.EnableAutosave);
             }
@@ -720,7 +738,7 @@ namespace Edda {
 
             userSettings.Write();
         }
-        internal void LoadSettingsFile() {
+        internal void LoadSettingsFile(bool reloadWaveforms = false) {
 
             userSettings = new UserSettingsManager(Program.SettingsFile);
 
@@ -730,6 +748,17 @@ namespace Edda {
                 gridSpectrogram.Visibility = Visibility.Visible;
             } else {
                 gridSpectrogram.Visibility = Visibility.Collapsed;
+            }
+
+            gridController.spectrogramCache = userSettings.GetBoolForKey(UserSettingsKey.SpectrogramCache);
+            Enum.TryParse(typeof(VorbisSpectrogramGenerator.SpectrogramType), userSettings.GetValueForKey(UserSettingsKey.SpectrogramType), out object spectrogramType);
+            gridController.spectrogramType = (VorbisSpectrogramGenerator.SpectrogramType) spectrogramType;
+            int.TryParse(userSettings.GetValueForKey(UserSettingsKey.SpectrogramFrequency), out int spectrogramFrequency);
+            gridController.spectrogramFrequency = spectrogramFrequency;
+            gridController.spectrogramColormap = userSettings.GetValueForKey(UserSettingsKey.SpectrogramColormap);
+            if (reloadWaveforms) {
+                gridController.RefreshSpectrogramWaveform();
+                gridController.DrawSpectrogram();
             }
 
             int.TryParse(userSettings.GetValueForKey(UserSettingsKey.EditorAudioLatency), out editorAudioLatency);
@@ -960,6 +989,12 @@ namespace Edda {
                 gridController.InitWaveforms(songPath);
             }
             //awd = new AudioVisualiser_Float32(new VorbisWaveReader(songPath));
+        }
+        internal void ClearSongCache() {
+            var cacheDirectoryPath = Path.Combine(mapEditor.mapFolder, Program.CachePath);
+            if (Directory.Exists(cacheDirectoryPath)) {
+                Directory.Delete(cacheDirectoryPath, true);
+            }
         }
         private void InitSongPlayer() {
             songPlayer = new WasapiOut(playbackDevice, AudioClientShareMode.Shared, true, Audio.WASAPILatencyTarget);

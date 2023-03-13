@@ -3,6 +3,7 @@ using System;
 using System.Diagnostics;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Data;
 using System.Windows.Input;
 
 namespace Edda {
@@ -51,6 +52,13 @@ namespace Edda {
             if (mapIsLoaded) {
                 gridController.DrawSpectrogram();
             }
+        }
+        private void ScrollSpectrogram_ScrollChanged(object sender, ScrollChangedEventArgs e) {
+            scrollEditor.ScrollToVerticalOffset(scrollSpectrogram.VerticalOffset);
+            ScrollEditor_ScrollChanged(null, e);
+        }
+        private void ScrollSpectrogram_PreviewMouseWheel(object sender, MouseWheelEventArgs e) {
+
         }
         private void ScrollEditor_SizeChanged(object sender, SizeChangedEventArgs e) {
             if (mapIsLoaded) {
@@ -124,6 +132,20 @@ namespace Edda {
         }
         private void scrollEditor_PreviewMouseRightButtonUp(object sender, MouseButtonEventArgs e) {
             gridController.GridRightMouseUp();
+        }
+    }
+
+    public class DoubleOffsetConverter : IValueConverter {
+        public double Offset {
+            get; set;
+        }
+
+        public object Convert(object value, Type targetType, object parameter, System.Globalization.CultureInfo culture) {
+            return (double) value - Offset;
+        }
+
+        public object ConvertBack(object value, Type targetType, object parameter, System.Globalization.CultureInfo culture) {
+            return (double) value + Offset;
         }
     }
 }

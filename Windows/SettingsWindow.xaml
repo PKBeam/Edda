@@ -1,11 +1,11 @@
 ﻿<Window x:Class="Edda.SettingsWindow"
-        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-        xmlns:local="clr-namespace:Edda"
-        mc:Ignorable="d"
-        Title="Settings" Name="Window" Width="260" Height="520" ResizeMode="NoResize" WindowStartupLocation="CenterOwner" Background="{DynamicResource {x:Static SystemColors.ControlDarkBrushKey}}">
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:local="clr-namespace:Edda"
+    mc:Ignorable="d"
+    Title="Settings" Name="Window" Width="280" Height="560" ResizeMode="NoResize" WindowStartupLocation="CenterOwner" Background="{DynamicResource {x:Static SystemColors.ControlDarkBrushKey}}">
     <Grid>
         <DockPanel>
 
@@ -20,192 +20,257 @@
                     <Button x:Name="btnSave" Margin="0 10 10 10" Width="70" HorizontalAlignment="Right" Click="BtnSave_Click">OK</Button>
                 </StackPanel>
             </Border>
-            <StackPanel Margin="0 5 0 20" HorizontalAlignment="Center">
-                <Label Padding="10 5" FontWeight="Bold" FontSize="16" FontFamily="Bahnschrift">Editor</Label>
-                <Grid Margin="15 0 5 0" VerticalAlignment="Center">
-                    <Grid.Resources>
-                        <Style TargetType="Border" >
-                            <Setter Property="Padding" Value="5,5,5,5" />
-                        </Style>
-                    </Grid.Resources>
-                    <Grid.RowDefinitions>
-                        <RowDefinition Height="*" />
-                        <RowDefinition Height="*" />
-                        <RowDefinition Height="*" />
-                        <RowDefinition Height="*" />
-                        <RowDefinition Height="*" />
-                        <RowDefinition Height="*" />
-                        <RowDefinition Height="*" />
-                        <RowDefinition Height="*" />
-                        <RowDefinition Height="*" />
-                    </Grid.RowDefinitions>
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="110" />
-                        <ColumnDefinition Width="110" />
-                    </Grid.ColumnDefinitions>
+            <ScrollViewer VerticalScrollBarVisibility="Auto" FocusVisualStyle="{x:Null}">
+                <StackPanel Margin="0 5 0 20" HorizontalAlignment="Center">
+                    <Label Padding="10 5" FontWeight="Bold" FontSize="16" FontFamily="Bahnschrift">Editor</Label>
+                    <Grid Margin="15 0 5 0" VerticalAlignment="Center">
+                        <Grid.Resources>
+                            <Style TargetType="Border" >
+                                <Setter Property="Padding" Value="5,5,5,5" />
+                            </Style>
+                        </Grid.Resources>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="*" />
+                            <RowDefinition Height="*" />
+                            <RowDefinition Height="*" />
+                            <RowDefinition Height="*" />
+                            <RowDefinition Height="*" />
+                            <RowDefinition Height="*" />
+                            <RowDefinition Height="*" />
+                            <RowDefinition Height="*" />
+                            <RowDefinition Height="*" />
+                        </Grid.RowDefinitions>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="110" />
+                            <ColumnDefinition Width="110" />
+                        </Grid.ColumnDefinitions>
 
-                    <Border Grid.Row="0" Grid.Column="0">
-                        <TextBlock VerticalAlignment="Center">Autosave</TextBlock>
-                    </Border>
+                        <Border Grid.Row="0" Grid.Column="0">
+                            <TextBlock VerticalAlignment="Center">Autosave</TextBlock>
+                        </Border>
 
-                    <Border Grid.Row="0" Grid.Column="1">
-                        <CheckBox x:Name="CheckAutosave" Click="CheckAutosave_Click"/>
-                    </Border>
+                        <Border Grid.Row="0" Grid.Column="1">
+                            <CheckBox x:Name="CheckAutosave" Click="CheckAutosave_Click"/>
+                        </Border>
 
-                    <Border Grid.Row="1" Grid.Column="0">
-                        <TextBlock VerticalAlignment="Center">Show Spectrogram</TextBlock>
-                    </Border>
+                        <Border Grid.Row="1" Grid.Column="0">
+                            <TextBlock VerticalAlignment="Center">Show Spectrogram</TextBlock>
+                        </Border>
 
-                    <Border Grid.Row="1" Grid.Column="1">
-                        <CheckBox x:Name="CheckShowSpectrogram" Click="CheckShowSpectrogram_Click"/>
-                    </Border>
+                        <Border Grid.Row="1" Grid.Column="1">
+                            <CheckBox x:Name="CheckShowSpectrogram" Click="CheckShowSpectrogram_Click"/>
+                        </Border>
 
-                    <Border Grid.Row="2" Grid.Column="0">
-                        <TextBlock FontSize="10" VerticalAlignment="Center">Default Note Speed</TextBlock>
-                    </Border>
+                        <Border Grid.Row="2" Grid.Column="0">
+                            <TextBlock FontSize="10" VerticalAlignment="Center">Default Note Speed</TextBlock>
+                        </Border>
 
-                    <Border Grid.Row="2" Grid.Column="1">
-                        <StackPanel Orientation="Horizontal">
-                            <TextBox x:Name="txtDefaultNoteSpeed" Width="80" LostFocus="TxtDefaultNoteSpeed_LostFocus" VerticalAlignment="Center"/>
-                        </StackPanel>
-                    </Border>
+                        <Border Grid.Row="2" Grid.Column="1">
+                            <StackPanel Orientation="Horizontal">
+                                <TextBox x:Name="txtDefaultNoteSpeed" Width="80" LostFocus="TxtDefaultNoteSpeed_LostFocus" VerticalAlignment="Center"/>
+                            </StackPanel>
+                        </Border>
 
-                </Grid>
-                <Label Margin="0 10 0 0" Padding="10 5" FontWeight="Bold" FontSize="16" FontFamily="Bahnschrift">Audio Playback</Label>
-                <Grid Margin="15 0 5 0" VerticalAlignment="Center">
-                    <Grid.Resources>
-                        <Style TargetType="Border" >
-                            <Setter Property="Padding" Value="5,5,5,5" />
-                        </Style>
-                    </Grid.Resources>
-                    <Grid.RowDefinitions>
-                        <RowDefinition Height="*" />
-                        <RowDefinition Height="*" />
-                        <RowDefinition Height="*" />
-                        <RowDefinition Height="*" />
-                        <RowDefinition Height="*" />
-                        <RowDefinition Height="*" />
-                        <RowDefinition Height="*" />
-                        <RowDefinition Height="*" />
-                        <RowDefinition Height="*" />
-                    </Grid.RowDefinitions>
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="110" />
-                        <ColumnDefinition Width="110" />
-                    </Grid.ColumnDefinitions>
+                    </Grid>
+                    <Label Margin="0 10 0 0" Padding="10 5" FontWeight="Bold" FontSize="16" FontFamily="Bahnschrift">Audio Playback</Label>
+                    <Grid Margin="15 0 5 0" VerticalAlignment="Center">
+                        <Grid.Resources>
+                            <Style TargetType="Border" >
+                                <Setter Property="Padding" Value="5,5,5,5" />
+                            </Style>
+                        </Grid.Resources>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="*" />
+                            <RowDefinition Height="*" />
+                            <RowDefinition Height="*" />
+                            <RowDefinition Height="*" />
+                            <RowDefinition Height="*" />
+                            <RowDefinition Height="*" />
+                            <RowDefinition Height="*" />
+                            <RowDefinition Height="*" />
+                            <RowDefinition Height="*" />
+                        </Grid.RowDefinitions>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="110" />
+                            <ColumnDefinition Width="110" />
+                        </Grid.ColumnDefinitions>
 
-                    <Border Grid.Row="0" Grid.Column="0">
-                        <TextBlock VerticalAlignment="Center">Output Device</TextBlock>
-                    </Border>
+                        <Border Grid.Row="0" Grid.Column="0">
+                            <TextBlock VerticalAlignment="Center">Output Device</TextBlock>
+                        </Border>
 
-                    <Border Grid.Row="0" Grid.Column="1">
-                        <ComboBox x:Name="comboPlaybackDevice" DisplayMemberPath="Name" SelectionChanged="ComboPlaybackDevice_SelectionChanged" VerticalAlignment="Center"/>
-                    </Border>
+                        <Border Grid.Row="0" Grid.Column="1">
+                            <ComboBox x:Name="comboPlaybackDevice" DisplayMemberPath="Name" SelectionChanged="ComboPlaybackDevice_SelectionChanged" VerticalAlignment="Center"/>
+                        </Border>
 
-                    <Border Grid.Row="1" Grid.Column="0">
-                        <TextBlock VerticalAlignment="Center">Audio Latency</TextBlock>
-                    </Border>
+                        <Border Grid.Row="1" Grid.Column="0">
+                            <TextBlock VerticalAlignment="Center">Audio Latency</TextBlock>
+                        </Border>
 
-                    <Border Grid.Row="1" Grid.Column="1">
-                        <StackPanel Orientation="Horizontal">
-                            <TextBox x:Name="txtAudioLatency" Width="80" LostFocus="TxtAudioLatency_LostFocus" VerticalAlignment="Center"/>
-                            <Label>ms</Label>
-                        </StackPanel>
-                    </Border>
+                        <Border Grid.Row="1" Grid.Column="1">
+                            <StackPanel Orientation="Horizontal">
+                                <TextBox x:Name="txtAudioLatency" Width="80" LostFocus="TxtAudioLatency_LostFocus" VerticalAlignment="Center"/>
+                                <Label>ms</Label>
+                            </StackPanel>
+                        </Border>
 
-                    <Border Grid.Row="2" Grid.Column="0">
-                        <TextBlock VerticalAlignment="Center">Note Sound</TextBlock>
-                    </Border>
+                        <Border Grid.Row="2" Grid.Column="0">
+                            <TextBlock VerticalAlignment="Center">Note Sound</TextBlock>
+                        </Border>
 
-                    <Border Grid.Row="2" Grid.Column="1">
-                        <ComboBox x:Name="comboDrumSample" SelectionChanged="ComboDrumSample_SelectionChanged" VerticalAlignment="Center"/>
-                    </Border>
+                        <Border Grid.Row="2" Grid.Column="1">
+                            <ComboBox x:Name="comboDrumSample" SelectionChanged="ComboDrumSample_SelectionChanged" VerticalAlignment="Center"/>
+                        </Border>
 
-                    <Border Grid.Row="3" Grid.Column="0">
-                        <TextBlock VerticalAlignment="Center">Pan Note Sounds</TextBlock>
-                    </Border>
+                        <Border Grid.Row="3" Grid.Column="0">
+                            <TextBlock VerticalAlignment="Center">Pan Note Sounds</TextBlock>
+                        </Border>
 
-                    <Border Grid.Row="3" Grid.Column="1">
-                        <CheckBox x:Name="checkPanNotes" Click="checkPanNotes_Click"/>
-                    </Border>
+                        <Border Grid.Row="3" Grid.Column="1">
+                            <CheckBox x:Name="checkPanNotes" Click="checkPanNotes_Click"/>
+                        </Border>
 
-                    <Border Grid.Row="4" Grid.Column="0">
-                        <TextBlock FontSize="10.5"  VerticalAlignment="Center">Default Song Volume</TextBlock>
-                    </Border>
+                        <Border Grid.Row="4" Grid.Column="0">
+                            <TextBlock FontSize="10.5"  VerticalAlignment="Center">Default Song Volume</TextBlock>
+                        </Border>
 
-                    <Border Grid.Row="4" Grid.Column="1">
-                        <DockPanel>
-                            <TextBlock x:Name="txtSongVol" DockPanel.Dock="Right" Width="30" Margin="5 0 0 0">0%</TextBlock>
-                            <Slider x:Name="sliderSongVol" Maximum="1" ValueChanged="SliderSongVol_ValueChanged" IsMoveToPointEnabled="True" MouseLeftButtonUp="sliderSongVol_MouseLeftButtonUp" Thumb.DragCompleted="sliderSongVol_DragCompleted"/>
-                        </DockPanel>
-                    </Border>
+                        <Border Grid.Row="4" Grid.Column="1">
+                            <DockPanel>
+                                <TextBlock x:Name="txtSongVol" DockPanel.Dock="Right" Width="30" Margin="5 0 0 0">0%</TextBlock>
+                                <Slider x:Name="sliderSongVol" Maximum="1" ValueChanged="SliderSongVol_ValueChanged" IsMoveToPointEnabled="True" MouseLeftButtonUp="sliderSongVol_MouseLeftButtonUp" Thumb.DragCompleted="sliderSongVol_DragCompleted"/>
+                            </DockPanel>
+                        </Border>
 
-                    <Border Grid.Row="5" Grid.Column="0">
-                        <TextBlock FontSize="10.5" VerticalAlignment="Center">Default Note Volume</TextBlock>
-                    </Border>
+                        <Border Grid.Row="5" Grid.Column="0">
+                            <TextBlock FontSize="10.5" VerticalAlignment="Center">Default Note Volume</TextBlock>
+                        </Border>
 
-                    <Border Grid.Row="5" Grid.Column="1">
-                        <DockPanel>
-                            <TextBlock x:Name="txtDrumVol" DockPanel.Dock="Right" Width="30" Margin="5 0 0 0">0%</TextBlock>
-                            <Slider x:Name="sliderDrumVol" Maximum="1" ValueChanged="SliderDrumVol_ValueChanged" IsMoveToPointEnabled="True" MouseLeftButtonUp="sliderDrumVol_MouseLeftButtonUp" Thumb.DragCompleted="sliderDrumVol_DragCompleted"/>
-                        </DockPanel>
-                    </Border>
-                </Grid>
-                <Label Margin="0 10 0 0" Padding="10 5" FontWeight="Bold" FontSize="16" FontFamily="Bahnschrift">Miscellaneous</Label>
-                <Grid Margin="15 0 5 0" VerticalAlignment="Center">
-                    <Grid.Resources>
-                        <Style TargetType="Border" >
-                            <Setter Property="Padding" Value="5,5,5,5" />
-                        </Style>
-                    </Grid.Resources>
-                    <Grid.RowDefinitions>
-                        <RowDefinition Height="*" />
-                        <RowDefinition Height="*" />
-                        <RowDefinition Height="*" />
-                        <RowDefinition Height="*" />
-                        <RowDefinition Height="*" />
-                        <RowDefinition Height="*" />
-                        <RowDefinition Height="*" />
-                        <RowDefinition Height="*" />
-                        <RowDefinition Height="*" />
-                    </Grid.RowDefinitions>
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="110" />
-                        <ColumnDefinition Width="110" />
-                    </Grid.ColumnDefinitions>
+                        <Border Grid.Row="5" Grid.Column="1">
+                            <DockPanel>
+                                <TextBlock x:Name="txtDrumVol" DockPanel.Dock="Right" Width="30" Margin="5 0 0 0">0%</TextBlock>
+                                <Slider x:Name="sliderDrumVol" Maximum="1" ValueChanged="SliderDrumVol_ValueChanged" IsMoveToPointEnabled="True" MouseLeftButtonUp="sliderDrumVol_MouseLeftButtonUp" Thumb.DragCompleted="sliderDrumVol_DragCompleted"/>
+                            </DockPanel>
+                        </Border>
+                    </Grid>
+                    <Label x:Name="spectrogramOptionsLabel" Margin="0 10 0 0" Padding="10 5" FontWeight="Bold" FontSize="16" FontFamily="Bahnschrift" Visibility="Collapsed">Spectrogram</Label>
+                    <Grid x:Name="spectrogramOptions" Margin="15 0 5 0" VerticalAlignment="Center" Visibility="Collapsed">
+                        <Grid.Resources>
+                            <Style TargetType="Border">
+                                <Setter Property="Padding" Value="5,5,5,5" />
+                            </Style>
+                        </Grid.Resources>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="*" />
+                            <RowDefinition Height="*" />
+                            <RowDefinition Height="*" />
+                            <RowDefinition Height="*" />
+                            <RowDefinition Height="*" />
+                        </Grid.RowDefinitions>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="110" />
+                            <ColumnDefinition Width="110" />
+                        </Grid.ColumnDefinitions>
 
-                    <Border Grid.Row="0" Grid.Column="0">
-                        <TextBlock VerticalAlignment="Center">Show in Discord</TextBlock>
-                    </Border>
+                        <Border Grid.Row="0" Grid.Column="0">
+                            <TextBlock VerticalAlignment="Center">Cache Images</TextBlock>
+                        </Border>
 
-                    <Border Grid.Row="0" Grid.Column="1">
-                        <CheckBox x:Name="checkDiscord" Click="CheckDiscord_Click"/>
-                    </Border>
+                        <Border Grid.Row="0" Grid.Column="1">
+                            <CheckBox x:Name="checkSpectrogramCache" Click="checkSpectrogramCache_Click" />
+                        </Border>
 
-                    <Border Grid.Row="1" Grid.Column="0">
-                        <TextBlock VerticalAlignment="Center">Check for Updates</TextBlock>
-                    </Border>
+                        <TextBlock Grid.Row="1" Grid.ColumnSpan="2" FontSize="8" VerticalAlignment="Center" TextWrapping="WrapWithOverflow">
+                            Faster spectrogram loading after it's been generated once. Warning:
+                            stores images in cache folder inside map directory, so make sure to
+                            exclude it from the ZIP if you're doing it outside of Edda.
+                        </TextBlock>
 
-                    <Border Grid.Row="1" Grid.Column="1">
-                        <CheckBox x:Name="checkStartupUpdate" Click="CheckStartupUpdate_Click"/>
-                    </Border>
+                        <Border Grid.Row="2" Grid.Column="0">
+                            <TextBlock VerticalAlignment="Center">Type</TextBlock>
+                        </Border>
 
-                    <Border Grid.Row="2" Grid.Column="0">
-                        <TextBlock VerticalAlignment="Center">Map Save Location</TextBlock>
-                    </Border>
+                        <Border Grid.Row="2" Grid.Column="1">
+                            <StackPanel Orientation="Horizontal">
+                                <ComboBox x:Name="comboSpectrogramType" SelectionChanged="ComboSpectrogramType_SelectionChanged"></ComboBox>
+                            </StackPanel>
+                        </Border>
 
-                    <Border Grid.Row="2" Grid.Column="1">
-                        <ComboBox x:Name="comboMapSaveFolder" VerticalAlignment="Center" SelectionChanged="comboMapSaveFolder_SelectionChanged">
-                            <ComboBoxItem x:Name="comboMapSaveFolder_Documents">Documents</ComboBoxItem>
-                            <ComboBoxItem x:Name="comboMapSaveFolder_GameInstall">Game Install</ComboBoxItem>
-                        </ComboBox>
-                    </Border>
+                        <Border Grid.Row="3" Grid.Column="0">
+                            <TextBlock VerticalAlignment="Center">Frequency</TextBlock>
+                        </Border>
 
-                    <Border Grid.Row="3" Grid.ColumnSpan="2" Padding="0">
-                        <TextBlock Width="210" FontSize="10" FontStyle="Italic" x:Name="txtMapSaveFolderPath" VerticalAlignment="Center" MouseLeftButtonUp="txtMapSaveFolderPath_MouseLeftButtonUp" Foreground="{DynamicResource {x:Static SystemColors.HotTrackBrushKey}}">C:/Username/Documents/Ragnarock/CustomSongs</TextBlock>
-                    </Border>
-                </Grid>
-            </StackPanel>
+                        <Border Grid.Row="3" Grid.Column="1">
+                            <StackPanel Orientation="Horizontal">
+                                <TextBox x:Name="txtSpectrogramFrequency" HorizontalAlignment="Left" Width="100" LostFocus="TxtSpectrogramFrequency_LostFocus" KeyDown="TxtSpectrogramFrequency_KeyDown" />
+                            </StackPanel>
+                        </Border>
+
+                        <Border Grid.Row="4" Grid.Column="0">
+                            <TextBlock VerticalAlignment="Center">Colormap</TextBlock>
+                        </Border>
+
+                        <Border Grid.Row="4" Grid.Column="1">
+                            <StackPanel Orientation="Horizontal">
+                                <ComboBox x:Name="comboSpectrogramColormap" SelectionChanged="ComboSpectrogramColormap_SelectionChanged"></ComboBox>
+                            </StackPanel>
+                        </Border>
+                    </Grid>
+                    <Label Margin="0 10 0 0" Padding="10 5" FontWeight="Bold" FontSize="16" FontFamily="Bahnschrift">Miscellaneous</Label>
+                    <Grid Margin="15 0 5 0" VerticalAlignment="Center">
+                        <Grid.Resources>
+                            <Style TargetType="Border" >
+                                <Setter Property="Padding" Value="5,5,5,5" />
+                            </Style>
+                        </Grid.Resources>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="*" />
+                            <RowDefinition Height="*" />
+                            <RowDefinition Height="*" />
+                            <RowDefinition Height="*" />
+                            <RowDefinition Height="*" />
+                            <RowDefinition Height="*" />
+                            <RowDefinition Height="*" />
+                            <RowDefinition Height="*" />
+                            <RowDefinition Height="*" />
+                        </Grid.RowDefinitions>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="110" />
+                            <ColumnDefinition Width="110" />
+                        </Grid.ColumnDefinitions>
+
+                        <Border Grid.Row="0" Grid.Column="0">
+                            <TextBlock VerticalAlignment="Center">Show in Discord</TextBlock>
+                        </Border>
+
+                        <Border Grid.Row="0" Grid.Column="1">
+                            <CheckBox x:Name="checkDiscord" Click="CheckDiscord_Click"/>
+                        </Border>
+
+                        <Border Grid.Row="1" Grid.Column="0">
+                            <TextBlock VerticalAlignment="Center">Check for Updates</TextBlock>
+                        </Border>
+
+                        <Border Grid.Row="1" Grid.Column="1">
+                            <CheckBox x:Name="checkStartupUpdate" Click="CheckStartupUpdate_Click"/>
+                        </Border>
+
+                        <Border Grid.Row="2" Grid.Column="0">
+                            <TextBlock VerticalAlignment="Center">Map Save Location</TextBlock>
+                        </Border>
+
+                        <Border Grid.Row="2" Grid.Column="1">
+                            <ComboBox x:Name="comboMapSaveFolder" VerticalAlignment="Center" SelectionChanged="comboMapSaveFolder_SelectionChanged">
+                                <ComboBoxItem x:Name="comboMapSaveFolder_Documents">Documents</ComboBoxItem>
+                                <ComboBoxItem x:Name="comboMapSaveFolder_GameInstall">Game Install</ComboBoxItem>
+                            </ComboBox>
+                        </Border>
+
+                        <Border Grid.Row="3" Grid.ColumnSpan="2" Padding="0">
+                            <TextBlock Width="210" FontSize="10" FontStyle="Italic" x:Name="txtMapSaveFolderPath" VerticalAlignment="Center" MouseLeftButtonUp="txtMapSaveFolderPath_MouseLeftButtonUp" Foreground="{DynamicResource {x:Static SystemColors.HotTrackBrushKey}}">C:/Username/Documents/Ragnarock/CustomSongs</TextBlock>
+                        </Border>
+                    </Grid>
+                </StackPanel>
+            </ScrollViewer>
         </DockPanel>
     </Grid>
 </Window>

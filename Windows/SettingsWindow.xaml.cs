@@ -41,6 +41,11 @@ namespace Edda
             checkDiscord.IsChecked = userSettings.GetBoolForKey(UserSettingsKey.EnableDiscordRPC);
             CheckAutosave.IsChecked = userSettings.GetBoolForKey(UserSettingsKey.EnableAutosave);
             CheckShowSpectrogram.IsChecked = userSettings.GetBoolForKey(UserSettingsKey.EnableSpectrogram);
+            ToggleSpectrogramOptionsVisibility();
+            InitComboSpectrogramType();
+            InitComboSpectrogramColormap();
+            checkSpectrogramCache.IsChecked = userSettings.GetBoolForKey(UserSettingsKey.SpectrogramCache);
+            txtSpectrogramFrequency.Text = userSettings.GetValueForKey(UserSettingsKey.SpectrogramFrequency);
             checkStartupUpdate.IsChecked = userSettings.GetBoolForKey(UserSettingsKey.CheckForUpdates);
             comboMapSaveFolder.SelectedIndex = int.Parse(userSettings.GetValueForKey(UserSettingsKey.MapSaveLocationIndex));
             txtMapSaveFolderPath.Text = (comboMapSaveFolder.SelectedIndex == 0) ? Program.DocumentsMapFolder : userSettings.GetValueForKey(UserSettingsKey.MapSaveLocationPath);
@@ -52,6 +57,7 @@ namespace Edda
 
         private void CheckShowSpectrogram_Click(object sender, RoutedEventArgs e) {
             bool newStatus = CheckShowSpectrogram.IsChecked ?? false;
+            ToggleSpectrogramOptionsVisibility();
             userSettings.SetValueForKey(UserSettingsKey.EnableSpectrogram, newStatus);
             UpdateSettings();
         }
@@ -158,6 +164,73 @@ namespace Edda
             userSettings.SetValueForKey(UserSettingsKey.DefaultNoteVolume, sliderDrumVol.Value);
             UpdateSettings();
         }
+
+        // Spectrogram options
+        private void ToggleSpectrogramOptionsVisibility() {
+            if (CheckShowSpectrogram.IsChecked ?? false) {
+                spectrogramOptionsLabel.Visibility = Visibility.Visible;
+                spectrogramOptions.Visibility = Visibility.Visible;
+            } else {
+                spectrogramOptionsLabel.Visibility = Visibility.Collapsed;
+                spectrogramOptions.Visibility = Visibility.Collapsed;
+            }
+        }
+        private void checkSpectrogramCache_Click(object sender, RoutedEventArgs e) {
+            bool newStatus = checkSpectrogramCache.IsChecked ?? false;
+            userSettings.SetValueForKey(UserSettingsKey.SpectrogramCache, newStatus);
+            if (doneInit) {
+                UpdateSettings();
+            }
+        }
+        private void ComboSpectrogramType_SelectionChanged(object sender, SelectionChangedEventArgs e) {
+            userSettings.SetValueForKey(UserSettingsKey.SpectrogramType, comboSpectrogramType.SelectedItem.ToString());
+            if (doneInit) {
+                UpdateSettings();
+            }
+        }
+        private void InitComboSpectrogramType() {
+            string selectedSpectrogramType = userSettings.GetValueForKey(UserSettingsKey.SpectrogramType);
+            foreach (var type in Enum.GetNames(typeof(VorbisSpectrogramGenerator.SpectrogramType))) {
+                int i = comboSpectrogramType.Items.Add(type);
+                if (type == selectedSpectrogramType) {
+                    comboSpectrogramType.SelectedIndex = i;
+                }
+            }
+        }
+        private void TxtSpectrogramFrequency_LostFocus(object sender, RoutedEventArgs e) {
+            int.TryParse(userSettings.GetValueForKey(UserSettingsKey.SpectrogramFrequency), out int prevFrequency);
+            int frequency;
+            if (int.TryParse(txtSpectrogramFrequency.Text, out frequency) && frequency >= Editor.Spectrogram.MinFreq && frequency <= Editor.Spectrogram.MaxFreq) {
+                if (frequency != prevFrequency) {
+                    userSettings.SetValueForKey(UserSettingsKey.SpectrogramFrequency, frequency);
+                    UpdateSettings();
+                }
+            } else {
+                MessageBox.Show($"The frequency must be an integer between {Editor.Spectrogram.MinFreq} and {Editor.Spectrogram.MaxFreq}.", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                frequency = prevFrequency;
+            }
+            txtSpectrogramFrequency.Text = frequency.ToString();
+        }
+        private void TxtSpectrogramFrequency_KeyDown(object sender, KeyEventArgs e) {
+            if (e.Key == Key.Return) {
+                TxtSpectrogramFrequency_LostFocus(sender, null);
+            }
+        }
+        private void ComboSpectrogramColormap_SelectionChanged(object sender, SelectionChangedEventArgs e) {
+            userSettings.SetValueForKey(UserSettingsKey.SpectrogramColormap, comboSpectrogramColormap.SelectedItem.ToString());
+            if (doneInit) {
+                UpdateSettings();
+            }
+        }
+        private void InitComboSpectrogramColormap() {
+            string selectedSpectrogramColormap = userSettings.GetValueForKey(UserSettingsKey.SpectrogramColormap);
+            foreach (var colormap in Spectrogram.Colormap.GetColormapNames()) {
+                int i = comboSpectrogramColormap.Items.Add(colormap);
+                if (colormap == selectedSpectrogramColormap) {
+                    comboSpectrogramColormap.SelectedIndex = i;
+                }
+            }
+        }
         
         private void CheckDiscord_Click(object sender, RoutedEventArgs e) {
             bool newStatus = checkDiscord.IsChecked ?? false;
@@ -199,7 +272,7 @@ namespace Edda
 
         private void UpdateSettings() {
             userSettings.Write();
-            caller.LoadSettingsFile();
+            caller.LoadSettingsFile(true);
         }
 
         private void txtMapSaveFolderPath_MouseLeftButtonUp(object sender, MouseButtonEventArgs e) {

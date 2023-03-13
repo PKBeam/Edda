@@ -12,6 +12,7 @@ using Edda.Const;
 using Spectrogram;
 using System.Threading.Channels;
 using NAudio.Wave;
+using DrawingColor = System.Drawing.Color;
 using System.Drawing;
 using System.Drawing.Imaging;
 using System.Reflection.Metadata;
@@ -20,21 +21,41 @@ public class VorbisSpectrogramGenerator {
 
     private CancellationTokenSource tokenSource;
     private string filePath;
+    private SpectrogramType type;
+    private int maxFreq;
+    private string colormap;
     private bool isDrawing;
-    // Since the BMP generated for spectrogram doesn't depend on the component height/width FOR NOW, we can cache it to save on calculations.
+    // Since the BMP generated for spectrogram doesn't depend on the component height/width, we can cache it to save on calculations.
+    private bool cache;
     private ImageSource cachedSpectrogram;
     private string cachedBmpSpectrogramPath;
 
-    public VorbisSpectrogramGenerator(string filePath) {
+    public VorbisSpectrogramGenerator(string filePath, bool cache, SpectrogramType? type, int? maxFreq, String colormap) {
         RecreateTokens();
         this.filePath = filePath;
-        var cacheDirectoryPath = Path.Combine(Path.GetDirectoryName(filePath), Program.CachePath);
-        if (!Directory.Exists(cacheDirectoryPath)) {
-            Directory.CreateDirectory(cacheDirectoryPath);
-        }
-        this.cachedBmpSpectrogramPath = Path.Combine(cacheDirectoryPath, Editor.Spectrogram.CachedBmpFilename);
+        InitSettings(cache, type, maxFreq, colormap);
         this.isDrawing = false;
     }
+
+    public void InitSettings(bool cache, SpectrogramType? type, int? maxFreq, String colormap) {
+        this.cache = cache;
+        this.type = type ?? SpectrogramType.Standard;
+        this.maxFreq = maxFreq ?? Editor.Spectrogram.DefaultFreq;
+        this.colormap = colormap ?? Colormap.Blues.Name;
+        if (cache) {
+            var cacheDirectoryPath = Path.Combine(Path.GetDirectoryName(filePath), Program.CachePath);
+            if (!Directory.Exists(cacheDirectoryPath)) {
+                Directory.CreateDirectory(cacheDirectoryPath);
+            }
+            this.cachedBmpSpectrogramPath = Path.Combine(cacheDirectoryPath, String.Format(Editor.Spectrogram.CachedBmpFilenameFormat, this.type, this.maxFreq, colormap));
+        }
+        this.cachedSpectrogram = null;
+    }
+
+    public DrawingColor GetBackgroundColor() {
+        return Colormap.GetColormap(colormap).GetColor(0);
+    }
+
     public ImageSource Draw(double height, double width) {
         if (height == 0 || width == 0) {
             return null;
@@ -54,9 +75,10 @@ public class VorbisSpectrogramGenerator {
         if (cachedSpectrogram == null) {
             try {
                 // check for existing BMP first
-                if (File.Exists(cachedBmpSpectrogramPath)) {
-                    Bitmap bmp = (Bitmap) Bitmap.FromFile(cachedBmpSpectrogramPath);
-                    cachedSpectrogram = TransformBitmap(bmp);
+                if (cache && File.Exists(cachedBmpSpectrogramPath)) {
+                    using (Bitmap bmp = (Bitmap) Bitmap.FromFile(cachedBmpSpectrogramPath)) {
+                        cachedSpectrogram = TransformBitmap(bmp);
+                    }
                 } else {
                     cachedSpectrogram = _Draw(height, width, tokenSource.Token);
                 }
@@ -79,7 +101,7 @@ public class VorbisSpectrogramGenerator {
         reader.Read(audioBuffer, 0, (int)numSamples);
         reader.Dispose();
 
-        var audioBufferDouble = Array.ConvertAll(audioBuffer, x => Editor.Spectrogram.AmplitudeScale * (double)x);
+        var audioBufferDouble = Array.ConvertAll(audioBuffer, x => maxFreq * (double)x);
 
         // cancel task if required
         if (ct.IsCancellationRequested) {
@@ -88,37 +110,54 @@ public class VorbisSpectrogramGenerator {
         }
 
         var fftSize = (int)Math.Pow(2, Editor.Spectrogram.FftSizeExp);
-        var sg = new SpectrogramGenerator(sampleRate, fftSize: fftSize, stepSize: Editor.Spectrogram.StepSize, maxFreq: Editor.Spectrogram.MaxFreq);//, fixedWidth: (int)height);
-        sg.Colormap = Colormap.Blues;
+        var sg = new SpectrogramGenerator(sampleRate, fftSize: fftSize, stepSize: Editor.Spectrogram.StepSize, maxFreq: maxFreq);
+        sg.Colormap = Colormap.GetColormap(colormap);
         sg.Add(audioBufferDouble);
 
-        Bitmap bmp = sg.GetBitmapMel(melBinCount: Editor.Spectrogram.Width);
-        bmp.Save(cachedBmpSpectrogramPath, ImageFormat.Png);
+        Bitmap bmp = null;
+        switch (type) {
+            case SpectrogramType.Standard:
+                bmp = sg.GetBitmap();
+                break;
+            case SpectrogramType.MelScale:
+                bmp = sg.GetBitmapMel(melBinCount: Editor.Spectrogram.MelBinCount);
+                break;
+            case SpectrogramType.MaxScale:
+                bmp = sg.GetBitmapMax();
+                break;
+        }
+        if (cache) {
+            bmp.Save(cachedBmpSpectrogramPath, ImageFormat.Png);
+        }
         sg = null;
         isDrawing = false;
 
-        return TransformBitmap(bmp);
+        ImageSource b = TransformBitmap(bmp);
+        bmp.Dispose();
+        return b;
     }
+    [System.Runtime.InteropServices.DllImport("gdi32.dll")]
+    public static extern bool DeleteObject(IntPtr hObject);
     private ImageSource TransformBitmap(Bitmap bmp) {
-        BitmapSource wpfBmp = System.Windows.Interop.Imaging.CreateBitmapSourceFromHBitmap(
-           bmp.GetHbitmap(),
-           IntPtr.Zero,
-           Int32Rect.Empty,
-           BitmapSizeOptions.FromWidthAndHeight(bmp.Width, bmp.Height)
-        );
-        isDrawing = false;
+        // https://stackoverflow.com/questions/1546091/wpf-createbitmapsourcefromhbitmap-memory-leak
+        IntPtr hBitmap = bmp.GetHbitmap();
+        try {
+            BitmapSource wpfBmp = System.Windows.Interop.Imaging.CreateBitmapSourceFromHBitmap(
+                hBitmap,
+                IntPtr.Zero,
+                Int32Rect.Empty,
+                BitmapSizeOptions.FromWidthAndHeight(bmp.Width, bmp.Height)
+            );
+            isDrawing = false;
 
-        var flipBmp = new TransformedBitmap(wpfBmp, new RotateTransform(-90));
+            var flipBmp = new TransformedBitmap(wpfBmp, new RotateTransform(-90));
 
-        // need to freeze this otherwise it cannot be accessed
-        flipBmp.Freeze();
+            // need to freeze this otherwise it cannot be accessed
+            flipBmp.Freeze();
 
-        return flipBmp;
-    }
-    public void ClearCache() {
-        cachedSpectrogram = null;
-        if (File.Exists(cachedBmpSpectrogramPath)) {
-            File.Delete(cachedBmpSpectrogramPath);
+            return flipBmp;
+        } finally {
+            DeleteObject(hBitmap);
         }
     }
 
@@ -157,5 +196,11 @@ public class VorbisSpectrogramGenerator {
             tokenSource.Dispose();
         }
         tokenSource = new CancellationTokenSource();
+    }
+
+    public enum SpectrogramType {
+        Standard = 0,
+        MelScale = 1,
+        MaxScale = 2
     }
 }

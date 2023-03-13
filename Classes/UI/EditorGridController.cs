@@ -14,6 +14,8 @@ using System.Windows.Media.Imaging;
 using Brushes = System.Windows.Media.Brushes;
 using System.Windows.Input;
 using Point = System.Windows.Point;
+using MediaColor = System.Windows.Media.Color;
+using DrawingColor = System.Drawing.Color;
 using Edda.Const;
 
 public class EditorGridController {
@@ -48,8 +50,13 @@ public class EditorGridController {
     public double gridSpacing;
     public int gridDivision;
     public bool showWaveform;
-    public bool? showSpectrogram = null;
     public bool snapToGrid = true;
+    // spectrogram settings
+    public bool? showSpectrogram = null;
+    public bool spectrogramCache = true;
+    public VorbisSpectrogramGenerator.SpectrogramType spectrogramType = VorbisSpectrogramGenerator.SpectrogramType.Standard;
+    public int spectrogramFrequency = Editor.Spectrogram.DefaultFreq;
+    public string spectrogramColormap = Spectrogram.Colormap.Blues.Name;
 
     // dynamically added controls
     Border dragSelectBorder = new();
@@ -257,12 +264,12 @@ public class EditorGridController {
 
     // waveform drawing
     public void InitWaveforms(string songPath) {
-        audioSpectrogram = new VorbisSpectrogramGenerator(songPath);
+        audioSpectrogram = new VorbisSpectrogramGenerator(songPath, spectrogramCache, spectrogramType, spectrogramFrequency, spectrogramColormap);
         audioWaveform = new VorbisWaveformGenerator(songPath);
         navWaveform = new VorbisWaveformGenerator(songPath);
     }
-    public void ClearCachedWaveforms() {
-        audioSpectrogram?.ClearCache();
+    public void RefreshSpectrogramWaveform() {
+        audioSpectrogram?.InitSettings(spectrogramCache, spectrogramType, spectrogramFrequency, spectrogramColormap);
     }
     public void DrawScrollingWaveforms() {
         if (showWaveform) {
@@ -335,7 +342,8 @@ public class EditorGridController {
             if (bmp != null) {
                 this.dispatcher.Invoke(() => {
                     imgSpectrogram.Source = bmp;
-                    var spectrogramBackgroundBrush = (SolidColorBrush)new BrushConverter().ConvertFrom(Editor.Spectrogram.BackgroundColor);
+                    DrawingColor bgColor = audioSpectrogram.GetBackgroundColor();
+                    var spectrogramBackgroundBrush = new SolidColorBrush(MediaColor.FromArgb(bgColor.A, bgColor.R, bgColor.G, bgColor.B));
                     canvasSpectrogramLowerOffset.Background = spectrogramBackgroundBrush;
                     canvasSpectrogramUpperOffset.Background = spectrogramBackgroundBrush;
                 });

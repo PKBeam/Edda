@@ -3,9 +3,14 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:edda="clr-namespace:Edda"
         mc:Ignorable="d"
         WindowStartupLocation="CenterScreen"
         x:Name="AppMainWindow" Title="Edda" Height="870" Width="1000" MinHeight="450" MinWidth="1000" Closed="AppMainWindow_Closed" KeyDown="AppMainWindow_KeyDown" KeyUp="AppMainWindow_KeyUp" PreviewKeyDown="AppMainWindow_PreviewKeyDown" PreviewMouseWheel="AppMainWindow_PreviewMouseWheel" Closing="AppMainWindow_Closing" Loaded="AppMainWindow_Loaded">
+    <Window.Resources>
+        <edda:DoubleOffsetConverter x:Key="SpectrogramColumnMaxWidthConverter" Offset="320"/>
+        <edda:DoubleOffsetConverter x:Key="SpectrogramResizeMaxWidthConverter" Offset="323"/>
+    </Window.Resources>
     <DockPanel>
         <Border DockPanel.Dock="Top" Name="TopPanel" BorderBrush="{DynamicResource {x:Static SystemColors.ControlDarkDarkBrushKey}}" BorderThickness="0, 0, 0, 1">
             <Border.Background>
@@ -470,7 +475,7 @@
                                 </StackPanel>
                             </Border>
 
-                            <Border Grid.Row="6" Grid.Column="0" Margin="0 3 0 0">
+                            <Border Grid.Row="6" Grid.ColumnSpan="2" Margin="0 3 0 0">
                                 <TextBlock VerticalAlignment="Center" FontWeight="Bold" FontSize="14" FontFamily="Bahnschrift">Editing Grid</TextBlock>
                             </Border>
 
@@ -522,9 +527,9 @@
                 <ImageBrush ImageSource="/Resources/waterTexture.png" TileMode="Tile" ViewportUnits="Absolute" Viewport="0,0,256,256"/>
             </Grid.Background>
             <Grid.ColumnDefinitions>
-                <ColumnDefinition x:Name="colSpectrogram" Width="Auto"/>
-                <ColumnDefinition Width="5*"/>
-                <ColumnDefinition x:Name="colWaveformVertical" Width="*" MaxWidth="100"/>
+                <ColumnDefinition x:Name="colSpectrogram" Width="Auto" MaxWidth="{Binding ElementName=EditorPanel, Path=ActualWidth, Converter={StaticResource SpectrogramColumnMaxWidthConverter}}"/>
+                <ColumnDefinition Width="5*" MinWidth="300"/>
+                <ColumnDefinition x:Name="colWaveformVertical" Width="*" MaxWidth="100" MinWidth="20"/>
             </Grid.ColumnDefinitions>
             <Border x:Name="borderNavWaveform" Grid.Column="2" BorderBrush="{DynamicResource {x:Static SystemColors.ControlDarkDarkBrushKey}}" BorderThickness="1 0 0 0" Background="#20000000" MouseMove="BorderNavWaveform_MouseMove" MouseEnter="BorderNavWaveform_MouseEnter" MouseLeave="BorderNavWaveform_MouseLeave" MouseLeftButtonDown="BorderNavWaveform_MouseLeftButtonDown" MouseLeftButtonUp="BorderNavWaveform_MouseLeftButtonUp">
                 <Grid>
@@ -628,12 +633,12 @@
             </Grid>
             <Grid x:Name="gridSpectrogram" Grid.Column="0">
                 <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="100" MinWidth="20"/>
+                    <ColumnDefinition Width="100" MinWidth="20" MaxWidth="{Binding ElementName=EditorPanel, Path=ActualWidth, Converter={StaticResource SpectrogramResizeMaxWidthConverter}}"/>
                     <ColumnDefinition Width="3"/>
                 </Grid.ColumnDefinitions>
                 <Border x:Name="borderSpectrogram" Grid.Column="0" BorderBrush="{DynamicResource {x:Static SystemColors.ControlDarkDarkBrushKey}}" BorderThickness="0 0 1 0">
                     <Grid>
-                        <ScrollViewer x:Name="scrollSpectrogram" VerticalScrollBarVisibility="Hidden" CanContentScroll="False" IsEnabled="False">
+                        <ScrollViewer x:Name="scrollSpectrogram" VerticalScrollBarVisibility="Hidden" CanContentScroll="False" ScrollChanged="ScrollSpectrogram_ScrollChanged" PreviewMouseWheel="ScrollSpectrogram_PreviewMouseWheel">
                             <Grid Height="{Binding ElementName=EditorGrid, Path=ActualHeight}">
                                 <Grid.RowDefinitions>
                                     <RowDefinition x:Name="rowSpectrogramUpperOffset"/>
@@ -647,7 +652,7 @@
                         </ScrollViewer>
                     </Grid>
                 </Border>
-                <GridSplitter x:Name="spectrogramResize" Grid.Column="1" ResizeBehavior="PreviousAndCurrent" HorizontalAlignment="Center" VerticalAlignment="Stretch" ShowsPreview="False" Width="3"/>
+                <GridSplitter x:Name="spectrogramResize" Grid.Column="1" ResizeBehavior="PreviousAndCurrent" HorizontalAlignment="Left" VerticalAlignment="Stretch" ShowsPreview="False" Width="3"/>
             </Grid>
         </Grid>
     </DockPanel>
