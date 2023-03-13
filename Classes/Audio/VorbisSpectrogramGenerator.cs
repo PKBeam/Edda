@@ -192,10 +192,9 @@ public class VorbisSpectrogramGenerator {
         return bitmapImage;
     }
     private void RecreateTokens() {
-        if (tokenSource != null) {
-            tokenSource.Dispose();
-        }
+        var oldTokenSource = tokenSource;
         tokenSource = new CancellationTokenSource();
+        oldTokenSource?.Dispose();
     }
 
     public enum SpectrogramType {
