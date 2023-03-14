@@ -57,6 +57,7 @@ public class EditorGridController {
     public VorbisSpectrogramGenerator.SpectrogramType spectrogramType = VorbisSpectrogramGenerator.SpectrogramType.Standard;
     public int spectrogramFrequency = Editor.Spectrogram.DefaultFreq;
     public string spectrogramColormap = Spectrogram.Colormap.Blues.Name;
+    public bool spectrogramFlipped = false;
 
     // dynamically added controls
     Border dragSelectBorder = new();
@@ -264,12 +265,12 @@ public class EditorGridController {
 
     // waveform drawing
     public void InitWaveforms(string songPath) {
-        audioSpectrogram = new VorbisSpectrogramGenerator(songPath, spectrogramCache, spectrogramType, spectrogramFrequency, spectrogramColormap);
+        audioSpectrogram = new VorbisSpectrogramGenerator(songPath, spectrogramCache, spectrogramType, spectrogramFrequency, spectrogramColormap, spectrogramFlipped);
         audioWaveform = new VorbisWaveformGenerator(songPath);
         navWaveform = new VorbisWaveformGenerator(songPath);
     }
     public void RefreshSpectrogramWaveform() {
-        audioSpectrogram?.InitSettings(spectrogramCache, spectrogramType, spectrogramFrequency, spectrogramColormap);
+        audioSpectrogram?.InitSettings(spectrogramCache, spectrogramType, spectrogramFrequency, spectrogramColormap, spectrogramFlipped);
     }
     public void DrawScrollingWaveforms() {
         if (showWaveform) {

@@ -52,6 +52,7 @@ namespace Edda.Const {
         public const string SpectrogramType = "Standard";
         public const int SpectrogramFrequency = Editor.Spectrogram.DefaultFreq;
         public const string SpectrogramColormap = "Blues";
+        public const bool SpectrogramFlipped = false;
         public const bool EnableDiscordRPC = true;
         public const bool EnableAutosave = true;
         public const bool CheckForUpdates = true;
@@ -72,6 +73,7 @@ namespace Edda.Const {
         public const string SpectrogramType = "spectrogramType";
         public const string SpectrogramFrequency = "spectrogramFrequency";
         public const string SpectrogramColormap = "spectrogramColormap";
+        public const string SpectrogramFlipped = "spectrogramFlipped";
         public const string EnableDiscordRPC = "enableDiscordRPC";
         public const string EnableAutosave = "enableAutosave";
         public const string CheckForUpdates = "checkForUpdates";

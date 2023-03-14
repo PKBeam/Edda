@@ -710,6 +710,10 @@ namespace Edda {
                 userSettings.SetValueForKey(UserSettingsKey.SpectrogramColormap, DefaultUserSettings.SpectrogramColormap);
             }
 
+            if (userSettings.GetValueForKey(UserSettingsKey.SpectrogramFlipped) == null) {
+                userSettings.SetValueForKey(UserSettingsKey.SpectrogramFlipped, DefaultUserSettings.SpectrogramFlipped);
+            }
+
             if (userSettings.GetValueForKey(UserSettingsKey.EnableAutosave) == null) {
                 userSettings.SetValueForKey(UserSettingsKey.EnableAutosave, DefaultUserSettings.EnableAutosave);
             }
@@ -756,6 +760,7 @@ namespace Edda {
             int.TryParse(userSettings.GetValueForKey(UserSettingsKey.SpectrogramFrequency), out int spectrogramFrequency);
             gridController.spectrogramFrequency = spectrogramFrequency;
             gridController.spectrogramColormap = userSettings.GetValueForKey(UserSettingsKey.SpectrogramColormap);
+            gridController.spectrogramFlipped = userSettings.GetBoolForKey(UserSettingsKey.SpectrogramFlipped);
             if (reloadWaveforms) {
                 gridController.RefreshSpectrogramWaveform();
                 gridController.DrawSpectrogram();

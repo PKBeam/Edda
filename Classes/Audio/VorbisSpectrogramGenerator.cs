@@ -21,27 +21,30 @@ public class VorbisSpectrogramGenerator {
 
     private CancellationTokenSource tokenSource;
     private string filePath;
+    // Settings
     private SpectrogramType type;
     private int maxFreq;
     private string colormap;
+    private bool drawFlipped;
     private bool isDrawing;
     // Since the BMP generated for spectrogram doesn't depend on the component height/width, we can cache it to save on calculations.
     private bool cache;
     private ImageSource cachedSpectrogram;
     private string cachedBmpSpectrogramPath;
 
-    public VorbisSpectrogramGenerator(string filePath, bool cache, SpectrogramType? type, int? maxFreq, String colormap) {
+    public VorbisSpectrogramGenerator(string filePath, bool cache, SpectrogramType? type, int? maxFreq, String colormap, bool drawFlipped) {
         RecreateTokens();
         this.filePath = filePath;
-        InitSettings(cache, type, maxFreq, colormap);
+        InitSettings(cache, type, maxFreq, colormap, drawFlipped);
         this.isDrawing = false;
     }
 
-    public void InitSettings(bool cache, SpectrogramType? type, int? maxFreq, String colormap) {
+    public void InitSettings(bool cache, SpectrogramType? type, int? maxFreq, String colormap, bool drawFlipped) {
         this.cache = cache;
         this.type = type ?? SpectrogramType.Standard;
         this.maxFreq = maxFreq ?? Editor.Spectrogram.DefaultFreq;
         this.colormap = colormap ?? Colormap.Blues.Name;
+        this.drawFlipped = drawFlipped;
         if (cache) {
             var cacheDirectoryPath = Path.Combine(Path.GetDirectoryName(filePath), Program.CachePath);
             if (!Directory.Exists(cacheDirectoryPath)) {
@@ -150,7 +153,12 @@ public class VorbisSpectrogramGenerator {
             );
             isDrawing = false;
 
-            var flipBmp = new TransformedBitmap(wpfBmp, new RotateTransform(-90));
+            TransformGroup transform = new();
+            transform.Children.Add(new RotateTransform(-90));
+            if (drawFlipped) {
+                transform.Children.Add(new ScaleTransform(-1, 1));
+            }
+            var flipBmp = new TransformedBitmap(wpfBmp, transform);
 
             // need to freeze this otherwise it cannot be accessed
             flipBmp.Freeze();

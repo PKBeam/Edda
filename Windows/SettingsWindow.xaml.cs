@@ -231,6 +231,13 @@ namespace Edda
                 }
             }
         }
+        private void checkSpectrogramFlipped_Click(object sender, RoutedEventArgs e) {
+            bool newStatus = checkSpectrogramFlipped.IsChecked ?? false;
+            userSettings.SetValueForKey(UserSettingsKey.SpectrogramFlipped, newStatus);
+            if (doneInit) {
+                UpdateSettings();
+            }
+        }
         
         private void CheckDiscord_Click(object sender, RoutedEventArgs e) {
             bool newStatus = checkDiscord.IsChecked ?? false;
