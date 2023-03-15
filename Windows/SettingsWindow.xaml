@@ -166,6 +166,7 @@
                             <RowDefinition Height="*" />
                             <RowDefinition Height="*" />
                             <RowDefinition Height="*" />
+                            <RowDefinition Height="*" />
                         </Grid.RowDefinitions>
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="110" />
@@ -197,30 +198,40 @@
                         </Border>
 
                         <Border Grid.Row="3" Grid.Column="0">
-                            <TextBlock VerticalAlignment="Center">Frequency</TextBlock>
+                            <TextBlock VerticalAlignment="Center">Quality</TextBlock>
                         </Border>
 
                         <Border Grid.Row="3" Grid.Column="1">
+                            <StackPanel Orientation="Horizontal">
+                                <ComboBox x:Name="comboSpectrogramQuality" SelectionChanged="ComboSpectrogramQuality_SelectionChanged"></ComboBox>
+                            </StackPanel>
+                        </Border>
+
+                        <Border Grid.Row="4" Grid.Column="0">
+                            <TextBlock VerticalAlignment="Center">Frequency</TextBlock>
+                        </Border>
+
+                        <Border Grid.Row="4" Grid.Column="1">
                             <StackPanel Orientation="Horizontal">
                                 <TextBox x:Name="txtSpectrogramFrequency" HorizontalAlignment="Left" Width="100" LostFocus="TxtSpectrogramFrequency_LostFocus" KeyDown="TxtSpectrogramFrequency_KeyDown" />
                             </StackPanel>
                         </Border>
 
-                        <Border Grid.Row="4" Grid.Column="0">
+                        <Border Grid.Row="5" Grid.Column="0">
                             <TextBlock VerticalAlignment="Center">Colormap</TextBlock>
                         </Border>
 
-                        <Border Grid.Row="4" Grid.Column="1">
+                        <Border Grid.Row="5" Grid.Column="1">
                             <StackPanel Orientation="Horizontal">
                                 <ComboBox x:Name="comboSpectrogramColormap" SelectionChanged="ComboSpectrogramColormap_SelectionChanged"></ComboBox>
                             </StackPanel>
                         </Border>
 
-                        <Border Grid.Row="5" Grid.Column="0">
+                        <Border Grid.Row="6" Grid.Column="0">
                             <TextBlock VerticalAlignment="Center">Flip Image</TextBlock>
                         </Border>
 
-                        <Border Grid.Row="5" Grid.Column="1">
+                        <Border Grid.Row="6" Grid.Column="1">
                             <CheckBox x:Name="checkSpectrogramFlipped" Click="checkSpectrogramFlipped_Click" />
                         </Border>
                     </Grid>

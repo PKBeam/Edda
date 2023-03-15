@@ -43,6 +43,7 @@ namespace Edda
             CheckShowSpectrogram.IsChecked = userSettings.GetBoolForKey(UserSettingsKey.EnableSpectrogram);
             ToggleSpectrogramOptionsVisibility();
             InitComboSpectrogramType();
+            InitComboSpectrogramQuality();
             InitComboSpectrogramColormap();
             checkSpectrogramCache.IsChecked = userSettings.GetBoolForKey(UserSettingsKey.SpectrogramCache);
             txtSpectrogramFrequency.Text = userSettings.GetValueForKey(UserSettingsKey.SpectrogramFrequency);
@@ -195,6 +196,21 @@ namespace Edda
                 int i = comboSpectrogramType.Items.Add(type);
                 if (type == selectedSpectrogramType) {
                     comboSpectrogramType.SelectedIndex = i;
+                }
+            }
+        }
+        private void ComboSpectrogramQuality_SelectionChanged(object sender, SelectionChangedEventArgs e) {
+            userSettings.SetValueForKey(UserSettingsKey.SpectrogramQuality, comboSpectrogramQuality.SelectedItem.ToString());
+            if (doneInit) {
+                UpdateSettings();
+            }
+        }
+        private void InitComboSpectrogramQuality() {
+            string selectedSpectrogramQuality = userSettings.GetValueForKey(UserSettingsKey.SpectrogramQuality);
+            foreach (var quality in Enum.GetNames(typeof(VorbisSpectrogramGenerator.SpectrogramQuality))) {
+                int i = comboSpectrogramQuality.Items.Add(quality);
+                if (quality == selectedSpectrogramQuality) {
+                    comboSpectrogramQuality.SelectedIndex = i;
                 }
             }
         }

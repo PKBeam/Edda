@@ -134,6 +134,13 @@ namespace Edda {
         private void MenuItemDifficultyPredictor_Click(object sender, RoutedEventArgs e) {
             ShowUniqueWindow(() => new DifficultyPredictorWindow(this));
         }
+
+        private void MenuItemClearCache_Click(object sender, RoutedEventArgs e) {
+            MessageBoxResult res = MessageBox.Show("This will delete all of the cached spectrogram images, which will cause it to load slower next time you open this map. Do you want to proceed?", "Warning", MessageBoxButton.YesNoCancel, MessageBoxImage.Warning);
+            if (res == MessageBoxResult.Yes) {
+                ClearSongCache();
+            }
+        }
         
         private void MenuItemSettings_Click(object sender, RoutedEventArgs e) {
             ShowUniqueWindow(() => new SettingsWindow(this, userSettings));

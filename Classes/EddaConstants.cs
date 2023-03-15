@@ -50,6 +50,7 @@ namespace Edda.Const {
         public const bool PanDrumSounds = true;
         public const bool SpectrogramCache = true;
         public const string SpectrogramType = "Standard";
+        public const string SpectrogramQuality = "Medium";
         public const int SpectrogramFrequency = Editor.Spectrogram.DefaultFreq;
         public const string SpectrogramColormap = "Blues";
         public const bool SpectrogramFlipped = false;
@@ -71,6 +72,7 @@ namespace Edda.Const {
         public const string DefaultNoteVolume = "defaultNoteVolume";
         public const string SpectrogramCache = "spectrogramCache";
         public const string SpectrogramType = "spectrogramType";
+        public const string SpectrogramQuality = "spectrogramQuality";
         public const string SpectrogramFrequency = "spectrogramFrequency";
         public const string SpectrogramColormap = "spectrogramColormap";
         public const string SpectrogramFlipped = "spectrogramFlipped";
@@ -163,7 +165,7 @@ namespace Edda.Const {
             public const int DefaultFreq = 11_000; // Hz
             public const int FftSizeExp = 11; // FFT Size = 2^FftSizeExp
             public const int StepSize = 500; // samples
-            public const string CachedBmpFilenameFormat = "spectrogram_{0}_{1}_{2}.png";
+            public const string CachedBmpFilenameFormat = "spectrogram_{0}_{1}_{2}_{3}.png";
         }
 
     }

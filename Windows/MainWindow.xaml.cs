@@ -700,6 +700,10 @@ namespace Edda {
                 userSettings.SetValueForKey(UserSettingsKey.SpectrogramType, DefaultUserSettings.SpectrogramType);
             }
 
+            if (userSettings.GetValueForKey(UserSettingsKey.SpectrogramQuality) == null) {
+                userSettings.SetValueForKey(UserSettingsKey.SpectrogramQuality, DefaultUserSettings.SpectrogramQuality);
+            }
+
             try {
                 int.Parse(userSettings.GetValueForKey(UserSettingsKey.SpectrogramFrequency));
             } catch {
@@ -754,9 +758,18 @@ namespace Edda {
                 gridSpectrogram.Visibility = Visibility.Collapsed;
             }
 
-            gridController.spectrogramCache = userSettings.GetBoolForKey(UserSettingsKey.SpectrogramCache);
+            var cacheSpectrogram = userSettings.GetBoolForKey(UserSettingsKey.SpectrogramCache);
+            gridController.spectrogramCache = cacheSpectrogram;
+            if (showSpectrogram && cacheSpectrogram) {
+                MenuItemClearCache.Visibility = Visibility.Visible;
+            } else {
+                MenuItemClearCache.Visibility = Visibility.Collapsed;
+            }
+
             Enum.TryParse(typeof(VorbisSpectrogramGenerator.SpectrogramType), userSettings.GetValueForKey(UserSettingsKey.SpectrogramType), out object spectrogramType);
             gridController.spectrogramType = (VorbisSpectrogramGenerator.SpectrogramType) spectrogramType;
+            Enum.TryParse(typeof(VorbisSpectrogramGenerator.SpectrogramQuality), userSettings.GetValueForKey(UserSettingsKey.SpectrogramQuality), out object spectrogramQuality);
+            gridController.spectrogramQuality = (VorbisSpectrogramGenerator.SpectrogramQuality) spectrogramQuality;
             int.TryParse(userSettings.GetValueForKey(UserSettingsKey.SpectrogramFrequency), out int spectrogramFrequency);
             gridController.spectrogramFrequency = spectrogramFrequency;
             gridController.spectrogramColormap = userSettings.GetValueForKey(UserSettingsKey.SpectrogramColormap);

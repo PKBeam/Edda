@@ -65,6 +65,7 @@
                         <MenuItem x:Name="MenuItemBpmFinder" Header="_BPM Finder" Click="MenuItemBpmFinder_Click"/>
                         <MenuItem x:Name="MenuItemDifficultyPredictor" Header="_Difficulty Predictor" Click="MenuItemDifficultyPredictor_Click"/>
                         <Separator />
+                        <MenuItem x:Name="MenuItemClearCache" Header="_Clear Cache" Click="MenuItemClearCache_Click"/>
                         <MenuItem x:Name="MenuItemSettings" Header="_Settings" Click="MenuItemSettings_Click"/>
                     </MenuItem>
                     <MenuItem Header="_Help">
