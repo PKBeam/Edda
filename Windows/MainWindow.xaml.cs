@@ -60,6 +60,16 @@ namespace Edda {
                 mapEditor.globalBPM = value;
             }
         }
+
+        public int defaultGridDivision {
+            get {
+                return mapEditor.defaultGridDivision;
+            }
+            set {
+                mapEditor.defaultGridDivision = value;
+            }
+        }
+
         public string userPreferredPlaybackDeviceID {
             get {
                 return userSettings.GetValueForKey(UserSettingsKey.PlaybackDeviceID);
@@ -893,6 +903,7 @@ namespace Edda {
 
             txtGridSpacing.Text = (string)mapEditor.GetMapValue("_editorGridSpacing", (RagnarockMapDifficulties)indx, custom: true); ;
             txtGridDivision.Text = (string)mapEditor.GetMapValue("_editorGridDivision", (RagnarockMapDifficulties)indx, custom: true);
+            mapEditor.defaultGridDivision = int.Parse(txtGridDivision.Text);
             
             // set internal values
             gridController.gridDivision = int.Parse(txtGridDivision.Text);

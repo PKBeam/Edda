@@ -3,6 +3,7 @@ using Edda.Const;
 using Newtonsoft.Json.Linq;
 using SoundTouch;
 using System;
+using System.Linq;
 using System.Collections.Generic;
 
 #nullable enable
@@ -46,6 +47,7 @@ public class MapEditor {
     RagnarockMap beatMap;
     MainWindow parent;
     public double globalBPM;
+    public int defaultGridDivision;
     public double songDuration; // duration of song in seconds
     public int currentDifficultyIndex = -1;
     MapDifficulty?[] difficultyMaps = new MapDifficulty[3];
@@ -355,6 +357,60 @@ public class MapEditor {
         }
         AddNotes(notes);
     }
+
+    public void QuantizeSelection() {
+        if (currentMapDifficulty == null) {
+            return;
+        }
+        
+        double defaultBeats = GetDefaultBeats(defaultGridDivision , globalBPM);
+
+        List<Note> notesToAdd = new List<Note>();
+        List<Note> notesToRemove = new List<Note>();
+
+
+        foreach (Note n in currentMapDifficulty.selectedNotes) {
+            BPMChange? currentBeat = currentMapDifficulty
+                .bpmChanges
+                .OrderByDescending(obj => obj.globalBeat)
+                .Where(obj => obj.globalBeat <= n.beat)
+                .Select(obj => obj)
+                .FirstOrDefault();
+            
+            double offset = 0.0;
+
+            // beat has been changed
+            if (currentBeat != null){
+
+                // use current values for defaultBeats calculation
+                defaultBeats = GetDefaultBeats(currentBeat.gridDivision , currentBeat.BPM);
+
+                // calculate time difference between old beat and start time
+                double differenceDefaultNew = Math.Floor(currentBeat.globalBeat / defaultBeats) * defaultBeats;
+
+                // calculate offset
+                offset = currentBeat.globalBeat - differenceDefaultNew;
+
+            }
+            double newBeat = Math.Floor(n.beat / defaultBeats) * defaultBeats;
+            newBeat += offset;
+
+            if (newBeat != n.beat) {
+                Note newNote = new Note(newBeat, n.col);
+                notesToAdd.Add(newNote);
+                notesToRemove.Add(n);
+            }
+        }
+
+        AddNotes(notesToAdd);            
+        RemoveNotes(notesToRemove);
+    }
+
+    private double GetDefaultBeats(int gridDivision, double bpm) {
+        int division = gridDivision % 2 == 0 ? gridDivision / 2 : gridDivision;
+        return 60.0 / (bpm * division);
+    }
+
     private void ApplyEdit(EditList<Note> e) {
         foreach (var edit in e.items) {
             if (edit.isAdd) {

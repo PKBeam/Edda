@@ -94,6 +94,12 @@ namespace Edda {
             }
             mapEditor.CopySelection();
         }
+        private void MenuItemQuantize_Click(object sender, RoutedEventArgs e) {
+            if (songIsPlaying) {
+                return;
+            }
+            mapEditor.QuantizeSelection();
+        }
         private void MenuItemPaste_Click(object sender, RoutedEventArgs e) {
             if (songIsPlaying) {
                 return;
