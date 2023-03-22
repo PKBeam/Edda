@@ -402,7 +402,7 @@ public class MapEditor {
             newBeat += offset;
 
             // no changes done? do nothing.
-            if (newBeat == n.beat) {
+            if (Helper.DoubleApproxEqual(n.beat, newBeat)) {
                 continue;
             }
 
