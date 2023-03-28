@@ -16,6 +16,7 @@ using DrawingColor = System.Drawing.Color;
 using System.Drawing;
 using System.Drawing.Imaging;
 using System.Reflection.Metadata;
+using System.Runtime.InteropServices;
 
 public class VorbisSpectrogramGenerator {
 
@@ -30,8 +31,8 @@ public class VorbisSpectrogramGenerator {
     private bool isDrawing;
     // Since the BMP generated for spectrogram doesn't depend on the component height/width, we can cache it to save on calculations.
     private bool cache;
-    private ImageSource cachedSpectrogram;
-    private string cachedBmpSpectrogramPath;
+    private ImageSource[] cachedSpectrograms;
+    private string cachedBmpSpectrogramSearchPattern;
 
     public VorbisSpectrogramGenerator(string filePath, bool cache, SpectrogramType? type, SpectrogramQuality? quality, int? maxFreq, String colormap, bool drawFlipped) {
         this.filePath = filePath;
@@ -53,17 +54,17 @@ public class VorbisSpectrogramGenerator {
             if (!Directory.Exists(cacheDirectoryPath)) {
                 Directory.CreateDirectory(cacheDirectoryPath);
             }
-            this.cachedBmpSpectrogramPath = Path.Combine(cacheDirectoryPath, String.Format(Editor.Spectrogram.CachedBmpFilenameFormat, this.type, this.quality, this.maxFreq, colormap));
+            this.cachedBmpSpectrogramSearchPattern = String.Format(Editor.Spectrogram.CachedBmpFilenameFormat, this.type, this.quality, this.maxFreq, colormap);
         }
-        this.cachedSpectrogram = null;
+        this.cachedSpectrograms = null;
     }
 
     public DrawingColor GetBackgroundColor() {
         return Colormap.GetColormap(colormap).GetColor(0);
     }
 
-    public ImageSource Draw(double height, double width) {
-        if (height == 0 || width == 0) {
+    public ImageSource[] Draw(int numChunks) {
+        if (numChunks == 0) {
             return null;
         }
 
@@ -72,30 +73,39 @@ public class VorbisSpectrogramGenerator {
             Thread.Sleep(100);
         }
         RecreateTokens();
-        var largest = Math.Max(height, width);
-        if (largest > Editor.Waveform.MaxDimension) {
-            double scale = Editor.Waveform.MaxDimension / largest;
-            height *= scale;
-            width *= scale;
-        }
-        if (cachedSpectrogram == null) {
-            try {
-                // check for existing BMP first
-                if (cache && File.Exists(cachedBmpSpectrogramPath)) {
-                    using (Bitmap bmp = (Bitmap) Bitmap.FromFile(cachedBmpSpectrogramPath)) {
-                        cachedSpectrogram = TransformBitmap(bmp);
+
+        if (cachedSpectrograms == null || cachedSpectrograms.Length != numChunks || cachedSpectrograms.Any(img => img == null)) {
+            cachedSpectrograms = new ImageSource[numChunks];
+            // check for existing BMP first
+            var cacheDirectoryPath = Path.Combine(Path.GetDirectoryName(filePath), Program.CachePath);
+            if (cache && Directory.Exists(cacheDirectoryPath)) {
+                var bmpFiles = Directory.GetFiles(cacheDirectoryPath, cachedBmpSpectrogramSearchPattern);
+                if (bmpFiles.Length == numChunks) {
+                    for (int i = 0; i < numChunks; ++i) {
+                        using (Bitmap bmp = (Bitmap) Bitmap.FromFile(bmpFiles[i])) {
+                            cachedSpectrograms[i] = TransformBitmap(bmp);
+                        }
                     }
+                    return cachedSpectrograms;
                 } else {
-                    cachedSpectrogram = _Draw(height, width, tokenSource.Token);
+                    // Clear the cache from old files
+                    foreach (var bmpFile in bmpFiles) {
+                        File.Delete(bmpFile);
+                    }
                 }
+            }
+            // fallback to generating BMPs if not found
+            try {
+                cachedSpectrograms = _Draw(numChunks, tokenSource.Token);
             } catch (Exception ex) {
                 isDrawing = false;
                 Trace.WriteLine(ex);
             }
         }
-        return cachedSpectrogram;
+
+        return cachedSpectrograms;
     }
-    private ImageSource _Draw(double height, double width, CancellationToken ct) {
+    private ImageSource[] _Draw(int numChunks, CancellationToken ct) {
         isDrawing = true;
         VorbisWaveReader reader = new(filePath);
         int channels = reader.WaveFormat.Channels;
@@ -136,19 +146,65 @@ public class VorbisSpectrogramGenerator {
         // cancel task if required
         if (ct.IsCancellationRequested) {
             isDrawing = false;
+            bmp.Dispose();
+            return null;
+        }
+
+        Bitmap[] splitBmps = SplitBitmapHorizontally(bmp, numChunks);
+
+        if (ct.IsCancellationRequested) {
+            isDrawing = false;
+            for (int i = 0; i < numChunks; ++i) {
+                splitBmps[i].Dispose();
+            }
+            bmp.Dispose();
             return null;
         }
 
         if (cache) {
-            bmp.Save(cachedBmpSpectrogramPath, ImageFormat.Png);
+            for (int i = 0; i < numChunks; ++i) {
+                var cachedBmpSpectrogramPath = Path.Combine(Path.GetDirectoryName(filePath), Program.CachePath, cachedBmpSpectrogramSearchPattern.Replace("*", String.Format("{0:000}", i)));
+                try {
+                    splitBmps[i].Save(cachedBmpSpectrogramPath, ImageFormat.Png);
+                } catch (ExternalException ex) {
+                    Trace.WriteLine($"WARNING: Exception when saving spectrogram BMP: ({ex})");
+                    File.Delete(cachedBmpSpectrogramPath);
+                    // pretty annoying -> MessageBox.Show("Couldn't generate spectrogram due to song length - only songs up to 5 minutes with High quality spectrogram are supported.\n\nYou can try lowering the quality of the spectrogram or enabling chunking in Settings, which supports songs up to an hour with High quality, although takes longer to load.", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                    return null;
+                }
+            }
         }
         sg = null;
         isDrawing = false;
 
-        ImageSource b = TransformBitmap(bmp);
+        ImageSource[] b = new ImageSource[numChunks];
+        for (int i = 0; i < numChunks; ++i) {
+            b[i] = TransformBitmap(splitBmps[i]);
+            splitBmps[i].Dispose();
+        }
         bmp.Dispose();
         return b;
     }
+
+    private static Bitmap[] SplitBitmapHorizontally(Bitmap source, int numChunks) {
+        Bitmap[] splitBmps = new Bitmap[numChunks];
+        if (numChunks == 1) {
+            // Skip the redraw if not needed
+            splitBmps[0] = source;
+        } else {
+            for (int i = 0; i < numChunks; ++i) {
+                var startPixel = source.Width * i / numChunks;
+                var endPixel = source.Width * (i+1) / numChunks;
+                Bitmap bmp = new Bitmap(endPixel - startPixel, source.Height);
+                using (Graphics g = Graphics.FromImage(bmp)) {
+                    g.DrawImage(source, 0, 0, new Rectangle(startPixel, 0, bmp.Width, bmp.Height), GraphicsUnit.Pixel);
+                }
+                splitBmps[i] = bmp;
+            }
+        }
+        return splitBmps;
+    }
+
     [System.Runtime.InteropServices.DllImport("gdi32.dll")]
     public static extern bool DeleteObject(IntPtr hObject);
     private ImageSource TransformBitmap(Bitmap bmp) {

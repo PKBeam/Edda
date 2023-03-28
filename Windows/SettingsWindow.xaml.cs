@@ -48,6 +48,7 @@ namespace Edda
             checkSpectrogramCache.IsChecked = userSettings.GetBoolForKey(UserSettingsKey.SpectrogramCache);
             txtSpectrogramFrequency.Text = userSettings.GetValueForKey(UserSettingsKey.SpectrogramFrequency);
             checkSpectrogramFlipped.IsChecked = userSettings.GetBoolForKey(UserSettingsKey.SpectrogramFlipped);
+            checkSpectrogramChunking.IsChecked = userSettings.GetBoolForKey(UserSettingsKey.SpectrogramChunking);
             checkStartupUpdate.IsChecked = userSettings.GetBoolForKey(UserSettingsKey.CheckForUpdates);
             comboMapSaveFolder.SelectedIndex = int.Parse(userSettings.GetValueForKey(UserSettingsKey.MapSaveLocationIndex));
             txtMapSaveFolderPath.Text = (comboMapSaveFolder.SelectedIndex == 0) ? Program.DocumentsMapFolder : userSettings.GetValueForKey(UserSettingsKey.MapSaveLocationPath);
@@ -251,6 +252,14 @@ namespace Edda
         private void checkSpectrogramFlipped_Click(object sender, RoutedEventArgs e) {
             bool newStatus = checkSpectrogramFlipped.IsChecked ?? false;
             userSettings.SetValueForKey(UserSettingsKey.SpectrogramFlipped, newStatus);
+            if (doneInit) {
+                UpdateSettings();
+            }
+        }
+
+        private void checkSpectrogramChunking_Click(object sender, RoutedEventArgs e) {
+            bool newStatus = checkSpectrogramChunking.IsChecked ?? false;
+            userSettings.SetValueForKey(UserSettingsKey.SpectrogramChunking, newStatus);
             if (doneInit) {
                 UpdateSettings();
             }

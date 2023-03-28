@@ -54,6 +54,7 @@ namespace Edda.Const {
         public const int SpectrogramFrequency = Editor.Spectrogram.DefaultFreq;
         public const string SpectrogramColormap = "Blues";
         public const bool SpectrogramFlipped = false;
+        public const bool SpectrogramChunking = false;
         public const bool EnableDiscordRPC = true;
         public const bool EnableAutosave = true;
         public const bool CheckForUpdates = true;
@@ -76,6 +77,7 @@ namespace Edda.Const {
         public const string SpectrogramFrequency = "spectrogramFrequency";
         public const string SpectrogramColormap = "spectrogramColormap";
         public const string SpectrogramFlipped = "spectrogramFlipped";
+        public const string SpectrogramChunking = "spectrogramChunking";
         public const string EnableDiscordRPC = "enableDiscordRPC";
         public const string EnableAutosave = "enableAutosave";
         public const string CheckForUpdates = "checkForUpdates";
@@ -165,7 +167,8 @@ namespace Edda.Const {
             public const int DefaultFreq = 11_000; // Hz
             public const int FftSizeExp = 11; // FFT Size = 2^FftSizeExp
             public const int StepSize = 500; // samples
-            public const string CachedBmpFilenameFormat = "spectrogram_{0}_{1}_{2}_{3}.png";
+            public const int NumberOfChunks = 12; // Each chunk can span roughly 5 minutes before we reach the max pixel size of the bitmap.
+            public const string CachedBmpFilenameFormat = "spectrogram_{0}_{1}_{2}_{3}_*.png";
         }
 
     }

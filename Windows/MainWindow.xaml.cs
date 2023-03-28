@@ -169,11 +169,7 @@ namespace Edda {
                 colWaveformVertical,
                 imgWaveformVertical,
                 scrollSpectrogram,
-                imgSpectrogram,
-                rowSpectrogramLowerOffset,
-                rowSpectrogramUpperOffset,
-                canvasSpectrogramLowerOffset,
-                canvasSpectrogramUpperOffset,
+                panelSpectrogram,
                 EditorMarginGrid, 
                 canvasNavInputBox, 
                 canvasBookmarks, 
@@ -728,6 +724,10 @@ namespace Edda {
                 userSettings.SetValueForKey(UserSettingsKey.SpectrogramFlipped, DefaultUserSettings.SpectrogramFlipped);
             }
 
+            if (userSettings.GetValueForKey(UserSettingsKey.SpectrogramChunking) == null) {
+                userSettings.SetValueForKey(UserSettingsKey.SpectrogramChunking, DefaultUserSettings.SpectrogramChunking);
+            }
+
             if (userSettings.GetValueForKey(UserSettingsKey.EnableAutosave) == null) {
                 userSettings.SetValueForKey(UserSettingsKey.EnableAutosave, DefaultUserSettings.EnableAutosave);
             }
@@ -784,6 +784,12 @@ namespace Edda {
             gridController.spectrogramFrequency = spectrogramFrequency;
             gridController.spectrogramColormap = userSettings.GetValueForKey(UserSettingsKey.SpectrogramColormap);
             gridController.spectrogramFlipped = userSettings.GetBoolForKey(UserSettingsKey.SpectrogramFlipped);
+
+            var spectrogramChunking = gridController.spectrogramChunking;
+            gridController.spectrogramChunking = userSettings.GetBoolForKey(UserSettingsKey.SpectrogramChunking);
+            if (spectrogramChunking != gridController.spectrogramChunking) {
+                gridController.SetupSpectrogramContent();
+            }
             if (reloadWaveforms) {
                 gridController.RefreshSpectrogramWaveform();
                 gridController.DrawSpectrogram();

@@ -641,16 +641,9 @@
                 <Border x:Name="borderSpectrogram" Grid.Column="0" BorderBrush="{DynamicResource {x:Static SystemColors.ControlDarkDarkBrushKey}}" BorderThickness="0 0 1 0">
                     <Grid>
                         <ScrollViewer x:Name="scrollSpectrogram" VerticalScrollBarVisibility="Hidden" CanContentScroll="False" ScrollChanged="ScrollSpectrogram_ScrollChanged" PreviewMouseWheel="ScrollSpectrogram_PreviewMouseWheel">
-                            <Grid Height="{Binding ElementName=EditorGrid, Path=ActualHeight}">
-                                <Grid.RowDefinitions>
-                                    <RowDefinition x:Name="rowSpectrogramUpperOffset"/>
-                                    <RowDefinition Height="*"/>
-                                    <RowDefinition x:Name="rowSpectrogramLowerOffset"/>
-                                </Grid.RowDefinitions>
-                                <Canvas Grid.Row="2" Margin="-1" x:Name="canvasSpectrogramLowerOffset" />
-                                <Image Grid.Row="1" x:Name="imgSpectrogram"/>
-                                <Canvas Grid.Row="0" Margin="-1" x:Name="canvasSpectrogramUpperOffset" />
-                            </Grid>
+                            <StackPanel x:Name="panelSpectrogram" Height="{Binding ElementName=EditorGrid, Path=ActualHeight}">
+                                <!-- This is built dynamically to allow chunk-loading -->
+                            </StackPanel>
                         </ScrollViewer>
                     </Grid>
                 </Border>

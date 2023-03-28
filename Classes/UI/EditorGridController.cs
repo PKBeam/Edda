@@ -32,11 +32,10 @@ public class EditorGridController {
     ColumnDefinition colWaveformVertical;
     Image imgWaveformVertical;
     ScrollViewer scrollSpectrogram;
-    Image imgSpectrogram;
-    RowDefinition rowSpectrogramLowerOffset;
-    RowDefinition rowSpectrogramUpperOffset;
+    StackPanel panelSpectrogram;
     Canvas canvasSpectrogramLowerOffset;
     Canvas canvasSpectrogramUpperOffset;
+    Image[] imgSpectrogramChunks;
     Grid editorMarginGrid;
     Canvas canvasNavInputBox;
     Canvas canvasBookmarks;
@@ -59,6 +58,7 @@ public class EditorGridController {
     public int spectrogramFrequency = Editor.Spectrogram.DefaultFreq;
     public string spectrogramColormap = Spectrogram.Colormap.Blues.Name;
     public bool spectrogramFlipped = false;
+    public bool? spectrogramChunking = null;
 
     // dynamically added controls
     Border dragSelectBorder = new();
@@ -175,11 +175,7 @@ public class EditorGridController {
         ColumnDefinition colWaveformVertical,
         Image imgWaveformVertical,
         ScrollViewer scrollSpectrogram,
-        Image imgSpectrogram,
-        RowDefinition rowSpectrogramLowerOffset,
-        RowDefinition rowSpectrogramUpperOffset,
-        Canvas canvasSpectrogramLowerOffset,
-        Canvas canvasSpectrogramUpperOffset,
+        StackPanel panelSpectrogram,
         Grid editorMarginGrid,
         Canvas canvasNavInputBox,
         Canvas canvasBookmarks,
@@ -195,11 +191,7 @@ public class EditorGridController {
         this.colWaveformVertical = colWaveformVertical;
         this.imgWaveformVertical = imgWaveformVertical;
         this.scrollSpectrogram = scrollSpectrogram;
-        this.imgSpectrogram = imgSpectrogram;
-        this.rowSpectrogramLowerOffset = rowSpectrogramLowerOffset;
-        this.rowSpectrogramUpperOffset = rowSpectrogramUpperOffset;
-        this.canvasSpectrogramLowerOffset = canvasSpectrogramLowerOffset;
-        this.canvasSpectrogramUpperOffset = canvasSpectrogramUpperOffset;
+        this.panelSpectrogram = panelSpectrogram;
         this.editorMarginGrid = editorMarginGrid;
         this.canvasNavInputBox = canvasNavInputBox;
         this.canvasBookmarks = canvasBookmarks;
@@ -211,7 +203,7 @@ public class EditorGridController {
         imgWaveformVertical.Opacity = Editor.NavWaveformOpacity;
         imgWaveformVertical.Stretch = Stretch.Fill;
 
-        imgSpectrogram.Stretch = Stretch.Fill;
+        SetupSpectrogramContent();
 
         lineSongMouseover.Opacity = 0;
 
@@ -325,11 +317,38 @@ public class EditorGridController {
             }
         });
     }
+    public void SetupSpectrogramContent() {
+        panelSpectrogram.Children.Clear();
+        // Upper offset
+        canvasSpectrogramUpperOffset = new Canvas();
+        canvasSpectrogramUpperOffset.SnapsToDevicePixels = true;
+        panelSpectrogram.Children.Add(canvasSpectrogramUpperOffset);
+        // Image chunks - inserted in inverse order
+        var numChunks = spectrogramChunking.HasValue ? (spectrogramChunking.Value ? Editor.Spectrogram.NumberOfChunks : 1) : 0;
+        imgSpectrogramChunks = new Image[numChunks];
+        for (int i = 0; i < numChunks; ++i) {
+            Image imgChunk = new Image();
+            imgChunk.Stretch = Stretch.Fill;
+            imgChunk.SnapsToDevicePixels = true;
+            imgSpectrogramChunks[i] = imgChunk;
+            panelSpectrogram.Children.Insert(1, imgChunk);
+        }
+        canvasSpectrogramLowerOffset = new Canvas();
+        canvasSpectrogramLowerOffset.SnapsToDevicePixels = true;
+        panelSpectrogram.Children.Add(canvasSpectrogramLowerOffset);
+    }
     private void ResizeSpectrogram() {
-        imgSpectrogram.Height = EditorGrid.Height - scrollEditor.ActualHeight;
-        imgSpectrogram.Width = scrollSpectrogram.ActualWidth;
-        rowSpectrogramLowerOffset.Height = new GridLength(unitHeight / 2);
-        rowSpectrogramUpperOffset.Height = new GridLength(scrollEditor.ActualHeight - (unitHeight / 2));        
+        // Upper offset
+        canvasSpectrogramUpperOffset.Height = scrollEditor.ActualHeight - (unitHeight / 2);
+        // Image chunks
+        var numChunks = imgSpectrogramChunks.Length;
+        for (int i = 0; i < numChunks; ++i) {
+            Image imgChunk = imgSpectrogramChunks[i];
+            imgChunk.Width = scrollSpectrogram.ActualWidth;
+            imgChunk.Height = (EditorGrid.Height - scrollEditor.ActualHeight) / (double) numChunks;
+        }
+        // Lower offset
+        canvasSpectrogramLowerOffset.Height = unitHeight / 2;
     }
     internal void DrawSpectrogram() {
         ResizeSpectrogram();
@@ -338,12 +357,17 @@ public class EditorGridController {
     private void CreateSpectrogram() {
         Task.Run(() => {
             DateTime before = DateTime.Now;
-            ImageSource bmp = audioSpectrogram.Draw(EditorGrid.ActualHeight, scrollSpectrogram.ActualWidth);
+            var numChunks = EditorGrid.ActualHeight == 0 || scrollSpectrogram.ActualWidth == 0 ? 0 : imgSpectrogramChunks.Length;
+            ImageSource[] bmps = audioSpectrogram.Draw(numChunks);
             Trace.WriteLine($"INFO: Drew spectrogram in {(DateTime.Now - before).TotalSeconds} sec");
 
-            if (bmp != null) {
+            if (bmps != null && bmps.Length == numChunks) {
                 this.dispatcher.Invoke(() => {
-                    imgSpectrogram.Source = bmp;
+                    for (int i = 0; i < numChunks; ++i) {
+                        if (bmps != null) {
+                            imgSpectrogramChunks[i].Source = bmps[i];
+                        }
+                    }
                     DrawingColor bgColor = audioSpectrogram.GetBackgroundColor();
                     var spectrogramBackgroundBrush = new SolidColorBrush(MediaColor.FromArgb(bgColor.A, bgColor.R, bgColor.G, bgColor.B));
                     canvasSpectrogramLowerOffset.Background = spectrogramBackgroundBrush;
