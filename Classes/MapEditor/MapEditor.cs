@@ -262,9 +262,9 @@ public class MapEditor {
         if (updateHistory) {
             currentMapDifficulty?.editorHistory.Add(new EditList<Note>(false, oldNotes));
             currentMapDifficulty?.editorHistory.Add(new EditList<Note>(true, drawNotes));
+            currentMapDifficulty?.editorHistory.Consolidate(2);
         }
         currentMapDifficulty?.editorHistory.Print();
-        currentMapDifficulty?.editorHistory.Consolidate(2);
         SelectNewNotes(drawNotes);
     }
 
