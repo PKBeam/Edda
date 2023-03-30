@@ -242,6 +242,35 @@ public class MapEditor {
     public void AddNotes(Note n, bool updateHistory = true) {
         AddNotes(new List<Note>() { n }, updateHistory);
     }
+    public void UpdateNotes(List<Note> newNotes, List<Note> oldNotes, bool updateHistory = true) {
+        currentMapDifficulty?.MarkDirty();
+
+        // undraw the added notes
+        parent.gridController.UndrawNotes(oldNotes);
+
+        // remove all old Notes
+        oldNotes.ForEach(n => currentMapDifficulty?.notes.Remove(n));
+
+        // filter new notes
+        List<Note> drawNotes = newNotes
+            .Where(n => Helper.InsertSortedUnique(this.currentMapDifficulty?.notes, n))
+            .ToList();
+
+        // draw new notes
+        parent.gridController.DrawNotes(drawNotes);
+
+        if (updateHistory) {
+            currentMapDifficulty?.editorHistory.Add(new EditList<Note>(false, oldNotes));
+            currentMapDifficulty?.editorHistory.Add(new EditList<Note>(true, drawNotes));
+        }
+        currentMapDifficulty?.editorHistory.Print();
+        currentMapDifficulty?.editorHistory.Consolidate(2);
+        SelectNewNotes(drawNotes);
+    }
+
+    public void UpdateNotes(Note o, Note n, bool updateHistory = true) {
+        UpdateNotes(new List<Note>() { o }, new List<Note>() { n }, updateHistory);
+    }
     public void RemoveNotes(List<Note> notes, bool updateHistory = true) {
         currentMapDifficulty?.MarkDirty();
         // undraw the added notes
@@ -401,7 +430,7 @@ public class MapEditor {
 
             newBeat += offset;
 
-            // no changes done? do nothing.
+            // no changes done? or its a step jump? do nothing.
             if (Helper.DoubleApproxEqual(n.beat, newBeat) || Helper.DoubleApproxEqual(n.beat, newBeat - defaultBeats) ) {
                 continue;
             }
@@ -411,9 +440,7 @@ public class MapEditor {
             notesToAdd.Add(newNote);
             notesToRemove.Add(n);
         }
-
-        AddNotes(notesToAdd);            
-        RemoveNotes(notesToRemove);
+        UpdateNotes(notesToAdd, notesToRemove);   
     }
 
     private void ApplyEdit(EditList<Note> e) {
@@ -442,10 +469,7 @@ public class MapEditor {
         if (transformedSelection.Count == 0) {
             return;
         }
-        RemoveNotes(currentMapDifficulty.selectedNotes);
-        AddNotes(transformedSelection);
-        currentMapDifficulty?.editorHistory.Consolidate(2);
-        SelectNewNotes(transformedSelection);
+        UpdateNotes(transformedSelection, currentMapDifficulty.selectedNotes);
     }
     public void MirrorSelection() {
         TransformSelection(NoteTransforms.Mirror());
