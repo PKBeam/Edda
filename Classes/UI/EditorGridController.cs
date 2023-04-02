@@ -333,6 +333,7 @@ public class EditorGridController {
             imgSpectrogramChunks[i] = imgChunk;
             panelSpectrogram.Children.Insert(1, imgChunk);
         }
+        // Lower offset
         canvasSpectrogramLowerOffset = new Canvas();
         canvasSpectrogramLowerOffset.SnapsToDevicePixels = true;
         panelSpectrogram.Children.Add(canvasSpectrogramLowerOffset);
