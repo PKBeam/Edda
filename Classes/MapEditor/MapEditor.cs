@@ -432,7 +432,7 @@ public class MapEditor {
 
             // no changes done? or its a step jump? do nothing.
             if (Helper.DoubleApproxEqual(n.beat, newBeat) || Helper.DoubleApproxEqual(n.beat, newBeat - defaultBeats) ) {
-                continue;
+                newBeat = n.beat;
             }
 
             // save changes
