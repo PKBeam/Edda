@@ -1,6 +1,5 @@
 ﻿using NAudio.Vorbis;
 using System.Linq;
-using System.Collections.Generic;
 using System.Windows;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
@@ -10,12 +9,9 @@ using System.IO;
 using System.Threading;
 using Edda.Const;
 using Spectrogram;
-using System.Threading.Channels;
-using NAudio.Wave;
 using DrawingColor = System.Drawing.Color;
 using System.Drawing;
 using System.Drawing.Imaging;
-using System.Reflection.Metadata;
 using System.Runtime.InteropServices;
 
 public class VorbisSpectrogramGenerator {
@@ -29,8 +25,8 @@ public class VorbisSpectrogramGenerator {
     private string colormap;
     private bool drawFlipped;
     private bool isDrawing;
-    // Since the BMP generated for spectrogram doesn't depend on the component height/width, we can cache it to save on calculations.
     private bool cache;
+    // Since the BMP generated for spectrogram doesn't depend on the component height/width, we can cache it to save on calculations.
     private ImageSource[] cachedSpectrograms;
     private string cachedBmpSpectrogramSearchPattern;
 
@@ -54,7 +50,7 @@ public class VorbisSpectrogramGenerator {
             if (!Directory.Exists(cacheDirectoryPath)) {
                 Directory.CreateDirectory(cacheDirectoryPath);
             }
-            this.cachedBmpSpectrogramSearchPattern = String.Format(Editor.Spectrogram.CachedBmpFilenameFormat, this.type, this.quality, this.maxFreq, colormap);
+            this.cachedBmpSpectrogramSearchPattern = String.Format(Editor.Spectrogram.CachedBmpFilenameFormat, this.type, this.quality, this.maxFreq, this.colormap);
         }
         this.cachedSpectrograms = null;
     }
@@ -74,27 +70,18 @@ public class VorbisSpectrogramGenerator {
         }
         RecreateTokens();
 
-        if (cachedSpectrograms == null || cachedSpectrograms.Length != numChunks || cachedSpectrograms.Any(img => img == null)) {
+        // if we have valid cache, don't bother doing anything
+        if (!CacheIsValid(numChunks)) {
             cachedSpectrograms = new ImageSource[numChunks];
-            // check for existing BMP first
-            var cacheDirectoryPath = Path.Combine(Path.GetDirectoryName(filePath), Program.CachePath);
-            if (cache && Directory.Exists(cacheDirectoryPath)) {
-                var bmpFiles = Directory.GetFiles(cacheDirectoryPath, cachedBmpSpectrogramSearchPattern);
-                if (bmpFiles.Length == numChunks) {
-                    for (int i = 0; i < numChunks; ++i) {
-                        using (Bitmap bmp = (Bitmap) Bitmap.FromFile(bmpFiles[i])) {
-                            cachedSpectrograms[i] = TransformBitmap(bmp);
-                        }
-                    }
+            // check for existing BMP files in the map cache folder first
+            try {
+                if (LoadMapCacheChunkFiles(numChunks)) {
                     return cachedSpectrograms;
-                } else {
-                    // Clear the cache from old files
-                    foreach (var bmpFile in bmpFiles) {
-                        File.Delete(bmpFile);
-                    }
                 }
+            } catch (Exception ex) {
+                Trace.WriteLine(ex);
             }
-            // fallback to generating BMPs if not found
+            // fallback to generating BMPs if needed
             try {
                 cachedSpectrograms = _Draw(numChunks, tokenSource.Token);
             } catch (Exception ex) {
@@ -169,7 +156,8 @@ public class VorbisSpectrogramGenerator {
                 } catch (ExternalException ex) {
                     Trace.WriteLine($"WARNING: Exception when saving spectrogram BMP: ({ex})");
                     File.Delete(cachedBmpSpectrogramPath);
-                    // pretty annoying -> MessageBox.Show("Couldn't generate spectrogram due to song length - only songs up to 5 minutes with High quality spectrogram are supported.\n\nYou can try lowering the quality of the spectrogram or enabling chunking in Settings, which supports songs up to an hour with High quality, although takes longer to load.", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                    // Tried putting up a message, but it's pretty annoying - pops up multiple times.
+                    // MessageBox.Show("Couldn't generate spectrogram due to song length - only songs up to 5 minutes with High quality spectrogram are supported.\n\nYou can try lowering the quality of the spectrogram or enabling chunking in Settings, which supports songs up to an hour with High quality, although takes longer to load.", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
                     return null;
                 }
             }
@@ -186,6 +174,9 @@ public class VorbisSpectrogramGenerator {
         return b;
     }
 
+    /// <summary>
+    /// Splits source bitmap horizontally into chunks of (roughly) equal width.
+    /// </summary>
     private static Bitmap[] SplitBitmapHorizontally(Bitmap source, int numChunks) {
         Bitmap[] splitBmps = new Bitmap[numChunks];
         if (numChunks == 1) {
@@ -235,36 +226,39 @@ public class VorbisSpectrogramGenerator {
         }
     }
 
-    private static void RenderTargetToDisk(RenderTargetBitmap input) {
-        // https://stackoverflow.com/questions/13987408/convert-rendertargetbitmap-to-bitmapimage#13988871
-        var bitmapEncoder = new PngBitmapEncoder();
-        bitmapEncoder.Frames.Add(BitmapFrame.Create(input));
-
-        // Save the image to a location on the disk.
-        using (var fs = new FileStream("out.png", FileMode.Create)) {
-            bitmapEncoder.Save(fs);
-        }
+    /// <summary>
+    /// Checks if in-memory cache for the spectrogram chunks is still valid.
+    /// </summary>
+    private bool CacheIsValid(int numChunks) {
+        return cachedSpectrograms != null && cachedSpectrograms.Length == numChunks && cachedSpectrograms.All(img => img != null);
     }
-    private BitmapImage RenderTargetToImage(BitmapSource input) {
-        // https://stackoverflow.com/questions/13987408/convert-rendertargetbitmap-to-bitmapimage#13988871
-        var bitmapEncoder = new PngBitmapEncoder();
-        bitmapEncoder.Frames.Add(BitmapFrame.Create(input));
 
-        // Save the image to a location on the disk.
-        //bitmapEncoder.Save(new System.IO.FileStream("out.png", System.IO.FileMode.Create));
-
-        var bitmapImage = new BitmapImage();
-        using (var stream = new MemoryStream()) {
-            bitmapEncoder.Save(stream);
-            stream.Seek(0, SeekOrigin.Begin);
-            bitmapImage.BeginInit();
-            bitmapImage.CacheOption = BitmapCacheOption.OnLoad;
-            bitmapImage.StreamSource = stream;
-            bitmapImage.EndInit();
-            bitmapImage.Freeze();
+    /// <summary>
+    /// Loads BMP chunks that were previously saved to cache folder, if user has enabled caching.
+    /// In case the number of files is wrong, it clears them out for recreation.
+    /// Return value indicates if the files were loaded.
+    /// </summary>
+    private bool LoadMapCacheChunkFiles(int numChunks) {
+        var cacheDirectoryPath = Path.Combine(Path.GetDirectoryName(filePath), Program.CachePath);
+        if (cache && Directory.Exists(cacheDirectoryPath)) {
+            var bmpFiles = Directory.GetFiles(cacheDirectoryPath, cachedBmpSpectrogramSearchPattern);
+            if (bmpFiles.Length == numChunks) {
+                for (int i = 0; i < numChunks; ++i) {
+                    using (Bitmap bmp = (Bitmap) Bitmap.FromFile(bmpFiles[i])) {
+                        cachedSpectrograms[i] = TransformBitmap(bmp);
+                    }
+                }
+                return true;
+            } else {
+                // Clear the cache from old files - either not all chunks were saved correctly or number of chunks changed in the meantime.
+                foreach (var bmpFile in bmpFiles) {
+                    File.Delete(bmpFile);
+                }
+            }
         }
-        return bitmapImage;
+        return false;
     }
+    
     private void RecreateTokens() {
         var oldTokenSource = tokenSource;
         tokenSource = new CancellationTokenSource();
@@ -277,6 +271,9 @@ public class VorbisSpectrogramGenerator {
         MaxScale = 2
     }
 
+    /// <summary>
+    /// Value defines multiplier for step size in the SpectrogramGenerator
+    /// </summary>
     public enum SpectrogramQuality {
         Low = 4,
         Medium = 2,
