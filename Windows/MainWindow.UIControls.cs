@@ -266,6 +266,7 @@ namespace Edda {
             if (file == null) {
                 return;
             }
+            ClearSongCache();
             LoadSongFile(file);
         }
         private void BtnMakePreview_Click(object sender, RoutedEventArgs e) {
