@@ -427,18 +427,11 @@ public class MapEditor {
     }
 
     public BPMChange GetLastBeatChange(double beat) {
-        if (currentMapDifficulty != null) {
-            BPMChange? currentBeat = currentMapDifficulty
-                .bpmChanges
-                .OrderByDescending(obj => obj.globalBeat)
-                .Where(obj => obj.globalBeat <= beat)
-                .Select(obj => obj)
-                .FirstOrDefault();
-            if (currentBeat != null) {
-                return currentBeat;
-            }
-        }
-        return new BPMChange(0.0, globalBPM, defaultGridDivision);
+        return currentMapDifficulty?.bpmChanges
+            .OrderByDescending(obj => obj.globalBeat)
+            .Where(obj => obj.globalBeat <= beat)
+            .Select(obj => obj)
+            .FirstOrDefault() ?? new BPMChange(0.0, globalBPM, defaultGridDivision);
     }
 
     private void ApplyEdit(EditList<Note> e) {
