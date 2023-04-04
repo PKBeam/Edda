@@ -1,21 +1,8 @@
 ﻿using System;
 public static class NoteTransforms {
-	public static Func<Note, Note> Mirror() {
+    public static Func<Note, Note> Mirror() {
         Func<Note, Note> f = n => {
             return new Note(n.beat, 3 - n.col);
-        };
-        return f;
-        
-    }
-
-    // parametrised vertical shift
-    public static Func<Note, Note> RowShift(double beatOffset) {
-        Func<Note, Note> f = n => {
-            double newBeat = n.beat + beatOffset;
-            if (n.beat + beatOffset >= 0) {
-                return new Note(newBeat, n.col);
-            }
-            return null;
         };
         return f;
     }
@@ -23,7 +10,10 @@ public static class NoteTransforms {
     // parametrised horizontal shift
     public static Func<Note, Note> ColShift(int offset) {
         Func<Note, Note> f = n => {
-            int newCol = n.col + offset;
+            int newCol = (n.col + offset) % 4;
+            if (newCol < 0) {
+                newCol += 4;
+            }
             if (Helper.DoubleRangeCheck(newCol, 0, 3)) {
                 return new Note(n.beat, newCol);
             }

@@ -1001,8 +1001,8 @@ public class EditorGridController {
         Note n = new Note(onMouse ? mouseInput: currentSeekBeat, col);
         mapEditor.AddNotes(n);
     }
-    internal void ShiftSelectionByRow(int rows) {
-        mapEditor.ShiftSelectionByBeat(BeatForRow(rows));
+    internal void ShiftSelectionByRow(MoveNote direction) {
+        mapEditor.ShiftSelectionByBeat(direction);
     }
     // other
     internal void ResnapAllNotes(double newOffset) {
