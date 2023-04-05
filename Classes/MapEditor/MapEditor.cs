@@ -393,7 +393,6 @@ public class MapEditor {
         }
         AddNotes(notes);
     }
-
     public void QuantizeSelection() {
         if (currentMapDifficulty == null) {
             return;
@@ -420,12 +419,10 @@ public class MapEditor {
             .ToList();
         UpdateNotes(quantizedNotes, currentMapDifficulty.selectedNotes);   
     }
-
     public double GetGridLength(double bpm, int gridDivision) {
         double scaleFactor = globalBPM / bpm;
         return scaleFactor / gridDivision;
     }
-
     public BPMChange GetLastBeatChange(double beat) {
         return currentMapDifficulty?.bpmChanges
             .OrderByDescending(obj => obj.globalBeat)
@@ -433,7 +430,6 @@ public class MapEditor {
             .Select(obj => obj)
             .FirstOrDefault() ?? new BPMChange(0.0, globalBPM, defaultGridDivision);
     }
-
     private void ApplyEdit(EditList<Note> e) {
         foreach (var edit in e.items) {
             if (edit.isAdd) {
@@ -445,29 +441,21 @@ public class MapEditor {
         }
 
     }
-    public void TransformSelection(Func<Note, Note> transform) {
+    public void MirrorSelection() {
         if (currentMapDifficulty == null) {
             return;
         }
-        // prepare new selection
-        List<Note> transformedSelection = currentMapDifficulty.selectedNotes
-            .Select(note => transform.Invoke(note))
-            .Where(transformed => transformed != null)
+
+        List<Note> mirroredSelection = currentMapDifficulty.selectedNotes
+            .Select(note => new Note(note.beat, 3 - note.col))
             .ToList();
 
-        if (transformedSelection.Count == 0) {
-            return;
-        }
-        UpdateNotes(transformedSelection, currentMapDifficulty.selectedNotes);
-    }
-    public void MirrorSelection() {
-        TransformSelection(NoteTransforms.Mirror());
+        UpdateNotes(mirroredSelection, currentMapDifficulty.selectedNotes);
     }
     public void ShiftSelectionByBeat(MoveNote direction) {
         if (currentMapDifficulty == null) {
             return;
         }
-
         List<Note> movedNotes = currentMapDifficulty.selectedNotes
             .Select(n => {
                 BPMChange lastBeatChange = GetLastBeatChange(n.beat);
@@ -490,8 +478,22 @@ public class MapEditor {
             .ToList();
         UpdateNotes(movedNotes, currentMapDifficulty.selectedNotes);   
     }
-    public void ShiftSelectionByCol(int cols) {
-        TransformSelection(NoteTransforms.ColShift(cols));
+    public void ShiftSelectionByCol(int offset) {
+        if (currentMapDifficulty == null) {
+            return;
+        }
+
+        List<Note> movedSelection = currentMapDifficulty.selectedNotes
+            .Select(n => {
+                int newCol = (n.col + offset) % 4;
+                if (newCol < 0) {
+                    newCol += 4;
+                }
+                return new Note(n.beat, newCol);
+                })
+            .ToList();
+
+        UpdateNotes(movedSelection, currentMapDifficulty.selectedNotes);
     }
     public void Undo() {
         if (currentMapDifficulty == null) {
