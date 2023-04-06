@@ -81,15 +81,33 @@ namespace Edda {
             if (ctrlKeyDown) {
                 // new map (Ctrl-N)
                 if (e.Key == Key.N) {
+                    PauseSong();
                     CreateNewMap();
                 }
                 // open map (Ctrl-O)
                 if (e.Key == Key.O) {
+                    PauseSong();
                     OpenMap();
                 }
                 // save map (Ctrl-S)
                 if (e.Key == Key.S) {
                     BackupAndSaveBeatmap();
+                }
+                // import map (Ctrl-I)
+                if (e.Key == Key.I) {
+                    PauseSong();
+                    ImportMap();
+                }
+                // export map (Ctrl-E)
+                if (e.Key == Key.E) {
+                    PauseSong();
+                    ExportMap();
+                }
+                // close map (Ctrl-W)
+                if (e.Key == Key.W) {
+                    PauseSong();
+                    returnToStartMenuOnClose = true;
+                    this.Close();
                 }
 
                 // toggle left dock (Ctrl-[)

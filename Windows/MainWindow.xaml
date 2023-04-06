@@ -26,10 +26,10 @@
                         <MenuItem x:Name="MenuItemOpenMap" Header="_Open Map" InputGestureText="Ctrl+O" Click="MenuItemOpenMap_Click"/>
                         <MenuItem x:Name="MenuItemSaveMap" Header="_Save Map" InputGestureText="Ctrl+S" Click="MenuItemSaveMap_Click"/>
                         <Separator />
-                        <MenuItem x:Name="MenuItemImportMap" Header="_Import Map" Click="MenuItemImportMap_Click"/>
-                        <MenuItem x:Name="MenuItemExportMap" Header="_Export Map" Click="MenuItemExportMap_Click"/>
+                        <MenuItem x:Name="MenuItemImportMap" Header="_Import Map" InputGestureText="Ctrl+I" Click="MenuItemImportMap_Click"/>
+                        <MenuItem x:Name="MenuItemExportMap" Header="_Export Map" InputGestureText="Ctrl+E" Click="MenuItemExportMap_Click"/>
                         <Separator />
-                        <MenuItem x:Name="MenuItemCloseMap" Header="_Close Map" Click="MenuItemCloseMap_Click"/>
+                        <MenuItem x:Name="MenuItemCloseMap" Header="_Close Map" InputGestureText="Ctrl+W" Click="MenuItemCloseMap_Click"/>
                     </MenuItem>
                     <MenuItem Header="_Edit">
                         <MenuItem Header="_Add New">
