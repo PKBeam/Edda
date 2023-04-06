@@ -211,21 +211,21 @@ namespace Edda {
             var keyStr = e.Key.ToString();
             if (shiftKeyDown) {
                 if (keyStr == "Up") {
-                    gridController.ShiftSelectionByRow(1);
+                    gridController.ShiftSelectionByRow(MoveNote.MOVE_BEAT_UP);
                     e.Handled = true;
                 }
                 if (keyStr == "Down") {
-                    gridController.ShiftSelectionByRow(-1);
+                    gridController.ShiftSelectionByRow(MoveNote.MOVE_BEAT_DOWN);
                     e.Handled = true;
                 }
             }
             if (ctrlKeyDown) {
                 if (keyStr == "Up") {
-                    gridController.ShiftSelectionByRow(gridController.gridDivision);
+                    gridController.ShiftSelectionByRow(MoveNote.MOVE_GRID_UP);
                     e.Handled = true;
                 }
                 if (keyStr == "Down") {
-                    gridController.ShiftSelectionByRow(-gridController.gridDivision);
+                    gridController.ShiftSelectionByRow(MoveNote.MOVE_GRID_DOWN);
                     e.Handled = true;
                 }
             }

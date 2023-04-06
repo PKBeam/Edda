@@ -42,6 +42,13 @@ public enum RagnarockScoreMedals {
     Gold = 2
 }
 
+public enum MoveNote {
+    MOVE_BEAT_UP,
+    MOVE_BEAT_DOWN,
+    MOVE_GRID_UP,
+    MOVE_GRID_DOWN
+}
+
 public class MapEditor {
     public string mapFolder;
     RagnarockMap beatMap;
@@ -386,63 +393,43 @@ public class MapEditor {
         }
         AddNotes(notes);
     }
-
     public void QuantizeSelection() {
         if (currentMapDifficulty == null) {
             return;
         }
-        
-        // calculate the length of a single beat
-        double defaultBeats = 1.0 / defaultGridDivision;
 
-        List<Note> notesToAdd = new List<Note>();
-        List<Note> notesToRemove = new List<Note>();
+        // Quantize each note and add it to the new list
+        List<Note> quantizedNotes = currentMapDifficulty.selectedNotes
+            .Select(n => {
+                BPMChange lastBeatChange = GetLastBeatChange(n.beat);
+                double defaultGridLength = GetGridLength(lastBeatChange.BPM, lastBeatChange.gridDivision);
+                double offset = 0.0;
+                if (lastBeatChange.globalBeat > 0.0) {
+                    double differenceDefaultNew = Math.Floor(lastBeatChange.globalBeat / defaultGridLength) * defaultGridLength;
+                    offset = lastBeatChange.globalBeat - differenceDefaultNew;
+                }
 
-        foreach (Note n in currentMapDifficulty.selectedNotes) {
+                double newBeat = Math.Round(n.beat / defaultGridLength) * defaultGridLength + offset;
+                if (Helper.DoubleApproxEqual(n.beat, newBeat) || Helper.DoubleApproxEqual(n.beat, newBeat - defaultGridLength)) {
+                    newBeat = n.beat;
+                }
 
-            // find next beat change 
-            BPMChange? currentBeat = currentMapDifficulty
-                .bpmChanges
-                .OrderByDescending(obj => obj.globalBeat)
-                .Where(obj => obj.globalBeat <= n.beat)
-                .Select(obj => obj)
-                .FirstOrDefault();
-            
-            double offset = 0.0;
-
-            // beat has been changed
-            if (currentBeat != null){
-
-                // calculate the new length factor
-                double scaleFactor = globalBPM / currentBeat.BPM;
-
-                // calculate the length of a single beat based on the new length
-                defaultBeats = scaleFactor / currentBeat.gridDivision;
-
-                // calculate time difference between old beat and start float
-                double differenceDefaultNew = Math.Floor(currentBeat.globalBeat / defaultBeats) * defaultBeats;
-
-                // calculate offset
-                offset = currentBeat.globalBeat - differenceDefaultNew;
-
-            }
-            double newBeat = Math.Round(n.beat / defaultBeats) * defaultBeats;
-
-            newBeat += offset;
-
-            // no changes done? or its a step jump? do nothing.
-            if (Helper.DoubleApproxEqual(n.beat, newBeat) || Helper.DoubleApproxEqual(n.beat, newBeat - defaultBeats) ) {
-                newBeat = n.beat;
-            }
-
-            // save changes
-            Note newNote = new Note(newBeat, n.col);
-            notesToAdd.Add(newNote);
-            notesToRemove.Add(n);
-        }
-        UpdateNotes(notesToAdd, notesToRemove);   
+                return new Note(newBeat, n.col);
+            })
+            .ToList();
+        UpdateNotes(quantizedNotes, currentMapDifficulty.selectedNotes);   
     }
-
+    public double GetGridLength(double bpm, int gridDivision) {
+        double scaleFactor = globalBPM / bpm;
+        return scaleFactor / gridDivision;
+    }
+    public BPMChange GetLastBeatChange(double beat) {
+        return currentMapDifficulty?.bpmChanges
+            .OrderByDescending(obj => obj.globalBeat)
+            .Where(obj => obj.globalBeat <= beat)
+            .Select(obj => obj)
+            .FirstOrDefault() ?? new BPMChange(0.0, globalBPM, defaultGridDivision);
+    }
     private void ApplyEdit(EditList<Note> e) {
         foreach (var edit in e.items) {
             if (edit.isAdd) {
@@ -454,31 +441,59 @@ public class MapEditor {
         }
 
     }
-    public void TransformSelection(Func<Note, Note> transform) {
+    public void MirrorSelection() {
         if (currentMapDifficulty == null) {
             return;
         }
-        // prepare new selection
-        List<Note> transformedSelection = new List<Note>();
-        for (int i = 0; i < currentMapDifficulty.selectedNotes.Count; i++) {
-            Note transformed = transform.Invoke(currentMapDifficulty.selectedNotes[i]);
-            if (transformed != null) {
-                transformedSelection.Add(transformed);
-            }
-        }
-        if (transformedSelection.Count == 0) {
+
+        List<Note> mirroredSelection = currentMapDifficulty.selectedNotes
+            .Select(note => new Note(note.beat, 3 - note.col))
+            .ToList();
+
+        UpdateNotes(mirroredSelection, currentMapDifficulty.selectedNotes);
+    }
+    public void ShiftSelectionByBeat(MoveNote direction) {
+        if (currentMapDifficulty == null) {
             return;
         }
-        UpdateNotes(transformedSelection, currentMapDifficulty.selectedNotes);
+        List<Note> movedNotes = currentMapDifficulty.selectedNotes
+            .Select(n => {
+                BPMChange lastBeatChange = GetLastBeatChange(n.beat);
+                double beatOffset = 0.0;
+                switch (direction) {
+                    case MoveNote.MOVE_BEAT_DOWN:
+                    case MoveNote.MOVE_BEAT_UP:
+                        double defaultBeatLength = GetGridLength(lastBeatChange.BPM, 1);
+                        beatOffset = (direction == MoveNote.MOVE_BEAT_DOWN) ? -defaultBeatLength : defaultBeatLength;
+                        break;
+                    case MoveNote.MOVE_GRID_DOWN:
+                    case MoveNote.MOVE_GRID_UP:
+                        double defaultGridLength = GetGridLength(lastBeatChange.BPM, lastBeatChange.gridDivision);
+                        beatOffset = (direction == MoveNote.MOVE_GRID_DOWN) ? -defaultGridLength : defaultGridLength;
+                        break;
+                }
+                double newBeat = n.beat + beatOffset;
+                return new Note(newBeat, n.col);
+            })
+            .ToList();
+        UpdateNotes(movedNotes, currentMapDifficulty.selectedNotes);   
     }
-    public void MirrorSelection() {
-        TransformSelection(NoteTransforms.Mirror());
-    }
-    public void ShiftSelectionByBeat(double beat) {
-        TransformSelection(NoteTransforms.RowShift(beat));
-    }
-    public void ShiftSelectionByCol(int cols) {
-        TransformSelection(NoteTransforms.ColShift(cols));
+    public void ShiftSelectionByCol(int offset) {
+        if (currentMapDifficulty == null) {
+            return;
+        }
+
+        List<Note> movedSelection = currentMapDifficulty.selectedNotes
+            .Select(n => {
+                int newCol = (n.col + offset) % 4;
+                if (newCol < 0) {
+                    newCol += 4;
+                }
+                return new Note(n.beat, newCol);
+                })
+            .ToList();
+
+        UpdateNotes(movedSelection, currentMapDifficulty.selectedNotes);
     }
     public void Undo() {
         if (currentMapDifficulty == null) {
