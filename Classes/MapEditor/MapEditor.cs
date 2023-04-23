@@ -230,12 +230,10 @@ public class MapEditor {
     }
     public void AddNotes(List<Note> notes, bool updateHistory = true) {
         currentMapDifficulty?.MarkDirty();
-        List<Note> drawNotes = new();
-        foreach (Note n in notes) {
-            if (Helper.InsertSortedUnique(this.currentMapDifficulty?.notes, n)) {
-                drawNotes.Add(n);
-            }
-        }
+        // filter new notes
+        List<Note> drawNotes = notes
+            .Where(n => Helper.InsertSortedUnique(this.currentMapDifficulty?.notes, n))
+            .ToList();
         // draw the added notes
         // note: by drawing this note out of order, it is inconsistently layered with other notes.
         //       should we take the performance hit of redrawing the entire grid for visual consistency?
@@ -252,27 +250,14 @@ public class MapEditor {
     public void UpdateNotes(List<Note> newNotes, List<Note> oldNotes, bool updateHistory = true) {
         currentMapDifficulty?.MarkDirty();
 
-        // undraw the added notes
-        parent.gridController.UndrawNotes(oldNotes);
-
-        // remove all old Notes
-        oldNotes.ForEach(n => currentMapDifficulty?.notes.Remove(n));
-
-        // filter new notes
-        List<Note> drawNotes = newNotes
-            .Where(n => Helper.InsertSortedUnique(this.currentMapDifficulty?.notes, n))
-            .ToList();
-
-        // draw new notes
-        parent.gridController.DrawNotes(drawNotes);
+        RemoveNotes(oldNotes, updateHistory);
+        AddNotes(newNotes, updateHistory);
 
         if (updateHistory) {
-            currentMapDifficulty?.editorHistory.Add(new EditList<Note>(false, oldNotes));
-            currentMapDifficulty?.editorHistory.Add(new EditList<Note>(true, drawNotes));
             currentMapDifficulty?.editorHistory.Consolidate(2);
         }
         currentMapDifficulty?.editorHistory.Print();
-        SelectNewNotes(drawNotes);
+        SelectNewNotes(newNotes);
     }
 
     public void UpdateNotes(Note o, Note n, bool updateHistory = true) {
@@ -287,10 +272,7 @@ public class MapEditor {
             currentMapDifficulty?.editorHistory.Add(new EditList<Note>(false, notes));
         }
         // finally, unselect all removed notes
-        foreach (Note n in new List<Note>(notes)) {
-            currentMapDifficulty?.notes.Remove(n);
-            UnselectNote(n);
-        }
+        notes.ForEach(n => currentMapDifficulty?.notes.Remove(n));
         currentMapDifficulty?.editorHistory.Print();
     }
     public void RemoveNotes(Note n, bool updateHistory = true) {
@@ -490,7 +472,7 @@ public class MapEditor {
                     newCol += 4;
                 }
                 return new Note(n.beat, newCol);
-                })
+            })
             .ToList();
 
         UpdateNotes(movedSelection, currentMapDifficulty.selectedNotes);
