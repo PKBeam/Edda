@@ -56,6 +56,7 @@
                         <MenuItem x:Name="MenuItemMirrorSelected" Header="_Mirror Selected" InputGestureText="Ctrl+M" Click="MenuItemMirrorSelected_Click"/>
                         <Separator />
                         <MenuItem x:Name="MenuItemQuantize" Header="_Quantize Selected" InputGestureText="Ctrl+Q" Click="MenuItemQuantize_Click"/>
+                        <MenuItem x:Name="MenuItemRandomize" Header="_Randomize Selected" InputGestureText="Ctrl+R" Click="MenuItemRandomize_Click"/>
                         <MenuItem x:Name="MenuItemSnapToGrid" Header="_Snap Notes to Grid" InputGestureText="Ctrl+G" IsCheckable="True" Click="MenuItemSnapToGrid_Click"/>
                     </MenuItem>
                     <MenuItem Header="_View">

@@ -100,6 +100,12 @@ namespace Edda {
             }
             mapEditor.QuantizeSelection();
         }
+        private void MenuItemRandomize_Click(object sender, RoutedEventArgs e) {
+            if (songIsPlaying) {
+                return;
+            }
+            mapEditor.RandomizeSelection();
+        }
         private void MenuItemPaste_Click(object sender, RoutedEventArgs e) {
             if (songIsPlaying) {
                 return;

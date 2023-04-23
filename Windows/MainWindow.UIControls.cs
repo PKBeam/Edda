@@ -184,6 +184,11 @@ namespace Edda {
                 if (e.Key == Key.Q && !songIsPlaying) {
                     mapEditor.QuantizeSelection();
                 }
+
+                // randomize selection (Ctrl-R)
+                if (e.Key == Key.R && !songIsPlaying) {
+                    mapEditor.RandomizeSelection();
+                }
             }
 
             if ((e.Key == Key.D1 || e.Key == Key.D2 || e.Key == Key.D3 || e.Key == Key.D4) &&

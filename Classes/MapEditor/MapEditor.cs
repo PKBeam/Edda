@@ -423,6 +423,18 @@ public class MapEditor {
         }
 
     }
+    public void RandomizeSelection() {
+        if (currentMapDifficulty == null) {
+            return;
+        }
+
+        var rand = new Random();
+        List<Note> mirroredSelection = currentMapDifficulty.selectedNotes
+            .Select(note => new Note(note.beat, rand.Next(0, 4)))
+            .ToList();
+
+        UpdateNotes(mirroredSelection, currentMapDifficulty.selectedNotes);
+    }
     public void MirrorSelection() {
         if (currentMapDifficulty == null) {
             return;
