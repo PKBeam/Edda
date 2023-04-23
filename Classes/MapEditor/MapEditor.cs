@@ -273,6 +273,7 @@ public class MapEditor {
         }
         // finally, unselect all removed notes
         notes.ForEach(n => currentMapDifficulty?.notes.Remove(n));
+        parent.gridController.UnhighlightNotes(notes);
         currentMapDifficulty?.editorHistory.Print();
     }
     public void RemoveNotes(Note n, bool updateHistory = true) {
