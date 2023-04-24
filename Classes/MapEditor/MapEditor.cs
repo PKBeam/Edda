@@ -429,12 +429,17 @@ public class MapEditor {
             return;
         }
 
-        var rand = new Random();
-        List<Note> mirroredSelection = currentMapDifficulty.selectedNotes
-            .Select(note => new Note(note.beat, rand.Next(0, 4)))
+        Random rand = new Random();
+        int lastCol = rand.Next(2, 3);
+        List<Note> newNotes = currentMapDifficulty.selectedNotes
+            .Select((note, index) => {
+                int newCol = index % 2 == 0 ? rand.Next(0, lastCol) : rand.Next(lastCol + 1, 4);
+                lastCol = newCol;
+                return new Note(note.beat, newCol);
+            })
             .ToList();
 
-        UpdateNotes(mirroredSelection, currentMapDifficulty.selectedNotes);
+        UpdateNotes(newNotes, currentMapDifficulty.selectedNotes);
     }
     public void MirrorSelection() {
         if (currentMapDifficulty == null) {
