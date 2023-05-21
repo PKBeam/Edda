@@ -5,6 +5,7 @@ using System.IO;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
+using System.Linq;
 
 namespace Edda {
     public partial class MainWindow : Window {
@@ -268,13 +269,33 @@ namespace Edda {
         }
 
         private void AppMainWindow_PreviewMouseWheel(object sender, MouseWheelEventArgs e) {
-            if (ctrlKeyDown) {
-                var delta = (int) Helper.DoubleRangeTruncate(e.Delta, -1, 1);
+            if (!ctrlKeyDown) {
+                return;
+            }
+
+            var delta = (int) Helper.DoubleRangeTruncate(e.Delta, -1, 1);
+
+            double pos = gridController.mouseBeat;
+            BPMChange lastChange = mapEditor.GetLastBeatChange(pos);
+
+            if (lastChange.globalBeat == 0.0) {
                 int currentBeatDivision;
                 int.TryParse(txtGridDivision.Text, out currentBeatDivision);
                 txtGridDivision.Text = ((int)Helper.DoubleRangeTruncate(currentBeatDivision + delta, 1, Editor.GridDivisionMax)).ToString();
-                e.Handled = true; // Mark tunneling event as handled to prevent scrolling on the grid while changing the division.
+            } else {    
+                // Update the BPM value in the original list
+                foreach ( BPMChange bpmChange in mapEditor.currentMapDifficulty.bpmChanges.OrderByDescending(bpmChange => bpmChange.globalBeat)) {
+                    if (bpmChange.globalBeat < pos)
+                    {
+                        bpmChange.gridDivision = (int)Helper.DoubleRangeTruncate(bpmChange.gridDivision + delta, 1, Editor.GridDivisionMax);
+                        
+                        // Redraw grid
+                        gridController.DrawGrid(false);
+                        break;
+                    }
+                }
             }
+            e.Handled = true; // Mark tunneling event as handled to prevent scrolling on the grid while changing the division.
         }
 
         // other UI elements
