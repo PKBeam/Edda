@@ -283,16 +283,14 @@ namespace Edda {
                 int.TryParse(txtGridDivision.Text, out currentBeatDivision);
                 txtGridDivision.Text = ((int)Helper.DoubleRangeTruncate(currentBeatDivision + delta, 1, Editor.GridDivisionMax)).ToString();
             } else {    
-                // Update the BPM value in the original list
-                foreach ( BPMChange bpmChange in mapEditor.currentMapDifficulty.bpmChanges.OrderByDescending(bpmChange => bpmChange.globalBeat)) {
-                    if (bpmChange.globalBeat < pos)
-                    {
-                        bpmChange.gridDivision = (int)Helper.DoubleRangeTruncate(bpmChange.gridDivision + delta, 1, Editor.GridDivisionMax);
-                        
-                        // Redraw grid
-                        gridController.DrawGrid(false);
-                        break;
-                    }
+                var currentBpmChange = mapEditor.currentMapDifficulty.bpmChanges
+                    .Where(bpmChange => bpmChange.globalBeat < pos)
+                    .OrderByDescending(bpmChange => bpmChange.globalBeat)
+                    .FirstOrDefault();
+
+                if (currentBpmChange != null) {
+                    currentBpmChange.gridDivision = (int) Helper.DoubleRangeTruncate(currentBpmChange.gridDivision + delta, 1, Editor.GridDivisionMax);
+                    gridController.DrawGrid(false);
                 }
             }
             e.Handled = true; // Mark tunneling event as handled to prevent scrolling on the grid while changing the division.
