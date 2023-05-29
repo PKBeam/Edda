@@ -867,9 +867,11 @@ namespace Edda {
             // update enabled state
             foreach (Button b in DifficultyChangePanel.Children) {
                 if (b.Name == ((Button)DifficultyChangePanel.Children[gridController.currentMapDifficultyIndex]).Name) {
-                    b.IsEnabled = false;
+                    b.IsHitTestVisible = false;
+                    b.Background = (SolidColorBrush)new BrushConverter().ConvertFrom(Editor.Difficulty.SelectedColour);
                 } else {
-                    b.IsEnabled = true;
+                    b.IsHitTestVisible = true;
+                    b.Background = SystemColors.ControlBrush;
                 }
             }
 

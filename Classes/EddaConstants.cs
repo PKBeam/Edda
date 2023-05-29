@@ -96,8 +96,6 @@ namespace Edda.Const {
         public const double MajorGridlineThickness = 1.5;
         public const double MinorGridlineThickness = 1;
         public const int GridDivisionMax = 64;
-        public const int DifficultyLevelMin = 1;
-        public const int DifficultyLevelMax = 99;
 
         // Animation Properties
         public const double DrumHitScaleFactor = 0.75; // percentage of 1.0
@@ -109,6 +107,14 @@ namespace Edda.Const {
         public const double PreviewNoteOpacity = 0.30; // percentage of 1.0
         public const double DragInitThreshold = 10; // pixels
         public const int AutosaveInterval = 30; // seconds
+
+        // Difficulty
+        public static class Difficulty
+        {
+            public static string SelectedColour => Colors.LightSkyBlue.ToString();
+            public const int LevelMin = 1;
+            public const int LevelMax = 99;
+        }
 
         // Bookmarks
         public const double NavWaveformOpacity = 0.75;
