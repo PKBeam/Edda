@@ -462,14 +462,14 @@ namespace Edda {
         private void TxtDifficultyNumber_LostFocus(object sender, RoutedEventArgs e) {
             int prevLevel = (int)mapEditor.GetMapValue("_difficultyRank", RagnarockMapDifficulties.Current);
             int level;
-            if (int.TryParse(txtDifficultyNumber.Text, out level) && Helper.DoubleRangeCheck(level, Editor.DifficultyLevelMin, Editor.DifficultyLevelMax)) {
+            if (int.TryParse(txtDifficultyNumber.Text, out level) && Helper.DoubleRangeCheck(level, Editor.Difficulty.LevelMin, Editor.Difficulty.LevelMax)) {
                 if (level != prevLevel) {
                     mapEditor.SetMapValue("_difficultyRank", level, RagnarockMapDifficulties.Current);
                     mapEditor.SortDifficulties();
                     UpdateDifficultyButtons();
                 }
             } else {
-                MessageBox.Show($"The difficulty level must be an integer between {Editor.DifficultyLevelMin} and {Editor.DifficultyLevelMax}.", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                MessageBox.Show($"The difficulty level must be an integer between {Editor.Difficulty.LevelMin} and {Editor.Difficulty.LevelMax}.", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
                 level = prevLevel;
             }
             txtDifficultyNumber.Text = level.ToString();
