@@ -203,7 +203,7 @@ namespace Edda.Const {
         public const string BeatmapCharacteristicName = "Standard";
         private const double NoteJumpMovementSpeed = 20;
         public static List<string> DifficultyNames => new() { "Easy", "Normal", "Hard" };
-        public static List<string> EnvironmentNames => new() { "Midgard", "Alfheim", "Nidavellir", "Asgard", "Muspelheim", "Helheim", "Hellfest", "DarkEmpty" };
+        public static List<string> EnvironmentNames => new() { "Midgard", "Alfheim", "Nidavellir", "Asgard", "Muspelheim", "Helheim", "Hellfest", "Sabaton", "Empty", "DarkEmpty" };
         //public const string DefaultEnvironmentAlias = "Midgard";
 
         public static double GetPreferredNoteJumpMovementSpeed() {
