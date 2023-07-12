@@ -818,17 +818,14 @@ namespace Edda {
             string newFile = Helper.SanitiseCoverFileName(d.FileName);
             string newPath = Path.Combine(mapEditor.mapFolder, newFile);
 
-            // load new cover image, if necessary
-            if (prevPath != newPath) {
+            // skip only when the chosen file is already the map cover file
+            if (prevPath != d.FileName) {
                 // remove the previous cover image
                 Helper.FileDeleteIfExists(prevPath);
-                // copy over the image file if it's not in the same folder already
-                if (!d.FileName.StartsWith(mapEditor.mapFolder)) {
-                    // delete any existing files in the map folder with conflicting names
-                    Helper.FileDeleteIfExists(newPath);
-                    // copy image file over
-                    File.Copy(d.FileName, newPath);
-                }
+                // delete any existing files in the map folder with conflicting names
+                Helper.FileDeleteIfExists(newPath);
+                // copy image file over
+                File.Copy(d.FileName, newPath);
 
                 mapEditor.SetMapValue("_coverImageFilename", newFile);
                 SaveBeatmap();
@@ -840,7 +837,8 @@ namespace Edda {
             if (fileName == "") {
                 ClearCoverImage();
             } else {
-                BitmapImage b = Helper.BitmapGenerator(new Uri(Path.Combine(mapEditor.mapFolder, fileName)));
+                // Need to ignore cache, since we replace the contents of the cover.* file.
+                BitmapImage b = Helper.BitmapGenerator(new Uri(Path.Combine(mapEditor.mapFolder, fileName)), true);
                 imgCover.Source = b;
                 txtCoverFileName.Text = fileName;
                 borderImgCover.BorderThickness = new(2);

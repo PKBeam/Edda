@@ -2,14 +2,13 @@
 using Microsoft.WindowsAPICodePack.Dialogs;
 using Newtonsoft.Json.Linq;
 using System;
-using System.CodeDom;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Net.Http;
-using System.Numerics;
+using System.Net.Cache;
 using System.Text.RegularExpressions;
 using System.Windows;
 using System.Windows.Media.Imaging;
@@ -334,11 +333,18 @@ public class Helper {
     public static string NameGenerator(Note n) {
         return "N" + n.GetHashCode().ToString();
     }
-    public static BitmapImage BitmapGenerator(Uri u) {
+    public static BitmapImage BitmapGenerator(Uri u, bool ignoreCache = false) {
         var b = new BitmapImage();
         b.BeginInit();
-        b.UriSource = u;
+        if (ignoreCache) {
+            b.CacheOption = BitmapCacheOption.None;
+            b.UriCachePolicy = new RequestCachePolicy(RequestCacheLevel.BypassCache);
+        }
         b.CacheOption = BitmapCacheOption.OnLoad;
+        if (ignoreCache) {
+            b.CreateOptions = BitmapCreateOptions.IgnoreImageCache;
+        }
+        b.UriSource = u;
         b.EndInit();
         b.Freeze();
         return b;
