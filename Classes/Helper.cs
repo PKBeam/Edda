@@ -190,27 +190,24 @@ public class Helper {
             Trace.WriteLine(message);
         })).Start();
     }
-    public static void FFmpeg(string dir, string arg) {
+    public static int FFmpeg(string dir, string arg) {
         // uses a custom-built version of ffmpeg with ONLY libvorbis support
         // (cuts down on filesize a lot)
-        string path = Path.Combine(Path.GetTempPath(), "ffmpeg_temp.exe");
+        string path = Path.Combine(Path.GetTempPath(), $"ffmpeg_temp_{Process.GetCurrentProcess().Id}.exe");
         File.WriteAllBytes(path, Edda.Properties.Resources.ffmpeg);
 
         var p = Process.Start(path, arg);
-        //p.StartInfo.RedirectStandardOutput = true;
-        //p.StartInfo.RedirectStandardError = true;
-        //p.Start();
-        //var output = p.StandardOutput.ReadToEnd();
-        //var err = p.StandardError.ReadToEnd();
-        //File.WriteAllText(dir + "/out.txt", err);
-        //File.WriteAllText(dir + "/err.txt", err);
         p.WaitForExit();
+        int exitCode = p.ExitCode;
+        p.Close(); // To free up the handle on ffmpeg_temp_{pid}.exe
 
-        try {
+        try {           
             File.Delete(path);
         } catch (Exception e) {
-            MessageBox.Show($"Couldn't delete file at {path}. {e}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+            Trace.WriteLine($"WARNING: Failed to delete {path}: ({e})");
         }
+
+        return exitCode;
     }
     public static void CmdCopyFile(string src, string dst) {
         var p = Process.Start("cmd.exe", "/C copy \"" + src + "\" \"" + dst + "\"");
