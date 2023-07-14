@@ -56,6 +56,8 @@ namespace Edda {
             oldMetronome?.Dispose();
             Trace.WriteLine("INFO: Audio resources disposed...");
 
+            Helper.FileDeleteIfExists(Path.Combine(Path.GetTempPath(), $"ffmpeg_temp_{Process.GetCurrentProcess().Id}.exe"));
+
             // TODO find other stuff to dispose so we don't cause a memory leak
             // Application.Current.Shutdown();
         }

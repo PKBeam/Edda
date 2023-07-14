@@ -139,9 +139,14 @@ namespace Edda
             if (TimeRangeDurationCheck() || ShowDurationError()) {
                 string saveURL = Path.Combine(songFolder, "preview.ogg");
                 btnGenerate.IsEnabled = false;
-                Helper.FFmpeg(songFolder, $"-i \"{songURL}\" -y -ss 00:{startMin:D2}:{startSec:D2} -to 00:{endMin:D2}:{endSec:D2} -vn -af afade=t=out:st={TotalSec(endMin, endSec) - fadeOutDur}:d={fadeOutDur},afade=t=in:st={TotalSec(startMin, startSec)}:d={fadeInDur} \"{saveURL}\"");
+                int exitCode = Helper.FFmpeg(songFolder, $"-i \"{songURL}\" -y -ss 00:{startMin:D2}:{startSec:D2} -to 00:{endMin:D2}:{endSec:D2} -vn -af afade=t=out:st={TotalSec(endMin, endSec) - fadeOutDur}:d={fadeOutDur},afade=t=in:st={TotalSec(startMin, startSec)}:d={fadeInDur} \"{saveURL}\"");
                 btnGenerate.IsEnabled = true;
-                MessageBox.Show($"Song preview created successfully.", "Success", MessageBoxButton.OK, MessageBoxImage.Information);
+                if (exitCode == 0) {
+                    MessageBox.Show($"Song preview created successfully.", "Success", MessageBoxButton.OK, MessageBoxImage.Information);
+                } else {
+                    MessageBox.Show($"There was an issue creating song preview.", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                }
+                
             }
         }
 

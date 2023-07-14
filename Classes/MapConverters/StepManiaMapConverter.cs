@@ -218,7 +218,11 @@ public class StepManiaMapConverter : IMapConverter
             int startSec = (int)(sampleStart - 60 * startMin);
             int endMin = (int)((sampleStart + sampleLength) / 60);
             int endSec = (int)(sampleStart + sampleLength - 60 * endMin);
-            Helper.FFmpeg(beatmap.PathOf(""), $"-i \"{songURL}\" -y -ss 00:{startMin:D2}:{startSec:D2} -to 00:{endMin:D2}:{endSec:D2} -vn \"{saveURL}\"");
+            int exitCode = Helper.FFmpeg(beatmap.PathOf(""), $"-i \"{songURL}\" -y -ss 00:{startMin:D2}:{startSec:D2} -to 00:{endMin:D2}:{endSec:D2} -vn \"{saveURL}\"");
+            if (exitCode != 0)
+            {
+                System.Diagnostics.Trace.WriteLine($"WARNING: Failed to generate preview.ogg");
+            }
         }
     }
 
