@@ -192,11 +192,7 @@ public class StepManiaMapConverter : IMapConverter
         {
             string newCoverFilename = Helper.SanitiseCoverFileName(coverImageFilename);
             string newCoverUrl = beatmap.PathOf(newCoverFilename);
-            // can't copy over an existing file
-            if (File.Exists(newCoverUrl))
-            {
-                File.Delete(newCoverUrl);
-            }
+            Helper.FileDeleteIfExists(newCoverUrl);
             File.Copy(Path.Combine(smFile.Directory, coverImageFilename), newCoverUrl);
             beatmap.SetValue("_coverImageFilename", newCoverFilename);
         }
