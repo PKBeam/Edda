@@ -1132,7 +1132,9 @@ namespace Edda {
             // re-enable actions that were disabled
             txtSongBPM.IsEnabled = true;
             btnChangeBPM.IsEnabled = true;
-            UpdateDifficultyButtons();
+            btnChangeDifficulty0.IsEnabled = true;
+            btnChangeDifficulty1.IsEnabled = true;
+            btnChangeDifficulty2.IsEnabled = true;
             scrollEditor.IsEnabled = true;
             sliderSongProgress.IsEnabled = true;
             borderNavWaveform.IsEnabled = true;
