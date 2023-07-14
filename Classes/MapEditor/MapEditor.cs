@@ -49,7 +49,7 @@ public enum MoveNote {
     MOVE_GRID_DOWN
 }
 
-public class MapEditor {
+public class MapEditor : IDisposable {
     public string mapFolder;
     RagnarockMap beatMap;
     MainWindow parent;
@@ -99,6 +99,15 @@ public class MapEditor {
         }
         this.clipboard = new();
     }
+
+    public void Dispose()
+    {
+        beatMap = null;
+        parent = null;
+        difficultyMaps = null;
+        clipboard = null;
+    }
+
     public MapDifficulty? GetDifficulty(int indx) {
         return difficultyMaps[indx];
     }

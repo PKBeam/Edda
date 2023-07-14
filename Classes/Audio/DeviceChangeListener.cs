@@ -1,16 +1,22 @@
 using NAudio.CoreAudioApi;
 using NAudio.CoreAudioApi.Interfaces;
+using System;
 using System.Windows;
 
 namespace Edda
 {
-    public class DeviceChangeListener : IMMNotificationClient
+    public class DeviceChangeListener : IMMNotificationClient, IDisposable
     {
         MainWindow caller;
 
         public DeviceChangeListener(MainWindow caller)
         {
             this.caller = caller;
+        }
+
+        public void Dispose()
+        {
+            this.caller = null;
         }
 
         public void OnDefaultDeviceChanged(DataFlow flow, Role role, string defaultDeviceId)

@@ -50,6 +50,10 @@ namespace Edda {
             lblSelectedBeat.Content = "";
         }
         private void BorderSpectrogram_SizeChanged(object sender, SizeChangedEventArgs e) {
+            if (e.PreviousSize == new Size())
+            {
+                return;
+            }
             if (mapIsLoaded) {
                 gridController.DrawSpectrogram();
             }
@@ -62,6 +66,10 @@ namespace Edda {
 
         }
         private void ScrollEditor_SizeChanged(object sender, SizeChangedEventArgs e) {
+            if (e.PreviousSize == new Size())
+            {
+                return;
+            }
             if (mapIsLoaded) {
                 gridController.UpdateGridHeight();
             }

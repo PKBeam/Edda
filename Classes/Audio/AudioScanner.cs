@@ -5,7 +5,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Edda.Const;
 
-public class AudioScanner {
+public class AudioScanner : IDisposable {
     int scanIndex;
     double tempo;
     protected int stopwatchOffset = 0;
@@ -25,6 +25,19 @@ public class AudioScanner {
     }
 
     public AudioScanner(ParallelAudioPlayer parallelAudioPlayer) : this(parallelAudioPlayer, 1.0) {
+    }
+
+    public virtual void Dispose()
+    {
+        stopwatch?.Stop();
+        stopwatch = null;
+
+        tokenSource?.Cancel();
+        tokenSource?.Dispose();
+        tokenSource = null;
+
+        notes = null;
+        parallelAudioPlayer = null;
     }
 
     public void SetTempo(double newTempo) {

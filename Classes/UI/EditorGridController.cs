@@ -18,7 +18,7 @@ using MediaColor = System.Windows.Media.Color;
 using DrawingColor = System.Drawing.Color;
 using Edda.Const;
 
-public class EditorGridController {
+public class EditorGridController: IDisposable {
 
     MapEditor mapEditor;
 
@@ -231,6 +231,58 @@ public class EditorGridController {
         lineGridMouseover.Visibility = Visibility.Hidden;
         EditorGrid.Children.Add(lineGridMouseover);
     }
+
+    public void Dispose()
+    {
+        // Clear the most memory-heavy components
+        noteCanvas.Children.Clear();
+        EditorGrid.Children.Clear();
+        panelSpectrogram.Children.Clear();
+        imgWaveformVertical.Source = null;
+        imgAudioWaveform.Source = null;
+        foreach (var imgSpectorgramChunk in imgSpectrogramChunks)
+        {
+            imgSpectorgramChunk.Source = null;
+        }
+
+        // Unbind references
+        mapEditor = null;
+        parentWindow = null;
+        EditorGrid = null;
+        scrollEditor = null;
+        referenceCol = null;
+        referenceRow = null;
+        borderNavWaveform = null;
+        colWaveformVertical = null;
+        imgWaveformVertical = null;
+        scrollSpectrogram = null;
+        panelSpectrogram = null;
+        canvasSpectrogramLowerOffset = null;
+        canvasSpectrogramUpperOffset = null;
+        imgSpectrogramChunks = null;
+        editorMarginGrid = null;
+        canvasNavInputBox = null;
+        canvasBookmarks = null;
+        canvasBookmarkLabels = null;
+        lineSongMouseover = null;
+        dispatcher = null;
+        dragSelectBorder = null;
+        lineGridMouseover = null;
+        noteCanvas = null;
+        imgAudioWaveform = null;
+        imgPreviewNote = null;
+
+        audioSpectrogram?.Dispose();
+        audioSpectrogram = null;
+        audioWaveform?.Dispose();
+        audioWaveform = null;
+        navWaveform?.Dispose();
+        navWaveform = null;
+
+        currentlyDraggingMarker = null;
+        currentlyDraggingBookmark = null;
+        currentlyDraggingBPMChange = null;
+}
 
     public void InitMap(MapEditor me) {
         this.mapEditor = me;

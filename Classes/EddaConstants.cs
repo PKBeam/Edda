@@ -173,6 +173,7 @@ namespace Edda.Const {
             public const int DefaultFreq = 11_000; // Hz
             public const int FftSizeExp = 11; // FFT Size = 2^FftSizeExp
             public const int StepSize = 500; // samples
+            public const int MaxSampleSteps = 65500; // we can handle roughly this many steps through samples before we reach the max pixel size of the bitmap for a chunk.
             public const int NumberOfChunks = 12; // Each chunk can span roughly 5 minutes before we reach the max pixel size of the bitmap.
             public const string CachedBmpFilenameFormat = "spectrogram_{0}_{1}_{2}_{3}_*.png";
         }
