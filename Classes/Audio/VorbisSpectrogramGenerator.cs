@@ -14,7 +14,7 @@ using System.Drawing;
 using System.Drawing.Imaging;
 using System.Runtime.InteropServices;
 
-public class VorbisSpectrogramGenerator {
+public class VorbisSpectrogramGenerator : IDisposable {
 
     private CancellationTokenSource tokenSource;
     private string filePath;
@@ -33,6 +33,13 @@ public class VorbisSpectrogramGenerator {
     public VorbisSpectrogramGenerator(string filePath, bool cache, SpectrogramType? type, SpectrogramQuality? quality, int? maxFreq, String colormap, bool drawFlipped) {
         this.filePath = filePath;
         InitSettings(cache, type, quality, maxFreq, colormap, drawFlipped);
+    }
+
+    public void Dispose()
+    {
+        tokenSource?.Cancel();
+        tokenSource = null;
+        cachedSpectrograms = null;
     }
 
     public void InitSettings(bool cache, SpectrogramType? type, SpectrogramQuality? quality, int? maxFreq, String colormap, bool drawFlipped) {
@@ -99,6 +106,13 @@ public class VorbisSpectrogramGenerator {
         var sampleRate = reader.WaveFormat.SampleRate;
         var bytesPerSample = reader.WaveFormat.BitsPerSample / 8;
         var numSamples = reader.Length / bytesPerSample;
+
+        // We bail if we know that resulting BMPs would be too large to save anyway
+        if (numSamples > numChunks * Editor.Spectrogram.MaxSampleSteps * Editor.Spectrogram.StepSize * (int)quality)
+        {
+            isDrawing = false;
+            return null;
+        }
         
         var audioBuffer = new float[numSamples];
         reader.Read(audioBuffer, 0, (int)numSamples);

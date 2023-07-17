@@ -104,6 +104,9 @@ public class ParallelAudioPlayer: IDisposable {
             noteStreams[i].Dispose();
             notePlayers[i].Dispose();
         }
+        noteStreams = null;
+        notePlayers = null;
+        playbackDevice = null;
     }
     private string GetFilePath(string basePath, int sampleNumber) {
         return $"{Program.ResourcesPath}{basePath}{sampleNumber}.wav";

@@ -129,6 +129,10 @@ namespace Edda {
         NoteScanner noteScanner;
         BeatScanner beatScanner;
 
+        IDisposable scrollEditorSizeChangedDebounce;
+        IDisposable borderNavWaveformSizeChangedDebounce;
+        IDisposable borderSpectrogramSizeChangedDebounce;
+
         // references to parent application
         RecentOpenedFolders recentMaps {
             get {
@@ -192,35 +196,35 @@ namespace Edda {
             InitComboEnvironment();
             songPlaybackCancellationTokenSource = new();
             //debounce grid redrawing on resize
-            Observable
-            .FromEventPattern<SizeChangedEventArgs>(scrollEditor, nameof(SizeChanged))
-            .Throttle(TimeSpan.FromMilliseconds(Editor.DrawDebounceInterval))
-            .ObserveOn(SynchronizationContext.Current)
-            .Subscribe(eventPattern => 
-                AppMainWindow.Dispatcher.Invoke(() =>
-                    ScrollEditor_SizeChanged(eventPattern.Sender, eventPattern.EventArgs)
-                )
-            );
+            scrollEditorSizeChangedDebounce = Observable
+                .FromEventPattern<SizeChangedEventArgs>(scrollEditor, nameof(SizeChanged))
+                .Throttle(TimeSpan.FromMilliseconds(Editor.DrawDebounceInterval))
+                .ObserveOn(SynchronizationContext.Current)
+                .Subscribe(eventPattern => 
+                    Dispatcher.Invoke(() =>
+                        ScrollEditor_SizeChanged(eventPattern.Sender, eventPattern.EventArgs)
+                    )
+                );
 
-            Observable
-            .FromEventPattern<SizeChangedEventArgs>(borderNavWaveform, nameof(SizeChanged))
-            .Throttle(TimeSpan.FromMilliseconds(Editor.DrawDebounceInterval))
-            .ObserveOn(SynchronizationContext.Current)
-            .Subscribe(eventPattern =>
-                AppMainWindow.Dispatcher.Invoke(() =>
-                    BorderNavWaveform_SizeChanged(eventPattern.Sender, eventPattern.EventArgs)
-                )
-            );
+            borderNavWaveformSizeChangedDebounce = Observable
+                .FromEventPattern<SizeChangedEventArgs>(borderNavWaveform, nameof(SizeChanged))
+                .Throttle(TimeSpan.FromMilliseconds(Editor.DrawDebounceInterval))
+                .ObserveOn(SynchronizationContext.Current)
+                .Subscribe(eventPattern =>
+                    Dispatcher.Invoke(() =>
+                        BorderNavWaveform_SizeChanged(eventPattern.Sender, eventPattern.EventArgs)
+                    )
+                );
 
-            Observable
-            .FromEventPattern<SizeChangedEventArgs>(borderSpectrogram, nameof(SizeChanged))
-            .Throttle(TimeSpan.FromMilliseconds(Editor.DrawDebounceInterval))
-            .ObserveOn(SynchronizationContext.Current)
-            .Subscribe(eventPattern =>
-                AppMainWindow.Dispatcher.Invoke(() =>
-                    BorderSpectrogram_SizeChanged(eventPattern.Sender, eventPattern.EventArgs)
-                )
-            );
+            borderSpectrogramSizeChangedDebounce = Observable
+                .FromEventPattern<SizeChangedEventArgs>(borderSpectrogram, nameof(SizeChanged))
+                .Throttle(TimeSpan.FromMilliseconds(Editor.DrawDebounceInterval))
+                .ObserveOn(SynchronizationContext.Current)
+                .Subscribe(eventPattern =>
+                    Dispatcher.Invoke(() =>
+                        BorderSpectrogram_SizeChanged(eventPattern.Sender, eventPattern.EventArgs)
+                    )
+                );
         }
 
        
@@ -294,7 +298,7 @@ namespace Edda {
             // bandaid fix to prevent WPF from committing unnecessarily large amounts of memory
             new Thread(new ThreadStart(delegate {
                 Thread.Sleep(500);
-                this.Dispatcher.Invoke(() => DrawEditorGrid());
+                this.Dispatcher.Invoke(() => DrawEditorGrid(false));
             })).Start();
 
             discordClient.SetPresence((string)mapEditor.GetMapValue("_songName"), gridController.currentMapDifficultyNotes?.Count ?? 0);
@@ -917,7 +921,7 @@ namespace Edda {
 
             UpdateDifficultyButtons();
             gridController.DrawNavBookmarks();
-            DrawEditorGrid();
+            DrawEditorGrid(false);
             mapEditor.currentMapDifficulty.needsSave = difficultyDirtyState; // Restore the "dirty" state before UI initialization.
         }
 

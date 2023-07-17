@@ -20,7 +20,7 @@ namespace Edda {
             if (PromptBeatmapSave()) {
                 if (returnToStartMenuOnClose) {
                     new StartWindow().Show();
-                }
+                } 
                 discordClient.SetPresence();
             } else {
                 returnToStartMenuOnClose = false;
@@ -29,12 +29,20 @@ namespace Edda {
         }
         private void AppMainWindow_Closed(object sender, EventArgs e) {
             Trace.WriteLine("INFO: Closing main window...");
+
+            // Audio resources
             if (deviceEnumerator != null) {
                 if (deviceChangeListener != null) {
                     deviceEnumerator.UnregisterEndpointNotificationCallback(deviceChangeListener);
+                    deviceChangeListener.Dispose();
+                    deviceChangeListener = null;
                 }
                 deviceEnumerator.Dispose();
+                deviceEnumerator = null;
             }
+            songPlayAnim = null;
+            sliderSongProgress?.BeginAnimation(Slider.ValueProperty, null);
+
             var oldSongPlayer = songPlayer;
             songPlayer = null;
             oldSongPlayer?.Stop();
@@ -44,8 +52,19 @@ namespace Edda {
             songStream = null;
             oldSongStream?.Dispose();
 
-            noteScanner?.Stop();
-            beatScanner?.Stop();
+            var oldSongTempoStream = songTempoStream;
+            songTempoStream = null;
+            oldSongTempoStream?.Dispose();
+
+            songChannel = null;
+
+            var oldNoteScanner = noteScanner;
+            noteScanner = null;
+            oldNoteScanner?.Dispose();
+
+            var oldBeatScanner = beatScanner;
+            beatScanner = null;
+            oldBeatScanner?.Dispose();
 
             var oldDrummer = drummer;
             drummer = null;
@@ -56,10 +75,42 @@ namespace Edda {
             oldMetronome?.Dispose();
             Trace.WriteLine("INFO: Audio resources disposed...");
 
+            // Debounce callbacks
+            var oldScrollEditorSizeChangedDebounce = scrollEditorSizeChangedDebounce;
+            scrollEditorSizeChangedDebounce = null;
+            oldScrollEditorSizeChangedDebounce?.Dispose();
+
+            var oldBorderNavWaveformSizeChangedDebounce = borderNavWaveformSizeChangedDebounce;
+            borderNavWaveformSizeChangedDebounce = null;
+            oldBorderNavWaveformSizeChangedDebounce?.Dispose();
+
+            var oldBorderSpectrogramSizeChangedDebounce = borderSpectrogramSizeChangedDebounce;
+            borderSpectrogramSizeChangedDebounce = null;
+            oldBorderSpectrogramSizeChangedDebounce?.Dispose();
+
+            // Other
+            var oldAutosaveTimer = autosaveTimer;
+            autosaveTimer = null;
+            oldAutosaveTimer?.Stop();
+            oldAutosaveTimer?.Dispose();
+
+            var oldMapEditor = mapEditor;
+            mapEditor = null;
+            oldMapEditor?.Dispose();
+
+            var oldGridController = gridController;
+            gridController = null;
+            oldGridController?.Dispose();
+
+            userSettings?.Clear();
+            userSettings = null;
+
             Helper.FileDeleteIfExists(Path.Combine(Path.GetTempPath(), $"ffmpeg_temp_{Process.GetCurrentProcess().Id}.exe"));
 
-            // TODO find other stuff to dispose so we don't cause a memory leak
-            // Application.Current.Shutdown();
+            Trace.WriteLine("INFO: Other resources disposed...");
+
+            // WPF doesn't release UI Elements from memory after window is closed, since it reuses the instance.
+            // They are being released when a new map is loaded though, so no memory leak should occur due to that.
         }
         private void AppMainWindow_KeyDown(object sender, KeyEventArgs e) {
 

@@ -13,6 +13,14 @@ public class NoteScanner: AudioScanner {
         this.caller = caller;
         this.playedLateNote = false;
     }
+
+    public override void Dispose()
+    {
+        base.Dispose();
+        caller = null;
+        notesPlayed = null;
+    }
+
     protected override void OnNoteScanBegin() {
         notesPlayed = new List<Note>();
     }
