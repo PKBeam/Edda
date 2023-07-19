@@ -22,7 +22,7 @@ public class DiscordClient {
 			return;
         }
 		var rp = new RichPresence() {
-			Details = songName == null ? "No song open" : $"Mapping: {songName}",
+			Details = GetPresenceDetails(songName),
 			State = songName == null ? "" : $"{numNotes} notes placed",
 			Assets = new Assets() {
 				LargeImageKey = Edda.Const.DiscordRPC.IconKey
@@ -31,6 +31,19 @@ public class DiscordClient {
 
 		client.SetPresence(rp);
 	}
+
+	private string GetPresenceDetails(string songName)
+	{
+		switch (songName)
+		{
+			case null: return "No song open";
+			case "": return "Mapping: *Untitled*";
+			default:
+				return $"Mapping: {songName}";
+
+        }
+    }
+
 	public void Enable() {
 		enabled = true;
 		InitClient();

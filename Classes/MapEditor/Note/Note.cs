@@ -27,6 +27,6 @@ public class Note: IComparable, IEquatable<Note> {
     }
 
     public bool Equals(Note n) {
-        return Helper.DoubleApproxEqual(n.beat, this.beat) && Helper.DoubleApproxEqual(n.col, this.col);
+        return Helper.DoubleApproxEqual(n.beat, this.beat) && n.col == this.col;
     }
 }

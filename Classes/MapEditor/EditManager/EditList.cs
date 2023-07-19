@@ -9,7 +9,7 @@ public class EditList<T> : ICloneable {
     public EditList() {
         this.items = new List<Edit<T>>();
     }
-    public EditList(bool isAdding, List<T> items) {
+    public EditList(bool isAdding, IEnumerable<T> items) {
         this.items = new List<Edit<T>>();
         foreach (T item in items) {
             this.items.Add(new Edit<T>(isAdding, item));

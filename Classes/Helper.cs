@@ -306,23 +306,6 @@ public class Helper {
         }
         return null;
     }
-    public static bool InsertSortedUnique(List<Note> notes, Note note) {
-        // check which index to insert the new note at (keep everything in sorted order)
-        var i = 0;
-        foreach (var thisNote in notes) {
-            int comp = thisNote.CompareTo(note);
-            if (comp == 0) {
-                return false;
-            }
-            if (comp > 0) {
-                notes.Insert(i, note);
-                return true;
-            }
-            i++;
-        }
-        notes.Add(note);
-        return true;
-    }
     // TODO figure out a better way than this
     public static string UidGenerator(Note n) {
         return $"Note({Math.Round(n.beat, 4)},{n.col})";

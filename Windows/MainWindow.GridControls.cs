@@ -105,7 +105,7 @@ namespace Edda {
                 return;
             }
             Point mousePos = e.GetPosition(EditorGrid);
-            gridController.GridMouseMove(mousePos, shiftKeyDown);
+            gridController.GridMouseMove(mousePos);
 
             // update beat display
             lblSelectedBeat.Content = $"Time: {Helper.TimeFormat(gridController.snappedBeat * 60 / globalBPM)}, Global Beat: {Math.Round(gridController.snappedBeat, 3)} ({Math.Round(gridController.unsnappedBeat, 3)})";
@@ -147,7 +147,7 @@ namespace Edda {
                 return;
             }
             Point mousePos = e.GetPosition(EditorGrid);
-            gridController.GridMouseUp(mousePos, shiftKeyDown);
+            gridController.GridMouseUp(mousePos);
             editorMouseDown = false;
         }
         private void scrollEditor_PreviewMouseRightButtonUp(object sender, MouseButtonEventArgs e) {
