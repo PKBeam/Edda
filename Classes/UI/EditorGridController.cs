@@ -467,7 +467,8 @@ public class EditorGridController: IDisposable {
 
         // then draw the notes
         noteCanvas.Children.Clear();
-        DrawNotes(mapEditor.currentMapDifficulty.notes.ToList());
+        DrawNotes(mapEditor.currentMapDifficulty.notes);
+        HighlightNotes(mapEditor.currentMapDifficulty.selectedNotes);
 
         // including the mouseover preview note
         imgPreviewNote.Width = unitLength;
@@ -971,20 +972,18 @@ public class EditorGridController: IDisposable {
         double endBeat = mouseBeatUnsnapped;
         if (Helper.DoubleApproxGreater(startBeat, endBeat))
         {
-            var temp = endBeat;
-            endBeat = startBeat;
-            startBeat = temp;
+            (startBeat, endBeat) = (endBeat, startBeat);
         }
         int startCol = ColForPosition(dragSelectStart.X);
         int endCol = mouseGridCol;
-        if (endCol == -1) {
-            endCol = mousePos.X < EditorGrid.ActualWidth / 2 ? 0 : 3;
+        if (startCol > endCol)
+        {
+            (startCol, endCol) = (endCol, startCol);
         }
-        List<Note> newSelection =
+        var newSelection =
             mapEditor.currentMapDifficulty
                 .GetNotesRange(startBeat, endBeat)
-                .Where(n => n.col >= startCol && n.col <= endCol)
-                .ToList();
+                .Where(n => n.col >= Math.Max(startCol, 0) && n.col <= Math.Min(endCol, 3));
         if (parentWindow.shiftKeyDown) {
             mapEditor.SelectNotes(newSelection);
         } else {

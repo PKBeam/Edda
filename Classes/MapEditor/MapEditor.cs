@@ -65,7 +65,7 @@ public class MapEditor : IDisposable {
     public double songDuration; // duration of song in seconds
     public int currentDifficultyIndex = -1;
     MapDifficulty?[] difficultyMaps = new MapDifficulty[3];
-    List<Note> clipboard;
+    SortedSet<Note> clipboard;
 
     public bool needsSave = false;
 
@@ -243,10 +243,12 @@ public class MapEditor : IDisposable {
         b.name = newName;
         parent.DrawEditorGrid(false);
     }
-    public void AddNotes(List<Note> notes, bool updateHistory = true) {
+    public void AddNotes(IEnumerable<Note> notes, bool updateHistory = true) {
         currentMapDifficulty?.MarkDirty();
-        SortedSet<Note> drawNotes = new(notes.Where(n => currentMapDifficulty?.notes?.Add(n) == true));
+        var drawNotes = notes.Where(n => currentMapDifficulty?.notes?.Add(n) == true).ToList();
         // draw the added notes
+        // note: by drawing this note out of order, it is inconsistently layered with other notes.
+        //       should we take the performance hit of redrawing the entire grid for visual consistency?
         parent.gridController.DrawNotes(drawNotes);
 
         if (updateHistory) {
@@ -258,26 +260,23 @@ public class MapEditor : IDisposable {
     public void AddNotes(Note n, bool updateHistory = true) {
         AddNotes(new List<Note>() { n }, updateHistory);
     }
-    public void UpdateNotes(SortedSet<Note> newNotes, SortedSet<Note> oldNotes, bool updateHistory = true) {
+    public void UpdateNotes(IEnumerable<Note> newNotes, IEnumerable<Note> oldNotes, bool updateHistory = true) {
         currentMapDifficulty?.MarkDirty();
 
-        // undraw the added notes
-        parent.gridController.UndrawNotes(oldNotes);
-
         // remove all old Notes
-        foreach (Note n in oldNotes)
-        {
-            currentMapDifficulty?.notes.Remove(n);
-        }
+        var undrawNotes = oldNotes.Where(n => currentMapDifficulty?.notes?.Remove(n) == true).ToList();
 
-        // filter new notes
-        SortedSet<Note> drawNotes = new(newNotes.Where(n => currentMapDifficulty?.notes?.Add(n) == true));
+        // undraw the added notes
+        parent.gridController.UndrawNotes(undrawNotes);
+
+        // add new notes
+        var drawNotes = newNotes.Where(n => currentMapDifficulty?.notes?.Add(n) == true).ToList();
 
         // draw new notes
         parent.gridController.DrawNotes(drawNotes);
 
         if (updateHistory) {
-            currentMapDifficulty?.editorHistory.Add(new EditList<Note>(false, oldNotes));
+            currentMapDifficulty?.editorHistory.Add(new EditList<Note>(false, undrawNotes));
             currentMapDifficulty?.editorHistory.Add(new EditList<Note>(true, drawNotes));
             currentMapDifficulty?.editorHistory.Consolidate(2);
         }
@@ -287,18 +286,21 @@ public class MapEditor : IDisposable {
     }
 
     public void UpdateNotes(Note o, Note n, bool updateHistory = true) {
-        UpdateNotes(new SortedSet<Note>() { o }, new SortedSet<Note>() { n }, updateHistory);
+        UpdateNotes(new List<Note>() { o }, new List<Note>() { n }, updateHistory);
     }
-    public void RemoveNotes(SortedSet<Note> notes, bool updateHistory = true) {
+    public void RemoveNotes(IEnumerable<Note> notes, bool updateHistory = true) {
         currentMapDifficulty?.MarkDirty();
+
+        var noteList = notes.ToList();
+
         // undraw the added notes
-        parent.gridController.UndrawNotes(notes);
+        parent.gridController.UndrawNotes(noteList);
 
         if (updateHistory) {
-            currentMapDifficulty?.editorHistory.Add(new EditList<Note>(false, notes));
+            currentMapDifficulty?.editorHistory.Add(new EditList<Note>(false, noteList));
         }
         // finally, unselect all removed notes
-        foreach (Note n in new List<Note>(notes)) {
+        foreach (Note n in noteList) {
             currentMapDifficulty?.notes.Remove(n);
             UnselectNote(n);
         }
@@ -306,7 +308,7 @@ public class MapEditor : IDisposable {
         parent.RefreshDiscordPresence();
     }
     public void RemoveNotes(Note n, bool updateHistory = true) {
-        RemoveNotes(new SortedSet<Note>() { n }, updateHistory);
+        RemoveNotes(new List<Note>() { n }, updateHistory);
     }
     internal void RemoveNote(Note n) {
         if (currentMapDifficulty?.notes?.Contains(n) == true) {
@@ -332,13 +334,11 @@ public class MapEditor : IDisposable {
         }
     }
     public void SelectNotes(Note n) {
-        SelectNotes(new SortedSet<Note>() { n });
+        SelectNotes(new List<Note>() { n });
     }
     public void SelectNotes(IEnumerable<Note> notes) {
-        foreach (Note n in notes) {
-            currentMapDifficulty?.selectedNotes?.Add(n);      
-        }
-        parent.gridController.HighlightNotes(notes);
+        var selectNotes = notes.Where(n => currentMapDifficulty?.selectedNotes?.Add(n) == true);
+        parent.gridController.HighlightNotes(selectNotes);
     }
     public void SelectAllNotes() {
         if (currentMapDifficulty == null) {
@@ -348,9 +348,7 @@ public class MapEditor : IDisposable {
     }
     public void SelectNewNotes(IEnumerable<Note> notes) {
         UnselectAllNotes();
-        foreach (Note n in notes) {
-            SelectNotes(n);
-        }
+        SelectNotes(notes);
     }
     public void SelectNewNotes(Note n) {
         SelectNewNotes(new List<Note>() { n });
@@ -360,22 +358,24 @@ public class MapEditor : IDisposable {
             return;
         }
         parent.gridController.UnhighlightNotes(n);
-        currentMapDifficulty?.selectedNotes.Remove(n);
+        currentMapDifficulty.selectedNotes.Remove(n);
     }
     public void UnselectAllNotes() {
         if (currentMapDifficulty?.selectedNotes == null) {
             return;
         }
-        parent.gridController.UnhighlightNotes(currentMapDifficulty?.selectedNotes);
-        currentMapDifficulty?.selectedNotes.Clear();
+        parent.gridController.UnhighlightNotes(currentMapDifficulty.selectedNotes);
+        currentMapDifficulty.selectedNotes.Clear();
     }
     public void CopySelection() {
         if (currentMapDifficulty == null) {
             return;
         }
         clipboard.Clear();
-        clipboard.AddRange(currentMapDifficulty.selectedNotes);
-        clipboard.Sort();
+        foreach (var n in currentMapDifficulty.selectedNotes)
+        {
+            clipboard.Add(n);
+        }
     }
     public void CutSelection() {
         if (currentMapDifficulty == null) {
@@ -385,31 +385,18 @@ public class MapEditor : IDisposable {
         RemoveNotes(currentMapDifficulty.selectedNotes);
     }
     public void PasteClipboard(double beatOffset, int? colStart) {
-        if (currentMapDifficulty == null || clipboard.Count == 0) {
+        if (currentMapDifficulty == null || clipboard.Count() == 0) {
             return;
         }
         // paste notes so that the first note lands on the given beat offset
-        double rowOffset = beatOffset - clipboard[0].beat;
-        int colOffset = colStart == null ? 0 : (int)colStart - clipboard[0].col;
-        List<Note> notes = new List<Note>();
-        for (int i = 0; i < clipboard.Count; i++) {
-            double newBeat = clipboard[i].beat + rowOffset;
-            int newCol = clipboard[i].col + colOffset;
-
-            // don't paste the note if it goes beyond the duration of the song
-            if (newBeat > globalBPM * songDuration / 60) {
-                continue;
-            }
-
-            // don't paste the note if it overflows on the columns
-            if (newCol < 0 || 3 < newCol) {
-                continue;
-            }
-
-            Note n = new Note(newBeat, newCol);
-            notes.Add(n);
-        }
-        AddNotes(notes);
+        Note clipboardFirst = clipboard.First();
+        double rowOffset = beatOffset - clipboardFirst.beat;
+        int colOffset = colStart == null ? 0 : (int)colStart - clipboardFirst.col;
+        AddNotes(clipboard
+            .Select(n => new Note(n.beat + rowOffset, n.col + colOffset))
+            // don't paste the note if it goes beyond the duration of the song or overflows on the columns
+            .Where(n => n.beat <= globalBPM * songDuration / 60 && n.col >= 0 && n.col <= 3)
+        );
     }
     public void QuantizeSelection() {
         if (currentMapDifficulty == null) {
@@ -417,7 +404,7 @@ public class MapEditor : IDisposable {
         }
 
         // Quantize each note and add it to the new list
-        SortedSet<Note> quantizedNotes = new(currentMapDifficulty.selectedNotes
+        var quantizedNotes = currentMapDifficulty.selectedNotes
             .Select(n =>
             {
                 BPMChange lastBeatChange = GetLastBeatChange(n.beat);
@@ -436,7 +423,7 @@ public class MapEditor : IDisposable {
                 }
 
                 return new Note(newBeat, n.col);
-            }));
+            });
         UpdateNotes(quantizedNotes, currentMapDifficulty.selectedNotes);   
     }
     public double GetGridLength(double bpm, int gridDivision) {
@@ -466,8 +453,8 @@ public class MapEditor : IDisposable {
             return;
         }
 
-        SortedSet<Note> mirroredSelection = new(currentMapDifficulty.selectedNotes
-            .Select(note => new Note(note.beat, 3 - note.col)));
+        var mirroredSelection = currentMapDifficulty.selectedNotes
+            .Select(note => new Note(note.beat, 3 - note.col));
 
         UpdateNotes(mirroredSelection, currentMapDifficulty.selectedNotes);
     }
@@ -475,7 +462,7 @@ public class MapEditor : IDisposable {
         if (currentMapDifficulty == null) {
             return;
         }
-        SortedSet<Note> movedNotes = new(currentMapDifficulty.selectedNotes
+        var movedNotes = currentMapDifficulty.selectedNotes
             .Select(n =>
             {
                 BPMChange lastBeatChange = GetLastBeatChange(n.beat);
@@ -495,7 +482,7 @@ public class MapEditor : IDisposable {
                 }
                 double newBeat = n.beat + beatOffset;
                 return new Note(newBeat, n.col);
-            }));
+            });
         UpdateNotes(movedNotes, currentMapDifficulty.selectedNotes);   
     }
     public void ShiftSelectionByCol(int offset) {
@@ -503,7 +490,7 @@ public class MapEditor : IDisposable {
             return;
         }
 
-        SortedSet<Note> movedSelection = new(currentMapDifficulty.selectedNotes
+        var movedSelection = currentMapDifficulty.selectedNotes
             .Select(n =>
             {
                 int newCol = (n.col + offset) % 4;
@@ -512,7 +499,7 @@ public class MapEditor : IDisposable {
                     newCol += 4;
                 }
                 return new Note(n.beat, newCol);
-            }));
+            });
 
         UpdateNotes(movedSelection, currentMapDifficulty.selectedNotes);
     }
