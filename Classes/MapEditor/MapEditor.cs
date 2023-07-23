@@ -405,8 +405,7 @@ public class MapEditor : IDisposable {
 
         // Quantize each note and add it to the new list
         var quantizedNotes = currentMapDifficulty.selectedNotes
-            .Select(n =>
-            {
+            .Select(n => {
                 BPMChange lastBeatChange = GetLastBeatChange(n.beat);
                 double defaultGridLength = GetGridLength(lastBeatChange.BPM, lastBeatChange.gridDivision);
                 double offset = 0.0;
@@ -463,8 +462,7 @@ public class MapEditor : IDisposable {
             return;
         }
         var movedNotes = currentMapDifficulty.selectedNotes
-            .Select(n =>
-            {
+            .Select(n => {
                 BPMChange lastBeatChange = GetLastBeatChange(n.beat);
                 double beatOffset = 0.0;
                 switch (direction)
@@ -491,8 +489,7 @@ public class MapEditor : IDisposable {
         }
 
         var movedSelection = currentMapDifficulty.selectedNotes
-            .Select(n =>
-            {
+            .Select(n => {
                 int newCol = (n.col + offset) % 4;
                 if (newCol < 0)
                 {
@@ -586,7 +583,9 @@ public class MapEditor : IDisposable {
         }
         double endBeat = currentMapDifficulty.bookmarks
             .GetViewBetween(b, new Bookmark(double.PositiveInfinity, "songEnd"))
-            .Skip(1).Select(x => x.beat).FirstOrDefault(double.PositiveInfinity);
+            .Skip(1)
+            .Select(x => x.beat)
+            .FirstOrDefault(double.PositiveInfinity);
 
         ToggleSelection(currentMapDifficulty.GetNotesRange(b.beat, endBeat));
     }
@@ -599,7 +598,9 @@ public class MapEditor : IDisposable {
         }
         double endBeat = currentMapDifficulty.bpmChanges
             .GetViewBetween(bpmChange, new BPMChange(double.PositiveInfinity, 0, 0))
-            .Skip(1).Select(x => x.globalBeat).FirstOrDefault(double.PositiveInfinity);
+            .Skip(1)
+            .Select(x => x.globalBeat)
+            .FirstOrDefault(double.PositiveInfinity);
 
         ToggleSelection(currentMapDifficulty.GetNotesRange(bpmChange.globalBeat, endBeat));
     }

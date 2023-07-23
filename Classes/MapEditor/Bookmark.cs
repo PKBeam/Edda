@@ -17,12 +17,11 @@ namespace Edda {
             {
                 throw new Exception();
             }
-            Bookmark that = this;
-            if (that.Equals(b))
+            if (this.Equals(b))
             {
                 return 0;
             }
-            if (Helper.DoubleApproxGreater(that.beat, b.beat))
+            if (Helper.DoubleApproxGreater(this.beat, b.beat))
             {
                 return 1;
             }
