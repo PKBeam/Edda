@@ -577,7 +577,7 @@ public class EditorGridController: IDisposable {
             txtBlock.PreviewMouseLeftButtonDown += new MouseButtonEventHandler((src, e) => {
                 if (parentWindow.ctrlKeyDown)
                 {
-                    mapEditor.ToggleSelectionForBookmark(b);
+                    mapEditor.SelectNotesInBookmark(b);
                 }
                 else
                 {
@@ -729,7 +729,7 @@ public class EditorGridController: IDisposable {
             bpmChangeFlagCanvas.PreviewMouseLeftButtonDown += new MouseButtonEventHandler((src, e) => {
                 if (parentWindow.ctrlKeyDown)
                 {
-                    mapEditor.ToggleSelectionForBPMChange(b);
+                    mapEditor.SelectNotesInBPMChange(b);
                 }
                 else
                 {
@@ -1110,7 +1110,7 @@ public class EditorGridController: IDisposable {
         txtBlock.MouseLeftButtonUp += new MouseButtonEventHandler((src, e) => {
             if (parentWindow.ctrlKeyDown)
             {
-                mapEditor.ToggleSelectionForBookmark(b);
+                mapEditor.SelectNotesInBookmark(b);
             }
             else
             {

@@ -575,7 +575,7 @@ public class MapEditor : IDisposable {
             b.beat *= scaleFactor;
         }
     }
-    internal void ToggleSelectionForBookmark(Bookmark b)
+    internal void SelectNotesInBookmark(Bookmark b)
     {
         if (currentMapDifficulty == null)
         {
@@ -586,11 +586,19 @@ public class MapEditor : IDisposable {
             .Skip(1)
             .Select(x => x.beat)
             .FirstOrDefault(double.PositiveInfinity);
+        var notes = currentMapDifficulty.GetNotesRange(b.beat, endBeat);
 
-        ToggleSelection(currentMapDifficulty.GetNotesRange(b.beat, endBeat));
+
+        if (parent.shiftKeyDown)
+        {
+            ToggleSelection(notes);
+        } else
+        {
+            SelectNewNotes(notes);
+        }
     }
 
-    internal void ToggleSelectionForBPMChange(BPMChange bpmChange)
+    internal void SelectNotesInBPMChange(BPMChange bpmChange)
     {
         if (currentMapDifficulty == null)
         {
@@ -601,7 +609,15 @@ public class MapEditor : IDisposable {
             .Skip(1)
             .Select(x => x.globalBeat)
             .FirstOrDefault(double.PositiveInfinity);
+        var notes = currentMapDifficulty.GetNotesRange(bpmChange.globalBeat, endBeat);
 
-        ToggleSelection(currentMapDifficulty.GetNotesRange(bpmChange.globalBeat, endBeat));
+        if (parent.shiftKeyDown)
+        {
+            ToggleSelection(notes);
+        }
+        else
+        {
+            SelectNewNotes(notes);
+        }
     }
 }
