@@ -8,7 +8,6 @@ public class DiscordClient {
 	bool enabled = false;
 	public DiscordClient() {
 		UpdateStartTime();
-		InitClient();
 	}
 
 	public void UpdateStartTime() {
@@ -37,7 +36,7 @@ public class DiscordClient {
 		switch (songName)
 		{
 			case null: return "No song open";
-			case "": return "Mapping: *Untitled*";
+			case "": return "Working on an untitled map";
 			default:
 				return $"Mapping: {songName}";
 
@@ -45,13 +44,20 @@ public class DiscordClient {
     }
 
 	public void Enable() {
+		var wasEnabled = enabled;
 		enabled = true;
-		InitClient();
-	}
+		if (!wasEnabled)
+		{
+			InitClient();
+		}
+    }
 	public void Disable() {
+		var wasEnabled = enabled; 
 		enabled = false;
-		//client.ClearPresence();	this causes a null-dereference crash in the library
-		DeinitClient();
+		if (wasEnabled)
+		{
+            DeinitClient();
+        }
 	}
 	private void InitClient() {
 		client = new DiscordRpcClient(Edda.Const.DiscordRPC.AppID);

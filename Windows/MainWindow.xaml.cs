@@ -251,6 +251,8 @@ namespace Edda {
 
             recentMaps.AddRecentlyOpened((string)mapEditor.GetMapValue("_songName"), newMapFolder);
             recentMaps.Write();
+
+            RefreshDiscordPresence();
         }
         internal void InitImportMap(string importMapFolder) {
             if (mapIsLoaded) {
@@ -804,6 +806,7 @@ namespace Edda {
 
             playbackDeviceID = userPreferredPlaybackDeviceID;
 
+            SetDiscordRPC(userSettings.GetBoolForKey(UserSettingsKey.EnableDiscordRPC));
             autosaveTimer.Enabled = userSettings.GetBoolForKey(UserSettingsKey.EnableAutosave);
 
         }
@@ -1298,9 +1301,25 @@ namespace Edda {
             return !(res.HasValue && res.Value == MessageBoxResult.Cancel);
         }
 
+        internal void SetDiscordRPC(bool enable)
+        {
+            if (enable)
+            {
+                discordClient.Enable();
+                RefreshDiscordPresence();
+            }
+            else
+            {
+                discordClient.Disable();
+            }
+        }
+
         internal void RefreshDiscordPresence()
         {
-            discordClient.SetPresence((string)mapEditor.GetMapValue("_songName"), gridController.currentMapDifficultyNotes?.Count() ?? 0);
+            if (mapEditor != null && gridController != null)
+            {
+                discordClient.SetPresence((string)mapEditor.GetMapValue("_songName"), gridController.currentMapDifficultyNotes?.Count() ?? 0);
+            }
         }
 
         internal void RefreshBPMChanges() {
