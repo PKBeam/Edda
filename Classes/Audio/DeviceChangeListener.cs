@@ -21,7 +21,7 @@ namespace Edda
 
         public void OnDefaultDeviceChanged(DataFlow flow, Role role, string defaultDeviceId)
         {
-            if (flow == DataFlow.Render && role == Role.Multimedia && caller.playingOnDefaultDevice)
+            if (flow == DataFlow.Render && role == Role.Multimedia && (caller.playingOnDefaultDevice || !caller.defaultDeviceAvailable))
             {
                 Application.Current.Dispatcher.BeginInvoke(() =>
                 {

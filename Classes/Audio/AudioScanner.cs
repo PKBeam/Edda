@@ -101,7 +101,7 @@ public class AudioScanner : IDisposable {
         // check if any notes were missed
         while (currentTime - noteTime >= Audio.NoteDetectionDelta && scanIndex < notes.Count - 1) {
             
-            if (parallelAudioPlayer.Play(notes[scanIndex].col) == false) {
+            if (parallelAudioPlayer?.Play(notes[scanIndex].col) == false) {
                 Helper.ThreadedPrint("WARNING: Scanner skipped a note that was already late");
             } else {
                 Helper.ThreadedPrint($"WARNING: Scanner played audio late (Delta: {Math.Round(currentTime - noteTime, 2)})");
@@ -115,7 +115,7 @@ public class AudioScanner : IDisposable {
         // check if we need to play any notes
         while (Math.Abs(currentTime - noteTime) < Audio.NoteDetectionDelta) {
 
-            if (parallelAudioPlayer.Play(notes[scanIndex].col) == false) {
+            if (parallelAudioPlayer?.Play(notes[scanIndex].col) == false) {
                 Helper.ThreadedPrint("WARNING: Scanner skipped a note");
             }
 

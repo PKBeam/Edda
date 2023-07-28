@@ -246,7 +246,7 @@ namespace Edda {
 
                 int col = e.Key - Key.D1;
                 gridController.AddNoteAt(col, !songIsPlaying);
-                drummer.Play(col);
+                drummer?.Play(col);
             }
 
             // delete selected notes
@@ -418,7 +418,7 @@ namespace Edda {
             txtSongVol.Text = $"{(int)(sliderSongVol.Value * 100)}%";
         }
         private void SliderDrumVol_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e) {
-            drummer.ChangeVolume(sliderDrumVol.Value);
+            drummer?.ChangeVolume(sliderDrumVol.Value);
             txtDrumVol.Text = $"{(int)(sliderDrumVol.Value * 100)}%";
         }
         private void sliderSongTempo_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e) {
@@ -432,7 +432,10 @@ namespace Edda {
             txtSongTempo.Text = $"{Math.Round(newTempo, 2).ToString("0.00")}x";
         }
         private void CheckMetronome_Click(object sender, RoutedEventArgs e) {
-            metronome.isEnabled = (checkMetronome.IsChecked == true);
+            if (metronome != null)
+            {
+                metronome.isEnabled = (checkMetronome.IsChecked == true);
+            }
         }
         private void SliderSongProgress_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e) {
 

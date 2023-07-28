@@ -928,7 +928,7 @@ public class EditorGridController: IDisposable {
             // otherwise create and add it
             } else {
                 mapEditor.AddNotes(n);
-                parentWindow.drummer.Play(n.col);
+                parentWindow.drummer?.Play(n.col);
             }
         }
 

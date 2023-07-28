@@ -77,16 +77,27 @@ namespace Edda {
         }
         MMDevice playbackDevice {
             get {
+                MMDevice device = null;
                 if (!string.IsNullOrEmpty(playbackDeviceID)) {
                     try {
-                        return deviceEnumerator.GetDevice(playbackDeviceID);
+                        device = deviceEnumerator.GetDevice(playbackDeviceID);
                     } catch (Exception ex) {
                         Trace.WriteLine($"WARNING: Couldn't get the playback device with ID {playbackDeviceID} due to an error:\n{ex.Message}.\n{ex.StackTrace}", "Warning");
                         playbackDeviceID = null;
                     }
                 }
-                playingOnDefaultDevice = true;
-                return deviceEnumerator.GetDefaultAudioEndpoint(DataFlow.Render, Role.Multimedia);
+                if (device == null && defaultDeviceAvailable)
+                {
+                    try
+                    {
+                        device = deviceEnumerator.GetDefaultAudioEndpoint(DataFlow.Render, Role.Multimedia);
+                        playingOnDefaultDevice = true;
+                    } catch(Exception ex) {
+                        Trace.WriteLine($"WARNING: Couldn't get the default playback device due to an error:\n{ex.Message}.\n{ex.StackTrace}", "Warning");
+                        defaultDeviceAvailable = false;
+                    }
+                }
+                return device;
             }
         }
         public MMDeviceCollection availablePlaybackDevices {
@@ -120,6 +131,11 @@ namespace Edda {
             get;
             private set;
         } = false;
+        public bool defaultDeviceAvailable
+        {
+            get;
+            private set;
+        } = true;
         SampleChannel songChannel;
         public VorbisWaveReader songStream;
         SoundTouchWaveStream songTempoStream;
@@ -929,21 +945,16 @@ namespace Edda {
         public void UpdatePlaybackDevice(string newPlaybackDeviceID, bool isDefaultDevice) {
             playbackDeviceID = newPlaybackDeviceID;
             playingOnDefaultDevice = isDefaultDevice;
-            // Unfortunately, song is paused, so we can clean up old objects in peace. 
+            defaultDeviceAvailable = true; // Might not be true, but will be checked next time playback device is accessed.
+            // Song is paused here in order to clean up old objects in peace. 
             // When trying to do this while the song is still playing, there's some hard-to-track issues with 
             // objects not being disposed correctly, resulting in memory leaks.
             PauseSong();
-            if (songPlayer != null) {
-                var oldSongPlayer = songPlayer;
-                InitSongPlayer();
-                oldSongPlayer.Dispose();
-            }
-            if (drummer != null) {
-                RestartDrummer();
-            }
-            if (metronome != null) {
-                RestartMetronome();
-            }
+            var oldSongPlayer = songPlayer;
+            InitSongPlayer();
+            oldSongPlayer?.Dispose();
+            RestartDrummer();
+            RestartMetronome();
         }
         private string SelectSongDialog() {
             // select audio file
@@ -1037,11 +1048,18 @@ namespace Edda {
             }
         }
         private void InitSongPlayer() {
-            songPlayer = new WasapiOut(playbackDevice, AudioClientShareMode.Shared, true, Audio.WASAPILatencyTarget);
-            songPlayer.Init(songChannel);
+            var device = playbackDevice;
+            if (device != null)
+            {
+                songPlayer = new WasapiOut(device, AudioClientShareMode.Shared, true, Audio.WASAPILatencyTarget);
+                songPlayer.Init(songChannel);
 
-            // subscribe to playbackstopped
-            songPlayer.PlaybackStopped += (sender, args) => { PauseSong(); };
+                // subscribe to playbackstopped
+                songPlayer.PlaybackStopped += (sender, args) => { PauseSong(); };
+            } else
+            {
+                songPlayer = null;
+            }
         }
         private void UnloadSong() {
             if (songStream != null) {
@@ -1103,7 +1121,7 @@ namespace Edda {
 
             if (editorAudioLatency == 0 || songTempoStream.CurrentTime > new TimeSpan(0, 0, 0, 0, editorAudioLatency)) {
                 songTempoStream.CurrentTime = songTempoStream.CurrentTime - new TimeSpan(0, 0, 0, 0, editorAudioLatency);
-                songPlayer.Play();
+                songPlayer?.Play();
             } else {
                 songTempoStream.CurrentTime = new TimeSpan(0);
                 var oldSongPlaybackCancellationTokenSource = songPlaybackCancellationTokenSource;
@@ -1111,7 +1129,7 @@ namespace Edda {
                 oldSongPlaybackCancellationTokenSource.Dispose();
                 Task.Delay(new TimeSpan(0, 0, 0, 0, editorAudioLatency)).ContinueWith(o => {
                     if (!songPlaybackCancellationTokenSource.IsCancellationRequested) {
-                        songPlayer.Play();
+                        songPlayer?.Play();
                     }
                 });
             }
@@ -1150,7 +1168,7 @@ namespace Edda {
             gridController.SetPreviewNoteVisibility(Visibility.Visible);
 
             //Trace.WriteLine($"Slider is late by {Math.Round(songStream.CurrentTime.TotalMilliseconds - sliderSongProgress.Value, 2)}ms");
-            songPlayer.Pause();
+            songPlayer?.Pause();
             //if (noteScanner.playedLateNote) {
             //    drummer.InitAudioOut();
             //    noteScanner.playedLateNote = false;
@@ -1241,16 +1259,24 @@ namespace Edda {
             oldMetronome?.Dispose();
         }
         private void InitMetronome() {
-            metronome = new ParallelAudioPlayer(
-                playbackDevice,
-                Audio.MetronomeFilename, 
-                Audio.MetronomeStreams, 
-                Audio.WASAPILatencyTarget, 
-                checkMetronome.IsChecked == true, 
-                false,
-                float.Parse(userSettings.GetValueForKey(UserSettingsKey.DefaultNoteVolume))
-            );
-            beatScanner?.SetAudioPlayer(metronome);
+            var device = playbackDevice;
+            if (device != null)
+            {
+                metronome = new ParallelAudioPlayer(
+                    device,
+                    Audio.MetronomeFilename,
+                    Audio.MetronomeStreams,
+                    Audio.WASAPILatencyTarget,
+                    checkMetronome.IsChecked == true,
+                    false,
+                    float.Parse(userSettings.GetValueForKey(UserSettingsKey.DefaultNoteVolume))
+                );
+                beatScanner?.SetAudioPlayer(metronome);
+            } else
+            {
+                metronome = null;
+                beatScanner?.SetAudioPlayer(null);
+            }
         }
         public void RestartDrummer() {
             var oldDrummer = drummer;
@@ -1258,16 +1284,24 @@ namespace Edda {
             oldDrummer?.Dispose();
         }
         private void InitDrummer() {
-            drummer = new ParallelAudioPlayer(
-                playbackDevice,
-                userSettings.GetValueForKey(UserSettingsKey.DrumSampleFile), 
-                Audio.NotePlaybackStreams, 
-                Audio.WASAPILatencyTarget,
-                userSettings.GetBoolForKey(UserSettingsKey.PanDrumSounds),
-                float.Parse(userSettings.GetValueForKey(Const.UserSettingsKey.DefaultNoteVolume))
-            );
-            drummer.ChangeVolume(sliderDrumVol.Value);
-            noteScanner?.SetAudioPlayer(drummer);
+            var device = playbackDevice;
+            if (device != null)
+            {
+                drummer = new ParallelAudioPlayer(
+                    device,
+                    userSettings.GetValueForKey(UserSettingsKey.DrumSampleFile),
+                    Audio.NotePlaybackStreams,
+                    Audio.WASAPILatencyTarget,
+                    userSettings.GetBoolForKey(UserSettingsKey.PanDrumSounds),
+                    float.Parse(userSettings.GetValueForKey(Const.UserSettingsKey.DefaultNoteVolume))
+                );
+                drummer.ChangeVolume(sliderDrumVol.Value);
+                noteScanner?.SetAudioPlayer(drummer);
+            } else
+            {
+                drummer = null;
+                noteScanner?.SetAudioPlayer(null);
+            }
         }
         private int UpdateMedalDistance(int medal, string strDist) {
             if (strDist.Trim() == "") {
