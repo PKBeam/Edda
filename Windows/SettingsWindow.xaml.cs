@@ -86,14 +86,22 @@ namespace Edda
             }
         }
         private void InitComboPlaybackDevices() {
-            int i = comboPlaybackDevice.Items.Add(new PlaybackDevice(null, "Default"));
-            comboPlaybackDevice.SelectedIndex = i;
+            int i;
+            if (caller.defaultDeviceAvailable)
+            {
+                i = comboPlaybackDevice.Items.Add(new PlaybackDevice(null, "Default"));
+                comboPlaybackDevice.SelectedIndex = i;
+            }
             foreach (var device in caller.availablePlaybackDevices) {
                 // Having MMDevice as Item lags the ComboBox quite a bit, so we use a simple data class instead.
                 i = comboPlaybackDevice.Items.Add(new PlaybackDevice(device));
                 if (!caller.playingOnDefaultDevice && device.ID == caller.playbackDeviceID) {
                     comboPlaybackDevice.SelectedIndex = i;
                 }
+            }
+            if (!comboPlaybackDevice.HasItems)
+            {
+                comboPlaybackDevice.IsEnabled = false;
             }
         }
         private void TxtAudioLatency_LostFocus(object sender, RoutedEventArgs e) {

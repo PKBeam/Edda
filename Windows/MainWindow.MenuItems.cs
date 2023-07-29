@@ -38,19 +38,19 @@ namespace Edda {
         // Edit
         private void MenuItemAddNote1_Click(object sender, RoutedEventArgs e) {
             gridController.AddNoteAt(0, false);
-            drummer.Play(0);
+            drummer?.Play(0);
         }
         private void MenuItemAddNote2_Click(object sender, RoutedEventArgs e) {
             gridController.AddNoteAt(1, false);
-            drummer.Play(1);
+            drummer?.Play(1);
         }
         private void MenuItemAddNote3_Click(object sender, RoutedEventArgs e) {
             gridController.AddNoteAt(2, false);
-            drummer.Play(2);
+            drummer?.Play(2);
         }
         private void MenuItemAddNote4_Click(object sender, RoutedEventArgs e) {
             gridController.AddNoteAt(3, false);
-            drummer.Play(3);
+            drummer?.Play(3);
         }
         private void MenuItemAddBookmark_Click(object sender, RoutedEventArgs e) {
             PauseSong();
