@@ -488,7 +488,7 @@ namespace Edda {
         private void BtnChangeBPM_Click(object sender, RoutedEventArgs e) {
             var win = Helper.GetFirstWindow<ChangeBPMWindow>();
             if (win == null) {
-                win = new ChangeBPMWindow(this, gridController.currentMapDifficultyBpmChanges);
+                win = new ChangeBPMWindow(this, gridController.currentMapDifficultyBpmChanges?.ToList());
                 win.Topmost = true;
                 win.Owner = this;
                 win.Show();
@@ -515,6 +515,7 @@ namespace Edda {
             recentMaps.AddRecentlyOpened((string)mapEditor.GetMapValue("_songName"), mapEditor.mapFolder);
             recentMaps.Write();
 
+            RefreshDiscordPresence();
         }
         private void TxtSongName_LostFocus(object sender, RoutedEventArgs e) {
             txtSongName.ScrollToHome();

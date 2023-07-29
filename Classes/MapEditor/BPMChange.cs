@@ -21,7 +21,6 @@ public class BPMChange : IComparable {
         if (!(obj is BPMChange n)) {
             throw new Exception();
         }
-        BPMChange m = this;
-        return m.globalBeat.CompareTo(n.globalBeat);
+        return this.globalBeat.CompareTo(n.globalBeat);
     }
 }

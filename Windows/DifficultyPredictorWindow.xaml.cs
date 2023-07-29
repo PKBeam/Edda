@@ -82,10 +82,10 @@ namespace Edda.Windows {
                 windowLower += step
                 windowUpper += step
         */
-        private double GetNoteDensity(List<Note> notes, double songDuration) {
-            return notes.Count / songDuration;
+        private double GetNoteDensity(IEnumerable<Note> notes, double songDuration) {
+            return notes.Count() / songDuration;
         }
-        private List<double> GetLocalNoteDensity(List<Note> notes, double songDuration, double globalBpm, double windowLength = 2.75, double step = 0.25) {
+        private List<double> GetLocalNoteDensity(IEnumerable<Note> notes, double songDuration, double globalBpm, double windowLength = 2.75, double step = 0.25) {
             var densities = new List<double>();
             var windowLower = 0.0;
             var windowUpper = windowLength;

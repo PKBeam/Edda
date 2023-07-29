@@ -17,6 +17,7 @@ using Point = System.Windows.Point;
 using MediaColor = System.Windows.Media.Color;
 using DrawingColor = System.Drawing.Color;
 using Edda.Const;
+using System.Linq;
 
 public class EditorGridController: IDisposable {
 
@@ -99,12 +100,12 @@ public class EditorGridController: IDisposable {
             return mapEditor.currentDifficultyIndex;
         }
     }
-    public List<Note> currentMapDifficultyNotes {
+    public SortedSet<Note> currentMapDifficultyNotes {
         get {
             return mapEditor?.currentMapDifficulty?.notes;
         }
     }
-    public List<BPMChange> currentMapDifficultyBpmChanges {
+    public SortedSet<BPMChange> currentMapDifficultyBpmChanges {
         get {
             return mapEditor.currentMapDifficulty.bpmChanges;
         }
@@ -467,6 +468,7 @@ public class EditorGridController: IDisposable {
         // then draw the notes
         noteCanvas.Children.Clear();
         DrawNotes(mapEditor.currentMapDifficulty.notes);
+        HighlightNotes(mapEditor.currentMapDifficulty.selectedNotes);
 
         // including the mouseover preview note
         imgPreviewNote.Width = unitLength;
@@ -508,7 +510,8 @@ public class EditorGridController: IDisposable {
 
         // draw gridlines
         int counter = 0;
-        int bpmChangeCounter = 0;
+        var bpmChangesEnumerator = mapEditor.currentMapDifficulty.bpmChanges.GetEnumerator();
+        var hasNextBpmChange = bpmChangesEnumerator.MoveNext();
         while (offset <= gridHeight) {
 
             // add new gridline
@@ -524,14 +527,14 @@ public class EditorGridController: IDisposable {
             counter++;
 
             // check for BPM change
-            if (bpmChangeCounter < mapEditor.currentMapDifficulty.bpmChanges.Count && Helper.DoubleApproxGreaterEqual((offset) / unitLength, mapEditor.currentMapDifficulty.bpmChanges[bpmChangeCounter].globalBeat)) {
-                BPMChange next = mapEditor.currentMapDifficulty.bpmChanges[bpmChangeCounter];
+            if (hasNextBpmChange && Helper.DoubleApproxGreaterEqual((offset) / unitLength, bpmChangesEnumerator.Current.globalBeat)) {
+                BPMChange next = bpmChangesEnumerator.Current;
 
                 offset = next.globalBeat * unitLength;
                 localBPM = next.BPM;
                 localGridDiv = next.gridDivision;
 
-                bpmChangeCounter++;
+                hasNextBpmChange = bpmChangesEnumerator.MoveNext();
                 counter = 0;
             }
         }
@@ -570,21 +573,21 @@ public class EditorGridController: IDisposable {
             txtBlock.Cursor = Cursors.Hand;
             Canvas.SetRight(txtBlock, 0);
             Canvas.SetBottom(txtBlock, 0.75 * Editor.GridBookmark.Thickness);
-            txtBlock.MouseLeftButtonDown += new MouseButtonEventHandler((src, e) => {
-                e.Handled = true;
-            });
-            txtBlock.MouseLeftButtonUp += new MouseButtonEventHandler((src, e) => {
-                parentWindow.songSeekPosition = b.beat / mapEditor.globalBPM * 60000;
-                parentWindow.navMouseDown = false;
-                e.Handled = true;
-            });
+
             txtBlock.PreviewMouseLeftButtonDown += new MouseButtonEventHandler((src, e) => {
-                currentlyDraggingMarker = bookmarkCanvas;
-                currentlyDraggingBookmark = b;
-                currentlyDraggingBPMChange = null;
-                markerDragOffset = e.GetPosition(bookmarkCanvas).Y;
-                SetPreviewNoteVisibility(Visibility.Hidden);
-                EditorGrid.CaptureMouse();
+                if (parentWindow.ctrlKeyDown)
+                {
+                    mapEditor.SelectNotesInBookmark(b);
+                }
+                else
+                {
+                    currentlyDraggingMarker = bookmarkCanvas;
+                    currentlyDraggingBookmark = b;
+                    currentlyDraggingBPMChange = null;
+                    markerDragOffset = e.GetPosition(bookmarkCanvas).Y;
+                    SetPreviewNoteVisibility(Visibility.Hidden);
+                    EditorGrid.CaptureMouse();
+                }
                 e.Handled = true;
             });
             txtBlock.MouseDown += new MouseButtonEventHandler((src, e) => {
@@ -724,12 +727,19 @@ public class EditorGridController: IDisposable {
             bpmChangeFlagCanvas.Children.Add(bpmLabel);
 
             bpmChangeFlagCanvas.PreviewMouseLeftButtonDown += new MouseButtonEventHandler((src, e) => {
-                currentlyDraggingMarker = bpmChangeCanvas;
-                currentlyDraggingBPMChange = b;
-                currentlyDraggingBookmark = null;
-                markerDragOffset = e.GetPosition(bpmChangeCanvas).Y;
-                SetPreviewNoteVisibility(Visibility.Hidden);
-                EditorGrid.CaptureMouse();
+                if (parentWindow.ctrlKeyDown)
+                {
+                    mapEditor.SelectNotesInBPMChange(b);
+                }
+                else
+                {
+                    currentlyDraggingMarker = bpmChangeCanvas;
+                    currentlyDraggingBPMChange = b;
+                    currentlyDraggingBookmark = null;
+                    markerDragOffset = e.GetPosition(bpmChangeCanvas).Y;
+                    SetPreviewNoteVisibility(Visibility.Hidden);
+                    EditorGrid.CaptureMouse();
+                }
                 e.Handled = true;
             });
             bpmChangeFlagCanvas.PreviewMouseDown += new MouseButtonEventHandler((src, e) => {
@@ -771,7 +781,7 @@ public class EditorGridController: IDisposable {
     }
 
     // note drawing
-    internal void DrawNotes(List<Note> notes) {
+    internal void DrawNotes(IEnumerable<Note> notes) {
         // draw drum notes
         // TODO: paginate these? they cause lag when resizing
 
@@ -805,7 +815,7 @@ public class EditorGridController: IDisposable {
     internal void DrawNotes(Note n) {
         DrawNotes(new List<Note>() { n });
     }
-    internal void UndrawNotes(List<Note> notes) {
+    internal void UndrawNotes(IEnumerable<Note> notes) {
         foreach (Note n in notes) {
             var nUid = Helper.UidGenerator(n);
             foreach (UIElement u in noteCanvas.Children) {
@@ -819,7 +829,7 @@ public class EditorGridController: IDisposable {
     internal void UndrawNotes(Note n) {
         UndrawNotes(new List<Note>() { n });
     }
-    internal void HighlightNotes(List<Note> notes) {
+    internal void HighlightNotes(IEnumerable<Note> notes) {
         foreach (Note n in notes) {
             foreach (UIElement e in noteCanvas.Children) {
                 if (e.Uid == Helper.UidGenerator(n)) {
@@ -832,7 +842,7 @@ public class EditorGridController: IDisposable {
     internal void HighlightNotes(Note n) {
         HighlightNotes(new List<Note>() { n });
     }
-    internal void UnhighlightNotes(List<Note> notes) {
+    internal void UnhighlightNotes(IEnumerable<Note> notes) {
         foreach (Note n in notes) {
             foreach (UIElement e in noteCanvas.Children) {
                 if (e.Uid == Helper.UidGenerator(n)) {
@@ -850,7 +860,7 @@ public class EditorGridController: IDisposable {
     }
 
     // mouse input handling
-    internal void GridMouseMove(Point mousePos, bool snapMouseMovements) {
+    internal void GridMouseMove(Point mousePos) {
         // check if mouse is out of bounds of the song map
         mouseOutOfBounds = mousePos.Y < scrollEditor.ActualHeight - unitHeight / 2;
         
@@ -894,14 +904,14 @@ public class EditorGridController: IDisposable {
 
         // move markers if one is being dragged right now
         if (!mouseOutOfBounds && currentlyDraggingMarker != null && !isEditingMarker) {
-            MoveMarker(mousePos, snapMouseMovements);
+            MoveMarker(mousePos);
             parentWindow.Cursor = Cursors.Hand;
         // otherwise, update existing drag operations
         } else if (isDragging) {
             UpdateDragSelection(mousePos);
         }
     }
-    internal void GridMouseUp(Point mousePos, bool snapMouseMovements) {
+    internal void GridMouseUp(Point mousePos) {
 
         if (mouseGridCol >= 0 && mouseGridCol < 4) {
             SetPreviewNoteVisibility(Visibility.Visible);
@@ -911,16 +921,16 @@ public class EditorGridController: IDisposable {
             if (mouseOutOfBounds) {
                 markerPos.Y = scrollEditor.ActualHeight - unitHeight / 2;
             }
-            FinaliseMarkerEdit(markerPos, snapMouseMovements);
+            FinaliseMarkerEdit(markerPos);
         } else if (isDragging) {
-            EndDragSelection(mousePos, snapMouseMovements);
+            EndDragSelection(mousePos);
         } else if (!mouseOutOfBounds && EditorGrid.IsMouseCaptured && mouseGridCol >= 0 && mouseGridCol < 4) {
 
             Note n = new Note(mouseBeat, mouseGridCol);
 
             // select the note if it exists
             if (mapEditor.currentMapDifficulty.notes.Contains(n)) {
-                if (snapMouseMovements) {
+                if (parentWindow.shiftKeyDown) {
                     mapEditor.ToggleSelection(n);
                 } else {
                     mapEditor.SelectNewNotes(n);
@@ -955,44 +965,42 @@ public class EditorGridController: IDisposable {
         dragSelectBorder.Height = 0;
         isDragging = true;
     }
-    internal void EndDragSelection(Point mousePos, bool snapMouseMovements) {
+    internal void EndDragSelection(Point mousePos) {
         dragSelectBorder.Visibility = Visibility.Hidden;
         // calculate new selections
-        List<Note> newSelection = new List<Note>();
         double startBeat = BeatForPosition(dragSelectStart.Y, false);
         double endBeat = mouseBeatUnsnapped;
+        if (Helper.DoubleApproxGreater(startBeat, endBeat))
+        {
+            (startBeat, endBeat) = (endBeat, startBeat);
+        }
         int startCol = ColForPosition(dragSelectStart.X);
         int endCol = mouseGridCol;
-        if (endCol == -1) {
-            endCol = mousePos.X < EditorGrid.ActualWidth / 2 ? 0 : 3;
+        if (startCol > endCol)
+        {
+            (startCol, endCol) = (endCol, startCol);
         }
-        foreach (Note n in mapEditor.currentMapDifficulty.notes) {
-            // minor optimisation
-            if (n.beat > Math.Max(startBeat, endBeat)) {
-                break;
-            }
-            // check range
-            if (Helper.DoubleRangeCheck(n.beat, startBeat, endBeat) && Helper.DoubleRangeCheck(n.col, startCol, endCol)) {
-                newSelection.Add(n);
-            }
-        }
-        if (snapMouseMovements) {
+        var newSelection =
+            mapEditor.currentMapDifficulty
+                .GetNotesRange(startBeat, endBeat)
+                .Where(n => n.col >= Math.Max(startCol, 0) && n.col <= Math.Min(endCol, 3));
+        if (parentWindow.shiftKeyDown) {
             mapEditor.SelectNotes(newSelection);
         } else {
             mapEditor.SelectNewNotes(newSelection);
         }
     }
-    internal void MoveMarker(Point mousePos, bool shiftKeyDown) {
-        double newBottom = unitLength * BeatForPosition(mousePos.Y - markerDragOffset, shiftKeyDown);
+    internal void MoveMarker(Point mousePos) {
+        double newBottom = unitLength * BeatForPosition(mousePos.Y - markerDragOffset, parentWindow.shiftKeyDown);
         Canvas.SetBottom(currentlyDraggingMarker, newBottom + unitHeight / 2);
         SetMouseoverLineVisibility(Visibility.Visible);
     }
-    private void FinaliseMarkerEdit(Point mousePos, bool snapMouseMovements) {
+    private void FinaliseMarkerEdit(Point mousePos) {
         if (currentlyDraggingBPMChange == null) {
-            EditBookmark(BeatForPosition(mousePos.Y - markerDragOffset, snapMouseMovements));
+            EditBookmark(BeatForPosition(mousePos.Y - markerDragOffset, parentWindow.shiftKeyDown));
         } else {
             mapEditor.RemoveBPMChange(currentlyDraggingBPMChange, false);
-            currentlyDraggingBPMChange.globalBeat = BeatForPosition(mousePos.Y - markerDragOffset, snapMouseMovements);
+            currentlyDraggingBPMChange.globalBeat = BeatForPosition(mousePos.Y - markerDragOffset, parentWindow.shiftKeyDown);
             mapEditor.AddBPMChange(currentlyDraggingBPMChange);
             DrawGrid(false);
         }
@@ -1056,21 +1064,6 @@ public class EditorGridController: IDisposable {
     internal void ShiftSelectionByRow(MoveNote direction) {
         mapEditor.ShiftSelectionByBeat(direction);
     }
-    // other
-    internal void ResnapAllNotes(double newOffset) {
-        var offsetDelta = newOffset;
-        var beatOffset = mapEditor.globalBPM / 60 * offsetDelta;
-        for (int i = 0; i < mapEditor.currentMapDifficulty.notes.Count; i++) {
-            Note n = new Note();
-            n.beat = mapEditor.currentMapDifficulty.notes[i].beat + beatOffset;
-            n.col = mapEditor.currentMapDifficulty.notes[i].col;
-            mapEditor.currentMapDifficulty.notes[i] = n;
-        }
-        // invalidate selections
-        mapEditor.UnselectAllNotes();   
-    }
-
-
 
     // helper functions
     private Line MakeLine(double width, double offset) {
@@ -1115,8 +1108,15 @@ public class EditorGridController: IDisposable {
             e.Handled = true;
         });
         txtBlock.MouseLeftButtonUp += new MouseButtonEventHandler((src, e) => {
-            parentWindow.songSeekPosition = b.beat / mapEditor.globalBPM * 60000;
-            parentWindow.navMouseDown = false;
+            if (parentWindow.ctrlKeyDown)
+            {
+                mapEditor.SelectNotesInBookmark(b);
+            }
+            else
+            {
+                parentWindow.songSeekPosition = b.beat / mapEditor.globalBPM * 60000;
+                parentWindow.navMouseDown = false;
+            }
             e.Handled = true;
         });
         txtBlock.MouseDown += new MouseButtonEventHandler((src, e) => {

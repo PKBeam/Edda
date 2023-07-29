@@ -5,20 +5,21 @@ using SoundTouch;
 using System;
 using System.Linq;
 using System.Collections.Generic;
+using System.Collections.Immutable;
 
 #nullable enable
 
 public class MapDifficulty {
-    public List<Note> notes;
-    public List<Bookmark> bookmarks;
-    public List<BPMChange> bpmChanges;
-    public List<Note> selectedNotes;
+    public SortedSet<Note> notes;
+    public SortedSet<Bookmark> bookmarks;
+    public SortedSet<BPMChange> bpmChanges;
+    public SortedSet<Note> selectedNotes;
     public EditHistory<Note> editorHistory;
     public bool needsSave = false;
-    public MapDifficulty(List<Note> notes, List<BPMChange> bpmChanges, List<Bookmark> bookmarks) {
-        this.bpmChanges = bpmChanges ?? new();
-        this.bookmarks = bookmarks ?? new();
-        this.notes = notes ?? new();
+    public MapDifficulty(IEnumerable<Note> notes, IEnumerable<BPMChange> bpmChanges, IEnumerable<Bookmark> bookmarks) {
+        this.bpmChanges = new(bpmChanges);
+        this.bookmarks = new(bookmarks);
+        this.notes = new(notes);
         this.selectedNotes = new();
         this.editorHistory = new(Editor.HistoryMaxSize);
     }
@@ -28,6 +29,12 @@ public class MapDifficulty {
     }
     public void MarkSaved() {
         this.needsSave = false;
+    }
+
+    public SortedSet<Note> GetNotesRange(double startBeat, double endBeat)
+    {
+        // We use non-existent columns to generate a smaller subset guaranteed to contain all of the notes between given beats.
+        return notes.GetViewBetween(new Note(startBeat, -1), new Note(endBeat, -1));
     }
 }
 public enum RagnarockMapDifficulties {
@@ -58,7 +65,7 @@ public class MapEditor : IDisposable {
     public double songDuration; // duration of song in seconds
     public int currentDifficultyIndex = -1;
     MapDifficulty?[] difficultyMaps = new MapDifficulty[3];
-    List<Note> clipboard;
+    SortedSet<Note> clipboard;
 
     public bool needsSave = false;
 
@@ -122,9 +129,9 @@ public class MapEditor : IDisposable {
     public void SaveMap(int indx) {
         var thisDifficultyMap = difficultyMaps[indx];
         if (thisDifficultyMap != null) {
-            beatMap.SetBPMChangesForMap(indx, thisDifficultyMap.bpmChanges);
-            beatMap.SetBookmarksForMap(indx, thisDifficultyMap.bookmarks);
-            beatMap.SetNotesForMap(indx, thisDifficultyMap.notes);
+            beatMap.SetBPMChangesForMap(indx, thisDifficultyMap.bpmChanges.ToList());
+            beatMap.SetBookmarksForMap(indx, thisDifficultyMap.bookmarks.ToList());
+            beatMap.SetNotesForMap(indx, thisDifficultyMap.notes.ToList());
         }
     }
     public void ClearSelectedDifficulty() {
@@ -167,9 +174,9 @@ public class MapEditor : IDisposable {
     public void SelectDifficulty(int indx) {
         // before switching - save the notes for the current difficulty, if it still exists
         if (currentDifficultyIndex != -1 && currentDifficultyIndex < beatMap.numDifficulties) {
-            beatMap.SetNotesForMap(currentDifficultyIndex, currentMapDifficulty?.notes);
-            beatMap.SetBookmarksForMap(currentDifficultyIndex, currentMapDifficulty?.bookmarks);
-            beatMap.SetBPMChangesForMap(currentDifficultyIndex, currentMapDifficulty?.bpmChanges);
+            beatMap.SetNotesForMap(currentDifficultyIndex, currentMapDifficulty?.notes?.ToList());
+            beatMap.SetBookmarksForMap(currentDifficultyIndex, currentMapDifficulty?.bookmarks?.ToList());
+            beatMap.SetBPMChangesForMap(currentDifficultyIndex, currentMapDifficulty?.bpmChanges?.ToList());
         }
         currentDifficultyIndex = indx;
     }
@@ -208,7 +215,6 @@ public class MapEditor : IDisposable {
     public void AddBPMChange(BPMChange b, bool redraw = true) {
         currentMapDifficulty?.MarkDirty();
         currentMapDifficulty?.bpmChanges.Add(b);
-        currentMapDifficulty?.bpmChanges.Sort();
         if (redraw) {
             parent.DrawEditorGrid(false);
         }
@@ -237,14 +243,9 @@ public class MapEditor : IDisposable {
         b.name = newName;
         parent.DrawEditorGrid(false);
     }
-    public void AddNotes(List<Note> notes, bool updateHistory = true) {
+    public void AddNotes(IEnumerable<Note> notes, bool updateHistory = true) {
         currentMapDifficulty?.MarkDirty();
-        List<Note> drawNotes = new();
-        foreach (Note n in notes) {
-            if (Helper.InsertSortedUnique(this.currentMapDifficulty?.notes, n)) {
-                drawNotes.Add(n);
-            }
-        }
+        var drawNotes = notes.Where(n => currentMapDifficulty?.notes?.Add(n) == true).ToList();
         // draw the added notes
         // note: by drawing this note out of order, it is inconsistently layered with other notes.
         //       should we take the performance hit of redrawing the entire grid for visual consistency?
@@ -254,53 +255,57 @@ public class MapEditor : IDisposable {
             currentMapDifficulty?.editorHistory.Add(new EditList<Note>(true, drawNotes));
         }
         currentMapDifficulty?.editorHistory.Print();
+        parent.RefreshDiscordPresence();
     }
     public void AddNotes(Note n, bool updateHistory = true) {
         AddNotes(new List<Note>() { n }, updateHistory);
     }
-    public void UpdateNotes(List<Note> newNotes, List<Note> oldNotes, bool updateHistory = true) {
+    public void UpdateNotes(IEnumerable<Note> newNotes, IEnumerable<Note> oldNotes, bool updateHistory = true) {
         currentMapDifficulty?.MarkDirty();
 
-        // undraw the added notes
-        parent.gridController.UndrawNotes(oldNotes);
-
         // remove all old Notes
-        oldNotes.ForEach(n => currentMapDifficulty?.notes.Remove(n));
+        var undrawNotes = oldNotes.Where(n => currentMapDifficulty?.notes?.Remove(n) == true).ToList();
 
-        // filter new notes
-        List<Note> drawNotes = newNotes
-            .Where(n => Helper.InsertSortedUnique(this.currentMapDifficulty?.notes, n))
-            .ToList();
+        // undraw the added notes
+        parent.gridController.UndrawNotes(undrawNotes);
+
+        // add new notes
+        var drawNotes = newNotes.Where(n => currentMapDifficulty?.notes?.Add(n) == true).ToList();
 
         // draw new notes
         parent.gridController.DrawNotes(drawNotes);
 
         if (updateHistory) {
-            currentMapDifficulty?.editorHistory.Add(new EditList<Note>(false, oldNotes));
+            currentMapDifficulty?.editorHistory.Add(new EditList<Note>(false, undrawNotes));
             currentMapDifficulty?.editorHistory.Add(new EditList<Note>(true, drawNotes));
             currentMapDifficulty?.editorHistory.Consolidate(2);
         }
         currentMapDifficulty?.editorHistory.Print();
         SelectNewNotes(drawNotes);
+        parent.RefreshDiscordPresence();
     }
 
     public void UpdateNotes(Note o, Note n, bool updateHistory = true) {
         UpdateNotes(new List<Note>() { o }, new List<Note>() { n }, updateHistory);
     }
-    public void RemoveNotes(List<Note> notes, bool updateHistory = true) {
+    public void RemoveNotes(IEnumerable<Note> notes, bool updateHistory = true) {
         currentMapDifficulty?.MarkDirty();
+
+        var noteList = notes.ToList();
+
         // undraw the added notes
-        parent.gridController.UndrawNotes(notes);
+        parent.gridController.UndrawNotes(noteList);
 
         if (updateHistory) {
-            currentMapDifficulty?.editorHistory.Add(new EditList<Note>(false, notes));
+            currentMapDifficulty?.editorHistory.Add(new EditList<Note>(false, noteList));
         }
         // finally, unselect all removed notes
-        foreach (Note n in new List<Note>(notes)) {
+        foreach (Note n in noteList) {
             currentMapDifficulty?.notes.Remove(n);
             UnselectNote(n);
         }
         currentMapDifficulty?.editorHistory.Print();
+        parent.RefreshDiscordPresence();
     }
     public void RemoveNotes(Note n, bool updateHistory = true) {
         RemoveNotes(new List<Note>() { n }, updateHistory);
@@ -313,7 +318,13 @@ public class MapEditor : IDisposable {
         }
     }
     public void RemoveSelectedNotes(bool updateHistory = true) {
-        RemoveNotes(currentMapDifficulty?.selectedNotes ?? new List<Note>(), updateHistory);
+        RemoveNotes(currentMapDifficulty?.selectedNotes ?? new SortedSet<Note>(), updateHistory);
+    }
+    public void ToggleSelection(IEnumerable<Note> notes)
+    {
+        foreach(Note n in notes) {
+            ToggleSelection(n);
+        }
     }
     public void ToggleSelection(Note n) {
         if (currentMapDifficulty?.selectedNotes.Contains(n) ?? false) {
@@ -325,11 +336,9 @@ public class MapEditor : IDisposable {
     public void SelectNotes(Note n) {
         SelectNotes(new List<Note>() { n });
     }
-    public void SelectNotes(List<Note> notes) {
-        foreach (Note n in notes) {
-            Helper.InsertSortedUnique(currentMapDifficulty?.selectedNotes, n);        
-        }
-        parent.gridController.HighlightNotes(notes);
+    public void SelectNotes(IEnumerable<Note> notes) {
+        var selectNotes = notes.Where(n => currentMapDifficulty?.selectedNotes?.Add(n) == true);
+        parent.gridController.HighlightNotes(selectNotes);
     }
     public void SelectAllNotes() {
         if (currentMapDifficulty == null) {
@@ -337,11 +346,9 @@ public class MapEditor : IDisposable {
         }
         SelectNewNotes(currentMapDifficulty.notes);
     }
-    public void SelectNewNotes(List<Note> notes) {
+    public void SelectNewNotes(IEnumerable<Note> notes) {
         UnselectAllNotes();
-        foreach (Note n in notes) {
-            SelectNotes(n);
-        }
+        SelectNotes(notes);
     }
     public void SelectNewNotes(Note n) {
         SelectNewNotes(new List<Note>() { n });
@@ -351,22 +358,24 @@ public class MapEditor : IDisposable {
             return;
         }
         parent.gridController.UnhighlightNotes(n);
-        currentMapDifficulty?.selectedNotes.Remove(n);
+        currentMapDifficulty.selectedNotes.Remove(n);
     }
     public void UnselectAllNotes() {
         if (currentMapDifficulty?.selectedNotes == null) {
             return;
         }
-        parent.gridController.UnhighlightNotes(currentMapDifficulty?.selectedNotes);
-        currentMapDifficulty?.selectedNotes.Clear();
+        parent.gridController.UnhighlightNotes(currentMapDifficulty.selectedNotes);
+        currentMapDifficulty.selectedNotes.Clear();
     }
     public void CopySelection() {
         if (currentMapDifficulty == null) {
             return;
         }
         clipboard.Clear();
-        clipboard.AddRange(currentMapDifficulty.selectedNotes);
-        clipboard.Sort();
+        foreach (var n in currentMapDifficulty.selectedNotes)
+        {
+            clipboard.Add(n);
+        }
     }
     public void CutSelection() {
         if (currentMapDifficulty == null) {
@@ -376,31 +385,18 @@ public class MapEditor : IDisposable {
         RemoveNotes(currentMapDifficulty.selectedNotes);
     }
     public void PasteClipboard(double beatOffset, int? colStart) {
-        if (currentMapDifficulty == null || clipboard.Count == 0) {
+        if (currentMapDifficulty == null || clipboard.Count() == 0) {
             return;
         }
         // paste notes so that the first note lands on the given beat offset
-        double rowOffset = beatOffset - clipboard[0].beat;
-        int colOffset = colStart == null ? 0 : (int)colStart - clipboard[0].col;
-        List<Note> notes = new List<Note>();
-        for (int i = 0; i < clipboard.Count; i++) {
-            double newBeat = clipboard[i].beat + rowOffset;
-            int newCol = clipboard[i].col + colOffset;
-
-            // don't paste the note if it goes beyond the duration of the song
-            if (newBeat > globalBPM * songDuration / 60) {
-                continue;
-            }
-
-            // don't paste the note if it overflows on the columns
-            if (newCol < 0 || 3 < newCol) {
-                continue;
-            }
-
-            Note n = new Note(newBeat, newCol);
-            notes.Add(n);
-        }
-        AddNotes(notes);
+        Note clipboardFirst = clipboard.First();
+        double rowOffset = beatOffset - clipboardFirst.beat;
+        int colOffset = colStart == null ? 0 : (int)colStart - clipboardFirst.col;
+        AddNotes(clipboard
+            .Select(n => new Note(n.beat + rowOffset, n.col + colOffset))
+            // don't paste the note if it goes beyond the duration of the song or overflows on the columns
+            .Where(n => n.beat <= globalBPM * songDuration / 60 && n.col >= 0 && n.col <= 3)
+        );
     }
     public void QuantizeSelection() {
         if (currentMapDifficulty == null) {
@@ -408,24 +404,25 @@ public class MapEditor : IDisposable {
         }
 
         // Quantize each note and add it to the new list
-        List<Note> quantizedNotes = currentMapDifficulty.selectedNotes
+        var quantizedNotes = currentMapDifficulty.selectedNotes
             .Select(n => {
                 BPMChange lastBeatChange = GetLastBeatChange(n.beat);
                 double defaultGridLength = GetGridLength(lastBeatChange.BPM, lastBeatChange.gridDivision);
                 double offset = 0.0;
-                if (lastBeatChange.globalBeat > 0.0) {
+                if (lastBeatChange.globalBeat > 0.0)
+                {
                     double differenceDefaultNew = Math.Floor(lastBeatChange.globalBeat / defaultGridLength) * defaultGridLength;
                     offset = lastBeatChange.globalBeat - differenceDefaultNew;
                 }
 
                 double newBeat = Math.Round(n.beat / defaultGridLength) * defaultGridLength + offset;
-                if (Helper.DoubleApproxEqual(n.beat, newBeat) || Helper.DoubleApproxEqual(n.beat, newBeat - defaultGridLength)) {
+                if (Helper.DoubleApproxEqual(n.beat, newBeat) || Helper.DoubleApproxEqual(n.beat, newBeat - defaultGridLength))
+                {
                     newBeat = n.beat;
                 }
 
                 return new Note(newBeat, n.col);
-            })
-            .ToList();
+            });
         UpdateNotes(quantizedNotes, currentMapDifficulty.selectedNotes);   
     }
     public double GetGridLength(double bpm, int gridDivision) {
@@ -455,9 +452,8 @@ public class MapEditor : IDisposable {
             return;
         }
 
-        List<Note> mirroredSelection = currentMapDifficulty.selectedNotes
-            .Select(note => new Note(note.beat, 3 - note.col))
-            .ToList();
+        var mirroredSelection = currentMapDifficulty.selectedNotes
+            .Select(note => new Note(note.beat, 3 - note.col));
 
         UpdateNotes(mirroredSelection, currentMapDifficulty.selectedNotes);
     }
@@ -465,11 +461,12 @@ public class MapEditor : IDisposable {
         if (currentMapDifficulty == null) {
             return;
         }
-        List<Note> movedNotes = currentMapDifficulty.selectedNotes
+        var movedNotes = currentMapDifficulty.selectedNotes
             .Select(n => {
                 BPMChange lastBeatChange = GetLastBeatChange(n.beat);
                 double beatOffset = 0.0;
-                switch (direction) {
+                switch (direction)
+                {
                     case MoveNote.MOVE_BEAT_DOWN:
                     case MoveNote.MOVE_BEAT_UP:
                         double defaultBeatLength = GetGridLength(lastBeatChange.BPM, 1);
@@ -483,8 +480,7 @@ public class MapEditor : IDisposable {
                 }
                 double newBeat = n.beat + beatOffset;
                 return new Note(newBeat, n.col);
-            })
-            .ToList();
+            });
         UpdateNotes(movedNotes, currentMapDifficulty.selectedNotes);   
     }
     public void ShiftSelectionByCol(int offset) {
@@ -492,15 +488,15 @@ public class MapEditor : IDisposable {
             return;
         }
 
-        List<Note> movedSelection = currentMapDifficulty.selectedNotes
+        var movedSelection = currentMapDifficulty.selectedNotes
             .Select(n => {
                 int newCol = (n.col + offset) % 4;
-                if (newCol < 0) {
+                if (newCol < 0)
+                {
                     newCol += 4;
                 }
                 return new Note(n.beat, newCol);
-                })
-            .ToList();
+            });
 
         UpdateNotes(movedSelection, currentMapDifficulty.selectedNotes);
     }
@@ -577,6 +573,51 @@ public class MapEditor : IDisposable {
         }
         foreach (var b in currentMapDifficulty.bookmarks) {
             b.beat *= scaleFactor;
+        }
+    }
+    internal void SelectNotesInBookmark(Bookmark b)
+    {
+        if (currentMapDifficulty == null)
+        {
+            return;
+        }
+        double endBeat = currentMapDifficulty.bookmarks
+            .GetViewBetween(b, new Bookmark(double.PositiveInfinity, "songEnd"))
+            .Skip(1)
+            .Select(x => x.beat)
+            .FirstOrDefault(double.PositiveInfinity);
+        var notes = currentMapDifficulty.GetNotesRange(b.beat, endBeat);
+
+
+        if (parent.shiftKeyDown)
+        {
+            ToggleSelection(notes);
+        } else
+        {
+            SelectNewNotes(notes);
+        }
+    }
+
+    internal void SelectNotesInBPMChange(BPMChange bpmChange)
+    {
+        if (currentMapDifficulty == null)
+        {
+            return;
+        }
+        double endBeat = currentMapDifficulty.bpmChanges
+            .GetViewBetween(bpmChange, new BPMChange(double.PositiveInfinity, 0, 0))
+            .Skip(1)
+            .Select(x => x.globalBeat)
+            .FirstOrDefault(double.PositiveInfinity);
+        var notes = currentMapDifficulty.GetNotesRange(bpmChange.globalBeat, endBeat);
+
+        if (parent.shiftKeyDown)
+        {
+            ToggleSelection(notes);
+        }
+        else
+        {
+            SelectNewNotes(notes);
         }
     }
 }

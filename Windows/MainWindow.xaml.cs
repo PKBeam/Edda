@@ -20,6 +20,7 @@ using Path = System.IO.Path;
 using Timer = System.Timers.Timer;
 using SoundTouch.Net.NAudioSupport;
 using Edda.Const;
+using System.Linq;
 
 /// <summary>
 /// Interaction logic for MainWindow.xaml
@@ -111,8 +112,8 @@ namespace Edda {
         public EditorGridController gridController;
         Timer autosaveTimer;
         UserSettingsManager userSettings;
-        bool shiftKeyDown;
-        bool ctrlKeyDown;
+        public bool shiftKeyDown;
+        public bool ctrlKeyDown;
         bool returnToStartMenuOnClose = false;
 
         DoubleAnimation songPlayAnim;            // used for animating scroll when playing a song
@@ -266,6 +267,8 @@ namespace Edda {
 
             recentMaps.AddRecentlyOpened((string)mapEditor.GetMapValue("_songName"), newMapFolder);
             recentMaps.Write();
+
+            RefreshDiscordPresence();
         }
         internal void InitImportMap(string importMapFolder) {
             if (mapIsLoaded) {
@@ -317,7 +320,7 @@ namespace Edda {
                 this.Dispatcher.Invoke(() => DrawEditorGrid(false));
             })).Start();
 
-            discordClient.SetPresence((string)mapEditor.GetMapValue("_songName"), gridController.currentMapDifficultyNotes?.Count ?? 0);
+            RefreshDiscordPresence();
         }
         // ... future actions will call these functions
         private void CreateNewMap() {
@@ -819,6 +822,7 @@ namespace Edda {
 
             playbackDeviceID = userPreferredPlaybackDeviceID;
 
+            SetDiscordRPC(userSettings.GetBoolForKey(UserSettingsKey.EnableDiscordRPC));
             autosaveTimer.Enabled = userSettings.GetBoolForKey(UserSettingsKey.EnableAutosave);
 
         }
@@ -1330,6 +1334,28 @@ namespace Edda {
             }
             return !(res.HasValue && res.Value == MessageBoxResult.Cancel);
         }
+
+        internal void SetDiscordRPC(bool enable)
+        {
+            if (enable)
+            {
+                discordClient.Enable();
+                RefreshDiscordPresence();
+            }
+            else
+            {
+                discordClient.Disable();
+            }
+        }
+
+        internal void RefreshDiscordPresence()
+        {
+            if (mapEditor != null && gridController != null)
+            {
+                discordClient.SetPresence((string)mapEditor.GetMapValue("_songName"), gridController.currentMapDifficultyNotes?.Count() ?? 0);
+            }
+        }
+
         internal void RefreshBPMChanges() {
             var win = Helper.GetFirstWindow<ChangeBPMWindow>();
             if (win != null) {

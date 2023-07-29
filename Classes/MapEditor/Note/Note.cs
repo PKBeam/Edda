@@ -13,20 +13,19 @@ public class Note: IComparable, IEquatable<Note> {
         if (!(obj is Note n)) {
             throw new Exception();
         }
-        Note m = this;
-        if (m.Equals(n)) {
+        if (this.Equals(n)) {
             return 0;
         }
-        if (Helper.DoubleApproxGreater(m.beat, n.beat)) {
+        if (Helper.DoubleApproxGreater(this.beat, n.beat)) {
             return 1;
         }
-        if (Helper.DoubleApproxEqual(n.beat, this.beat) && m.col > n.col) {
+        if (Helper.DoubleApproxEqual(n.beat, this.beat) && this.col > n.col) {
             return 1;
         }
         return -1;
     }
 
     public bool Equals(Note n) {
-        return Helper.DoubleApproxEqual(n.beat, this.beat) && Helper.DoubleApproxEqual(n.col, this.col);
+        return Helper.DoubleApproxEqual(n.beat, this.beat) && n.col == this.col;
     }
 }

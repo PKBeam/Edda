@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
@@ -80,19 +81,35 @@ namespace Edda
 
             dataBPMChange.ItemsSource = null;
             BPMChanges.Sort();
-            caller.mapEditor.currentMapDifficulty?.MarkDirty();
+            propagateBPMChanges();
             caller.DrawEditorGrid(false);
-            dataBPMChange.ItemsSource = this.BPMChanges;
+            dataBPMChange.ItemsSource = BPMChanges;
         }
 
         private void dataBPMChange_AddingNewItem(object sender, AddingNewItemEventArgs e) {
             e.NewItem = new BPMChange(Math.Round(caller.sliderSongProgress.Value / 60000 * globalBPM, 3), caller.globalBPM, caller.gridController.gridDivision);
-            caller.mapEditor.currentMapDifficulty?.MarkDirty();
+            propagateBPMChanges();
         }
 
         private void dataBPMChange_PreviewExecuted(object sender, ExecutedRoutedEventArgs e) {
             if (e.Command == DataGrid.DeleteCommand) {
-                caller.mapEditor.currentMapDifficulty?.MarkDirty();
+                var selected = new List<BPMChange>(dataBPMChange.SelectedItems.Cast<BPMChange>());
+                dataBPMChange.ItemsSource = null;
+                selected.ForEach(bpmChange => BPMChanges.Remove(bpmChange));
+                propagateBPMChanges();
+                caller.DrawEditorGrid(false);
+                dataBPMChange.ItemsSource = BPMChanges;
+                e.Handled = true;
+            }
+        }
+
+        private void propagateBPMChanges()
+        {
+            var mapDiff = caller.mapEditor.currentMapDifficulty;
+            if (mapDiff != null)
+            {
+                mapDiff.bpmChanges = new(BPMChanges);
+                mapDiff.MarkDirty();
             }
         }
     }
