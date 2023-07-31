@@ -14,37 +14,46 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Shapes;
 
-namespace Edda.Windows {
+namespace Edda.Windows
+{
     /// <summary>
     /// Interaction logic for AboutWindow.xaml
     /// </summary>
-    public partial class AboutWindow : Window {
-        public AboutWindow() {
+    public partial class AboutWindow : Window
+    {
+        public AboutWindow()
+        {
             InitializeComponent();
             TxtVersionNumber.Text = $"version {Program.DisplayVersionString}";
         }
 
-        private void TxtGithubLink_MouseLeftButtonDown(object sender, MouseButtonEventArgs e) {
+        private void TxtGithubLink_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
+        {
             Helper.OpenWebUrl(TxtGithubLink.Text);
         }
 
-        private void TxtRagnacustomsLink_MouseLeftButtonDown(object sender, MouseButtonEventArgs e) {
+        private void TxtRagnacustomsLink_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
+        {
             Helper.OpenWebUrl(TxtRagnacustomsLink.Text);
         }
 
-        private void TxtGithubLink_MouseEnter(object sender, MouseEventArgs e) {
+        private void TxtGithubLink_MouseEnter(object sender, MouseEventArgs e)
+        {
             this.Cursor = Cursors.Hand;
         }
 
-        private void TxtGithubLink_MouseLeave(object sender, MouseEventArgs e) {
+        private void TxtGithubLink_MouseLeave(object sender, MouseEventArgs e)
+        {
             this.Cursor = null;
         }
 
-        private void TxtRagnacustomsLink_MouseEnter(object sender, MouseEventArgs e) {
+        private void TxtRagnacustomsLink_MouseEnter(object sender, MouseEventArgs e)
+        {
             this.Cursor = Cursors.Hand;
         }
 
-        private void TxtRagnacustomsLink_MouseLeave(object sender, MouseEventArgs e) {
+        private void TxtRagnacustomsLink_MouseLeave(object sender, MouseEventArgs e)
+        {
             this.Cursor = null;
         }
     }

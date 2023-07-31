@@ -7,7 +7,8 @@ using Edda.Const;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
-public class RagnarockMap {
+public class RagnarockMap
+{
 
     // -- data validation
     private readonly List<JTokenType?> stringTypes = new() { JTokenType.String };
@@ -18,8 +19,10 @@ public class RagnarockMap {
     private readonly (float, float) anyNumeric = (float.NegativeInfinity, float.PositiveInfinity);
 
     // public state variables
-    public int numDifficulties {
-        get {
+    public int numDifficulties
+    {
+        get
+        {
             var obj = JObject.Parse(infoStr);
             var res = obj["_difficultyBeatmapSets"][0]["_difficultyBeatmaps"];
             return res.Count();
@@ -30,52 +33,65 @@ public class RagnarockMap {
     private string folderPath;
     private string infoStr;
     private string[] difficultyMaps = new string[3];
-    public RagnarockMap(string folderPath, bool makeNew) {
+    public RagnarockMap(string folderPath, bool makeNew)
+    {
         this.folderPath = folderPath;
         // TODO: automatically calculate makeNew?
-        if (makeNew) {
+        if (makeNew)
+        {
             InitInfo();
             AddMap();
             //WriteMap(0);
             //WriteInfo();
-        } else {
+        }
+        else
+        {
             ReadInfo();
             ValidateInfo();
-            for (int i = 0; i < numDifficulties; i++) {
+            for (int i = 0; i < numDifficulties; i++)
+            {
                 ReadMap(i);
                 ValidateMap(i);
             }
         }
     }
 
-    public void SaveToFile() {
+    public void SaveToFile()
+    {
         UpdateEddaVersion();
-        for (int i = 0; i < numDifficulties; i++) {
+        for (int i = 0; i < numDifficulties; i++)
+        {
             WriteMap(i);
         }
         WriteInfo();
     }
 
     // info.dat operations
-    public void ReadInfo() {
+    public void ReadInfo()
+    {
         infoStr = File.ReadAllText(PathOf("info.dat"));
     }
-    public void WriteInfo() {
+    public void WriteInfo()
+    {
         File.WriteAllText(PathOf("info.dat"), infoStr);
     }
-    public void SetValue(string key, object value) {
+    public void SetValue(string key, object value)
+    {
         var obj = JObject.Parse(infoStr);
         obj[key] = JToken.FromObject(value);
         infoStr = JsonConvert.SerializeObject(obj, Formatting.Indented);
     }
-    public JToken GetValue(string key) {
+    public JToken GetValue(string key)
+    {
         var obj = JObject.Parse(infoStr);
         var res = obj[key];
         return res;
     }
-    private void InitInfo() {
+    private void InitInfo()
+    {
         // init info.dat json
-        var infoDat = new {
+        var infoDat = new
+        {
             _version = "1", // what is this for?
             _songName = "",
             _songSubName = "",                              // unused?
@@ -92,10 +108,13 @@ public class RagnarockMap {
             _coverImageFilename = "",
             _environmentName = BeatmapDefaults.EnvironmentNames[0],
             _songTimeOffset = 0,
-            _customData = new {
+            _customData = new
+            {
                 _contributors = new List<object>(),
-                _editors = new {
-                    Edda = new {
+                _editors = new
+                {
+                    Edda = new
+                    {
                         version = Program.VersionString,
                     },
                     _lastEditedBy = Program.Name,
@@ -110,7 +129,8 @@ public class RagnarockMap {
         };
         infoStr = JsonConvert.SerializeObject(infoDat, Formatting.Indented);
     }
-    private void ValidateInfo() {
+    private void ValidateInfo()
+    {
 
         Dictionary<string, List<JTokenType?>> expectedTypesL1 = new Dictionary<string, List<JTokenType?>> {
             {"_version",                   stringTypes  },
@@ -160,53 +180,70 @@ public class RagnarockMap {
 
         // validate all fields and types
         var obj = JObject.Parse(infoStr);
-        foreach (var i in expectedTypesL1) {
+        foreach (var i in expectedTypesL1)
+        {
             // validate type
-            if (i.Key == "_songApproximativeDuration" && obj[i.Key]?.Type != JTokenType.Integer) {
+            if (i.Key == "_songApproximativeDuration" && obj[i.Key]?.Type != JTokenType.Integer)
+            {
                 SetValue("_songApproximativeDuration", 1);
                 continue;
             }
-            if (i.Key == "_explicit" && (obj[i.Key] == null)) {
+            if (i.Key == "_explicit" && (obj[i.Key] == null))
+            {
                 SetValue("_explicit", "false");
                 continue;
             }
-            if (!i.Value.Contains(obj[i.Key]?.Type)) {
+            if (!i.Value.Contains(obj[i.Key]?.Type))
+            {
                 throw new Exception($"Incorrect or missing key {i.Key}");
             }
             // validate value
-            if (i.Value == numericTypes) {
+            if (i.Value == numericTypes)
+            {
                 var val = Helper.DoubleParseInvariant((string)obj[i.Key]);
-                if (!Helper.DoubleRangeCheck(val, expectedValuesL1[i.Key].Item1, expectedValuesL1[i.Key].Item2)) {
+                if (!Helper.DoubleRangeCheck(val, expectedValuesL1[i.Key].Item1, expectedValuesL1[i.Key].Item2))
+                {
                     throw new Exception($"Bad value for key {i.Key}");
                 }
             }
         }
         // validate array
         var dbs = (JArray)obj["_difficultyBeatmapSets"];
-        foreach (var dbsItem in dbs) {
-            foreach (var i in expectedTypesL2) {
+        foreach (var dbsItem in dbs)
+        {
+            foreach (var i in expectedTypesL2)
+            {
                 // validate type
-                if (!i.Value.Contains(dbsItem[i.Key]?.Type)) {
+                if (!i.Value.Contains(dbsItem[i.Key]?.Type))
+                {
                     throw new Exception($"Incorrect or missing key {i.Key}");
                 }
             }
             // validate array
             var db = (JArray)dbsItem["_difficultyBeatmaps"];
-            foreach (var dbItem in db) {
-                foreach (var i in expectedTypesL3) {
+            foreach (var dbItem in db)
+            {
+                foreach (var i in expectedTypesL3)
+                {
                     // validate type
-                    if (!i.Value.Contains(dbItem[i.Key]?.Type)) {
+                    if (!i.Value.Contains(dbItem[i.Key]?.Type))
+                    {
                         throw new Exception($"Incorrect or missing key {i.Key}");
                     }
                     // validate value
-                    if (i.Value == numericTypes) {
+                    if (i.Value == numericTypes)
+                    {
                         var val = Helper.DoubleParseInvariant((string)dbItem[i.Key]);
                         // special case
-                        if (i.Key == "_difficultyRank") {
-                            if (val < Editor.Difficulty.LevelMin || val > Editor.Difficulty.LevelMax) {
+                        if (i.Key == "_difficultyRank")
+                        {
+                            if (val < Editor.Difficulty.LevelMin || val > Editor.Difficulty.LevelMax)
+                            {
                                 throw new Exception($"Bad value for key {i.Key}");
                             }
-                        } else if (!Helper.DoubleRangeCheck(val, expectedValuesL3[i.Key].Item1, expectedValuesL3[i.Key].Item2)) {
+                        }
+                        else if (!Helper.DoubleRangeCheck(val, expectedValuesL3[i.Key].Item1, expectedValuesL3[i.Key].Item2))
+                        {
                             throw new Exception($"Bad value for key {i.Key}");
                         }
                     }
@@ -216,15 +253,20 @@ public class RagnarockMap {
         // create _customData if it isnt there
         InitCustomData();
     }
-    private void InitCustomData() {
+    private void InitCustomData()
+    {
         var obj = JObject.Parse(infoStr);
 
         // top level custom data
-        if (obj["_customData"]?.Type != JTokenType.Object) {
-            var customDataObject = new {
+        if (obj["_customData"]?.Type != JTokenType.Object)
+        {
+            var customDataObject = new
+            {
                 _contributors = new List<object>(),
-                _editors = new {
-                    Edda = new {
+                _editors = new
+                {
+                    Edda = new
+                    {
                         version = Program.VersionString,
                     },
                     _lastEditedBy = "Edda"
@@ -233,19 +275,24 @@ public class RagnarockMap {
             obj["_customData"] = JToken.FromObject(customDataObject);
         }
         var customData = obj["_customData"];
-        if (customData["_contributors"]?.Type != JTokenType.Array) {
+        if (customData["_contributors"]?.Type != JTokenType.Array)
+        {
             customData["_contributors"] = JToken.FromObject(new List<string>());
         }
-        if (customData["_editors"]?.Type != JTokenType.Object) {
-            var editorsObject = new {
-                Edda = new {
+        if (customData["_editors"]?.Type != JTokenType.Object)
+        {
+            var editorsObject = new
+            {
+                Edda = new
+                {
                     version = Program.VersionString,
                 },
                 _lastEditedBy = "Edda"
             };
             customData["_editors"] = JToken.FromObject(editorsObject);
         }
-        if (customData["_editors"]["Edda"]?.Type != JTokenType.Object) {
+        if (customData["_editors"]["Edda"]?.Type != JTokenType.Object)
+        {
             customData["_editors"]["Edda"] = JToken.FromObject(new { version = Program.DisplayVersionString });
         }
         //if (customData["_editors"]["_lastEditedBy"]?.Type != JTokenType.String) {
@@ -274,9 +321,12 @@ public class RagnarockMap {
         };
 
         var beatmaps = obj["_difficultyBeatmapSets"][0]["_difficultyBeatmaps"];
-        foreach (var map in beatmaps) {
-            if (map["_customData"]?.Type != JTokenType.Object) {
-                var customDataObject = new {
+        foreach (var map in beatmaps)
+        {
+            if (map["_customData"]?.Type != JTokenType.Object)
+            {
+                var customDataObject = new
+                {
                     _editorOldOffset = 0,
                     _editorGridSpacing = Editor.DefaultGridSpacing,
                     _editorGridDivision = 4,
@@ -288,22 +338,30 @@ public class RagnarockMap {
                 map["_customData"] = JToken.FromObject(customDataObject);
             }
         }
-        foreach (var map in beatmaps) {
+        foreach (var map in beatmaps)
+        {
             var mapCustomData = map["_customData"];
-            foreach (var i in expectedTypes) {
+            foreach (var i in expectedTypes)
+            {
                 // validate type
-                if (!i.Value.Contains(mapCustomData[i.Key]?.Type)) {
+                if (!i.Value.Contains(mapCustomData[i.Key]?.Type))
+                {
                     mapCustomData[i.Key] = defaultValues[i.Key];
                 }
                 // validate value
-                if (i.Value == numericTypes) {
+                if (i.Value == numericTypes)
+                {
                     var val = Helper.DoubleParseInvariant((string)mapCustomData[i.Key]);
                     // special case
-                    if (i.Key == "_editorGridDivision") {
-                        if ((int)val != val || val < 1 || Editor.GridDivisionMax < val) {
+                    if (i.Key == "_editorGridDivision")
+                    {
+                        if ((int)val != val || val < 1 || Editor.GridDivisionMax < val)
+                        {
                             mapCustomData[i.Key] = defaultValues[i.Key];
                         }
-                    } else if (!Helper.DoubleRangeCheck(val, expectedValues[i.Key].Item1, expectedValues[i.Key].Item2)) {
+                    }
+                    else if (!Helper.DoubleRangeCheck(val, expectedValues[i.Key].Item1, expectedValues[i.Key].Item2))
+                    {
                         mapCustomData[i.Key] = defaultValues[i.Key];
                     }
                 }
@@ -312,7 +370,8 @@ public class RagnarockMap {
 
         infoStr = JsonConvert.SerializeObject(obj, Formatting.Indented);
     }
-    private void UpdateEddaVersion() {
+    private void UpdateEddaVersion()
+    {
         var obj = JObject.Parse(infoStr);
         obj["_customData"]["_editors"]["Edda"]["version"] = Program.VersionString;
         obj["_customData"]["_editors"]["_lastEditedBy"] = Program.Name;
@@ -320,40 +379,48 @@ public class RagnarockMap {
     }
 
     // per-map operations
-    public void SetValueForDifficultyMap(int indx, string key, object value) {
+    public void SetValueForDifficultyMap(int indx, string key, object value)
+    {
         var obj = JObject.Parse(infoStr);
         obj["_difficultyBeatmapSets"][0]["_difficultyBeatmaps"][indx][key] = JToken.FromObject(value);
         infoStr = JsonConvert.SerializeObject(obj, Formatting.Indented);
     }
-    public JToken GetValueForDifficultyMap(int indx, string key) {
+    public JToken GetValueForDifficultyMap(int indx, string key)
+    {
         var obj = JObject.Parse(infoStr);
         var res = obj["_difficultyBeatmapSets"][0]["_difficultyBeatmaps"][indx][key];
         return res;
     }
-    public void SetCustomValueForDifficultyMap(int indx, string key, object value) {
+    public void SetCustomValueForDifficultyMap(int indx, string key, object value)
+    {
         var obj = JObject.Parse(infoStr);
         obj["_difficultyBeatmapSets"][0]["_difficultyBeatmaps"][indx]["_customData"][key] = JToken.FromObject(value);
         infoStr = JsonConvert.SerializeObject(obj, Formatting.Indented);
     }
-    public JToken GetCustomValueForDifficultyMap(int indx, string key) {
+    public JToken GetCustomValueForDifficultyMap(int indx, string key)
+    {
         var obj = JObject.Parse(infoStr);
         var res = obj["_difficultyBeatmapSets"][0]["_difficultyBeatmaps"][indx]["_customData"][key];
         return res;
     }
-    public void AddMap() {
-        if (numDifficulties == 3) {
+    public void AddMap()
+    {
+        if (numDifficulties == 3)
+        {
             return;
         }
         var mapName = BeatmapDefaults.DifficultyNames[numDifficulties];
         var obj = JObject.Parse(infoStr);
         var beatmaps = (JArray)obj["_difficultyBeatmapSets"][0]["_difficultyBeatmaps"];
-        var beatmapDat = new {
+        var beatmapDat = new
+        {
             _difficulty = mapName,
             _difficultyRank = 1,
             _beatmapFilename = $"{mapName}.dat",
             _noteJumpMovementSpeed = BeatmapDefaults.GetPreferredNoteJumpMovementSpeed(),
             _noteJumpStartBeatOffset = 0,
-            _customData = new {
+            _customData = new
+            {
                 _editorOldOffset = 0,
                 _editorGridSpacing = Editor.DefaultGridSpacing,
                 _editorGridDivision = 4,
@@ -365,9 +432,11 @@ public class RagnarockMap {
         };
         beatmaps.Add(JToken.FromObject(beatmapDat));
         infoStr = JsonConvert.SerializeObject(obj, Formatting.Indented);
-        var mapDat = new {
+        var mapDat = new
+        {
             _version = "1",
-            _customData = new {
+            _customData = new
+            {
                 _time = 0,
                 _BPMChanges = new List<object>(),
                 _bookmarks = new List<object>(),
@@ -380,21 +449,26 @@ public class RagnarockMap {
         difficultyMaps[numDifficulties - 1] = mapStr;
         WriteMap(numDifficulties - 1);
     }
-    public void ReadMap(int indx) {
+    public void ReadMap(int indx)
+    {
         var filename = (string)GetValueForDifficultyMap(indx, "_beatmapFilename");
         difficultyMaps[indx] = File.ReadAllText(PathOf(filename));
     }
-    public void WriteMap(int indx) {
+    public void WriteMap(int indx)
+    {
         var filename = (string)GetValueForDifficultyMap(indx, "_beatmapFilename");
         File.WriteAllText(PathOf(filename), difficultyMaps[indx]);
     }
-    public void DeleteMap(int indx) {
-        if (numDifficulties == 1) {
+    public void DeleteMap(int indx)
+    {
+        if (numDifficulties == 1)
+        {
             return;
         }
         var filename = (string)GetValueForDifficultyMap(indx, "_beatmapFilename");
         File.Delete(PathOf(filename));
-        for (int i = indx; i < numDifficulties - 1; i++) {
+        for (int i = indx; i < numDifficulties - 1; i++)
+        {
             difficultyMaps[i] = difficultyMaps[i + 1];
         }
         difficultyMaps[numDifficulties - 1] = null;
@@ -406,8 +480,10 @@ public class RagnarockMap {
         RenameMaps();
         WriteInfo();
     }
-    public void SwapMaps(int i, int j) {
-        if (i == j) {
+    public void SwapMaps(int i, int j)
+    {
+        if (i == j)
+        {
             return;
         }
         var temp = difficultyMaps[i];
@@ -416,7 +492,7 @@ public class RagnarockMap {
 
         var obj = JObject.Parse(infoStr);
         var beatmaps = (JArray)obj["_difficultyBeatmapSets"][0]["_difficultyBeatmaps"];
-        
+
         var tempMap = beatmaps[i];
         beatmaps[i] = beatmaps[j];
         beatmaps[j] = tempMap;
@@ -425,11 +501,13 @@ public class RagnarockMap {
         RenameMaps();
         WriteInfo();
     }
-    public List<Note> GetNotesForMap(int indx) {
+    public List<Note> GetNotesForMap(int indx)
+    {
         var obj = JObject.Parse(difficultyMaps[indx]);
         var res = obj["_notes"];
         List<Note> output = new List<Note>();
-        foreach (JToken n in res) {
+        foreach (JToken n in res)
+        {
             double time = Helper.DoubleParseInvariant((string)n["_time"]);
             int colIndex = int.Parse((string)n["_lineIndex"]);
             output.Add(new Note(time, colIndex));
@@ -437,12 +515,15 @@ public class RagnarockMap {
         output.Sort();
         return output;
     }
-    public void SetNotesForMap(int indx, List<Note> notes) {
+    public void SetNotesForMap(int indx, List<Note> notes)
+    {
         var numNotes = notes.Count;
         var notesObj = new Object[numNotes];
-        for (int i = 0; i < numNotes; i++) {
+        for (int i = 0; i < numNotes; i++)
+        {
             var thisNote = notes[i];
-            var thisNoteObj = new {
+            var thisNoteObj = new
+            {
                 _time = thisNote.beat,
                 _lineIndex = thisNote.col,
                 _lineLayer = 1,
@@ -456,20 +537,24 @@ public class RagnarockMap {
         difficultyMaps[indx] = JsonConvert.SerializeObject(thisMapStr, Formatting.Indented);
         //mapsStr[selectedDifficulty]["_notes"] = jObj;
     }
-    private void RenameMaps() {
-        for (int i = 0; i < numDifficulties; i++) {
+    private void RenameMaps()
+    {
+        for (int i = 0; i < numDifficulties; i++)
+        {
             var fileName = BeatmapDefaults.DifficultyNames[i];
             var oldFile = (string)GetValueForDifficultyMap(i, "_beatmapFilename");
             File.Move(PathOf(oldFile), PathOf($"{fileName}_temp.dat"));
             SetValueForDifficultyMap(i, "_difficulty", fileName);
             SetValueForDifficultyMap(i, "_beatmapFilename", $"{fileName}.dat");
         }
-        for (int i = 0; i < numDifficulties; i++) {
+        for (int i = 0; i < numDifficulties; i++)
+        {
             var fileName = BeatmapDefaults.DifficultyNames[i];
             File.Move(PathOf($"{fileName}_temp.dat"), PathOf($"{fileName}.dat"));
         }
     }
-    private void ValidateMap(int indx) {
+    private void ValidateMap(int indx)
+    {
         Dictionary<string, List<JTokenType?>> expectedTypesL1 = new Dictionary<string, List<JTokenType?>> {
             {"_version",   stringTypes },
             {"_events",    arrayTypes },
@@ -486,29 +571,36 @@ public class RagnarockMap {
         };
 
         var obj = JObject.Parse(difficultyMaps[indx]);
-        foreach (var i in expectedTypesL1) {
+        foreach (var i in expectedTypesL1)
+        {
             // validate type
-            if (!i.Value.Contains(obj[i.Key]?.Type)) {
+            if (!i.Value.Contains(obj[i.Key]?.Type))
+            {
                 throw new Exception($"Incorrect or missing key {i.Key}");
             }
         }
         var notes = (JArray)obj["_notes"];
-        foreach (var note in notes) {
-            foreach (var i in expectedTypesL2) {
+        foreach (var note in notes)
+        {
+            foreach (var i in expectedTypesL2)
+            {
                 // validate type
-                if (!i.Value.Contains(note[i.Key]?.Type)) {
+                if (!i.Value.Contains(note[i.Key]?.Type))
+                {
                     throw new Exception($"Note at time {note["_time"]} has incorrect or missing key {i.Key}");
                 }
                 // validate value
-                if (i.Value == numericTypes) {
+                if (i.Value == numericTypes)
+                {
                     var val = Helper.DoubleParseInvariant((string)note[i.Key]);
                     Exception ex = new Exception($"Note at time {note["_time"]} has bad value for key {i.Key}");
-                    switch (i.Key) {
+                    switch (i.Key)
+                    {
                         case "_time":
                             if (val < 0) throw ex;
                             break;
                         case "_lineIndex":
-                            if ((int)val != val || val < 0 || 3 < val) 
+                            if ((int)val != val || val < 0 || 3 < val)
                                 throw ex;
                             break;
                         case "_lineLayer":
@@ -524,15 +616,18 @@ public class RagnarockMap {
                 }
             }
         }
-        
+
         InitCustomDataForMap(indx);
     }
-    private void InitCustomDataForMap(int indx) {
+    private void InitCustomDataForMap(int indx)
+    {
         var obj = JObject.Parse(difficultyMaps[indx]);
 
         // top level custom data
-        if (obj["_customData"]?.Type != JTokenType.Object) {
-            var customDataObject = new {
+        if (obj["_customData"]?.Type != JTokenType.Object)
+        {
+            var customDataObject = new
+            {
                 _time = 0,
                 _BPMChanges = new List<object>(),
                 _bookmarks = new List<object>(),
@@ -540,61 +635,77 @@ public class RagnarockMap {
             obj["_customData"] = JToken.FromObject(customDataObject);
         }
         var customData = obj["_customData"];
-        if (!numericTypes.Contains(customData["_time"]?.Type)) {
+        if (!numericTypes.Contains(customData["_time"]?.Type))
+        {
             customData["_time"] = 0;
         }
         // TODO: validate individual array objects
-        if (customData["_BPMChanges"]?.Type != JTokenType.Array) {
+        if (customData["_BPMChanges"]?.Type != JTokenType.Array)
+        {
             customData["_BPMChanges"] = JToken.FromObject(new List<object>());
         }
-        if (customData["_bookmarks"]?.Type != JTokenType.Array) {
+        if (customData["_bookmarks"]?.Type != JTokenType.Array)
+        {
             customData["_bookmarks"] = JToken.FromObject(new List<object>());
         }
         difficultyMaps[indx] = JsonConvert.SerializeObject(obj, Formatting.Indented);
     }
 
     // helper functions
-    public string PathOf(string f) {
+    public string PathOf(string f)
+    {
         return Path.Combine(folderPath, f);
     }
-    public int GetMedalDistanceForMap(int indx, int medal) {
+    public int GetMedalDistanceForMap(int indx, int medal)
+    {
         JArray info = (JArray)GetCustomValueForDifficultyMap(indx, "_information");
         string splitter = $"medal_{medal}=";
-        foreach (JToken t in info) {
+        foreach (JToken t in info)
+        {
             string s = (string)t;
-            if (s.StartsWith(splitter)) {
+            if (s.StartsWith(splitter))
+            {
                 return int.Parse(s.Split(splitter)[1]);
             }
         }
         return 0;
     }
-    public void SetMedalDistanceForMap(int indx, int medal, int dist) {
+    public void SetMedalDistanceForMap(int indx, int medal, int dist)
+    {
         JArray info = (JArray)GetCustomValueForDifficultyMap(indx, "_information");
         string splitter = $"medal_{medal}=";
         JToken insert = JToken.FromObject($"{splitter}{dist}");
         bool found = false;
-        for (int i = 0; i < info.Count; i++) {
-            if (((string)info[i]).StartsWith(splitter)) {
+        for (int i = 0; i < info.Count; i++)
+        {
+            if (((string)info[i]).StartsWith(splitter))
+            {
                 found = true;
-                if (dist == 0) {
+                if (dist == 0)
+                {
                     info.RemoveAt(i);
-                } else {
+                }
+                else
+                {
                     info[i] = insert;
                 }
-                
+
                 break;
             }
         }
-        if (!found && dist != 0) {
+        if (!found && dist != 0)
+        {
             info.Add(insert);
         }
         SetCustomValueForDifficultyMap(indx, "_information", info);
     }
-    public List<BPMChange> GetBPMChangesForMap(int indx) {
+    public List<BPMChange> GetBPMChangesForMap(int indx)
+    {
         List<BPMChange> BPMChanges = new List<BPMChange>();
         var obj = JObject.Parse(difficultyMaps[indx]);
         var res = obj["_customData"]["_BPMChanges"];
-        foreach (JToken bcObj in res) {
+        foreach (JToken bcObj in res)
+        {
             double beat = Helper.DoubleParseInvariant((string)bcObj["_time"]);
             double bpm = Helper.DoubleParseInvariant((string)bcObj["_BPM"]);
             // what happens if an incompatible grid division (>24) is passed in?
@@ -602,12 +713,15 @@ public class RagnarockMap {
             BPMChange bc = new BPMChange(beat, bpm, gridDivision);
             BPMChanges.Add(bc);
         }
-        return BPMChanges; 
+        return BPMChanges;
     }
-    public void SetBPMChangesForMap(int indx, List<BPMChange> BPMChanges) {
+    public void SetBPMChangesForMap(int indx, List<BPMChange> BPMChanges)
+    {
         JArray bcArr = new JArray();
-        foreach (BPMChange bc in BPMChanges) {
-            bcArr.Add(JToken.FromObject(new {
+        foreach (BPMChange bc in BPMChanges)
+        {
+            bcArr.Add(JToken.FromObject(new
+            {
                 _BPM = bc.BPM,
                 _time = bc.globalBeat,
                 _beatsPerBar = bc.gridDivision,
@@ -619,11 +733,13 @@ public class RagnarockMap {
         thisMapStr["_customData"]["_BPMChanges"] = bcArr;
         difficultyMaps[indx] = JsonConvert.SerializeObject(thisMapStr, Formatting.Indented);
     }
-    public List<Bookmark> GetBookmarksForMap(int indx) {
+    public List<Bookmark> GetBookmarksForMap(int indx)
+    {
         List<Bookmark> bookmarks = new List<Bookmark>();
         var obj = JObject.Parse(difficultyMaps[indx]);
         var res = obj["_customData"]["_bookmarks"];
-        foreach (JToken bcObj in res) {
+        foreach (JToken bcObj in res)
+        {
             double beat = Helper.DoubleParseInvariant((string)bcObj["_time"]);
             string name = (string)bcObj["_name"];
             Bookmark b = new Bookmark(beat, name);
@@ -631,10 +747,13 @@ public class RagnarockMap {
         }
         return bookmarks;
     }
-    public void SetBookmarksForMap(int indx, List<Bookmark> bookmarks) {
+    public void SetBookmarksForMap(int indx, List<Bookmark> bookmarks)
+    {
         JArray bArr = new JArray();
-        foreach (Bookmark b in bookmarks) {
-            bArr.Add(JToken.FromObject(new {
+        foreach (Bookmark b in bookmarks)
+        {
+            bArr.Add(JToken.FromObject(new
+            {
                 _time = b.beat,
                 _name = b.name
             })); ;

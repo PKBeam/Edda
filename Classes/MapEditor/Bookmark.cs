@@ -1,12 +1,14 @@
 ﻿using System;
 
-namespace Edda {
+namespace Edda
+{
     public class Bookmark : IComparable, IEquatable<Bookmark>
     {
 
         public double beat { get; set; }
         public string name { get; set; }
-        public Bookmark(double beat, string name) {
+        public Bookmark(double beat, string name)
+        {
             this.beat = beat;
             this.name = name;
         }

@@ -6,48 +6,62 @@ using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
 
-public class RecentOpenedFolders {
+public class RecentOpenedFolders
+{
     int historySize;
     List<string> fileLines;
     string filePath;
-    public RecentOpenedFolders(string file, int historySize) {
+    public RecentOpenedFolders(string file, int historySize)
+    {
         this.filePath = file;
-        try {
+        try
+        {
             fileLines = File.ReadAllLines(filePath).ToList();
-        } catch {
+        }
+        catch
+        {
             Clear();
         }
         this.historySize = historySize;
     }
-    public void AddRecentlyOpened(string name, string path) {
+    public void AddRecentlyOpened(string name, string path)
+    {
         RemoveRecentlyOpened(path);
 
         fileLines.Insert(0, $"{name}={path}");
-        if (fileLines.Count > historySize) {
+        if (fileLines.Count > historySize)
+        {
             fileLines.RemoveAt(fileLines.Count - 1);
         }
     }
-    public void RemoveRecentlyOpened(string path) {
-        foreach (var line in fileLines) {
-            if (line.Split("=")[1] == path) {
+    public void RemoveRecentlyOpened(string path)
+    {
+        foreach (var line in fileLines)
+        {
+            if (line.Split("=")[1] == path)
+            {
                 fileLines.Remove(line);
                 break;
             }
         }
     }
     // most recent first
-    public List<(string, string)> GetRecentlyOpened() {
+    public List<(string, string)> GetRecentlyOpened()
+    {
         List<(string, string)> result = new();
-        foreach (var line in fileLines) {
+        foreach (var line in fileLines)
+        {
             var splitLine = line.Split("=");
             result.Add((splitLine[0], splitLine[1]));
         }
         return result;
     }
-    public void Write() {
+    public void Write()
+    {
         File.WriteAllLines(filePath, fileLines);
     }
-    public void Clear() {
+    public void Clear()
+    {
         fileLines = new();
     }
 }

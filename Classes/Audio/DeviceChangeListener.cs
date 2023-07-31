@@ -56,7 +56,8 @@ namespace Edda
 
         public void OnDeviceStateChanged(string deviceId, DeviceState newState)
         {
-            if (caller.playbackDeviceID == deviceId && newState != DeviceState.Active) {
+            if (caller.playbackDeviceID == deviceId && newState != DeviceState.Active)
+            {
                 // If the current device is not active anymore, we force an update to default device.
                 Application.Current.Dispatcher.BeginInvoke(() =>
                 {

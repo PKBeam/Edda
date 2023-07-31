@@ -5,7 +5,8 @@ using System.Threading;
 using System.Threading.Tasks;
 using Edda.Const;
 
-public class AudioScanner : IDisposable {
+public class AudioScanner : IDisposable
+{
     int scanIndex;
     double tempo;
     protected int stopwatchOffset = 0;
@@ -18,13 +19,15 @@ public class AudioScanner : IDisposable {
 
     ParallelAudioPlayer parallelAudioPlayer;
 
-    public AudioScanner(ParallelAudioPlayer parallelAudioPlayer, double tempo) {
+    public AudioScanner(ParallelAudioPlayer parallelAudioPlayer, double tempo)
+    {
         SetAudioPlayer(parallelAudioPlayer);
         this.stopwatch = new Stopwatch();
         this.tempo = tempo;
     }
 
-    public AudioScanner(ParallelAudioPlayer parallelAudioPlayer) : this(parallelAudioPlayer, 1.0) {
+    public AudioScanner(ParallelAudioPlayer parallelAudioPlayer) : this(parallelAudioPlayer, 1.0)
+    {
     }
 
     public virtual void Dispose()
@@ -40,15 +43,18 @@ public class AudioScanner : IDisposable {
         parallelAudioPlayer = null;
     }
 
-    public void SetTempo(double newTempo) {
+    public void SetTempo(double newTempo)
+    {
         tempo = newTempo;
     }
 
-    public void SetAudioPlayer(ParallelAudioPlayer parallelAudioPlayer) {
+    public void SetAudioPlayer(ParallelAudioPlayer parallelAudioPlayer)
+    {
         this.parallelAudioPlayer = parallelAudioPlayer;
     }
 
-    public void Start(int millisecStart, List<Note> notes, double globalBPM) {
+    public void Start(int millisecStart, List<Note> notes, double globalBPM)
+    {
         this.globalBPM = globalBPM;
         this.notes = notes;
         stopwatchOffset = millisecStart;
@@ -60,50 +66,63 @@ public class AudioScanner : IDisposable {
 
         stopwatch.Start();
     }
-    public void Stop() {
-        if (tokenSource != null) {
+    public void Stop()
+    {
+        if (tokenSource != null)
+        {
             tokenSource.Cancel();
         }
         stopwatch.Reset();
     }
-    private void SetScanStart() {
+    private void SetScanStart()
+    {
         // calculate scan index for playing drum hits
         var seekBeat = stopwatchOffset * globalBPM / 60000;
         var newNoteScanIndex = 0;
-        foreach (var n in notes) {
-            if (Helper.DoubleApproxGreaterEqual(n.beat, seekBeat)) {
+        foreach (var n in notes)
+        {
+            if (Helper.DoubleApproxGreaterEqual(n.beat, seekBeat))
+            {
                 break;
             }
             newNoteScanIndex++;
         }
         scanIndex = newNoteScanIndex;
     }
-    private void BeginScan(int startFrom, CancellationToken ct) {
+    private void BeginScan(int startFrom, CancellationToken ct)
+    {
         // NOTE: this function is called on a separate thread
 
         // scan notes while song is still playing
-        while (!ct.IsCancellationRequested) {
+        while (!ct.IsCancellationRequested)
+        {
             ScanNotes();
             Thread.Sleep(Audio.NotePollRate);
         }
     }
-    private void ScanNotes() {
+    private void ScanNotes()
+    {
         OnNoteScanBegin();
 
         var currentTime = stopwatch.ElapsedMilliseconds * tempo + stopwatchOffset;
         // check if we started past the last note in the song
-        if (scanIndex >= notes.Count) {
+        if (scanIndex >= notes.Count)
+        {
             return;
         }
         var noteTime = 60000 * notes[scanIndex].beat / globalBPM;
         var noteHits = 0;
 
         // check if any notes were missed
-        while (currentTime - noteTime >= Audio.NoteDetectionDelta && scanIndex < notes.Count - 1) {
-            
-            if (parallelAudioPlayer?.Play(notes[scanIndex].col) == false) {
+        while (currentTime - noteTime >= Audio.NoteDetectionDelta && scanIndex < notes.Count - 1)
+        {
+
+            if (parallelAudioPlayer?.Play(notes[scanIndex].col) == false)
+            {
                 Helper.ThreadedPrint("WARNING: Scanner skipped a note that was already late");
-            } else {
+            }
+            else
+            {
                 Helper.ThreadedPrint($"WARNING: Scanner played audio late (Delta: {Math.Round(currentTime - noteTime, 2)})");
             }
             OnNoteScanLateHit(notes[scanIndex]);
@@ -113,16 +132,19 @@ public class AudioScanner : IDisposable {
         }
 
         // check if we need to play any notes
-        while (Math.Abs(currentTime - noteTime) < Audio.NoteDetectionDelta) {
+        while (Math.Abs(currentTime - noteTime) < Audio.NoteDetectionDelta)
+        {
 
-            if (parallelAudioPlayer?.Play(notes[scanIndex].col) == false) {
+            if (parallelAudioPlayer?.Play(notes[scanIndex].col) == false)
+            {
                 Helper.ThreadedPrint("WARNING: Scanner skipped a note");
             }
 
             OnNoteScanHit(notes[scanIndex]);
             noteHits++;
             scanIndex++;
-            if (scanIndex >= notes.Count) {
+            if (scanIndex >= notes.Count)
+            {
                 break;
             }
             noteTime = 60000 * notes[scanIndex].beat / globalBPM;
@@ -135,12 +157,16 @@ public class AudioScanner : IDisposable {
 
         OnNoteScanFinish();
     }
-    protected virtual void OnNoteScanBegin() {
+    protected virtual void OnNoteScanBegin()
+    {
     }
-    protected virtual void OnNoteScanLateHit(Note n) {
+    protected virtual void OnNoteScanLateHit(Note n)
+    {
     }
-    protected virtual void OnNoteScanHit(Note n) {
+    protected virtual void OnNoteScanHit(Note n)
+    {
     }
-    protected virtual void OnNoteScanFinish() {
+    protected virtual void OnNoteScanFinish()
+    {
     }
 }

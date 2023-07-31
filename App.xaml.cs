@@ -7,17 +7,20 @@ namespace RagnarockEditor
     /// <summary>
     /// Interaction logic for App.xaml
     /// </summary>
-    public partial class App : Application {
+    public partial class App : Application
+    {
         internal RecentOpenedFolders RecentMaps;
         internal UserSettingsManager UserSettings;
         internal DiscordClient DiscordClient;
 
-        App() {
+        App()
+        {
             this.RecentMaps = new(Program.RecentOpenedMapsFile, Program.MaxRecentOpenedMaps);
             this.UserSettings = new UserSettingsManager(Program.SettingsFile);
             this.DiscordClient = new DiscordClient();
 
-            if (UserSettings.GetValueForKey(UserSettingsKey.EnableDiscordRPC) == null) {
+            if (UserSettings.GetValueForKey(UserSettingsKey.EnableDiscordRPC) == null)
+            {
                 UserSettings.SetValueForKey(UserSettingsKey.EnableDiscordRPC, DefaultUserSettings.EnableDiscordRPC);
             }
             SetDiscordRPC(UserSettings.GetBoolForKey(UserSettingsKey.EnableDiscordRPC));
@@ -25,21 +28,29 @@ namespace RagnarockEditor
             // for testing cultures
             //CultureInfo.CurrentCulture = CultureInfo.GetCultureInfoByIetfLanguageTag("fr-FR");
 
-            try {
-                if (UserSettings.GetValueForKey(UserSettingsKey.CheckForUpdates) == true.ToString()) {
+            try
+            {
+                if (UserSettings.GetValueForKey(UserSettingsKey.CheckForUpdates) == true.ToString())
+                {
                     //#if !DEBUG
                     Helper.CheckForUpdates();
                     //#endif
                 }
-            } catch {
+            }
+            catch
+            {
                 Trace.WriteLine("INFO: Could not check for updates.");
             }
         }
 
-        public void SetDiscordRPC(bool enable) {
-            if (enable) {
+        public void SetDiscordRPC(bool enable)
+        {
+            if (enable)
+            {
                 DiscordClient.Enable();
-            } else {
+            }
+            else
+            {
                 DiscordClient.Disable();
             }
         }
