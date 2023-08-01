@@ -7,14 +7,12 @@ using StepmaniaUtils.Enums;
 using StepmaniaUtils.Readers;
 using StepmaniaUtils.StepData;
 
-namespace StepmaniaUtils
-{
+namespace StepmaniaUtils {
     /// <summary>
     /// The StepmaniaUtils.SmFile class in the package doesn't parse the note data and labels, which will be needed.
     /// They've also wrote this class in a way where I can't extend it easily to parse out additional data, so this implementation is based on source code from https://github.com/StefanoFiumara/stepmania-utils/blob/master/StepmaniaUtils.Core/Core/SmFile.cs
     /// </summary>
-    public class SmFileExtra
-    {
+    public class SmFileExtra {
         public string this[SmFileAttribute attribute] =>
             Attributes.ContainsKey(attribute) ? Attributes[attribute] : string.Empty;
 
@@ -32,17 +30,14 @@ namespace StepmaniaUtils
 
         public IReadOnlyDictionary<SmFileAttribute, string> Attributes => new ReadOnlyDictionary<SmFileAttribute, string>(_attributes);
 
-        public SmFileExtra(string filePath)
-        {
-            if (!Path.IsPathRooted(filePath))
-            {
+        public SmFileExtra(string filePath) {
+            if (!Path.IsPathRooted(filePath)) {
                 filePath = Path.GetFullPath(filePath);
             }
 
             var validExtensions = new[] { ".sm", ".ssc" };
 
-            if (File.Exists(filePath) == false || !validExtensions.Contains(Path.GetExtension(filePath)))
-            {
+            if (File.Exists(filePath) == false || !validExtensions.Contains(Path.GetExtension(filePath))) {
                 throw new ArgumentException($"The given .sm or .ssc file path is either invalid or a file was not found. Path: {filePath}");
             }
 
@@ -60,29 +55,22 @@ namespace StepmaniaUtils
             ParseFile();
         }
 
-        private void ParseFile()
-        {
-            using (var reader = StepmaniaFileReaderFactory.CreateReader(FilePath))
-            {
-                while (reader.ReadNextTag(out SmFileAttribute tag))
-                {
-                    if (reader.State == ReaderState.ReadingChartMetadata)
-                    {
+        private void ParseFile() {
+            using (var reader = StepmaniaFileReaderFactory.CreateReader(FilePath)) {
+                while (reader.ReadNextTag(out SmFileAttribute tag)) {
+                    if (reader.State == ReaderState.ReadingChartMetadata) {
                         var stepData = new StepMetadataExtra(reader.ReadStepchartMetadata());
 
-                        while (reader.IsParsingNoteData)
-                        {
+                        while (reader.IsParsingNoteData) {
                             stepData.Add(reader.ReadMeasure());
                         }
 
                         ChartMetadata.Add(stepData);
                     }
-                    else
-                    {
+                    else {
                         var value = reader.ReadTagValue();
 
-                        if (!_attributes.ContainsKey(tag))
-                        {
+                        if (!_attributes.ContainsKey(tag)) {
                             _attributes.Add(tag, value);
                         }
                     }
@@ -90,8 +78,7 @@ namespace StepmaniaUtils
             }
         }
 
-        private void RefreshMetadata()
-        {
+        private void RefreshMetadata() {
             ChartMetadata = new ChartMetadataExtra();
             _attributes = new Dictionary<SmFileAttribute, string>();
 

@@ -1,8 +1,7 @@
 /// <summary>
 /// Interface for converting other file extensions into Ragnarock maps.
 /// </summary>
-public interface IMapConverter
-{
+public interface IMapConverter {
     /// <summary>
     /// Parses the given file and extracts relevant data into beatmap.
     /// </summary>

@@ -3,13 +3,11 @@ using System.Collections.Generic;
 using System.Windows.Media;
 using System.IO;
 
-namespace Edda.Const
-{
+namespace Edda.Const {
 
     using MediaColor = Color;
     using DrawingColor = System.Drawing.Color;
-    public static class Program
-    {
+    public static class Program {
 
         public const string Name = "Edda";
         public const string RepositoryURL = "https://github.com/PKBeam/Edda";
@@ -41,8 +39,7 @@ namespace Edda.Const
         public const int MaxBackups = 10;
 
     }
-    public static class DefaultUserSettings
-    {
+    public static class DefaultUserSettings {
         public const bool EnableSpectrogram = true;
         public const int DefaultNoteSpeed = 15;
         public const int AudioLatency = -20; // ms
@@ -64,8 +61,7 @@ namespace Edda.Const
         public const string MapSaveLocationPath = "";
     }
 
-    public static class UserSettingsKey
-    {
+    public static class UserSettingsKey {
         public const string EnableSpectrogram = "enableSpectrogram";
         public const string DefaultNoteSpeed = "defaultNoteSpeed";
         public const string EditorAudioLatency = "editorAudioLatency";
@@ -87,8 +83,7 @@ namespace Edda.Const
         public const string MapSaveLocationIndex = "mapSaveLocationIndex";
         public const string MapSaveLocationPath = "mapSaveLocationPath";
     }
-    public static class Editor
-    {
+    public static class Editor {
         // Grid drawing
         public const double DefaultGridSpacing = 2;
         public const double DefaultGridDivision = 4;
@@ -112,8 +107,7 @@ namespace Edda.Const
         public const int AutosaveInterval = 30; // seconds
 
         // Difficulty
-        public static class Difficulty
-        {
+        public static class Difficulty {
             public static string SelectedColour => Colors.LightSkyBlue.ToString();
             public const int LevelMin = 1;
             public const int LevelMax = 99;
@@ -121,18 +115,15 @@ namespace Edda.Const
 
         // Bookmarks
         public const double NavWaveformOpacity = 0.75;
-        public static class GridPreviewLine
-        {
+        public static class GridPreviewLine {
             public static string Colour => Colors.FloralWhite.ToString();
             public const double Thickness = 1.0;
         }
-        public static class NavPreviewLine
-        {
+        public static class NavPreviewLine {
             public static string Colour => Colors.FloralWhite.ToString();
             public const double Thickness = 1;
         }
-        public static class NavBookmark
-        {
+        public static class NavBookmark {
             public static string DefaultName = "Bookmark";
             public static string Colour => Colors.SkyBlue.ToString();
             public static string NameColour => Colors.SkyBlue.ToString();
@@ -142,8 +133,7 @@ namespace Edda.Const
             public const double NamePadding = 1;
             public const double Opacity = 1;
         }
-        public static class GridBookmark
-        {
+        public static class GridBookmark {
             public static string Colour => Colors.DeepSkyBlue.ToString();
             public static string NameColour => Colors.DeepSkyBlue.ToString();
             public static string BackgroundColour => Colors.DeepSkyBlue.ToString();
@@ -152,8 +142,7 @@ namespace Edda.Const
             public const double NamePadding = 3;
             public const double Opacity = 0.75;
         }
-        public static class BPMChange
-        {
+        public static class BPMChange {
             public static string Colour => Colors.MediumPurple.ToString();
             public static string NameColour => Colors.MediumPurple.ToString();
             public static string BackgroundColour => Colors.MediumPurple.ToString();
@@ -164,8 +153,7 @@ namespace Edda.Const
         }
 
         // Waveform drawing
-        public static class Waveform
-        {
+        public static class Waveform {
             public const double SampleMaxPercentile = 0.95;
             public const double Width = 0.75;
             public const int MaxDimension = 65535;
@@ -175,8 +163,7 @@ namespace Edda.Const
             public static DrawingColor ColourGDI => DrawingColor.FromArgb(180, 0, 0, 255);
         }
 
-        public static class Spectrogram
-        {
+        public static class Spectrogram {
             public const int MelBinCount = 100;
             public const int MinFreq = 100; // Hz
             public const int MaxFreq = 22_000; // Hz
@@ -189,8 +176,7 @@ namespace Edda.Const
         }
 
     }
-    public static class Audio
-    {
+    public static class Audio {
         public const float MaxPanDistance = 0.6f;
         // Latencies        
         public const int WASAPILatencyTarget = 200; // ms
@@ -206,8 +192,7 @@ namespace Edda.Const
         public static string MetronomeFilename = "metronome";
         public const int MetronomeStreams = 4;
     }
-    public static class BeatmapDefaults
-    {
+    public static class BeatmapDefaults {
         public const double BeatsPerMinute = 120;
         public const string SongFilename = "song.ogg";
         public const string CoverFilename = "cover";
@@ -219,22 +204,18 @@ namespace Edda.Const
         public static List<string> EnvironmentNames => new() { "Midgard", "Alfheim", "Nidavellir", "Asgard", "Muspelheim", "Helheim", "Hellfest", "Sabaton", "Empty", "DarkEmpty" };
         //public const string DefaultEnvironmentAlias = "Midgard";
 
-        public static double GetPreferredNoteJumpMovementSpeed()
-        {
+        public static double GetPreferredNoteJumpMovementSpeed() {
             var userSettings = new UserSettingsManager(Program.SettingsFile);
-            try
-            {
+            try {
                 return double.Parse(userSettings.GetValueForKey(Const.UserSettingsKey.DefaultNoteSpeed));
             }
-            catch
-            {
+            catch {
                 return NoteJumpMovementSpeed;
             }
         }
     }
 
-    public static class DiscordRPC
-    {
+    public static class DiscordRPC {
         public const string AppID = "874090300207951932";
         public const string PubKey = "c2710c1d8cd4d9a2a9460cd63e048781d32a3a08b171153c5898a6fe0ddb8e76";
         public const string IconKey = "icon";

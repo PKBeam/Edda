@@ -2,36 +2,28 @@
 using Edda;
 using DiscordRPC;
 
-public class DiscordClient
-{
+public class DiscordClient {
     DiscordRpcClient client;
     DateTime startTime;
     bool enabled = false;
-    public DiscordClient()
-    {
+    public DiscordClient() {
         UpdateStartTime();
     }
 
-    public void UpdateStartTime()
-    {
+    public void UpdateStartTime() {
         startTime = DateTime.UtcNow;
     }
-    public void SetPresence()
-    {
+    public void SetPresence() {
         SetPresence(null, 0);
     }
-    public void SetPresence(string songName, int numNotes)
-    {
-        if (!enabled)
-        {
+    public void SetPresence(string songName, int numNotes) {
+        if (!enabled) {
             return;
         }
-        var rp = new RichPresence()
-        {
+        var rp = new RichPresence() {
             Details = GetPresenceDetails(songName),
             State = songName == null ? "" : $"{numNotes} notes placed",
-            Assets = new Assets()
-            {
+            Assets = new Assets() {
                 LargeImageKey = Edda.Const.DiscordRPC.IconKey
             }
         }.WithTimestamps(new Timestamps(startTime));
@@ -39,44 +31,35 @@ public class DiscordClient
         client.SetPresence(rp);
     }
 
-    private string GetPresenceDetails(string songName)
-    {
-        return songName switch
-        {
+    private string GetPresenceDetails(string songName) {
+        return songName switch {
             null => "No song open",
             "" => "Working on an untitled map",
             _ => $"Mapping: {songName}",
         };
     }
 
-    public void Enable()
-    {
+    public void Enable() {
         var wasEnabled = enabled;
         enabled = true;
-        if (!wasEnabled)
-        {
+        if (!wasEnabled) {
             InitClient();
         }
     }
-    public void Disable()
-    {
+    public void Disable() {
         var wasEnabled = enabled;
         enabled = false;
-        if (wasEnabled)
-        {
+        if (wasEnabled) {
             DeinitClient();
         }
     }
-    private void InitClient()
-    {
+    private void InitClient() {
         client = new DiscordRpcClient(Edda.Const.DiscordRPC.AppID);
         client.Initialize();
         SetPresence();
     }
-    private void DeinitClient()
-    {
-        if (client != null)
-        {
+    private void DeinitClient() {
+        if (client != null) {
             client.Deinitialize();
             client = null;
         }

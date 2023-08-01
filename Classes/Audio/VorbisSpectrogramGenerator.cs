@@ -14,8 +14,7 @@ using System.Drawing;
 using System.Drawing.Imaging;
 using System.Runtime.InteropServices;
 
-public class VorbisSpectrogramGenerator : IDisposable
-{
+public class VorbisSpectrogramGenerator : IDisposable {
 
     private CancellationTokenSource tokenSource;
     private string filePath;
@@ -31,21 +30,18 @@ public class VorbisSpectrogramGenerator : IDisposable
     private ImageSource[] cachedSpectrograms;
     private string cachedBmpSpectrogramSearchPattern;
 
-    public VorbisSpectrogramGenerator(string filePath, bool cache, SpectrogramType? type, SpectrogramQuality? quality, int? maxFreq, String colormap, bool drawFlipped)
-    {
+    public VorbisSpectrogramGenerator(string filePath, bool cache, SpectrogramType? type, SpectrogramQuality? quality, int? maxFreq, String colormap, bool drawFlipped) {
         this.filePath = filePath;
         InitSettings(cache, type, quality, maxFreq, colormap, drawFlipped);
     }
 
-    public void Dispose()
-    {
+    public void Dispose() {
         tokenSource?.Cancel();
         tokenSource = null;
         cachedSpectrograms = null;
     }
 
-    public void InitSettings(bool cache, SpectrogramType? type, SpectrogramQuality? quality, int? maxFreq, String colormap, bool drawFlipped)
-    {
+    public void InitSettings(bool cache, SpectrogramType? type, SpectrogramQuality? quality, int? maxFreq, String colormap, bool drawFlipped) {
         tokenSource?.Cancel();
         this.isDrawing = false;
         RecreateTokens();
@@ -55,11 +51,9 @@ public class VorbisSpectrogramGenerator : IDisposable
         this.maxFreq = maxFreq ?? Editor.Spectrogram.DefaultFreq;
         this.colormap = colormap ?? Colormap.Blues.Name;
         this.drawFlipped = drawFlipped;
-        if (cache)
-        {
+        if (cache) {
             var cacheDirectoryPath = Path.Combine(Path.GetDirectoryName(filePath), Program.CachePath);
-            if (!Directory.Exists(cacheDirectoryPath))
-            {
+            if (!Directory.Exists(cacheDirectoryPath)) {
                 Directory.CreateDirectory(cacheDirectoryPath);
             }
             this.cachedBmpSpectrogramSearchPattern = String.Format(Editor.Spectrogram.CachedBmpFilenameFormat, this.type, this.quality, this.maxFreq, this.colormap);
@@ -67,48 +61,38 @@ public class VorbisSpectrogramGenerator : IDisposable
         this.cachedSpectrograms = null;
     }
 
-    public DrawingColor GetBackgroundColor()
-    {
+    public DrawingColor GetBackgroundColor() {
         return Colormap.GetColormap(colormap).GetColor(0);
     }
 
-    public ImageSource[] Draw(int numChunks)
-    {
-        if (numChunks == 0)
-        {
+    public ImageSource[] Draw(int numChunks) {
+        if (numChunks == 0) {
             return null;
         }
 
         tokenSource.Cancel();
-        while (isDrawing)
-        {
+        while (isDrawing) {
             Thread.Sleep(100);
         }
         RecreateTokens();
 
         // if we have valid cache, don't bother doing anything
-        if (!CacheIsValid(numChunks))
-        {
+        if (!CacheIsValid(numChunks)) {
             cachedSpectrograms = new ImageSource[numChunks];
             // check for existing BMP files in the map cache folder first
-            try
-            {
-                if (LoadMapCacheChunkFiles(numChunks))
-                {
+            try {
+                if (LoadMapCacheChunkFiles(numChunks)) {
                     return cachedSpectrograms;
                 }
             }
-            catch (Exception ex)
-            {
+            catch (Exception ex) {
                 Trace.WriteLine(ex);
             }
             // fallback to generating BMPs if needed
-            try
-            {
+            try {
                 cachedSpectrograms = _Draw(numChunks, tokenSource.Token);
             }
-            catch (Exception ex)
-            {
+            catch (Exception ex) {
                 isDrawing = false;
                 Trace.WriteLine(ex);
             }
@@ -116,8 +100,7 @@ public class VorbisSpectrogramGenerator : IDisposable
 
         return cachedSpectrograms;
     }
-    private ImageSource[] _Draw(int numChunks, CancellationToken ct)
-    {
+    private ImageSource[] _Draw(int numChunks, CancellationToken ct) {
         isDrawing = true;
         VorbisWaveReader reader = new(filePath);
         int channels = reader.WaveFormat.Channels;
@@ -126,8 +109,7 @@ public class VorbisSpectrogramGenerator : IDisposable
         var numSamples = reader.Length / bytesPerSample;
 
         // We bail if we know that resulting BMPs would be too large to save anyway
-        if (numSamples > numChunks * Editor.Spectrogram.MaxSampleSteps * Editor.Spectrogram.StepSize * (int)quality)
-        {
+        if (numSamples > numChunks * Editor.Spectrogram.MaxSampleSteps * Editor.Spectrogram.StepSize * (int)quality) {
             isDrawing = false;
             return null;
         }
@@ -139,8 +121,7 @@ public class VorbisSpectrogramGenerator : IDisposable
         var audioBufferDouble = Array.ConvertAll(audioBuffer, x => maxFreq * (double)x);
 
         // cancel task if required
-        if (ct.IsCancellationRequested)
-        {
+        if (ct.IsCancellationRequested) {
             isDrawing = false;
             return null;
         }
@@ -151,8 +132,7 @@ public class VorbisSpectrogramGenerator : IDisposable
         sg.Add(audioBufferDouble);
 
         Bitmap bmp = null;
-        switch (type)
-        {
+        switch (type) {
             case SpectrogramType.Standard:
                 bmp = sg.GetBitmap();
                 break;
@@ -165,8 +145,7 @@ public class VorbisSpectrogramGenerator : IDisposable
         }
 
         // cancel task if required
-        if (ct.IsCancellationRequested)
-        {
+        if (ct.IsCancellationRequested) {
             isDrawing = false;
             bmp.Dispose();
             return null;
@@ -174,28 +153,22 @@ public class VorbisSpectrogramGenerator : IDisposable
 
         Bitmap[] splitBmps = SplitBitmapHorizontally(bmp, numChunks);
 
-        if (ct.IsCancellationRequested)
-        {
+        if (ct.IsCancellationRequested) {
             isDrawing = false;
-            for (int i = 0; i < numChunks; ++i)
-            {
+            for (int i = 0; i < numChunks; ++i) {
                 splitBmps[i].Dispose();
             }
             bmp.Dispose();
             return null;
         }
 
-        if (cache)
-        {
-            for (int i = 0; i < numChunks; ++i)
-            {
+        if (cache) {
+            for (int i = 0; i < numChunks; ++i) {
                 var cachedBmpSpectrogramPath = Path.Combine(Path.GetDirectoryName(filePath), Program.CachePath, cachedBmpSpectrogramSearchPattern.Replace("*", String.Format("{0:000}", i)));
-                try
-                {
+                try {
                     splitBmps[i].Save(cachedBmpSpectrogramPath, ImageFormat.Png);
                 }
-                catch (ExternalException ex)
-                {
+                catch (ExternalException ex) {
                     Trace.WriteLine($"WARNING: Exception when saving spectrogram BMP: ({ex})");
                     File.Delete(cachedBmpSpectrogramPath);
                     // Tried putting up a message, but it's pretty annoying - pops up multiple times.
@@ -208,8 +181,7 @@ public class VorbisSpectrogramGenerator : IDisposable
         isDrawing = false;
 
         ImageSource[] b = new ImageSource[numChunks];
-        for (int i = 0; i < numChunks; ++i)
-        {
+        for (int i = 0; i < numChunks; ++i) {
             b[i] = TransformBitmap(splitBmps[i]);
             splitBmps[i].Dispose();
         }
@@ -220,23 +192,18 @@ public class VorbisSpectrogramGenerator : IDisposable
     /// <summary>
     /// Splits source bitmap horizontally into chunks of (roughly) equal width.
     /// </summary>
-    private static Bitmap[] SplitBitmapHorizontally(Bitmap source, int numChunks)
-    {
+    private static Bitmap[] SplitBitmapHorizontally(Bitmap source, int numChunks) {
         Bitmap[] splitBmps = new Bitmap[numChunks];
-        if (numChunks == 1)
-        {
+        if (numChunks == 1) {
             // Skip the redraw if not needed
             splitBmps[0] = source;
         }
-        else
-        {
-            for (int i = 0; i < numChunks; ++i)
-            {
+        else {
+            for (int i = 0; i < numChunks; ++i) {
                 var startPixel = source.Width * i / numChunks;
                 var endPixel = source.Width * (i + 1) / numChunks;
                 Bitmap bmp = new Bitmap(endPixel - startPixel, source.Height);
-                using (Graphics g = Graphics.FromImage(bmp))
-                {
+                using (Graphics g = Graphics.FromImage(bmp)) {
                     g.DrawImage(source, 0, 0, new Rectangle(startPixel, 0, bmp.Width, bmp.Height), GraphicsUnit.Pixel);
                 }
                 splitBmps[i] = bmp;
@@ -247,12 +214,10 @@ public class VorbisSpectrogramGenerator : IDisposable
 
     [System.Runtime.InteropServices.DllImport("gdi32.dll")]
     public static extern bool DeleteObject(IntPtr hObject);
-    private ImageSource TransformBitmap(Bitmap bmp)
-    {
+    private ImageSource TransformBitmap(Bitmap bmp) {
         // https://stackoverflow.com/questions/1546091/wpf-createbitmapsourcefromhbitmap-memory-leak
         IntPtr hBitmap = bmp.GetHbitmap();
-        try
-        {
+        try {
             BitmapSource wpfBmp = System.Windows.Interop.Imaging.CreateBitmapSourceFromHBitmap(
                 hBitmap,
                 IntPtr.Zero,
@@ -263,8 +228,7 @@ public class VorbisSpectrogramGenerator : IDisposable
 
             TransformGroup transform = new();
             transform.Children.Add(new RotateTransform(-90));
-            if (drawFlipped)
-            {
+            if (drawFlipped) {
                 transform.Children.Add(new ScaleTransform(-1, 1));
             }
             var flipBmp = new TransformedBitmap(wpfBmp, transform);
@@ -274,8 +238,7 @@ public class VorbisSpectrogramGenerator : IDisposable
 
             return flipBmp;
         }
-        finally
-        {
+        finally {
             DeleteObject(hBitmap);
         }
     }
@@ -283,8 +246,7 @@ public class VorbisSpectrogramGenerator : IDisposable
     /// <summary>
     /// Checks if in-memory cache for the spectrogram chunks is still valid.
     /// </summary>
-    private bool CacheIsValid(int numChunks)
-    {
+    private bool CacheIsValid(int numChunks) {
         return cachedSpectrograms != null && cachedSpectrograms.Length == numChunks && cachedSpectrograms.All(img => img != null);
     }
 
@@ -293,28 +255,21 @@ public class VorbisSpectrogramGenerator : IDisposable
     /// In case the number of files is wrong, it clears them out for recreation.
     /// Return value indicates if the files were loaded.
     /// </summary>
-    private bool LoadMapCacheChunkFiles(int numChunks)
-    {
+    private bool LoadMapCacheChunkFiles(int numChunks) {
         var cacheDirectoryPath = Path.Combine(Path.GetDirectoryName(filePath), Program.CachePath);
-        if (cache && Directory.Exists(cacheDirectoryPath))
-        {
+        if (cache && Directory.Exists(cacheDirectoryPath)) {
             var bmpFiles = Directory.GetFiles(cacheDirectoryPath, cachedBmpSpectrogramSearchPattern);
-            if (bmpFiles.Length == numChunks)
-            {
-                for (int i = 0; i < numChunks; ++i)
-                {
-                    using (Bitmap bmp = (Bitmap)Bitmap.FromFile(bmpFiles[i]))
-                    {
+            if (bmpFiles.Length == numChunks) {
+                for (int i = 0; i < numChunks; ++i) {
+                    using (Bitmap bmp = (Bitmap)Bitmap.FromFile(bmpFiles[i])) {
                         cachedSpectrograms[i] = TransformBitmap(bmp);
                     }
                 }
                 return true;
             }
-            else
-            {
+            else {
                 // Clear the cache from old files - either not all chunks were saved correctly or number of chunks changed in the meantime.
-                foreach (var bmpFile in bmpFiles)
-                {
+                foreach (var bmpFile in bmpFiles) {
                     File.Delete(bmpFile);
                 }
             }
@@ -322,15 +277,13 @@ public class VorbisSpectrogramGenerator : IDisposable
         return false;
     }
 
-    private void RecreateTokens()
-    {
+    private void RecreateTokens() {
         var oldTokenSource = tokenSource;
         tokenSource = new CancellationTokenSource();
         oldTokenSource?.Dispose();
     }
 
-    public enum SpectrogramType
-    {
+    public enum SpectrogramType {
         Standard = 0,
         MelScale = 1,
         MaxScale = 2
@@ -339,8 +292,7 @@ public class VorbisSpectrogramGenerator : IDisposable
     /// <summary>
     /// Value defines multiplier for step size in the SpectrogramGenerator
     /// </summary>
-    public enum SpectrogramQuality
-    {
+    public enum SpectrogramQuality {
         Low = 4,
         Medium = 2,
         High = 1

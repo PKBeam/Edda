@@ -5,51 +5,38 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-public class UserSettingsManager
-{
+public class UserSettingsManager {
     List<string> fileLines;
     string filePath;
-    public UserSettingsManager(string file)
-    {
+    public UserSettingsManager(string file) {
         this.filePath = file;
-        try
-        {
+        try {
             fileLines = File.ReadAllLines(filePath).ToList();
         }
-        catch
-        {
+        catch {
             Clear();
         }
     }
-    public string GetValueForKey(string key)
-    {
-        foreach (var line in fileLines)
-        {
-            if (line.StartsWith(key))
-            {
+    public string GetValueForKey(string key) {
+        foreach (var line in fileLines) {
+            if (line.StartsWith(key)) {
                 return line.Split("=")[1];
             }
         }
         return null;
     }
-    public bool GetBoolForKey(string key)
-    {
-        foreach (var line in fileLines)
-        {
-            if (line.StartsWith(key))
-            {
+    public bool GetBoolForKey(string key) {
+        foreach (var line in fileLines) {
+            if (line.StartsWith(key)) {
                 return line.Split("=")[1] == "True";
             }
         }
         return false;
     }
-    public void SetValueForKey(string key, string value)
-    {
+    public void SetValueForKey(string key, string value) {
         string newLine = $"{key}={value}";
-        foreach (var line in fileLines)
-        {
-            if (line.StartsWith(key))
-            {
+        foreach (var line in fileLines) {
+            if (line.StartsWith(key)) {
                 int i = fileLines.IndexOf(line);
                 fileLines[i] = newLine;
                 return;
@@ -57,20 +44,16 @@ public class UserSettingsManager
         }
         fileLines.Add(newLine);
     }
-    public void SetValueForKey(string key, double value)
-    {
+    public void SetValueForKey(string key, double value) {
         SetValueForKey(key, value.ToString("0.##"));
     }
-    public void SetValueForKey(string key, bool value)
-    {
+    public void SetValueForKey(string key, bool value) {
         SetValueForKey(key, value.ToString());
     }
-    public void Write()
-    {
+    public void Write() {
         File.WriteAllLines(filePath, fileLines);
     }
-    public void Clear()
-    {
+    public void Clear() {
         fileLines = new();
     }
 }
