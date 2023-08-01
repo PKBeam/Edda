@@ -16,23 +16,19 @@ using System.Windows.Shapes;
 using Edda.Const;
 using NAudio.Gui;
 
-namespace Edda
-{
+namespace Edda {
     /// <summary>
     /// Interaction logic for StartWindow.xaml
     /// </summary>
-    public partial class StartWindow : Window
-    {
+    public partial class StartWindow : Window {
         RecentOpenedFolders RecentMaps = ((RagnarockEditor.App)Application.Current).RecentMaps;
 
         // these definitions are to apply Windows 11-style rounded corners
         // https://docs.microsoft.com/en-us/windows/apps/desktop/modernize/apply-rounded-corners
-        public enum DWMWINDOWATTRIBUTE
-        {
+        public enum DWMWINDOWATTRIBUTE {
             DWMWA_WINDOW_CORNER_PREFERENCE = 33
         }
-        public enum DWM_WINDOW_CORNER_PREFERENCE
-        {
+        public enum DWM_WINDOW_CORNER_PREFERENCE {
             DWMWCP_DEFAULT = 0,
             DWMWCP_DONOTROUND = 1,
             DWMWCP_ROUND = 2,
@@ -41,28 +37,24 @@ namespace Edda
         [DllImport("dwmapi.dll", CharSet = CharSet.Unicode, PreserveSig = false)]
         internal static extern void DwmSetWindowAttribute(IntPtr hwnd, DWMWINDOWATTRIBUTE attribute, ref DWM_WINDOW_CORNER_PREFERENCE pvAttribute, uint cbAttribute);
 
-        public StartWindow()
-        {
+        public StartWindow() {
             InitializeComponent();
             TxtVersionNumber.Text = $"version {Program.DisplayVersionString}";
             PopulateRecentlyOpenedMaps();
 
             // apply rounded corners
-            try
-            {
+            try {
                 IntPtr hWnd = new WindowInteropHelper(GetWindow(this)).EnsureHandle();
                 var attribute = DWMWINDOWATTRIBUTE.DWMWA_WINDOW_CORNER_PREFERENCE;
                 var preference = DWM_WINDOW_CORNER_PREFERENCE.DWMWCP_ROUND;
                 DwmSetWindowAttribute(hWnd, attribute, ref preference, sizeof(uint));
             }
-            catch
-            {
+            catch {
                 Console.WriteLine("INFO: Could not set window corner preferences.");
             }
         }
 
-        private void CreateRecentMapItem(string name, string path)
-        {
+        private void CreateRecentMapItem(string name, string path) {
             /* The XAML we're creating
                 < StackPanel Height = "30" Margin = "5" Orientation = "Horizontal" >
                     < Image Source = "/Resources/blankMap.png" />
@@ -90,8 +82,7 @@ namespace Edda
             tb1.FontWeight = FontWeights.Bold;
             tb1.FontFamily = new("Bahnschrift");
             tb1.Text = name;
-            if (string.IsNullOrWhiteSpace(name))
-            {
+            if (string.IsNullOrWhiteSpace(name)) {
                 tb1.FontStyle = FontStyles.Italic;
                 tb1.Text = "Untitled Map";
             }
@@ -109,16 +100,13 @@ namespace Edda
 
             ListViewItem item = new();
             item.Content = sp1;
-            item.MouseLeftButtonUp += new MouseButtonEventHandler((sender, e) =>
-            {
+            item.MouseLeftButtonUp += new MouseButtonEventHandler((sender, e) => {
                 item.IsSelected = false;
                 OpenMap(path);
             });
-            item.MouseRightButtonUp += new MouseButtonEventHandler((sender, e) =>
-            {
+            item.MouseRightButtonUp += new MouseButtonEventHandler((sender, e) => {
                 var res = MessageBox.Show("Are you sure you want to remove this map from the list of recently opened maps?", "Confirm Removal", MessageBoxButton.YesNoCancel, MessageBoxImage.Warning);
-                if (res == MessageBoxResult.Yes)
-                {
+                if (res == MessageBoxResult.Yes) {
                     ListViewRecentMaps.Items.Remove(item);
                     RecentMaps.RemoveRecentlyOpened(path);
                     RecentMaps.Write();
@@ -127,30 +115,24 @@ namespace Edda
             ListViewRecentMaps.Items.Add(item);
         }
 
-        private void PopulateRecentlyOpenedMaps()
-        {
+        private void PopulateRecentlyOpenedMaps() {
             ListViewRecentMaps.Items.Clear();
-            foreach (var recentMap in RecentMaps.GetRecentlyOpened())
-            {
+            foreach (var recentMap in RecentMaps.GetRecentlyOpened()) {
                 CreateRecentMapItem(recentMap.Item1, recentMap.Item2);
             }
         }
 
-        private void ButtonExit_Click(object sender, RoutedEventArgs e)
-        {
+        private void ButtonExit_Click(object sender, RoutedEventArgs e) {
             Environment.Exit(0);
         }
 
-        private void Window_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
-        {
+        private void Window_MouseLeftButtonDown(object sender, MouseButtonEventArgs e) {
             this.DragMove();
         }
 
-        private void ButtonNewMap_Click(object sender, RoutedEventArgs e)
-        {
+        private void ButtonNewMap_Click(object sender, RoutedEventArgs e) {
             string newMapFolder = Helper.ChooseNewMapFolder();
-            if (newMapFolder != null)
-            {
+            if (newMapFolder != null) {
                 MainWindow main = new();
                 this.Close();
                 // NOTE: the window must be shown first before any processing can be done
@@ -159,49 +141,40 @@ namespace Edda
             }
         }
 
-        private void ButtonImportMap_Click(object sender, RoutedEventArgs e)
-        {
+        private void ButtonImportMap_Click(object sender, RoutedEventArgs e) {
             string importMapFolder = Helper.ChooseNewMapFolder();
-            if (importMapFolder == null)
-            {
+            if (importMapFolder == null) {
                 return;
             }
             MainWindow main = new();
             this.Close();
             // NOTE: the window must be shown first before any processing can be done
             main.Show();
-            try
-            {
+            try {
                 main.InitImportMap(importMapFolder);
             }
-            catch (Exception ex)
-            {
+            catch (Exception ex) {
                 MessageBox.Show($"An error occured while importing the simfile:\n{ex.Message}.\n{ex.StackTrace}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
 
-        private void ButtonOpenMap_Click(object sender, RoutedEventArgs e)
-        {
+        private void ButtonOpenMap_Click(object sender, RoutedEventArgs e) {
             string mapFolder = Helper.ChooseOpenMapFolder();
             OpenMap(mapFolder);
         }
 
-        private void OpenMap(string folder, string mapName = null)
-        {
-            if (folder == null)
-            {
+        private void OpenMap(string folder, string mapName = null) {
+            if (folder == null) {
                 return;
             }
             MainWindow main = new();
             this.Close();
             // NOTE: the window must be shown first before any processing can be done
             main.Show();
-            try
-            {
+            try {
                 main.InitOpenMap(folder);
             }
-            catch (Exception ex)
-            {
+            catch (Exception ex) {
                 MessageBox.Show($"An error occured while opening the map:\n{ex.Message}.", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
 
                 RecentMaps.RemoveRecentlyOpened(folder);

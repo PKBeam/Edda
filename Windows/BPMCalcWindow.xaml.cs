@@ -13,28 +13,24 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Shapes;
 
-namespace Edda
-{
+namespace Edda {
     /// <summary>
     /// Interaction logic for BPMCalcWindow.xaml
     /// </summary>
-    public partial class BPMCalcWindow : Window
-    {
+    public partial class BPMCalcWindow : Window {
 
         Stopwatch stopwatch;
         List<long> intervalSamples;
         int numInputs = 0;
         long prevTime = 0;
 
-        public BPMCalcWindow()
-        {
+        public BPMCalcWindow() {
             InitializeComponent();
             stopwatch = new();
             intervalSamples = new();
         }
 
-        private void BtnReset_Click(object sender, RoutedEventArgs e)
-        {
+        private void BtnReset_Click(object sender, RoutedEventArgs e) {
             // reset variables
             lblAvgBPM.Content = 0;
             lblUnroundedAvgBPM.Content = "(0.00)";
@@ -47,15 +43,12 @@ namespace Edda
             stopwatch.Reset();
         }
 
-        private void Window_KeyDown(object sender, KeyEventArgs e)
-        {
+        private void Window_KeyDown(object sender, KeyEventArgs e) {
             // start timer
-            if (!stopwatch.IsRunning)
-            {
+            if (!stopwatch.IsRunning) {
                 stopwatch.Start();
             }
-            else
-            {
+            else {
 
                 // count an input
                 long now = stopwatch.ElapsedMilliseconds;
@@ -71,12 +64,10 @@ namespace Edda
                 CalculateBPM();
             }
         }
-        private void CalculateBPM()
-        {
+        private void CalculateBPM() {
             int numSamples = intervalSamples.Count;
 
-            if (numSamples == 0)
-            {
+            if (numSamples == 0) {
                 return;
             }
 

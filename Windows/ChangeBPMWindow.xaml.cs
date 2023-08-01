@@ -6,20 +6,17 @@ using System.Windows.Controls;
 using System.Windows.Input;
 using Edda.Const;
 
-namespace Edda
-{
+namespace Edda {
     /// <summary>
     /// Interaction logic for WindowChangeBPM.xaml
     /// </summary>
-    public partial class ChangeBPMWindow : Window
-    {
+    public partial class ChangeBPMWindow : Window {
 
         MainWindow caller;
         double globalBPM;
         List<BPMChange> BPMChanges;
 
-        public ChangeBPMWindow(MainWindow caller, List<BPMChange> BPMChanges)
-        {
+        public ChangeBPMWindow(MainWindow caller, List<BPMChange> BPMChanges) {
             InitializeComponent();
             this.caller = caller;
             this.globalBPM = caller.globalBPM;
@@ -30,68 +27,54 @@ namespace Edda
             //dataBPMChange.Items.SortDescriptions.Add(new SortDescription("Global Beat", ListSortDirection.Ascending));
         }
 
-        public void RefreshBPMChanges()
-        {
+        public void RefreshBPMChanges() {
             dataBPMChange.Items.Refresh();
         }
 
-        private void btnExit_Click(object sender, RoutedEventArgs e)
-        {
+        private void btnExit_Click(object sender, RoutedEventArgs e) {
             this.Close();
         }
 
-        private void dataBPMChange_CellEditEnding(object sender, DataGridCellEditEndingEventArgs e)
-        {
-            if (e.EditAction == DataGridEditAction.Cancel)
-            {
+        private void dataBPMChange_CellEditEnding(object sender, DataGridCellEditEndingEventArgs e) {
+            if (e.EditAction == DataGridEditAction.Cancel) {
                 return;
             }
             string col = e.Column.Header.ToString();
             string pendingEditText = ((TextBox)e.EditingElement).Text;
             // data validation
-            try
-            {
+            try {
                 double pendingEdit = Helper.DoubleParseInvariant(pendingEditText);
                 // global beat
-                if (col == dataBPMChange.Columns[0].Header.ToString())
-                {
-                    if (pendingEdit < 0)
-                    {
+                if (col == dataBPMChange.Columns[0].Header.ToString()) {
+                    if (pendingEdit < 0) {
                         throw new Exception("The beat must be a non-negative number.");
                     }
                     // BPM
                 }
-                else if (col == dataBPMChange.Columns[1].Header.ToString())
-                {
-                    if (pendingEdit <= 0)
-                    {
+                else if (col == dataBPMChange.Columns[1].Header.ToString()) {
+                    if (pendingEdit <= 0) {
                         throw new Exception("The BPM must be a positive number.");
                     }
                     // grid division
                 }
-                else if (col == dataBPMChange.Columns[2].Header.ToString())
-                {
-                    if ((int)pendingEdit != pendingEdit || !Helper.DoubleRangeCheck(pendingEdit, 1, Editor.GridDivisionMax))
-                    {
+                else if (col == dataBPMChange.Columns[2].Header.ToString()) {
+                    if ((int)pendingEdit != pendingEdit || !Helper.DoubleRangeCheck(pendingEdit, 1, Editor.GridDivisionMax)) {
                         throw new Exception($"The grid division amount must be an integer from 1 to {Editor.GridDivisionMax}.");
                     }
                 }
 
             }
-            catch (Exception ex)
-            {
+            catch (Exception ex) {
                 MessageBox.Show(ex.Message, "Error", MessageBoxButton.OK, MessageBoxImage.Error);
                 dataBPMChange.CancelEdit();
             }
         }
 
-        private void dataBPMChange_CurrentCellChanged(object sender, EventArgs e)
-        {
+        private void dataBPMChange_CurrentCellChanged(object sender, EventArgs e) {
             caller.DrawEditorGrid(false);
         }
 
-        private void dataBPMChange_RowEditEnding(object sender, DataGridRowEditEndingEventArgs e)
-        {
+        private void dataBPMChange_RowEditEnding(object sender, DataGridRowEditEndingEventArgs e) {
             // commit edit
             dataBPMChange.RowEditEnding -= dataBPMChange_RowEditEnding;
             dataBPMChange.CommitEdit();
@@ -105,16 +88,13 @@ namespace Edda
             dataBPMChange.ItemsSource = BPMChanges;
         }
 
-        private void dataBPMChange_AddingNewItem(object sender, AddingNewItemEventArgs e)
-        {
+        private void dataBPMChange_AddingNewItem(object sender, AddingNewItemEventArgs e) {
             e.NewItem = new BPMChange(Math.Round(caller.sliderSongProgress.Value / 60000 * globalBPM, 3), caller.globalBPM, caller.gridController.gridDivision);
             propagateBPMChanges();
         }
 
-        private void dataBPMChange_PreviewExecuted(object sender, ExecutedRoutedEventArgs e)
-        {
-            if (e.Command == DataGrid.DeleteCommand)
-            {
+        private void dataBPMChange_PreviewExecuted(object sender, ExecutedRoutedEventArgs e) {
+            if (e.Command == DataGrid.DeleteCommand) {
                 var selected = new List<BPMChange>(dataBPMChange.SelectedItems.Cast<BPMChange>());
                 dataBPMChange.ItemsSource = null;
                 selected.ForEach(bpmChange => BPMChanges.Remove(bpmChange));
@@ -125,11 +105,9 @@ namespace Edda
             }
         }
 
-        private void propagateBPMChanges()
-        {
+        private void propagateBPMChanges() {
             var mapDiff = caller.mapEditor.currentMapDifficulty;
-            if (mapDiff != null)
-            {
+            if (mapDiff != null) {
                 mapDiff.bpmChanges = new(BPMChanges);
                 mapDiff.MarkDirty();
             }
