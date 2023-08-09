@@ -24,16 +24,24 @@ namespace RagnarockEditor
 
             // for testing cultures
             //CultureInfo.CurrentCulture = CultureInfo.GetCultureInfoByIetfLanguageTag("fr-FR");
+        }
 
-            try {
-                if (UserSettings.GetValueForKey(UserSettingsKey.CheckForUpdates) == true.ToString()) {
+        protected override void OnStartup(StartupEventArgs e)
+        {
+            try
+            {
+                if (UserSettings.GetBoolForKey(UserSettingsKey.CheckForUpdates))
+                {
                     //#if !DEBUG
                     Helper.CheckForUpdates();
                     //#endif
                 }
-            } catch {
+            }
+            catch
+            {
                 Trace.WriteLine("INFO: Could not check for updates.");
             }
+            base.OnStartup(e);
         }
 
         public void SetDiscordRPC(bool enable) {
