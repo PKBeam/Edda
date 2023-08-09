@@ -384,7 +384,7 @@ namespace Edda {
         }
         private void BtnAddDifficulty_Click(object sender, RoutedEventArgs e) {
             PauseSong();
-            var res = MessageBox.Show("Copy over bookmarks and BPM changes from the currently selected map?", "Copy Existing Map Data?", MessageBoxButton.YesNo, MessageBoxImage.Question);
+            var res = MessageBox.Show(this, "Copy over bookmarks and BPM changes from the currently selected map?", "Copy Existing Map Data?", MessageBoxButton.YesNo, MessageBoxImage.Question);
             mapEditor.CreateDifficulty(res == MessageBoxResult.Yes);
             SwitchDifficultyMap(mapEditor.numDifficulties - 1);
             mapEditor.SortDifficulties();
@@ -392,7 +392,7 @@ namespace Edda {
             UpdateDifficultyButtons();
         }
         private void BtnDeleteDifficulty_Click(object sender, RoutedEventArgs e) {
-            var res = MessageBox.Show("Are you sure you want to delete this difficulty? This cannot be undone.", "Warning", MessageBoxButton.YesNo, MessageBoxImage.Warning);
+            var res = MessageBox.Show(this, "Are you sure you want to delete this difficulty? This cannot be undone.", "Warning", MessageBoxButton.YesNo, MessageBoxImage.Warning);
             if (res != MessageBoxResult.Yes) {
                 return;
             }
@@ -462,7 +462,7 @@ namespace Edda {
             double prevBPM = globalBPM;
             if (double.TryParse(txtSongBPM.Text, out BPM) && BPM > 0) {
                 if (BPM != prevBPM) {
-                    var result = MessageBox.Show("Would you like to convert all notes and markers so that they remain at the same time?", "", MessageBoxButton.YesNoCancel, MessageBoxImage.Question);
+                    var result = MessageBox.Show(this, "Would you like to convert all notes and markers so that they remain at the same time?", "", MessageBoxButton.YesNoCancel, MessageBoxImage.Question);
 
                     if (result == MessageBoxResult.Cancel) {
                         txtSongBPM.Text = prevBPM.ToString();
@@ -475,7 +475,7 @@ namespace Edda {
                     DrawEditorGrid();
                 }
             } else {
-                MessageBox.Show($"The BPM must be a positive number.", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                MessageBox.Show(this, $"The BPM must be a positive number.", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
                 BPM = prevBPM;
             }
             txtSongBPM.Text = BPM.ToString();
@@ -502,7 +502,7 @@ namespace Edda {
             if (double.TryParse(txtSongOffset.Text, out offset)) {
                 mapEditor.SetMapValue("_songTimeOffset", offset);
             } else {
-                MessageBox.Show($"The song offset must be numerical.", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                MessageBox.Show(this, $"The song offset must be numerical.", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
                 offset = prevOffset;
             }
             txtSongOffset.Text = offset.ToString();
@@ -545,7 +545,7 @@ namespace Edda {
                     UpdateDifficultyButtons();
                 }
             } else {
-                MessageBox.Show($"The difficulty level must be an integer between {Editor.Difficulty.LevelMin} and {Editor.Difficulty.LevelMax}.", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                MessageBox.Show(this, $"The difficulty level must be an integer between {Editor.Difficulty.LevelMin} and {Editor.Difficulty.LevelMax}.", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
                 level = prevLevel;
             }
             txtDifficultyNumber.Text = level.ToString();
@@ -561,7 +561,7 @@ namespace Edda {
             if (double.TryParse(txtNoteSpeed.Text, out speed) && speed > 0) {
                 mapEditor.SetMapValue("_noteJumpMovementSpeed", speed, RagnarockMapDifficulties.Current);
             } else {
-                MessageBox.Show($"The note speed must be a positive number.", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                MessageBox.Show(this, $"The note speed must be a positive number.", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
                 speed = prevSpeed;
             }
             txtNoteSpeed.Text = speed.ToString();
@@ -617,7 +617,7 @@ namespace Edda {
                     DrawEditorGrid();
                 }
             } else {
-                MessageBox.Show($"The grid spacing must be numerical.", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                MessageBox.Show(this, $"The grid spacing must be numerical.", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
                 spacing = prevSpacing;
             }
             txtGridSpacing.Text = spacing.ToString();
@@ -639,7 +639,7 @@ namespace Edda {
                     DrawEditorGrid(false);
                 }
             } else {
-                MessageBox.Show($"The grid division amount must be an integer from 1 to {Editor.GridDivisionMax}.", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                MessageBox.Show(this, $"The grid division amount must be an integer from 1 to {Editor.GridDivisionMax}.", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
                 div = prevDiv;
             }
             txtGridDivision.Text = div.ToString();

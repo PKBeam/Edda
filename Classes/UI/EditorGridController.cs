@@ -594,7 +594,7 @@ public class EditorGridController: IDisposable {
                 if (!(e.ChangedButton == MouseButton.Middle)) {
                     return;
                 }
-                var res = MessageBox.Show("Are you sure you want to delete this bookmark?", "Confirm Deletion", MessageBoxButton.YesNoCancel, MessageBoxImage.Warning);
+                var res = MessageBox.Show(parentWindow, "Are you sure you want to delete this bookmark?", "Confirm Deletion", MessageBoxButton.YesNoCancel, MessageBoxImage.Warning);
                 if (res == MessageBoxResult.Yes) {
                     mapEditor.RemoveBookmark(b);
                 }
@@ -746,7 +746,7 @@ public class EditorGridController: IDisposable {
                 if (!(e.ChangedButton == MouseButton.Middle)) {
                     return;
                 }
-                var res = MessageBox.Show("Are you sure you want to delete this timing change?", "Confirm Deletion", MessageBoxButton.YesNoCancel, MessageBoxImage.Warning);
+                var res = MessageBox.Show(parentWindow, "Are you sure you want to delete this timing change?", "Confirm Deletion", MessageBoxButton.YesNoCancel, MessageBoxImage.Warning);
                 if (res == MessageBoxResult.Yes) {
                     mapEditor.RemoveBPMChange(b);
                 }
@@ -1123,7 +1123,7 @@ public class EditorGridController: IDisposable {
             if (!(e.ChangedButton == MouseButton.Middle)) {
                 return;
             }
-            var res = MessageBox.Show("Are you sure you want to delete this bookmark?", "Confirm Deletion", MessageBoxButton.YesNoCancel, MessageBoxImage.Warning);
+            var res = MessageBox.Show(parentWindow, "Are you sure you want to delete this bookmark?", "Confirm Deletion", MessageBoxButton.YesNoCancel, MessageBoxImage.Warning);
             if (res == MessageBoxResult.Yes) {
                 mapEditor.RemoveBookmark(b);
             }
