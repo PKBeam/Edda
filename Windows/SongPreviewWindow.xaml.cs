@@ -63,7 +63,7 @@ namespace Edda
                 }
                 fadeInDur = temp;
             } else {
-                MessageBox.Show($"The duration must be a positive integer", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                MessageBox.Show(this, $"The duration must be a positive integer", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
             }
             UpdateTextFields();
         }
@@ -78,7 +78,7 @@ namespace Edda
                 }
                 fadeOutDur = temp;
             } else {
-                MessageBox.Show($"The duration must be a positive integer", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                MessageBox.Show(this, $"The duration must be a positive integer", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
             }
             UpdateTextFields();
         }
@@ -142,9 +142,9 @@ namespace Edda
                 int exitCode = Helper.FFmpeg(songFolder, $"-i \"{songURL}\" -y -ss 00:{startMin:D2}:{startSec:D2} -to 00:{endMin:D2}:{endSec:D2} -vn -af afade=t=out:st={TotalSec(endMin, endSec) - fadeOutDur}:d={fadeOutDur},afade=t=in:st={TotalSec(startMin, startSec)}:d={fadeInDur} \"{saveURL}\"");
                 btnGenerate.IsEnabled = true;
                 if (exitCode == 0) {
-                    MessageBox.Show($"Song preview created successfully.", "Success", MessageBoxButton.OK, MessageBoxImage.Information);
+                    MessageBox.Show(this, $"Song preview created successfully.", "Success", MessageBoxButton.OK, MessageBoxImage.Information);
                 } else {
-                    MessageBox.Show($"There was an issue creating song preview.", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                    MessageBox.Show(this, $"There was an issue creating song preview.", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
                 }
                 
             }
@@ -168,10 +168,10 @@ namespace Edda
             return TotalSec(endMin, endSec) - TotalSec(startMin, startSec) <= Audio.MaxPreviewLength;
         }
         private void ShowRangeError() {
-            MessageBox.Show($"The input must be an integer from 0 to 59.", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+            MessageBox.Show(this, $"The input must be an integer from 0 to 59.", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
         }
         private bool ShowDurationError() {
-            return MessageBox.Show($"The preview duration should be less than {Audio.MaxPreviewLength} seconds.\nContinue anyway?", "Warning", MessageBoxButton.YesNo, MessageBoxImage.Warning) == MessageBoxResult.Yes;
+            return MessageBox.Show(this, $"The preview duration should be less than {Audio.MaxPreviewLength} seconds.\nContinue anyway?", "Warning", MessageBoxButton.YesNo, MessageBoxImage.Warning) == MessageBoxResult.Yes;
         }
     }
 }

@@ -105,7 +105,7 @@ namespace Edda
                 OpenMap(path); 
             });
             item.MouseRightButtonUp += new MouseButtonEventHandler((sender, e) => { 
-                var res = MessageBox.Show("Are you sure you want to remove this map from the list of recently opened maps?", "Confirm Removal", MessageBoxButton.YesNoCancel, MessageBoxImage.Warning);
+                var res = MessageBox.Show(this, "Are you sure you want to remove this map from the list of recently opened maps?", "Confirm Removal", MessageBoxButton.YesNoCancel, MessageBoxImage.Warning);
                 if (res == MessageBoxResult.Yes) {
                     ListViewRecentMaps.Items.Remove(item);
                     RecentMaps.RemoveRecentlyOpened(path);
@@ -153,7 +153,7 @@ namespace Edda
             try {
                 main.InitImportMap(importMapFolder);
             } catch (Exception ex) {
-                MessageBox.Show($"An error occured while importing the simfile:\n{ex.Message}.\n{ex.StackTrace}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                MessageBox.Show(this, $"An error occured while importing the simfile:\n{ex.Message}.\n{ex.StackTrace}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
 
@@ -173,7 +173,7 @@ namespace Edda
             try {
                 main.InitOpenMap(folder);
             } catch (Exception ex) {
-                MessageBox.Show($"An error occured while opening the map:\n{ex.Message}.", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                MessageBox.Show(this, $"An error occured while opening the map:\n{ex.Message}.", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
                 
                 RecentMaps.RemoveRecentlyOpened(folder);
                 RecentMaps.Write();
