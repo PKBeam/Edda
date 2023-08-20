@@ -82,8 +82,7 @@ namespace Edda {
                 if (!string.IsNullOrEmpty(playbackDeviceID)) {
                     try {
                         device = deviceEnumerator.GetDevice(playbackDeviceID);
-                    }
-                    catch (Exception ex) {
+                    } catch (Exception ex) {
                         Trace.WriteLine($"WARNING: Couldn't get the playback device with ID {playbackDeviceID} due to an error:\n{ex.Message}.\n{ex.StackTrace}", "Warning");
                         playbackDeviceID = null;
                     }
@@ -92,8 +91,7 @@ namespace Edda {
                     try {
                         device = deviceEnumerator.GetDefaultAudioEndpoint(DataFlow.Render, Role.Multimedia);
                         playingOnDefaultDevice = true;
-                    }
-                    catch (Exception ex) {
+                    } catch (Exception ex) {
                         Trace.WriteLine($"WARNING: Couldn't get the default playback device due to an error:\n{ex.Message}.\n{ex.StackTrace}", "Warning");
                         defaultDeviceAvailable = false;
                     }
@@ -173,8 +171,7 @@ namespace Edda {
             autosaveTimer.Elapsed += (source, e) => {
                 try {
                     SaveBeatmap();
-                }
-                catch {
+                } catch {
                     Trace.WriteLine("INFO: Unable to autosave beatmap");
                 }
             };
@@ -283,8 +280,7 @@ namespace Edda {
             d.Title = "Select a simfile to import";
             if (d.ShowDialog() == true) {
                 file = d.FileName;
-            }
-            else {
+            } else {
                 return;
             }
 
@@ -358,8 +354,7 @@ namespace Edda {
 
             try {
                 InitImportMap(importMapFolder);
-            }
-            catch (Exception ex) {
+            } catch (Exception ex) {
                 MessageBox.Show($"An error occured while importing the simfile:\n{ex.Message}.\n{ex.StackTrace}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
@@ -384,8 +379,7 @@ namespace Edda {
 
                 InitOpenMap(openMapFolder);
 
-            }
-            catch (Exception ex) {
+            } catch (Exception ex) {
                 MessageBox.Show($"An error occured while opening the map:\n{ex.Message}.", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
                 // reload previous beatmap
                 if (mapIsLoaded) {
@@ -521,11 +515,9 @@ namespace Edda {
                 }
                 ZipFile.CreateFromDirectory(zipFolder, zipPath);
 
-            }
-            catch (Exception) {
+            } catch (Exception) {
                 MessageBox.Show($"An error occured while creating the zip file.", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
-            }
-            finally {
+            } finally {
                 if (Directory.Exists(zipFolder)) {
                     Directory.Delete(zipFolder, true);
                 }
@@ -647,8 +639,7 @@ namespace Edda {
                 borderLeftDock.Visibility = Visibility.Visible;
                 this.Width += borderLeftDock.ActualWidth;
                 this.MinWidth += borderLeftDock.MinWidth;
-            }
-            else {
+            } else {
                 this.Width -= borderLeftDock.ActualWidth;
                 this.MinWidth -= borderLeftDock.MinWidth;
                 borderLeftDock.Visibility = Visibility.Collapsed;
@@ -659,8 +650,7 @@ namespace Edda {
                 borderRightDock.Visibility = Visibility.Visible;
                 this.Width += borderRightDock.ActualWidth;
                 this.MinWidth += borderRightDock.MinWidth;
-            }
-            else {
+            } else {
                 this.Width -= borderRightDock.ActualWidth;
                 this.MinWidth -= borderRightDock.MinWidth;
                 borderRightDock.Visibility = Visibility.Collapsed;
@@ -690,15 +680,13 @@ namespace Edda {
 
             try {
                 double.Parse(userSettings.GetValueForKey(UserSettingsKey.DefaultNoteSpeed));
-            }
-            catch {
+            } catch {
                 userSettings.SetValueForKey(UserSettingsKey.DefaultNoteSpeed, DefaultUserSettings.DefaultNoteSpeed);
             }
 
             try {
                 int.Parse(userSettings.GetValueForKey(UserSettingsKey.EditorAudioLatency));
-            }
-            catch {
+            } catch {
                 userSettings.SetValueForKey(UserSettingsKey.EditorAudioLatency, DefaultUserSettings.AudioLatency);
             }
 
@@ -708,15 +696,13 @@ namespace Edda {
 
             try {
                 float.Parse(userSettings.GetValueForKey(UserSettingsKey.DefaultNoteVolume));
-            }
-            catch {
+            } catch {
                 userSettings.SetValueForKey(UserSettingsKey.DefaultNoteVolume, DefaultUserSettings.DefaultNoteVolume);
             }
 
             try {
                 float.Parse(userSettings.GetValueForKey(UserSettingsKey.DefaultSongVolume));
-            }
-            catch {
+            } catch {
                 userSettings.SetValueForKey(UserSettingsKey.DefaultSongVolume, DefaultUserSettings.DefaultSongVolume);
             }
 
@@ -746,8 +732,7 @@ namespace Edda {
 
             try {
                 int.Parse(userSettings.GetValueForKey(UserSettingsKey.SpectrogramFrequency));
-            }
-            catch {
+            } catch {
                 userSettings.SetValueForKey(UserSettingsKey.SpectrogramFrequency, DefaultUserSettings.SpectrogramFrequency);
             }
 
@@ -778,16 +763,14 @@ namespace Edda {
                 if (index == 1 && !Directory.Exists(gameInstallPath)) {
                     throw new Exception();
                 }
-            }
-            catch {
+            } catch {
                 userSettings.SetValueForKey(UserSettingsKey.MapSaveLocationIndex, DefaultUserSettings.MapSaveLocationIndex);
                 userSettings.SetValueForKey(UserSettingsKey.MapSaveLocationPath, DefaultUserSettings.MapSaveLocationPath);
             }
 
             try {
                 int.Parse(userSettings.GetValueForKey(UserSettingsKey.MapSaveLocationIndex));
-            }
-            catch {
+            } catch {
                 userSettings.SetValueForKey(UserSettingsKey.MapSaveLocationIndex, DefaultUserSettings.MapSaveLocationIndex);
             }
 
@@ -801,8 +784,7 @@ namespace Edda {
             gridController.showSpectrogram = showSpectrogram;
             if (showSpectrogram) {
                 gridSpectrogram.Visibility = Visibility.Visible;
-            }
-            else {
+            } else {
                 gridSpectrogram.Visibility = Visibility.Collapsed;
             }
 
@@ -810,8 +792,7 @@ namespace Edda {
             gridController.spectrogramCache = cacheSpectrogram;
             if (showSpectrogram && cacheSpectrogram) {
                 MenuItemClearCache.Visibility = Visibility.Visible;
-            }
-            else {
+            } else {
                 MenuItemClearCache.Visibility = Visibility.Collapsed;
             }
 
@@ -876,8 +857,7 @@ namespace Edda {
             var fileName = (string)mapEditor.GetMapValue("_coverImageFilename");
             if (fileName == "") {
                 ClearCoverImage();
-            }
-            else {
+            } else {
                 // Need to ignore cache, since we replace the contents of the cover.* file.
                 BitmapImage b = Helper.BitmapGenerator(new Uri(Path.Combine(mapEditor.mapFolder, fileName)), true);
                 imgCover.Source = b;
@@ -908,8 +888,7 @@ namespace Edda {
                 if (b.Name == ((Button)DifficultyChangePanel.Children[gridController.currentMapDifficultyIndex]).Name) {
                     b.IsHitTestVisible = false;
                     b.Background = (SolidColorBrush)new BrushConverter().ConvertFrom(Editor.Difficulty.SelectedColour);
-                }
-                else {
+                } else {
                     b.IsHitTestVisible = true;
                     b.Background = SystemColors.ControlBrush;
                 }
@@ -920,8 +899,7 @@ namespace Edda {
             for (int i = 0; i < 3; i++) {
                 try {
                     difficultyLabels[i].Content = mapEditor.GetMapValue("_difficultyRank", (RagnarockMapDifficulties)i);
-                }
-                catch {
+                } catch {
                     Trace.WriteLine($"INFO: difficulty index {i} not found");
                     difficultyLabels[i].Content = "";
                 }
@@ -987,8 +965,7 @@ namespace Edda {
             d.Filter = "OGG Vorbis (*.ogg)|*.ogg";
             if (d.ShowDialog() == true) {
                 return d.FileName;
-            }
-            else {
+            } else {
                 return null;
             }
         }
@@ -996,8 +973,7 @@ namespace Edda {
             VorbisWaveReader vorbisStream;
             try {
                 vorbisStream = new VorbisWaveReader(file);
-            }
-            catch (Exception) {
+            } catch (Exception) {
                 MessageBox.Show("The .ogg file is corrupted.", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
                 return false;
             }
@@ -1080,8 +1056,7 @@ namespace Edda {
 
                 // subscribe to playbackstopped
                 songPlayer.PlaybackStopped += (sender, args) => { PauseSong(); };
-            }
-            else {
+            } else {
                 songPlayer = null;
             }
         }
@@ -1110,8 +1085,7 @@ namespace Edda {
             // set seek position for song
             try {
                 songStream.CurrentTime = TimeSpan.FromMilliseconds(sliderSongProgress.Value);
-            }
-            catch (Exception ex) {
+            } catch (Exception ex) {
                 Trace.WriteLine($"WARNING: Could not seek correctly on song ({ex})");
                 songStream.CurrentTime = TimeSpan.Zero;
             }
@@ -1147,8 +1121,7 @@ namespace Edda {
             if (editorAudioLatency == 0 || songTempoStream.CurrentTime > new TimeSpan(0, 0, 0, 0, editorAudioLatency)) {
                 songTempoStream.CurrentTime = songTempoStream.CurrentTime - new TimeSpan(0, 0, 0, 0, editorAudioLatency);
                 songPlayer?.Play();
-            }
-            else {
+            } else {
                 songTempoStream.CurrentTime = new TimeSpan(0);
                 var oldSongPlaybackCancellationTokenSource = songPlaybackCancellationTokenSource;
                 songPlaybackCancellationTokenSource = new();
@@ -1297,8 +1270,7 @@ namespace Edda {
                     float.Parse(userSettings.GetValueForKey(UserSettingsKey.DefaultNoteVolume))
                 );
                 beatScanner?.SetAudioPlayer(metronome);
-            }
-            else {
+            } else {
                 metronome = null;
                 beatScanner?.SetAudioPlayer(null);
             }
@@ -1321,8 +1293,7 @@ namespace Edda {
                 );
                 drummer.ChangeVolume(sliderDrumVol.Value);
                 noteScanner?.SetAudioPlayer(drummer);
-            }
-            else {
+            } else {
                 drummer = null;
                 noteScanner?.SetAudioPlayer(null);
             }
@@ -1336,8 +1307,7 @@ namespace Edda {
             int dist;
             if (int.TryParse(strDist, out dist) && dist >= 0) {
                 mapEditor.SetMedalDistance((RagnarockScoreMedals)medal, dist, RagnarockMapDifficulties.Current);
-            }
-            else {
+            } else {
                 MessageBox.Show($"The distance must be a non-negative integer.", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
                 dist = prevDist;
             }
@@ -1360,8 +1330,7 @@ namespace Edda {
             if (enable) {
                 discordClient.Enable();
                 RefreshDiscordPresence();
-            }
-            else {
+            } else {
                 discordClient.Disable();
             }
         }
@@ -1386,8 +1355,7 @@ namespace Edda {
                 win.Topmost = true;
                 win.Owner = this;
                 win.Show();
-            }
-            else {
+            } else {
                 win.Focus();
             }
         }

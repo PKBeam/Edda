@@ -163,8 +163,7 @@ namespace Edda.Windows {
                 var unvariance = Helper.DoubleParseInvariant(constants[0].InnerText);
                 var unmean = Helper.DoubleParseInvariant(constants[1].InnerText);
                 return ((double)predictedResult.PredictedValue * unvariance) + unmean;
-            }
-            finally {
+            } finally {
                 CultureInfo.CurrentCulture = currentCulture;
                 reader.Close();
             }

@@ -47,8 +47,7 @@ namespace Edda {
             // start timer
             if (!stopwatch.IsRunning) {
                 stopwatch.Start();
-            }
-            else {
+            } else {
 
                 // count an input
                 long now = stopwatch.ElapsedMilliseconds;

@@ -61,8 +61,7 @@ namespace Edda {
                     temp = TotalSec(songEndMin, songEndSec);
                 }
                 fadeInDur = temp;
-            }
-            else {
+            } else {
                 MessageBox.Show($"The duration must be a positive integer", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
             }
             UpdateTextFields();
@@ -77,8 +76,7 @@ namespace Edda {
                     temp = TotalSec(songEndMin, songEndSec);
                 }
                 fadeOutDur = temp;
-            }
-            else {
+            } else {
                 MessageBox.Show($"The duration must be a positive integer", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
             }
             UpdateTextFields();
@@ -91,8 +89,7 @@ namespace Edda {
                     endMin = startMin;
                     endSec = startSec;
                 }
-            }
-            else {
+            } else {
                 ShowRangeError();
             }
             UpdateTextFields();
@@ -105,8 +102,7 @@ namespace Edda {
                     endMin = startMin;
                     endSec = startSec;
                 }
-            }
-            else {
+            } else {
                 ShowRangeError();
             }
             UpdateTextFields();
@@ -119,8 +115,7 @@ namespace Edda {
                     startMin = endMin;
                     startSec = endSec;
                 }
-            }
-            else {
+            } else {
                 ShowRangeError();
             }
 
@@ -134,8 +129,7 @@ namespace Edda {
                     startMin = endMin;
                     startSec = endSec;
                 }
-            }
-            else {
+            } else {
                 ShowRangeError();
             }
             UpdateTextFields();
@@ -148,8 +142,7 @@ namespace Edda {
                 btnGenerate.IsEnabled = true;
                 if (exitCode == 0) {
                     MessageBox.Show($"Song preview created successfully.", "Success", MessageBoxButton.OK, MessageBoxImage.Information);
-                }
-                else {
+                } else {
                     MessageBox.Show($"There was an issue creating song preview.", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
                 }
 

@@ -70,8 +70,7 @@ namespace Edda {
             if (double.TryParse(txtDefaultNoteSpeed.Text, out noteSpeed)) {
                 userSettings.SetValueForKey(UserSettingsKey.DefaultNoteSpeed, noteSpeed);
                 UpdateSettings();
-            }
-            else {
+            } else {
                 MessageBox.Show($"The note speed must be numerical.", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
                 noteSpeed = prevNoteSpeed;
             }
@@ -109,8 +108,7 @@ namespace Edda {
                 userSettings.SetValueForKey(UserSettingsKey.EditorAudioLatency, latency);
                 UpdateSettings();
                 caller.PauseSong();
-            }
-            else {
+            } else {
                 MessageBox.Show($"The latency must be numerical.", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
                 latency = prevLatency;
             }
@@ -180,8 +178,7 @@ namespace Edda {
             if (CheckShowSpectrogram.IsChecked ?? false) {
                 spectrogramOptionsLabel.Visibility = Visibility.Visible;
                 spectrogramOptions.Visibility = Visibility.Visible;
-            }
-            else {
+            } else {
                 spectrogramOptionsLabel.Visibility = Visibility.Collapsed;
                 spectrogramOptions.Visibility = Visibility.Collapsed;
             }
@@ -231,8 +228,7 @@ namespace Edda {
                     userSettings.SetValueForKey(UserSettingsKey.SpectrogramFrequency, frequency);
                     UpdateSettings();
                 }
-            }
-            else {
+            } else {
                 MessageBox.Show($"The frequency must be an integer between {Editor.Spectrogram.MinFreq} and {Editor.Spectrogram.MaxFreq}.", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
                 frequency = prevFrequency;
             }
@@ -297,8 +293,7 @@ namespace Edda {
                 if (gameInstall == null) {
                     comboMapSaveFolder.SelectedIndex = 0;
                     userSettings.SetValueForKey(UserSettingsKey.MapSaveLocationPath, DefaultUserSettings.MapSaveLocationPath);
-                }
-                else {
+                } else {
                     txtMapSaveFolderPath.Text = gameInstall;
                     userSettings.SetValueForKey(UserSettingsKey.MapSaveLocationPath, gameInstall);
                 }
@@ -322,8 +317,7 @@ namespace Edda {
             string gameInstall = PickGameFolder();
             if (gameInstall == null) {
                 return;
-            }
-            else {
+            } else {
                 userSettings.SetValueForKey(UserSettingsKey.MapSaveLocationPath, gameInstall);
             }
             UpdateSettings();
@@ -353,8 +347,7 @@ namespace Edda {
         private void ToggleMapPathVisibility() {
             if (comboMapSaveFolder.SelectedIndex == 0) {
                 txtMapSaveFolderPath.Visibility = Visibility.Collapsed;
-            }
-            else {
+            } else {
                 txtMapSaveFolderPath.Visibility = Visibility.Visible;
             }
         }
