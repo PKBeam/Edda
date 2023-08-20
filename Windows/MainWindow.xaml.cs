@@ -355,7 +355,7 @@ namespace Edda {
             try {
                 InitImportMap(importMapFolder);
             } catch (Exception ex) {
-                MessageBox.Show($"An error occured while importing the simfile:\n{ex.Message}.\n{ex.StackTrace}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                MessageBox.Show(this, $"An error occured while importing the simfile:\n{ex.Message}.\n{ex.StackTrace}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
         private void OpenMap() {
@@ -380,7 +380,7 @@ namespace Edda {
                 InitOpenMap(openMapFolder);
 
             } catch (Exception ex) {
-                MessageBox.Show($"An error occured while opening the map:\n{ex.Message}.", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                MessageBox.Show(this, $"An error occured while opening the map:\n{ex.Message}.", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
                 // reload previous beatmap
                 if (mapIsLoaded) {
                     mapEditor = oldMapEditor;
@@ -516,7 +516,7 @@ namespace Edda {
                 ZipFile.CreateFromDirectory(zipFolder, zipPath);
 
             } catch (Exception) {
-                MessageBox.Show($"An error occured while creating the zip file.", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                MessageBox.Show(this, $"An error occured while creating the zip file.", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
             } finally {
                 if (Directory.Exists(zipFolder)) {
                     Directory.Delete(zipFolder, true);
@@ -974,11 +974,11 @@ namespace Edda {
             try {
                 vorbisStream = new VorbisWaveReader(file);
             } catch (Exception) {
-                MessageBox.Show("The .ogg file is corrupted.", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                MessageBox.Show(this, "The .ogg file is corrupted.", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
                 return false;
             }
             if (vorbisStream.TotalTime.TotalHours >= 1) {
-                MessageBox.Show("Songs over 1 hour in duration are not supported.", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                MessageBox.Show(this, "Songs over 1 hour in duration are not supported.", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
                 return false;
             }
 
@@ -1308,7 +1308,7 @@ namespace Edda {
             if (int.TryParse(strDist, out dist) && dist >= 0) {
                 mapEditor.SetMedalDistance((RagnarockScoreMedals)medal, dist, RagnarockMapDifficulties.Current);
             } else {
-                MessageBox.Show($"The distance must be a non-negative integer.", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                MessageBox.Show(this, $"The distance must be a non-negative integer.", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
                 dist = prevDist;
             }
             return dist;
@@ -1320,7 +1320,7 @@ namespace Edda {
                 return true;
             }
             MessageBoxResult? res = null;
-            if (mapEditor.saveIsNeeded && (res = MessageBox.Show("There are some unsaved changes in the currently opened map. Do you want to save them?", "Warning", MessageBoxButton.YesNoCancel, MessageBoxImage.Warning)) == MessageBoxResult.Yes) {
+            if (mapEditor.saveIsNeeded && (res = MessageBox.Show(this, "There are some unsaved changes in the currently opened map. Do you want to save them?", "Warning", MessageBoxButton.YesNoCancel, MessageBoxImage.Warning)) == MessageBoxResult.Yes) {
                 BackupAndSaveBeatmap();
             }
             return !(res.HasValue && res.Value == MessageBoxResult.Cancel);

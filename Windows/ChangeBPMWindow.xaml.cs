@@ -62,7 +62,7 @@ namespace Edda {
                 }
 
             } catch (Exception ex) {
-                MessageBox.Show(ex.Message, "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                MessageBox.Show(this, ex.Message, "Error", MessageBoxButton.OK, MessageBoxImage.Error);
                 dataBPMChange.CancelEdit();
             }
         }

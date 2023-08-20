@@ -71,7 +71,7 @@ namespace Edda {
                 userSettings.SetValueForKey(UserSettingsKey.DefaultNoteSpeed, noteSpeed);
                 UpdateSettings();
             } else {
-                MessageBox.Show($"The note speed must be numerical.", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                MessageBox.Show(this, $"The note speed must be numerical.", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
                 noteSpeed = prevNoteSpeed;
             }
             txtAudioLatency.Text = noteSpeed.ToString();
@@ -109,7 +109,7 @@ namespace Edda {
                 UpdateSettings();
                 caller.PauseSong();
             } else {
-                MessageBox.Show($"The latency must be numerical.", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                MessageBox.Show(this, $"The latency must be numerical.", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
                 latency = prevLatency;
             }
             txtAudioLatency.Text = latency.ToString();
@@ -229,7 +229,7 @@ namespace Edda {
                     UpdateSettings();
                 }
             } else {
-                MessageBox.Show($"The frequency must be an integer between {Editor.Spectrogram.MinFreq} and {Editor.Spectrogram.MaxFreq}.", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                MessageBox.Show(this, $"The frequency must be an integer between {Editor.Spectrogram.MinFreq} and {Editor.Spectrogram.MaxFreq}.", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
                 frequency = prevFrequency;
             }
             txtSpectrogramFrequency.Text = frequency.ToString();
