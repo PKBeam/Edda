@@ -25,12 +25,9 @@ namespace RagnarockEditor {
             //CultureInfo.CurrentCulture = CultureInfo.GetCultureInfoByIetfLanguageTag("fr-FR");
         }
 
-        protected override void OnStartup(StartupEventArgs e)
-        {
-            try
-            {
-                if (UserSettings.GetBoolForKey(UserSettingsKey.CheckForUpdates))
-                {
+        protected override void OnStartup(StartupEventArgs e) {
+            try {
+                if (UserSettings.GetBoolForKey(UserSettingsKey.CheckForUpdates)) {
                     //#if !DEBUG
                     Helper.CheckForUpdates();
                     //#endif
@@ -45,8 +42,7 @@ namespace RagnarockEditor {
         public void SetDiscordRPC(bool enable) {
             if (enable) {
                 DiscordClient.Enable();
-            }
-            else {
+            } else {
                 DiscordClient.Disable();
             }
         }
