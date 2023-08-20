@@ -208,8 +208,7 @@ namespace Edda.Const {
             var userSettings = new UserSettingsManager(Program.SettingsFile);
             try {
                 return double.Parse(userSettings.GetValueForKey(Const.UserSettingsKey.DefaultNoteSpeed));
-            }
-            catch {
+            } catch {
                 return NoteJumpMovementSpeed;
             }
         }

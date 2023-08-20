@@ -575,8 +575,7 @@ public class EditorGridController : IDisposable {
             txtBlock.PreviewMouseLeftButtonDown += new MouseButtonEventHandler((src, e) => {
                 if (parentWindow.ctrlKeyDown) {
                     mapEditor.SelectNotesInBookmark(b);
-                }
-                else {
+                } else {
                     currentlyDraggingMarker = bookmarkCanvas;
                     currentlyDraggingBookmark = b;
                     currentlyDraggingBPMChange = null;
@@ -725,8 +724,7 @@ public class EditorGridController : IDisposable {
             bpmChangeFlagCanvas.PreviewMouseLeftButtonDown += new MouseButtonEventHandler((src, e) => {
                 if (parentWindow.ctrlKeyDown) {
                     mapEditor.SelectNotesInBPMChange(b);
-                }
-                else {
+                } else {
                     currentlyDraggingMarker = bpmChangeCanvas;
                     currentlyDraggingBPMChange = b;
                     currentlyDraggingBookmark = null;
@@ -873,8 +871,7 @@ public class EditorGridController : IDisposable {
         if (mouseOutOfBounds) {
             SetMouseoverLineVisibility(Visibility.Hidden);
             SetPreviewNoteVisibility(Visibility.Hidden);
-        }
-        else {
+        } else {
             SetMouseoverLineVisibility(Visibility.Visible);
 
 
@@ -882,8 +879,7 @@ public class EditorGridController : IDisposable {
             if (!isDragging) {
                 if (mouseGridCol < 0 || mouseGridCol > 3) {
                     SetPreviewNoteVisibility(Visibility.Hidden);
-                }
-                else {
+                } else {
                     SetPreviewNoteVisibility(Visibility.Visible);
                 }
             }
@@ -903,8 +899,7 @@ public class EditorGridController : IDisposable {
             MoveMarker(mousePos);
             parentWindow.Cursor = Cursors.Hand;
             // otherwise, update existing drag operations
-        }
-        else if (isDragging) {
+        } else if (isDragging) {
             UpdateDragSelection(mousePos);
         }
     }
@@ -919,11 +914,9 @@ public class EditorGridController : IDisposable {
                 markerPos.Y = scrollEditor.ActualHeight - unitHeight / 2;
             }
             FinaliseMarkerEdit(markerPos);
-        }
-        else if (isDragging) {
+        } else if (isDragging) {
             EndDragSelection(mousePos);
-        }
-        else if (!mouseOutOfBounds && EditorGrid.IsMouseCaptured && mouseGridCol >= 0 && mouseGridCol < 4) {
+        } else if (!mouseOutOfBounds && EditorGrid.IsMouseCaptured && mouseGridCol >= 0 && mouseGridCol < 4) {
 
             Note n = new Note(mouseBeat, mouseGridCol);
 
@@ -931,13 +924,11 @@ public class EditorGridController : IDisposable {
             if (mapEditor.currentMapDifficulty.notes.Contains(n)) {
                 if (parentWindow.shiftKeyDown) {
                     mapEditor.ToggleSelection(n);
-                }
-                else {
+                } else {
                     mapEditor.SelectNewNotes(n);
                 }
                 // otherwise create and add it
-            }
-            else {
+            } else {
                 mapEditor.AddNotes(n);
                 parentWindow.drummer?.Play(n.col);
             }
@@ -985,8 +976,7 @@ public class EditorGridController : IDisposable {
                 .Where(n => n.col >= Math.Max(startCol, 0) && n.col <= Math.Min(endCol, 3));
         if (parentWindow.shiftKeyDown) {
             mapEditor.SelectNotes(newSelection);
-        }
-        else {
+        } else {
             mapEditor.SelectNewNotes(newSelection);
         }
     }
@@ -998,8 +988,7 @@ public class EditorGridController : IDisposable {
     private void FinaliseMarkerEdit(Point mousePos) {
         if (currentlyDraggingBPMChange == null) {
             EditBookmark(BeatForPosition(mousePos.Y - markerDragOffset, parentWindow.shiftKeyDown));
-        }
-        else {
+        } else {
             mapEditor.RemoveBPMChange(currentlyDraggingBPMChange, false);
             currentlyDraggingBPMChange.globalBeat = BeatForPosition(mousePos.Y - markerDragOffset, parentWindow.shiftKeyDown);
             mapEditor.AddBPMChange(currentlyDraggingBPMChange);
@@ -1016,8 +1005,7 @@ public class EditorGridController : IDisposable {
         try {
             mouseBeatSnapped = BeatForPosition(mousePos.Y, true);
             mouseBeatUnsnapped = BeatForPosition(mousePos.Y, false);
-        }
-        catch {
+        } catch {
             mouseBeatSnapped = 0;
             mouseBeatUnsnapped = 0;
         }
@@ -1039,8 +1027,7 @@ public class EditorGridController : IDisposable {
             if (isMouseOnEditingGrid) {
                 beat = snapToGrid ? mouseBeatSnapped : mouseBeatUnsnapped;
                 // add bookmark on nav waveform
-            }
-            else if (lineSongMouseover.Opacity > 0 && parentWindow.songTotalTimeInSeconds.HasValue) {
+            } else if (lineSongMouseover.Opacity > 0 && parentWindow.songTotalTimeInSeconds.HasValue) {
                 beat = mapEditor.globalBPM * parentWindow.songTotalTimeInSeconds.Value / 60000 * (1 - lineSongMouseover.Y1 / borderNavWaveform.ActualHeight);
             }
         }
@@ -1085,8 +1072,7 @@ public class EditorGridController : IDisposable {
             if (Helper.DoubleApproxGreaterEqual(beat, bc.globalBeat)) {
                 recentBPMChange = bc.globalBeat;
                 recentBPM = bc.BPM;
-            }
-            else {
+            } else {
                 break;
             }
         }
@@ -1114,8 +1100,7 @@ public class EditorGridController : IDisposable {
         txtBlock.MouseLeftButtonUp += new MouseButtonEventHandler((src, e) => {
             if (parentWindow.ctrlKeyDown) {
                 mapEditor.SelectNotesInBookmark(b);
-            }
-            else {
+            } else {
                 parentWindow.songSeekPosition = b.beat / mapEditor.globalBPM * 60000;
                 parentWindow.navMouseDown = false;
             }
@@ -1162,17 +1147,13 @@ public class EditorGridController : IDisposable {
         int col = -1;
         if (0 <= subLength && subLength <= 4.5) {
             col = 0;
-        }
-        else if (4.5 <= subLength && subLength <= 8.5) {
+        } else if (4.5 <= subLength && subLength <= 8.5) {
             col = 1;
-        }
-        else if (8.5 <= subLength && subLength <= 12.5) {
+        } else if (8.5 <= subLength && subLength <= 12.5) {
             col = 2;
-        }
-        else if (12.5 <= subLength && subLength <= 17.0) {
+        } else if (12.5 <= subLength && subLength <= 17.0) {
             col = 3;
-        }
-        else if (17.0 < subLength) {
+        } else if (17.0 < subLength) {
             col = 4;
         }
         return col;

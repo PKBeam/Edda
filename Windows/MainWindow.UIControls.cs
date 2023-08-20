@@ -22,8 +22,7 @@ namespace Edda {
                     new StartWindow().Show();
                 }
                 discordClient.SetPresence();
-            }
-            else {
+            } else {
                 returnToStartMenuOnClose = false;
                 e.Cancel = true;
             }
@@ -336,8 +335,7 @@ namespace Edda {
                 int currentBeatDivision;
                 int.TryParse(txtGridDivision.Text, out currentBeatDivision);
                 txtGridDivision.Text = ((int)Helper.DoubleRangeTruncate(currentBeatDivision + delta, 1, Editor.GridDivisionMax)).ToString();
-            }
-            else {
+            } else {
                 var currentBpmChange = mapEditor.currentMapDifficulty.bpmChanges
                     .Where(bpmChange => bpmChange.globalBeat < pos)
                     .OrderByDescending(bpmChange => bpmChange.globalBeat)
@@ -370,8 +368,7 @@ namespace Edda {
                 win.Topmost = true;
                 win.Owner = this;
                 win.Show();
-            }
-            else {
+            } else {
                 win.Focus();
             }
         }
@@ -381,8 +378,7 @@ namespace Edda {
         private void BtnSongPlayer_Click(object sender, RoutedEventArgs e) {
             if (!songIsPlaying) {
                 PlaySong();
-            }
-            else {
+            } else {
                 PauseSong();
             }
         }
@@ -470,16 +466,14 @@ namespace Edda {
                     if (result == MessageBoxResult.Cancel) {
                         txtSongBPM.Text = prevBPM.ToString();
                         return;
-                    }
-                    else if (result == MessageBoxResult.Yes) {
+                    } else if (result == MessageBoxResult.Yes) {
                         mapEditor.RetimeNotesAndMarkers(BPM, prevBPM);
                     }
                     mapEditor.SetMapValue("_beatsPerMinute", BPM);
                     globalBPM = BPM;
                     DrawEditorGrid();
                 }
-            }
-            else {
+            } else {
                 MessageBox.Show($"The BPM must be a positive number.", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
                 BPM = prevBPM;
             }
@@ -497,8 +491,7 @@ namespace Edda {
                 win.Topmost = true;
                 win.Owner = this;
                 win.Show();
-            }
-            else {
+            } else {
                 win.Focus();
             }
         }
@@ -507,8 +500,7 @@ namespace Edda {
             double prevOffset = Helper.DoubleParseInvariant((string)mapEditor.GetMapValue("_songTimeOffset"));
             if (double.TryParse(txtSongOffset.Text, out offset)) {
                 mapEditor.SetMapValue("_songTimeOffset", offset);
-            }
-            else {
+            } else {
                 MessageBox.Show($"The song offset must be numerical.", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
                 offset = prevOffset;
             }
@@ -551,8 +543,7 @@ namespace Edda {
                     mapEditor.SortDifficulties();
                     UpdateDifficultyButtons();
                 }
-            }
-            else {
+            } else {
                 MessageBox.Show($"The difficulty level must be an integer between {Editor.Difficulty.LevelMin} and {Editor.Difficulty.LevelMax}.", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
                 level = prevLevel;
             }
@@ -568,8 +559,7 @@ namespace Edda {
             double speed;
             if (double.TryParse(txtNoteSpeed.Text, out speed) && speed > 0) {
                 mapEditor.SetMapValue("_noteJumpMovementSpeed", speed, RagnarockMapDifficulties.Current);
-            }
-            else {
+            } else {
                 MessageBox.Show($"The note speed must be a positive number.", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
                 speed = prevSpeed;
             }
@@ -625,8 +615,7 @@ namespace Edda {
                     mapEditor.SetMapValue("_editorGridSpacing", spacing, RagnarockMapDifficulties.Current, custom: true);
                     DrawEditorGrid();
                 }
-            }
-            else {
+            } else {
                 MessageBox.Show($"The grid spacing must be numerical.", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
                 spacing = prevSpacing;
             }
@@ -648,8 +637,7 @@ namespace Edda {
                     defaultGridDivision = div;
                     DrawEditorGrid(false);
                 }
-            }
-            else {
+            } else {
                 MessageBox.Show($"The grid division amount must be an integer from 1 to {Editor.GridDivisionMax}.", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
                 div = prevDiv;
             }
@@ -664,8 +652,7 @@ namespace Edda {
             if (checkWaveform.IsChecked == true) {
                 gridController.showWaveform = true;
                 gridController.DrawMainWaveform();
-            }
-            else {
+            } else {
                 gridController.showWaveform = false;
                 gridController.UndrawMainWaveform();
             }

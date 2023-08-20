@@ -12,8 +12,7 @@ public class UserSettingsManager {
         this.filePath = file;
         try {
             fileLines = File.ReadAllLines(filePath).ToList();
-        }
-        catch {
+        } catch {
             Clear();
         }
     }

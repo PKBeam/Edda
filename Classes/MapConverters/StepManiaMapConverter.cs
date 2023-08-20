@@ -267,8 +267,7 @@ public class StepManiaMapConverter : IMapConverter {
         }
         if (matchingTiming == null) {
             return null;
-        }
-        else {
+        } else {
             double deltaInSeconds = ConvertBeatsToSeconds(stepManiaBeat - matchingTiming.stepManiaBeat, matchingTiming.stepManiaBPM);
             double deltaInRagnarockGlobalBeats = ConvertSecondsToBeats(deltaInSeconds, matchingTiming.ragnarockGlobalBPM);
             return matchingTiming.ragnarockGlobalBeat + deltaInRagnarockGlobalBeats;

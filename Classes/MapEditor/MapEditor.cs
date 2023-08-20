@@ -77,8 +77,7 @@ public class MapEditor : IDisposable {
         get {
             if (currentDifficultyIndex < 0) {
                 return null;
-            }
-            else {
+            } else {
                 return difficultyMaps[currentDifficultyIndex];
             }
         }
@@ -193,8 +192,7 @@ public class MapEditor : IDisposable {
                     SwapDifficulties(i, i + 1);
                     if (currentDifficultyIndex == i) {
                         currentDifficultyIndex++;
-                    }
-                    else if (currentDifficultyIndex == i + 1) {
+                    } else if (currentDifficultyIndex == i + 1) {
                         currentDifficultyIndex--;
                     }
                     swap = true;
@@ -313,8 +311,7 @@ public class MapEditor : IDisposable {
     internal void RemoveNote(Note n) {
         if (currentMapDifficulty?.notes?.Contains(n) == true) {
             RemoveNotes(n);
-        }
-        else {
+        } else {
             UnselectAllNotes();
         }
     }
@@ -329,8 +326,7 @@ public class MapEditor : IDisposable {
     public void ToggleSelection(Note n) {
         if (currentMapDifficulty?.selectedNotes.Contains(n) ?? false) {
             UnselectNote(n);
-        }
-        else {
+        } else {
             SelectNotes(n);
         }
     }
@@ -438,8 +434,7 @@ public class MapEditor : IDisposable {
         foreach (var edit in e.items) {
             if (edit.isAdd) {
                 AddNotes(edit.item, false);
-            }
-            else {
+            } else {
                 RemoveNotes(edit.item, false);
             }
             UnselectAllNotes();
@@ -527,12 +522,10 @@ public class MapEditor : IDisposable {
             int indx = MapDifficultyIndex(difficulty);
             if (custom) {
                 result = beatMap.GetCustomValueForDifficultyMap(indx, key);
-            }
-            else {
+            } else {
                 result = beatMap.GetValueForDifficultyMap(indx, key);
             }
-        }
-        else {
+        } else {
             result = beatMap.GetValue(key);
         }
         return result;
@@ -543,12 +536,10 @@ public class MapEditor : IDisposable {
             difficultyMaps[indx]?.MarkDirty();
             if (custom) {
                 beatMap.SetCustomValueForDifficultyMap(indx, key, value);
-            }
-            else {
+            } else {
                 beatMap.SetValueForDifficultyMap(indx, key, value);
             }
-        }
-        else {
+        } else {
             needsSave = true;
             beatMap.SetValue(key, value);
         }
@@ -590,8 +581,7 @@ public class MapEditor : IDisposable {
 
         if (parent.shiftKeyDown) {
             ToggleSelection(notes);
-        }
-        else {
+        } else {
             SelectNewNotes(notes);
         }
     }
@@ -609,8 +599,7 @@ public class MapEditor : IDisposable {
 
         if (parent.shiftKeyDown) {
             ToggleSelection(notes);
-        }
-        else {
+        } else {
             SelectNewNotes(notes);
         }
     }

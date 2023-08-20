@@ -84,15 +84,13 @@ public class VorbisSpectrogramGenerator : IDisposable {
                 if (LoadMapCacheChunkFiles(numChunks)) {
                     return cachedSpectrograms;
                 }
-            }
-            catch (Exception ex) {
+            } catch (Exception ex) {
                 Trace.WriteLine(ex);
             }
             // fallback to generating BMPs if needed
             try {
                 cachedSpectrograms = _Draw(numChunks, tokenSource.Token);
-            }
-            catch (Exception ex) {
+            } catch (Exception ex) {
                 isDrawing = false;
                 Trace.WriteLine(ex);
             }
@@ -167,8 +165,7 @@ public class VorbisSpectrogramGenerator : IDisposable {
                 var cachedBmpSpectrogramPath = Path.Combine(Path.GetDirectoryName(filePath), Program.CachePath, cachedBmpSpectrogramSearchPattern.Replace("*", String.Format("{0:000}", i)));
                 try {
                     splitBmps[i].Save(cachedBmpSpectrogramPath, ImageFormat.Png);
-                }
-                catch (ExternalException ex) {
+                } catch (ExternalException ex) {
                     Trace.WriteLine($"WARNING: Exception when saving spectrogram BMP: ({ex})");
                     File.Delete(cachedBmpSpectrogramPath);
                     // Tried putting up a message, but it's pretty annoying - pops up multiple times.
@@ -197,8 +194,7 @@ public class VorbisSpectrogramGenerator : IDisposable {
         if (numChunks == 1) {
             // Skip the redraw if not needed
             splitBmps[0] = source;
-        }
-        else {
+        } else {
             for (int i = 0; i < numChunks; ++i) {
                 var startPixel = source.Width * i / numChunks;
                 var endPixel = source.Width * (i + 1) / numChunks;
@@ -237,8 +233,7 @@ public class VorbisSpectrogramGenerator : IDisposable {
             flipBmp.Freeze();
 
             return flipBmp;
-        }
-        finally {
+        } finally {
             DeleteObject(hBitmap);
         }
     }
@@ -266,8 +261,7 @@ public class VorbisSpectrogramGenerator : IDisposable {
                     }
                 }
                 return true;
-            }
-            else {
+            } else {
                 // Clear the cache from old files - either not all chunks were saved correctly or number of chunks changed in the meantime.
                 foreach (var bmpFile in bmpFiles) {
                     File.Delete(bmpFile);

@@ -41,8 +41,7 @@ public class VorbisWaveformGenerator : IDisposable {
         ImageSource b = null;
         try {
             b = _Draw(height, width, tokenSource.Token);
-        }
-        catch (Exception ex) {
+        } catch (Exception ex) {
             isDrawing = false;
             Trace.WriteLine(ex);
         }

@@ -50,21 +50,18 @@ namespace Edda {
                         throw new Exception("The beat must be a non-negative number.");
                     }
                     // BPM
-                }
-                else if (col == dataBPMChange.Columns[1].Header.ToString()) {
+                } else if (col == dataBPMChange.Columns[1].Header.ToString()) {
                     if (pendingEdit <= 0) {
                         throw new Exception("The BPM must be a positive number.");
                     }
                     // grid division
-                }
-                else if (col == dataBPMChange.Columns[2].Header.ToString()) {
+                } else if (col == dataBPMChange.Columns[2].Header.ToString()) {
                     if ((int)pendingEdit != pendingEdit || !Helper.DoubleRangeCheck(pendingEdit, 1, Editor.GridDivisionMax)) {
                         throw new Exception($"The grid division amount must be an integer from 1 to {Editor.GridDivisionMax}.");
                     }
                 }
 
-            }
-            catch (Exception ex) {
+            } catch (Exception ex) {
                 MessageBox.Show(ex.Message, "Error", MessageBoxButton.OK, MessageBoxImage.Error);
                 dataBPMChange.CancelEdit();
             }

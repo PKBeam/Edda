@@ -75,8 +75,7 @@ namespace Edda {
                 if (mapIsLoaded) {
                     DrawEditorGrid();
                 }
-            }
-            else if (mapIsLoaded) {
+            } else if (mapIsLoaded) {
                 gridController.DrawScrollingWaveforms();
             }
         }
@@ -90,8 +89,7 @@ namespace Edda {
             if (e.ExtentHeightChange != 0) {
                 scrollEditor.ScrollToVerticalOffset((1 - prevScrollPercent) * scrollEditor.ScrollableHeight);
                 //Console.Write($"time: {txtSongPosition.Text} curr: {scrollEditor.VerticalOffset} max: {scrollEditor.ScrollableHeight} change: {e.ExtentHeightChange}\n");
-            }
-            else if (range != 0) {
+            } else if (range != 0) {
                 prevScrollPercent = (1 - curr / range);
             }
 

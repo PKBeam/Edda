@@ -14,8 +14,7 @@ public class RecentOpenedFolders {
         this.filePath = file;
         try {
             fileLines = File.ReadAllLines(filePath).ToList();
-        }
-        catch {
+        } catch {
             Clear();
         }
         this.historySize = historySize;

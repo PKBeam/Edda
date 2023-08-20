@@ -53,8 +53,7 @@ public class ParallelAudioPlayer : IDisposable {
                 if (basePath == "bassdrum") {
                     mono.LeftVolume = 1.0f;
                     mono.RightVolume = 0.0f;
-                }
-                else {
+                } else {
                     mono.LeftVolume = 0.5f;
                     mono.RightVolume = 0.5f;
                 }
@@ -62,8 +61,7 @@ public class ParallelAudioPlayer : IDisposable {
                 var panProv = new PanningSampleProvider(mono);
                 panProv.Pan = i % numChannels * 2 * maxPan / (numChannels - 1) - maxPan;
                 notePlayers[i].Init(panProv);
-            }
-            else {
+            } else {
                 notePlayers[i].Init(noteStreams[i]);
             }
         }

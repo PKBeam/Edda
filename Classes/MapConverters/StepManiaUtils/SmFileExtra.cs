@@ -66,8 +66,7 @@ namespace StepmaniaUtils {
                         }
 
                         ChartMetadata.Add(stepData);
-                    }
-                    else {
+                    } else {
                         var value = reader.ReadTagValue();
 
                         if (!_attributes.ContainsKey(tag)) {

@@ -84,8 +84,7 @@ public class Helper {
         var indx = (x.Count - 1) * q;
         if ((int)indx == indx) {
             return x[(int)indx];
-        }
-        else {
+        } else {
             var i = (int)Math.Floor(indx);
             var j = (int)Math.Ceiling(indx);
             return x[i] + (x[j] - x[i]) * q;
@@ -202,8 +201,7 @@ public class Helper {
 
         try {
             File.Delete(path);
-        }
-        catch (Exception e) {
+        } catch (Exception e) {
             Trace.WriteLine($"WARNING: Failed to delete {path}: ({e})");
         }
 
@@ -288,8 +286,7 @@ public class Helper {
         if (numerifyVersionString(newestVersion) > numerifyVersionString(currentVersion)) {
             MessageBox.Show($"A new release of Edda is available.\n\nNewest version: {newestVersion}\nCurrent version: {currentVersion}", "New release available", MessageBoxButton.OK, MessageBoxImage.Information);
             return true;
-        }
-        else {
+        } else {
             return false;
         }
     }

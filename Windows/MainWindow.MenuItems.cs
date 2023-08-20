@@ -158,8 +158,7 @@ namespace Edda {
                 if (!Helper.CheckForUpdates()) {
                     MessageBox.Show($"You are already using the latest version of Edda.", "No updates found", MessageBoxButton.OK, MessageBoxImage.Information);
                 }
-            }
-            catch {
+            } catch {
                 MessageBox.Show($"Could not check for updates.", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }

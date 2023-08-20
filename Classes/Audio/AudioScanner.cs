@@ -105,8 +105,7 @@ public class AudioScanner : IDisposable {
         while (currentTime - noteTime >= Audio.NoteDetectionDelta && scanIndex < notes.Count - 1) {
             if (parallelAudioPlayer?.Play(notes[scanIndex].col) == false) {
                 Helper.ThreadedPrint("WARNING: Scanner skipped a note that was already late");
-            }
-            else {
+            } else {
                 Helper.ThreadedPrint(
                     $"WARNING: Scanner played audio late (Delta: {Math.Round(currentTime - noteTime, 2)})"
                 );
