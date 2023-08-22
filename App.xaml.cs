@@ -1,9 +1,8 @@
-﻿using System.Diagnostics;
+﻿using Edda.Const;
+using System.Diagnostics;
 using System.Windows;
-using Edda.Const;
 
-namespace RagnarockEditor
-{
+namespace RagnarockEditor {
     /// <summary>
     /// Interaction logic for App.xaml
     /// </summary>
@@ -26,19 +25,15 @@ namespace RagnarockEditor
             //CultureInfo.CurrentCulture = CultureInfo.GetCultureInfoByIetfLanguageTag("fr-FR");
         }
 
-        protected override void OnStartup(StartupEventArgs e)
-        {
-            try
-            {
-                if (UserSettings.GetBoolForKey(UserSettingsKey.CheckForUpdates))
-                {
+        protected override void OnStartup(StartupEventArgs e) {
+            try {
+                if (UserSettings.GetBoolForKey(UserSettingsKey.CheckForUpdates)) {
                     //#if !DEBUG
                     Helper.CheckForUpdates();
                     //#endif
                 }
-            }
-            catch
-            {
+            } catch {
+
                 Trace.WriteLine("INFO: Could not check for updates.");
             }
             base.OnStartup(e);

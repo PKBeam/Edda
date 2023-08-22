@@ -1,12 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Windows.Media;
 using System.IO;
+using System.Windows.Media;
 
 namespace Edda.Const {
 
-    using MediaColor = Color;
     using DrawingColor = System.Drawing.Color;
+    using MediaColor = Color;
     public static class Program {
 
         public const string Name = "Edda";
@@ -39,8 +39,7 @@ namespace Edda.Const {
         public const int MaxBackups = 10;
 
     }
-    public static class DefaultUserSettings
-    {
+    public static class DefaultUserSettings {
         public const bool EnableSpectrogram = true;
         public const int DefaultNoteSpeed = 15;
         public const int AudioLatency = -20; // ms
@@ -84,8 +83,7 @@ namespace Edda.Const {
         public const string MapSaveLocationIndex = "mapSaveLocationIndex";
         public const string MapSaveLocationPath = "mapSaveLocationPath";
     }
-    public static class Editor
-    {
+    public static class Editor {
         // Grid drawing
         public const double DefaultGridSpacing = 2;
         public const double DefaultGridDivision = 4;
@@ -109,8 +107,7 @@ namespace Edda.Const {
         public const int AutosaveInterval = 30; // seconds
 
         // Difficulty
-        public static class Difficulty
-        {
+        public static class Difficulty {
             public static string SelectedColour => Colors.LightSkyBlue.ToString();
             public const int LevelMin = 1;
             public const int LevelMax = 99;

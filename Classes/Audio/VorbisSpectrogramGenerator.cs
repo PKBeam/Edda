@@ -1,18 +1,18 @@
-﻿using NAudio.Vorbis;
+﻿using Edda.Const;
+using NAudio.Vorbis;
+using Spectrogram;
+using System;
+using System.Diagnostics;
+using System.Drawing;
+using System.Drawing.Imaging;
+using System.IO;
 using System.Linq;
+using System.Runtime.InteropServices;
+using System.Threading;
 using System.Windows;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
-using System.Diagnostics;
-using System;
-using System.IO;
-using System.Threading;
-using Edda.Const;
-using Spectrogram;
 using DrawingColor = System.Drawing.Color;
-using System.Drawing;
-using System.Drawing.Imaging;
-using System.Runtime.InteropServices;
 
 public class VorbisSpectrogramGenerator : IDisposable {
 
@@ -35,8 +35,7 @@ public class VorbisSpectrogramGenerator : IDisposable {
         InitSettings(cache, type, quality, maxFreq, colormap, drawFlipped);
     }
 
-    public void Dispose()
-    {
+    public void Dispose() {
         tokenSource?.Cancel();
         tokenSource = null;
         cachedSpectrograms = null;
@@ -108,12 +107,11 @@ public class VorbisSpectrogramGenerator : IDisposable {
         var numSamples = reader.Length / bytesPerSample;
 
         // We bail if we know that resulting BMPs would be too large to save anyway
-        if (numSamples > numChunks * Editor.Spectrogram.MaxSampleSteps * Editor.Spectrogram.StepSize * (int)quality)
-        {
+        if (numSamples > numChunks * Editor.Spectrogram.MaxSampleSteps * Editor.Spectrogram.StepSize * (int)quality) {
             isDrawing = false;
             return null;
         }
-        
+
         var audioBuffer = new float[numSamples];
         reader.Read(audioBuffer, 0, (int)numSamples);
         reader.Dispose();
@@ -127,7 +125,7 @@ public class VorbisSpectrogramGenerator : IDisposable {
         }
 
         var fftSize = (int)Math.Pow(2, Editor.Spectrogram.FftSizeExp);
-        var sg = new SpectrogramGenerator(sampleRate, fftSize: fftSize, stepSize: Editor.Spectrogram.StepSize * (int) quality, maxFreq: maxFreq);
+        var sg = new SpectrogramGenerator(sampleRate, fftSize: fftSize, stepSize: Editor.Spectrogram.StepSize * (int)quality, maxFreq: maxFreq);
         sg.Colormap = Colormap.GetColormap(colormap);
         sg.Add(audioBufferDouble);
 
@@ -199,7 +197,7 @@ public class VorbisSpectrogramGenerator : IDisposable {
         } else {
             for (int i = 0; i < numChunks; ++i) {
                 var startPixel = source.Width * i / numChunks;
-                var endPixel = source.Width * (i+1) / numChunks;
+                var endPixel = source.Width * (i + 1) / numChunks;
                 Bitmap bmp = new Bitmap(endPixel - startPixel, source.Height);
                 using (Graphics g = Graphics.FromImage(bmp)) {
                     g.DrawImage(source, 0, 0, new Rectangle(startPixel, 0, bmp.Width, bmp.Height), GraphicsUnit.Pixel);
@@ -258,7 +256,7 @@ public class VorbisSpectrogramGenerator : IDisposable {
             var bmpFiles = Directory.GetFiles(cacheDirectoryPath, cachedBmpSpectrogramSearchPattern);
             if (bmpFiles.Length == numChunks) {
                 for (int i = 0; i < numChunks; ++i) {
-                    using (Bitmap bmp = (Bitmap) Bitmap.FromFile(bmpFiles[i])) {
+                    using (Bitmap bmp = (Bitmap)Bitmap.FromFile(bmpFiles[i])) {
                         cachedSpectrograms[i] = TransformBitmap(bmp);
                     }
                 }
@@ -272,7 +270,7 @@ public class VorbisSpectrogramGenerator : IDisposable {
         }
         return false;
     }
-    
+
     private void RecreateTokens() {
         var oldTokenSource = tokenSource;
         tokenSource = new CancellationTokenSource();

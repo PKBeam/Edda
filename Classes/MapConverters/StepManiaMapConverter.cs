@@ -1,12 +1,12 @@
+using Edda.Const;
+using StepmaniaUtils;
+using StepmaniaUtils.Enums;
+using StepmaniaUtils.StepData;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
-using Edda.Const;
-using StepmaniaUtils;
-using StepmaniaUtils.Enums;
-using StepmaniaUtils.StepData;
 
 /// <summary>
 /// Converts .sm or .ssc files into Ragnarock beat maps.
@@ -14,12 +14,10 @@ using StepmaniaUtils.StepData;
 /// https://github.com/stepmania/stepmania/wiki/ssc
 /// https://github.com/StefanoFiumara/stepmania-utils
 /// </summary>
-public class StepManiaMapConverter : IMapConverter
-{
+public class StepManiaMapConverter : IMapConverter {
     private List<TimingMetadata> timingMetadatas;
 
-    public void Convert(string file, RagnarockMap beatmap)
-    {
+    public void Convert(string file, RagnarockMap beatmap) {
         // StepmaniaUtils doesn't parse note data we'll need in their SmFile implementation, so we have our own.
         SmFileExtra smFile = new SmFileExtra(file);
 
@@ -83,16 +81,13 @@ public class StepManiaMapConverter : IMapConverter
     /// METER - difficulty rating<br/>
     /// RADARVALUES - not supported in RagnarockMap currently
     /// </summary>
-    private void ParseCharts(RagnarockMap beatmap, SmFileExtra smFile, List<BPMChange> convertedBPMs)
-    {
+    private void ParseCharts(RagnarockMap beatmap, SmFileExtra smFile, List<BPMChange> convertedBPMs) {
         int difficultyIndex = 0;
         foreach (StepmaniaUtils.StepData.StepMetadataExtra steps in
             Enum.GetValues<SongDifficulty>()
                 .Select(diff => smFile.ChartMetadata.GetSteps(PlayStyle.Single, diff))
-                .Where(steps => steps != null).TakeLast(3))
-        {
-            while (difficultyIndex >= beatmap.numDifficulties)
-            {
+                .Where(steps => steps != null).TakeLast(3)) {
+            while (difficultyIndex >= beatmap.numDifficulties) {
                 beatmap.AddMap();
             }
             // Set difficulty rank
@@ -116,11 +111,9 @@ public class StepManiaMapConverter : IMapConverter
     /// 32 lines in a measure - each line represents 1/8th of a beat (32 / 4 = 8 lines per beat)
     /// Each character in a line is '1' or '0', marking if there is a note on the specific column or not.
     /// </summary>
-    private List<Note> ParseNotes(StepMetadataExtra steps)
-    {
+    private List<Note> ParseNotes(StepMetadataExtra steps) {
         List<Note> notes = new List<Note>();
-        foreach (var (measure, measureIndex) in steps.Measures.Select((measure, index) => (measure, index)))
-        {
+        foreach (var (measure, measureIndex) in steps.Measures.Select((measure, index) => (measure, index))) {
             double beatDivision = measure.Count() / 4;
             ParseMeasureLines(notes, measure, measureIndex, beatDivision);
         }
@@ -128,19 +121,14 @@ public class StepManiaMapConverter : IMapConverter
         return notes;
     }
 
-    private void ParseMeasureLines(List<Note> notes, IEnumerable<string> measure, int measureIndex, double beatDivision)
-    {
-        foreach (var (line, lineIndex) in measure.Select((line, index) => (line, index)))
-        {
+    private void ParseMeasureLines(List<Note> notes, IEnumerable<string> measure, int measureIndex, double beatDivision) {
+        foreach (var (line, lineIndex) in measure.Select((line, index) => (line, index))) {
             double? beat = ConvertFromStepManiaBeatToRagnarockBeat((4.0 * measureIndex) + (lineIndex / beatDivision));
-            if (!beat.HasValue)
-            {
+            if (!beat.HasValue) {
                 continue;
             }
-            for (int i = 0; i < line.Length; ++i)
-            {
-                if (line[i] == '1')
-                {
+            for (int i = 0; i < line.Length; ++i) {
+                if (line[i] == '1') {
                     notes.Add(new Note(beat.Value, i));
                 }
             }
@@ -151,11 +139,9 @@ public class StepManiaMapConverter : IMapConverter
     /// CREDIT - it's also specified on each Chart, but RagnarockMap only supports one value for the map as a whole.
     /// If it's not specified on the simfile level, author name of the highest charted difficulty is used instead.
     /// </summary>
-    private void ParseAuthor(RagnarockMap beatmap, SmFileExtra smFile)
-    {
+    private void ParseAuthor(RagnarockMap beatmap, SmFileExtra smFile) {
         String levelAuthorName = smFile[SmFileAttribute.CREDIT];
-        if (levelAuthorName == string.Empty)
-        {
+        if (levelAuthorName == string.Empty) {
             SongDifficulty highestDiff = smFile.ChartMetadata.GetHighestChartedDifficulty(PlayStyle.Single);
             levelAuthorName = smFile.ChartMetadata.GetSteps(PlayStyle.Single, highestDiff).ChartAuthor;
         }
@@ -166,15 +152,12 @@ public class StepManiaMapConverter : IMapConverter
     /// MUSIC - copy as song.ogg into the beatmap folder.
     /// .sm and .ssc also support .mp3 - in this case we skip copying it over
     /// </summary>
-    private void ParseSong(RagnarockMap beatmap, SmFileExtra smFile)
-    {
+    private void ParseSong(RagnarockMap beatmap, SmFileExtra smFile) {
         String songFilename = smFile[SmFileAttribute.MUSIC];
         string songURL = beatmap.PathOf(BeatmapDefaults.SongFilename);
-        if (songFilename != string.Empty && Path.GetExtension(songFilename) == ".ogg")
-        {
+        if (songFilename != string.Empty && Path.GetExtension(songFilename) == ".ogg") {
             // can't copy over an existing file
-            if (File.Exists(songURL))
-            {
+            if (File.Exists(songURL)) {
                 File.Delete(songURL);
             }
             File.Copy(Path.Combine(smFile.Directory, songFilename), songURL);
@@ -185,11 +168,9 @@ public class StepManiaMapConverter : IMapConverter
     /// BANNER - this one looks most likely to be supported as cover, but the aspect ratio might be wrong - 256x80 is the recommended size in ArrowVortex, while Ragnarock needs a square cover image.
     /// In this case, I hope it will be recognisable from the preview after loading the map, otherwise it might be good to show a warning somewhere.
     /// </summary>
-    private void ParseCover(RagnarockMap beatmap, SmFileExtra smFile)
-    {
+    private void ParseCover(RagnarockMap beatmap, SmFileExtra smFile) {
         string coverImageFilename = smFile[SmFileAttribute.BANNER];
-        if (coverImageFilename != string.Empty)
-        {
+        if (coverImageFilename != string.Empty) {
             string newCoverFilename = Helper.SanitiseCoverFileName(coverImageFilename);
             string newCoverUrl = beatmap.PathOf(newCoverFilename);
             Helper.FileDeleteIfExists(newCoverUrl);
@@ -202,51 +183,42 @@ public class StepManiaMapConverter : IMapConverter
     /// PREVIEW should take precedence over SAMPLESTART, SAMPLELENGTH according to .ssc documentation, but it isn't supported by ArrowVortex and StepmaniaUtils.<br/>
     /// SAMPLESTART, SAMPLELENGTH - if both are provided, generate preview file based on those settings. We also need to have the music file already.
     /// </summary>
-    private void ParsePreview(RagnarockMap beatmap, SmFileExtra smFile)
-    {
+    private void ParsePreview(RagnarockMap beatmap, SmFileExtra smFile) {
         string songURL = beatmap.PathOf((string)beatmap.GetValue("_songFilename"));
         if (double.TryParse(smFile[SmFileAttribute.SAMPLESTART], CultureInfo.InvariantCulture, out double sampleStart) &&
             double.TryParse(smFile[SmFileAttribute.SAMPLELENGTH], CultureInfo.InvariantCulture, out double sampleLength) &&
-            File.Exists(songURL))
-        {
+            File.Exists(songURL)) {
             string saveURL = beatmap.PathOf("preview.ogg");
             int startMin = (int)(sampleStart / 60);
             int startSec = (int)(sampleStart - 60 * startMin);
             int endMin = (int)((sampleStart + sampleLength) / 60);
             int endSec = (int)(sampleStart + sampleLength - 60 * endMin);
             int exitCode = Helper.FFmpeg(beatmap.PathOf(""), $"-i \"{songURL}\" -y -ss 00:{startMin:D2}:{startSec:D2} -to 00:{endMin:D2}:{endSec:D2} -vn \"{saveURL}\"");
-            if (exitCode != 0)
-            {
+            if (exitCode != 0) {
                 System.Diagnostics.Trace.WriteLine($"WARNING: Failed to generate preview.ogg");
             }
         }
     }
 
-    private List<BPMChange> ParseBPMChanges(RagnarockMap beatmap, SmFileExtra smFile)
-    {
-        List<BPMChange> bpms = smFile[SmFileAttribute.BPMS].Split(',').Select(pair => pair.Split('=')).Select(splitPair =>
-        {
+    private List<BPMChange> ParseBPMChanges(RagnarockMap beatmap, SmFileExtra smFile) {
+        List<BPMChange> bpms = smFile[SmFileAttribute.BPMS].Split(',').Select(pair => pair.Split('=')).Select(splitPair => {
             double time = Helper.DoubleParseInvariant(splitPair[0].Trim());
             double bpm = Helper.DoubleParseInvariant(splitPair[1].Trim());
             return new BPMChange(time, bpm, 4);
         }).ToList();
         bpms.Sort();
-        if (bpms.Count > 0)
-        {
+        if (bpms.Count > 0) {
             beatmap.SetValue("_beatsPerMinute", bpms.First().BPM);
         }
 
         return bpms;
     }
 
-    private List<BPMChange> ConvertBPMChangesToRagnarockBeat(List<BPMChange> bpms)
-    {
+    private List<BPMChange> ConvertBPMChangesToRagnarockBeat(List<BPMChange> bpms) {
         List<BPMChange> convertedBPMs = new List<BPMChange>();
-        foreach (BPMChange bpm in bpms)
-        {
+        foreach (BPMChange bpm in bpms) {
             double? globalBeat = ConvertFromStepManiaBeatToRagnarockBeat(bpm.globalBeat);
-            if (globalBeat.HasValue)
-            {
+            if (globalBeat.HasValue) {
                 bpm.globalBeat = globalBeat.Value;
                 convertedBPMs.Add(bpm);
             }
@@ -261,18 +233,15 @@ public class StepManiaMapConverter : IMapConverter
     /// Additionally, we need to take into account the song offset - there's no issue if it's negative (skip beginning of the song), but if it's positive (add silence before song),
     /// some of the notes, bookmarks and BPM changes might need to be cut, as RagnarockMap doesn't support anything on negative "global" beat.
     /// </summary>
-    private void PrepareTimingMetadatas(List<BPMChange> stepManiaBPMChanges, double stepManiaOffset, double ragnarockGlobalBPM)
-    {
+    private void PrepareTimingMetadatas(List<BPMChange> stepManiaBPMChanges, double stepManiaOffset, double ragnarockGlobalBPM) {
         timingMetadatas = new List<TimingMetadata>();
         double ragnarockGlobalBeatSoFar = ConvertSecondsToBeats(-stepManiaOffset, ragnarockGlobalBPM);
         double stepManiaBeatSoFar = 0;
         double stepManiaLastBPM = ragnarockGlobalBPM;
-        foreach (BPMChange bpmChange in stepManiaBPMChanges)
-        {
+        foreach (BPMChange bpmChange in stepManiaBPMChanges) {
             double deltaInSeconds = ConvertBeatsToSeconds(bpmChange.globalBeat - stepManiaBeatSoFar, stepManiaLastBPM);
             double deltaInRagnarockGlobalBeats = ConvertSecondsToBeats(deltaInSeconds, ragnarockGlobalBPM);
-            if (ragnarockGlobalBeatSoFar < 0 && ragnarockGlobalBeatSoFar + deltaInRagnarockGlobalBeats > 0)
-            {
+            if (ragnarockGlobalBeatSoFar < 0 && ragnarockGlobalBeatSoFar + deltaInRagnarockGlobalBeats > 0) {
                 // This is in case the offset was positive - we partially save the timing of the BPM change that started with negative "global" beat, but ended with positive "global" beat.
                 // Thanks to this, we can still re-time notes and bookmarks that happen halfway through this BPM change.
                 double deltaInSecondsToZero = ConvertBeatsToSeconds(-ragnarockGlobalBeatSoFar, ragnarockGlobalBPM);
@@ -282,55 +251,44 @@ public class StepManiaMapConverter : IMapConverter
             stepManiaBeatSoFar = bpmChange.globalBeat;
             stepManiaLastBPM = bpmChange.BPM;
             ragnarockGlobalBeatSoFar += deltaInRagnarockGlobalBeats;
-            if (ragnarockGlobalBeatSoFar > 0)
-            {
+            if (ragnarockGlobalBeatSoFar > 0) {
                 timingMetadatas.Add(new TimingMetadata(stepManiaBeatSoFar, stepManiaLastBPM, ragnarockGlobalBeatSoFar, ragnarockGlobalBPM));
             }
         }
     }
 
-    private double? ConvertFromStepManiaBeatToRagnarockBeat(double stepManiaBeat)
-    {
+    private double? ConvertFromStepManiaBeatToRagnarockBeat(double stepManiaBeat) {
         TimingMetadata matchingTiming = null;
-        foreach (TimingMetadata timingMetadata in timingMetadatas)
-        {
-            if (stepManiaBeat < timingMetadata.stepManiaBeat)
-            {
+        foreach (TimingMetadata timingMetadata in timingMetadatas) {
+            if (stepManiaBeat < timingMetadata.stepManiaBeat) {
                 break;
             }
             matchingTiming = timingMetadata;
         }
-        if (matchingTiming == null)
-        {
+        if (matchingTiming == null) {
             return null;
-        }
-        else
-        {
+        } else {
             double deltaInSeconds = ConvertBeatsToSeconds(stepManiaBeat - matchingTiming.stepManiaBeat, matchingTiming.stepManiaBPM);
             double deltaInRagnarockGlobalBeats = ConvertSecondsToBeats(deltaInSeconds, matchingTiming.ragnarockGlobalBPM);
             return matchingTiming.ragnarockGlobalBeat + deltaInRagnarockGlobalBeats;
         }
     }
 
-    private double ConvertBeatsToSeconds(double beats, double beatsPerMinute)
-    {
+    private double ConvertBeatsToSeconds(double beats, double beatsPerMinute) {
         return 60.0 * beats / beatsPerMinute;
     }
 
-    private double ConvertSecondsToBeats(double seconds, double beatsPerMinute)
-    {
+    private double ConvertSecondsToBeats(double seconds, double beatsPerMinute) {
         return beatsPerMinute * seconds / 60.0;
     }
 
-    private class TimingMetadata
-    {
+    private class TimingMetadata {
         public double stepManiaBeat { get; set; }
         public double stepManiaBPM { get; set; }
         public double ragnarockGlobalBeat { get; set; }
         public double ragnarockGlobalBPM { get; set; }
 
-        public TimingMetadata(double stepManiaBeat, double stepManiaBPM, double ragnarockGlobalBeat, double ragnarockGlobalBPM)
-        {
+        public TimingMetadata(double stepManiaBeat, double stepManiaBPM, double ragnarockGlobalBeat, double ragnarockGlobalBPM) {
             this.stepManiaBeat = stepManiaBeat;
             this.stepManiaBPM = stepManiaBPM;
             this.ragnarockGlobalBeat = ragnarockGlobalBeat;

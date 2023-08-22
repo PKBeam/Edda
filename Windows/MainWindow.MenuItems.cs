@@ -132,7 +132,7 @@ namespace Edda {
         private void MenuItemToggleRightBar_Click(object sender, RoutedEventArgs e) {
             ToggleRightDock();
         }
-        
+
         // Tools
         private void MenuItemBpmFinder_Click(object sender, RoutedEventArgs e) {
             ShowUniqueWindow(() => new BPMCalcWindow());
@@ -147,11 +147,11 @@ namespace Edda {
                 ClearSongCache();
             }
         }
-        
+
         private void MenuItemSettings_Click(object sender, RoutedEventArgs e) {
             ShowUniqueWindow(() => new SettingsWindow(this, userSettings));
         }
-        
+
         // Help
         private void MenuItemCheckUpdates_Click(object sender, RoutedEventArgs e) {
             try {

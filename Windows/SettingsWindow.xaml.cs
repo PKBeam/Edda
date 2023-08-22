@@ -1,25 +1,24 @@
-﻿using System;
+﻿using Edda.Const;
+using Microsoft.WindowsAPICodePack.Dialogs;
+using NAudio.CoreAudioApi;
+using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Controls.Primitives;
 using System.Windows.Data;
-using System.Diagnostics;
 using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Shapes;
-using Microsoft.WindowsAPICodePack.Dialogs;
 using Path = System.IO.Path;
-using System.Windows.Controls.Primitives;
-using Edda.Const;
-using NAudio.CoreAudioApi;
 
-namespace Edda
-{
+namespace Edda {
     /// <summary>
     /// Interaction logic for WindowSettings.xaml
     /// </summary>
@@ -87,8 +86,7 @@ namespace Edda
         }
         private void InitComboPlaybackDevices() {
             int i;
-            if (caller.defaultDeviceAvailable)
-            {
+            if (caller.defaultDeviceAvailable) {
                 i = comboPlaybackDevice.Items.Add(new PlaybackDevice(null, "Default"));
                 comboPlaybackDevice.SelectedIndex = i;
             }
@@ -99,8 +97,7 @@ namespace Edda
                     comboPlaybackDevice.SelectedIndex = i;
                 }
             }
-            if (!comboPlaybackDevice.HasItems)
-            {
+            if (!comboPlaybackDevice.HasItems) {
                 comboPlaybackDevice.IsEnabled = false;
             }
         }
@@ -133,7 +130,7 @@ namespace Edda
                     var localFile = file.Split(Program.ResourcesPath)[1];
                     var strippedLocalFile = localFile.Substring(0, localFile.Length - 5);
                     int i = comboDrumSample.Items.Add(strippedLocalFile);
-                    
+
                     if (strippedLocalFile == selectedSampleFile) {
                         comboDrumSample.SelectedIndex = i;
                     }
@@ -148,8 +145,8 @@ namespace Edda
             caller.RestartDrummer();
         }
 
-        private void SliderSongVol_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e) {   
-            txtSongVol.Text = $"{(int)(sliderSongVol.Value * 100)}%";          
+        private void SliderSongVol_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e) {
+            txtSongVol.Text = $"{(int)(sliderSongVol.Value * 100)}%";
         }
 
         private void sliderSongVol_MouseLeftButtonUp(object sender, MouseButtonEventArgs e) {
@@ -272,7 +269,7 @@ namespace Edda
                 UpdateSettings();
             }
         }
-        
+
         private void CheckDiscord_Click(object sender, RoutedEventArgs e) {
             bool newStatus = checkDiscord.IsChecked ?? false;
             userSettings.SetValueForKey(UserSettingsKey.EnableDiscordRPC, newStatus);
@@ -290,14 +287,14 @@ namespace Edda
         }
 
         private void comboMapSaveFolder_SelectionChanged(object sender, SelectionChangedEventArgs e) {
-            
+
             if (comboMapSaveFolder.SelectedIndex == 1) {
                 string gameInstall = PickGameFolder();
                 if (gameInstall == null) {
                     comboMapSaveFolder.SelectedIndex = 0;
                     userSettings.SetValueForKey(UserSettingsKey.MapSaveLocationPath, DefaultUserSettings.MapSaveLocationPath);
                 } else {
-                    txtMapSaveFolderPath.Text = gameInstall; 
+                    txtMapSaveFolderPath.Text = gameInstall;
                     userSettings.SetValueForKey(UserSettingsKey.MapSaveLocationPath, gameInstall);
                 }
             }
@@ -340,7 +337,7 @@ namespace Edda
 
             // make custom song game folder if it doesnt exist
             var songFolder = Path.Combine(d.FileName, Program.GameInstallRelativeMapFolder);
-            if (!Directory.Exists(songFolder)) { 
+            if (!Directory.Exists(songFolder)) {
                 Directory.CreateDirectory(songFolder);
             }
 
@@ -356,8 +353,8 @@ namespace Edda
         }
 
         class PlaybackDevice {
-            public string ID {get; private set;}
-            public string Name {get; private set;}
+            public string ID { get; private set; }
+            public string Name { get; private set; }
             public PlaybackDevice(string ID, string Name) {
                 this.ID = ID;
                 this.Name = Name;

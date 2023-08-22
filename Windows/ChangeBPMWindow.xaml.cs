@@ -1,13 +1,12 @@
-﻿using System;
+﻿using Edda.Const;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
-using Edda.Const;
 
-namespace Edda
-{
+namespace Edda {
     /// <summary>
     /// Interaction logic for WindowChangeBPM.xaml
     /// </summary>
@@ -24,7 +23,7 @@ namespace Edda
             this.BPMChanges = BPMChanges;
             dataBPMChange.ItemsSource = this.BPMChanges;
             lblGlobalBPM.Content = $"{Math.Round(globalBPM, 3)}";
-            
+
             //dataBPMChange.Items.SortDescriptions.Add(new SortDescription("Global Beat", ListSortDirection.Ascending));
         }
 
@@ -50,18 +49,18 @@ namespace Edda
                     if (pendingEdit < 0) {
                         throw new Exception("The beat must be a non-negative number.");
                     }
-                // BPM
+                    // BPM
                 } else if (col == dataBPMChange.Columns[1].Header.ToString()) {
                     if (pendingEdit <= 0) {
                         throw new Exception("The BPM must be a positive number.");
                     }
-                // grid division
+                    // grid division
                 } else if (col == dataBPMChange.Columns[2].Header.ToString()) {
                     if ((int)pendingEdit != pendingEdit || !Helper.DoubleRangeCheck(pendingEdit, 1, Editor.GridDivisionMax)) {
                         throw new Exception($"The grid division amount must be an integer from 1 to {Editor.GridDivisionMax}.");
                     }
                 }
-                
+
             } catch (Exception ex) {
                 MessageBox.Show(this, ex.Message, "Error", MessageBoxButton.OK, MessageBoxImage.Error);
                 dataBPMChange.CancelEdit();
@@ -103,11 +102,9 @@ namespace Edda
             }
         }
 
-        private void propagateBPMChanges()
-        {
+        private void propagateBPMChanges() {
             var mapDiff = caller.mapEditor.currentMapDifficulty;
-            if (mapDiff != null)
-            {
+            if (mapDiff != null) {
                 mapDiff.bpmChanges = new(BPMChanges);
                 mapDiff.MarkDirty();
             }

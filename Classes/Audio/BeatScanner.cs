@@ -20,4 +20,3 @@ public class BeatScanner : AudioScanner {
         return notes;
     }
 }
-

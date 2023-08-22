@@ -3,9 +3,9 @@ using Edda.Const;
 using Newtonsoft.Json.Linq;
 using SoundTouch;
 using System;
-using System.Linq;
 using System.Collections.Generic;
 using System.Collections.Immutable;
+using System.Linq;
 
 #nullable enable
 
@@ -31,8 +31,7 @@ public class MapDifficulty {
         this.needsSave = false;
     }
 
-    public SortedSet<Note> GetNotesRange(double startBeat, double endBeat)
-    {
+    public SortedSet<Note> GetNotesRange(double startBeat, double endBeat) {
         // We use non-existent columns to generate a smaller subset guaranteed to contain all of the notes between given beats.
         return notes.GetViewBetween(new Note(startBeat, -1), new Note(endBeat, -1));
     }
@@ -78,7 +77,7 @@ public class MapEditor : IDisposable {
         get {
             if (currentDifficultyIndex < 0) {
                 return null;
-            }  else {
+            } else {
                 return difficultyMaps[currentDifficultyIndex];
             }
         }
@@ -99,16 +98,15 @@ public class MapEditor : IDisposable {
         beatMap = new RagnarockMap(folderPath, makeNewMap);
         for (int indx = 0; indx < beatMap.numDifficulties; indx++) {
             difficultyMaps[indx] = new MapDifficulty(
-                beatMap.GetNotesForMap(indx), 
-                beatMap.GetBPMChangesForMap(indx), 
+                beatMap.GetNotesForMap(indx),
+                beatMap.GetBPMChangesForMap(indx),
                 beatMap.GetBookmarksForMap(indx)
             );
         }
         this.clipboard = new();
     }
 
-    public void Dispose()
-    {
+    public void Dispose() {
         beatMap = null;
         parent = null;
         difficultyMaps = null;
@@ -320,9 +318,8 @@ public class MapEditor : IDisposable {
     public void RemoveSelectedNotes(bool updateHistory = true) {
         RemoveNotes(currentMapDifficulty?.selectedNotes ?? new SortedSet<Note>(), updateHistory);
     }
-    public void ToggleSelection(IEnumerable<Note> notes)
-    {
-        foreach(Note n in notes) {
+    public void ToggleSelection(IEnumerable<Note> notes) {
+        foreach (Note n in notes) {
             ToggleSelection(n);
         }
     }
@@ -372,8 +369,7 @@ public class MapEditor : IDisposable {
             return;
         }
         clipboard.Clear();
-        foreach (var n in currentMapDifficulty.selectedNotes)
-        {
+        foreach (var n in currentMapDifficulty.selectedNotes) {
             clipboard.Add(n);
         }
     }
@@ -409,21 +405,19 @@ public class MapEditor : IDisposable {
                 BPMChange lastBeatChange = GetLastBeatChange(n.beat);
                 double defaultGridLength = GetGridLength(lastBeatChange.BPM, lastBeatChange.gridDivision);
                 double offset = 0.0;
-                if (lastBeatChange.globalBeat > 0.0)
-                {
+                if (lastBeatChange.globalBeat > 0.0) {
                     double differenceDefaultNew = Math.Floor(lastBeatChange.globalBeat / defaultGridLength) * defaultGridLength;
                     offset = lastBeatChange.globalBeat - differenceDefaultNew;
                 }
 
                 double newBeat = Math.Round(n.beat / defaultGridLength) * defaultGridLength + offset;
-                if (Helper.DoubleApproxEqual(n.beat, newBeat) || Helper.DoubleApproxEqual(n.beat, newBeat - defaultGridLength))
-                {
+                if (Helper.DoubleApproxEqual(n.beat, newBeat) || Helper.DoubleApproxEqual(n.beat, newBeat - defaultGridLength)) {
                     newBeat = n.beat;
                 }
 
                 return new Note(newBeat, n.col);
             });
-        UpdateNotes(quantizedNotes, currentMapDifficulty.selectedNotes);   
+        UpdateNotes(quantizedNotes, currentMapDifficulty.selectedNotes);
     }
     public double GetGridLength(double bpm, int gridDivision) {
         double scaleFactor = globalBPM / bpm;
@@ -465,8 +459,7 @@ public class MapEditor : IDisposable {
             .Select(n => {
                 BPMChange lastBeatChange = GetLastBeatChange(n.beat);
                 double beatOffset = 0.0;
-                switch (direction)
-                {
+                switch (direction) {
                     case MoveNote.MOVE_BEAT_DOWN:
                     case MoveNote.MOVE_BEAT_UP:
                         double defaultBeatLength = GetGridLength(lastBeatChange.BPM, 1);
@@ -481,7 +474,7 @@ public class MapEditor : IDisposable {
                 double newBeat = n.beat + beatOffset;
                 return new Note(newBeat, n.col);
             });
-        UpdateNotes(movedNotes, currentMapDifficulty.selectedNotes);   
+        UpdateNotes(movedNotes, currentMapDifficulty.selectedNotes);
     }
     public void ShiftSelectionByCol(int offset) {
         if (currentMapDifficulty == null) {
@@ -491,8 +484,7 @@ public class MapEditor : IDisposable {
         var movedSelection = currentMapDifficulty.selectedNotes
             .Select(n => {
                 int newCol = (n.col + offset) % 4;
-                if (newCol < 0)
-                {
+                if (newCol < 0) {
                     newCol += 4;
                 }
                 return new Note(n.beat, newCol);
@@ -575,10 +567,8 @@ public class MapEditor : IDisposable {
             b.beat *= scaleFactor;
         }
     }
-    internal void SelectNotesInBookmark(Bookmark b)
-    {
-        if (currentMapDifficulty == null)
-        {
+    internal void SelectNotesInBookmark(Bookmark b) {
+        if (currentMapDifficulty == null) {
             return;
         }
         double endBeat = currentMapDifficulty.bookmarks
@@ -589,19 +579,15 @@ public class MapEditor : IDisposable {
         var notes = currentMapDifficulty.GetNotesRange(b.beat, endBeat);
 
 
-        if (parent.shiftKeyDown)
-        {
+        if (parent.shiftKeyDown) {
             ToggleSelection(notes);
-        } else
-        {
+        } else {
             SelectNewNotes(notes);
         }
     }
 
-    internal void SelectNotesInBPMChange(BPMChange bpmChange)
-    {
-        if (currentMapDifficulty == null)
-        {
+    internal void SelectNotesInBPMChange(BPMChange bpmChange) {
+        if (currentMapDifficulty == null) {
             return;
         }
         double endBeat = currentMapDifficulty.bpmChanges
@@ -611,12 +597,9 @@ public class MapEditor : IDisposable {
             .FirstOrDefault(double.PositiveInfinity);
         var notes = currentMapDifficulty.GetNotesRange(bpmChange.globalBeat, endBeat);
 
-        if (parent.shiftKeyDown)
-        {
+        if (parent.shiftKeyDown) {
             ToggleSelection(notes);
-        }
-        else
-        {
+        } else {
             SelectNewNotes(notes);
         }
     }

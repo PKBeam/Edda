@@ -1,6 +1,6 @@
 ﻿using System;
 
-public class Edit<T>: ICloneable {
+public class Edit<T> : ICloneable {
     public bool isAdd;
     public T item;
     public Edit(bool isAdd, T item) {

@@ -2,10 +2,10 @@
 using System;
 using System.Diagnostics;
 using System.IO;
+using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
-using System.Linq;
 
 namespace Edda {
     public partial class MainWindow : Window {
@@ -20,7 +20,7 @@ namespace Edda {
             if (PromptBeatmapSave()) {
                 if (returnToStartMenuOnClose) {
                     new StartWindow().Show();
-                } 
+                }
                 discordClient.SetPresence();
             } else {
                 returnToStartMenuOnClose = false;
@@ -114,11 +114,11 @@ namespace Edda {
         }
         private void AppMainWindow_KeyDown(object sender, KeyEventArgs e) {
 
-        #if DEBUG
+#if DEBUG
             if (e.Key == Key.D) {
                 Trace.WriteLine(colSpectrogram.Width.Value);
             }
-        #endif
+#endif
 
             /*=====================*
              |  GENERAL SHORTCUTS  |
@@ -326,7 +326,7 @@ namespace Edda {
                 return;
             }
 
-            var delta = (int) Helper.DoubleRangeTruncate(e.Delta, -1, 1);
+            var delta = (int)Helper.DoubleRangeTruncate(e.Delta, -1, 1);
 
             double pos = gridController.mouseBeat;
             BPMChange lastChange = mapEditor.GetLastBeatChange(pos);
@@ -335,14 +335,14 @@ namespace Edda {
                 int currentBeatDivision;
                 int.TryParse(txtGridDivision.Text, out currentBeatDivision);
                 txtGridDivision.Text = ((int)Helper.DoubleRangeTruncate(currentBeatDivision + delta, 1, Editor.GridDivisionMax)).ToString();
-            } else {    
+            } else {
                 var currentBpmChange = mapEditor.currentMapDifficulty.bpmChanges
                     .Where(bpmChange => bpmChange.globalBeat < pos)
                     .OrderByDescending(bpmChange => bpmChange.globalBeat)
                     .FirstOrDefault();
 
                 if (currentBpmChange != null) {
-                    currentBpmChange.gridDivision = (int) Helper.DoubleRangeTruncate(currentBpmChange.gridDivision + delta, 1, Editor.GridDivisionMax);
+                    currentBpmChange.gridDivision = (int)Helper.DoubleRangeTruncate(currentBpmChange.gridDivision + delta, 1, Editor.GridDivisionMax);
                     gridController.DrawGrid(false);
                 }
             }
@@ -432,8 +432,7 @@ namespace Edda {
             txtSongTempo.Text = $"{Math.Round(newTempo, 2).ToString("0.00")}x";
         }
         private void CheckMetronome_Click(object sender, RoutedEventArgs e) {
-            if (metronome != null)
-            {
+            if (metronome != null) {
                 metronome.isEnabled = (checkMetronome.IsChecked == true);
             }
         }

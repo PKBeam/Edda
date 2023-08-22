@@ -8,7 +8,7 @@ using System.Windows.Input;
 
 namespace Edda {
     public partial class MainWindow : Window {
-        
+
         // grid variables
         Point editorDragSelectStart;
         internal bool navMouseDown = false;
@@ -50,8 +50,7 @@ namespace Edda {
             lblSelectedBeat.Content = "";
         }
         private void BorderSpectrogram_SizeChanged(object sender, SizeChangedEventArgs e) {
-            if (e.PreviousSize == new Size())
-            {
+            if (e.PreviousSize == new Size()) {
                 return;
             }
             if (mapIsLoaded) {
@@ -66,8 +65,7 @@ namespace Edda {
 
         }
         private void ScrollEditor_SizeChanged(object sender, SizeChangedEventArgs e) {
-            if (e.PreviousSize == new Size())
-            {
+            if (e.PreviousSize == new Size()) {
                 return;
             }
             if (mapIsLoaded) {
@@ -171,11 +169,11 @@ namespace Edda {
         }
 
         public object Convert(object value, Type targetType, object parameter, System.Globalization.CultureInfo culture) {
-            return (double) value - Offset;
+            return (double)value - Offset;
         }
 
         public object ConvertBack(object value, Type targetType, object parameter, System.Globalization.CultureInfo culture) {
-            return (double) value + Offset;
+            return (double)value + Offset;
         }
     }
 }

@@ -1,21 +1,20 @@
-﻿using System;
+﻿using Edda;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Threading;
 using System.Threading.Tasks;
-using Edda;
 
-public class NoteScanner: AudioScanner {
+public class NoteScanner : AudioScanner {
     MainWindow caller;
     List<Note> notesPlayed;
     public bool playedLateNote { get; set; }
-    public NoteScanner(MainWindow caller, ParallelAudioPlayer parallelAudioPlayer): base(parallelAudioPlayer) {
+    public NoteScanner(MainWindow caller, ParallelAudioPlayer parallelAudioPlayer) : base(parallelAudioPlayer) {
         this.caller = caller;
         this.playedLateNote = false;
     }
 
-    public override void Dispose()
-    {
+    public override void Dispose() {
         base.Dispose();
         caller = null;
         notesPlayed = null;

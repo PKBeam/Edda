@@ -6,7 +6,7 @@ using System;
 using System.Diagnostics;
 using System.IO;
 
-public class ParallelAudioPlayer: IDisposable {
+public class ParallelAudioPlayer : IDisposable {
     const int numChannels = 4;
     const float maxPan = Audio.MaxPanDistance;
     int streams;
@@ -17,7 +17,7 @@ public class ParallelAudioPlayer: IDisposable {
     MMDevice playbackDevice;
     DateTime[] lastPlayedTimes;
     AudioFileReader[] noteStreams;
-    WasapiOut[] notePlayers;    
+    WasapiOut[] notePlayers;
     public bool isEnabled { get; set; }
     public bool isPanned { get; set; }
 
@@ -35,7 +35,7 @@ public class ParallelAudioPlayer: IDisposable {
         }
         if (uniqueSamples < 1) {
             throw new FileNotFoundException();
-        }   
+        }
         InitAudioOut(defaultVolume);
     }
 
@@ -85,7 +85,7 @@ public class ParallelAudioPlayer: IDisposable {
             if (now - lastPlayedTimes[i] > noteStreams[i].TotalTime) {
                 notePlayers[i].Pause();
                 noteStreams[i].CurrentTime = TimeSpan.Zero;
-                
+
                 notePlayers[i].Play();
                 this.lastPlayedStream = i;
                 lastPlayedTimes[i] = now;

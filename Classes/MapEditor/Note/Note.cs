@@ -1,13 +1,13 @@
 ﻿using System;
 
-public class Note: IComparable, IEquatable<Note> {
-	public double beat;
-	public int col;
-	public Note(double beat, int col) {
-		this.beat = beat;
-		this.col = col;
-	}
-	public Note() : this(0, 0) {}
+public class Note : IComparable, IEquatable<Note> {
+    public double beat;
+    public int col;
+    public Note(double beat, int col) {
+        this.beat = beat;
+        this.col = col;
+    }
+    public Note() : this(0, 0) { }
 
     public int CompareTo(object obj) {
         if (!(obj is Note n)) {

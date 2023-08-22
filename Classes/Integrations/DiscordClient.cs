@@ -1,6 +1,6 @@
-﻿using System;
+﻿using DiscordRPC;
 using Edda;
-using DiscordRPC;
+using System;
 
 public class DiscordClient {
     DiscordRpcClient client;
@@ -31,10 +31,8 @@ public class DiscordClient {
         client.SetPresence(rp);
     }
 
-    private string GetPresenceDetails(string songName)
-    {
-        return songName switch
-        {
+    private string GetPresenceDetails(string songName) {
+        return songName switch {
             null => "No song open",
             "" => "Working on an untitled map",
             _ => $"Mapping: {songName}",
@@ -44,16 +42,14 @@ public class DiscordClient {
     public void Enable() {
         var wasEnabled = enabled;
         enabled = true;
-        if (!wasEnabled)
-        {
+        if (!wasEnabled) {
             InitClient();
         }
     }
     public void Disable() {
-        var wasEnabled = enabled; 
+        var wasEnabled = enabled;
         enabled = false;
-        if (wasEnabled)
-        {
+        if (wasEnabled) {
             DeinitClient();
         }
     }

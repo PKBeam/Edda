@@ -1,16 +1,16 @@
-﻿using System.Windows;
-using System.IO;
-using Syncfusion.PMML;
-using System.Diagnostics;
-using System.Xml;
-using System.Printing;
+﻿using Syncfusion.PMML;
 using System;
-using System.Windows.Documents;
 using System.Collections.Generic;
-using System.Linq;
-using static System.Formats.Asn1.AsnWriter;
-using System.Windows.Controls;
+using System.Diagnostics;
 using System.Globalization;
+using System.IO;
+using System.Linq;
+using System.Printing;
+using System.Windows;
+using System.Windows.Controls;
+using System.Windows.Documents;
+using System.Xml;
+using static System.Formats.Asn1.AsnWriter;
 
 namespace Edda.Windows {
     /// <summary>
@@ -36,7 +36,7 @@ namespace Edda.Windows {
                 var diff = mapEditor.GetDifficulty(i);
                 var diffNotes = diff.notes;
                 // treat the song as ending on the last placed note if map is WIP
-                var songDuration = CheckTreatMapsWip.IsChecked == true ? 60 / globalBpm * diffNotes.Last().beat : globalSongDuration; 
+                var songDuration = CheckTreatMapsWip.IsChecked == true ? 60 / globalBpm * diffNotes.Last().beat : globalSongDuration;
                 var noteDensity = GetNoteDensity(diffNotes, songDuration);
                 var localNoteDensity = GetLocalNoteDensity(diffNotes, songDuration, globalBpm);
                 var highLocalNoteDensity = Helper.GetQuantile(localNoteDensity, 0.95);
@@ -129,7 +129,7 @@ namespace Edda.Windows {
                         // higher is better
                         variety.Add(-1 * score);
 
-                    } 
+                    }
                 }
                 windowLower += step;
                 windowUpper += step;

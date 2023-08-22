@@ -23,7 +23,7 @@ namespace Edda {
         List<long> intervalSamples;
         int numInputs = 0;
         long prevTime = 0;
-        
+
         public BPMCalcWindow() {
             InitializeComponent();
             stopwatch = new();
@@ -65,7 +65,7 @@ namespace Edda {
         }
         private void CalculateBPM() {
             int numSamples = intervalSamples.Count;
-            
+
             if (numSamples == 0) {
                 return;
             }

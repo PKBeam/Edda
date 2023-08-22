@@ -7,8 +7,8 @@ using System.Diagnostics;
 using System.Globalization;
 using System.IO;
 using System.Linq;
-using System.Net.Http;
 using System.Net.Cache;
+using System.Net.Http;
 using System.Text.RegularExpressions;
 using System.Windows;
 using System.Windows.Media.Imaging;
@@ -70,7 +70,7 @@ public class Helper {
         return normalisedVec;
     }
     public static double LpDistance(List<double> v, List<double> w, int p) {
-        var distVec = new List<double>(); 
+        var distVec = new List<double>();
         for (int i = 0; i < v.Count; i++) {
             distVec.Add(v[i] - w[i]);
         }
@@ -175,8 +175,7 @@ public class Helper {
             File.Delete(path);
         }
     }
-    public static string GetRagnarockMapFolder()
-    {
+    public static string GetRagnarockMapFolder() {
         var userSettings = new UserSettingsManager(Program.SettingsFile);
         return int.TryParse(userSettings.GetValueForKey(Edda.Const.UserSettingsKey.MapSaveLocationIndex), out var index) && index > 0
             ? Path.Combine(userSettings.GetValueForKey(Edda.Const.UserSettingsKey.MapSaveLocationPath), Program.GameInstallRelativeMapFolder)
@@ -200,7 +199,7 @@ public class Helper {
         int exitCode = p.ExitCode;
         p.Close(); // To free up the handle on ffmpeg_temp_{pid}.exe
 
-        try {           
+        try {
             File.Delete(path);
         } catch (Exception e) {
             Trace.WriteLine($"WARNING: Failed to delete {path}: ({e})");

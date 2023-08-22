@@ -3,8 +3,7 @@ using NAudio.Vorbis;
 using System.IO;
 using System.Windows;
 
-namespace Edda
-{
+namespace Edda {
     /// <summary>
     /// Interaction logic for SongPreviewWindow.xaml
     /// </summary>
@@ -32,10 +31,10 @@ namespace Edda
 
             this.startMin = startMin;
             this.startSec = startSec;
-            endMin   = (startMin * 60 + startSec + Audio.MaxPreviewLength) / 60;
-            endSec   = (startMin * 60 + startSec + Audio.MaxPreviewLength) % 60;
+            endMin = (startMin * 60 + startSec + Audio.MaxPreviewLength) / 60;
+            endSec = (startMin * 60 + startSec + Audio.MaxPreviewLength) % 60;
             fadeInDur = Audio.DefaultPreviewFadeIn;
-            fadeOutDur  = Audio.DefaultPreviewFadeOut;
+            fadeOutDur = Audio.DefaultPreviewFadeOut;
 
             UpdateTextFields();
         }
@@ -116,7 +115,7 @@ namespace Edda
                     startMin = endMin;
                     startSec = endSec;
                 }
-            } else { 
+            } else {
                 ShowRangeError();
             }
 
@@ -130,7 +129,7 @@ namespace Edda
                     startMin = endMin;
                     startSec = endSec;
                 }
-            } else { 
+            } else {
                 ShowRangeError();
             }
             UpdateTextFields();
@@ -146,7 +145,7 @@ namespace Edda
                 } else {
                     MessageBox.Show(this, $"There was an issue creating song preview.", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
                 }
-                
+
             }
         }
 

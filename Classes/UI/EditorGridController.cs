@@ -1,25 +1,25 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Threading.Tasks;
-using Edda;
-using System.Windows;
-using System.Windows.Data;
-using System.Windows.Controls;
-using System.Windows.Shapes;
-using System.Diagnostics;
-using System.Windows.Media;
-using Image = System.Windows.Controls.Image;
-using System.Windows.Threading;
-using System.Windows.Media.Imaging;
-using Brushes = System.Windows.Media.Brushes;
-using System.Windows.Input;
-using Point = System.Windows.Point;
-using MediaColor = System.Windows.Media.Color;
-using DrawingColor = System.Drawing.Color;
+﻿using Edda;
 using Edda.Const;
+using System;
+using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
+using System.Threading.Tasks;
+using System.Windows;
+using System.Windows.Controls;
+using System.Windows.Data;
+using System.Windows.Input;
+using System.Windows.Media;
+using System.Windows.Media.Imaging;
+using System.Windows.Shapes;
+using System.Windows.Threading;
+using Brushes = System.Windows.Media.Brushes;
+using DrawingColor = System.Drawing.Color;
+using Image = System.Windows.Controls.Image;
+using MediaColor = System.Windows.Media.Color;
+using Point = System.Windows.Point;
 
-public class EditorGridController: IDisposable {
+public class EditorGridController : IDisposable {
 
     MapEditor mapEditor;
 
@@ -233,16 +233,14 @@ public class EditorGridController: IDisposable {
         EditorGrid.Children.Add(lineGridMouseover);
     }
 
-    public void Dispose()
-    {
+    public void Dispose() {
         // Clear the most memory-heavy components
         noteCanvas.Children.Clear();
         EditorGrid.Children.Clear();
         panelSpectrogram.Children.Clear();
         imgWaveformVertical.Source = null;
         imgAudioWaveform.Source = null;
-        foreach (var imgSpectorgramChunk in imgSpectrogramChunks)
-        {
+        foreach (var imgSpectorgramChunk in imgSpectrogramChunks) {
             imgSpectorgramChunk.Source = null;
         }
 
@@ -283,7 +281,7 @@ public class EditorGridController: IDisposable {
         currentlyDraggingMarker = null;
         currentlyDraggingBookmark = null;
         currentlyDraggingBPMChange = null;
-}
+    }
 
     public void InitMap(MapEditor me) {
         this.mapEditor = me;
@@ -399,7 +397,7 @@ public class EditorGridController: IDisposable {
         for (int i = 0; i < numChunks; ++i) {
             Image imgChunk = imgSpectrogramChunks[i];
             imgChunk.Width = scrollSpectrogram.ActualWidth;
-            imgChunk.Height = (EditorGrid.Height - scrollEditor.ActualHeight) / (double) numChunks;
+            imgChunk.Height = (EditorGrid.Height - scrollEditor.ActualHeight) / (double)numChunks;
         }
         // Lower offset
         canvasSpectrogramLowerOffset.Height = unitHeight / 2;
@@ -575,12 +573,9 @@ public class EditorGridController: IDisposable {
             Canvas.SetBottom(txtBlock, 0.75 * Editor.GridBookmark.Thickness);
 
             txtBlock.PreviewMouseLeftButtonDown += new MouseButtonEventHandler((src, e) => {
-                if (parentWindow.ctrlKeyDown)
-                {
+                if (parentWindow.ctrlKeyDown) {
                     mapEditor.SelectNotesInBookmark(b);
-                }
-                else
-                {
+                } else {
                     currentlyDraggingMarker = bookmarkCanvas;
                     currentlyDraggingBookmark = b;
                     currentlyDraggingBPMChange = null;
@@ -727,12 +722,9 @@ public class EditorGridController: IDisposable {
             bpmChangeFlagCanvas.Children.Add(bpmLabel);
 
             bpmChangeFlagCanvas.PreviewMouseLeftButtonDown += new MouseButtonEventHandler((src, e) => {
-                if (parentWindow.ctrlKeyDown)
-                {
+                if (parentWindow.ctrlKeyDown) {
                     mapEditor.SelectNotesInBPMChange(b);
-                }
-                else
-                {
+                } else {
                     currentlyDraggingMarker = bpmChangeCanvas;
                     currentlyDraggingBPMChange = b;
                     currentlyDraggingBookmark = null;
@@ -863,7 +855,7 @@ public class EditorGridController: IDisposable {
     internal void GridMouseMove(Point mousePos) {
         // check if mouse is out of bounds of the song map
         mouseOutOfBounds = mousePos.Y < scrollEditor.ActualHeight - unitHeight / 2;
-        
+
         UpdateMousePosition(mousePos);
 
         double noteX = (1 + 4 * mouseGridCol) * unitSubLength;
@@ -906,7 +898,7 @@ public class EditorGridController: IDisposable {
         if (!mouseOutOfBounds && currentlyDraggingMarker != null && !isEditingMarker) {
             MoveMarker(mousePos);
             parentWindow.Cursor = Cursors.Hand;
-        // otherwise, update existing drag operations
+            // otherwise, update existing drag operations
         } else if (isDragging) {
             UpdateDragSelection(mousePos);
         }
@@ -935,7 +927,7 @@ public class EditorGridController: IDisposable {
                 } else {
                     mapEditor.SelectNewNotes(n);
                 }
-            // otherwise create and add it
+                // otherwise create and add it
             } else {
                 mapEditor.AddNotes(n);
                 parentWindow.drummer?.Play(n.col);
@@ -956,7 +948,7 @@ public class EditorGridController: IDisposable {
     }
     internal void BeginDragSelection(Point mousePos) {
         if (isDragging || (currentlyDraggingMarker != null && !isEditingMarker)) {
-            return; 
+            return;
         }
         imgPreviewNote.Visibility = Visibility.Hidden;
         dragSelectBorder.Visibility = Visibility.Visible;
@@ -970,14 +962,12 @@ public class EditorGridController: IDisposable {
         // calculate new selections
         double startBeat = BeatForPosition(dragSelectStart.Y, false);
         double endBeat = mouseBeatUnsnapped;
-        if (Helper.DoubleApproxGreater(startBeat, endBeat))
-        {
+        if (Helper.DoubleApproxGreater(startBeat, endBeat)) {
             (startBeat, endBeat) = (endBeat, startBeat);
         }
         int startCol = ColForPosition(dragSelectStart.X);
         int endCol = mouseGridCol;
-        if (startCol > endCol)
-        {
+        if (startCol > endCol) {
             (startCol, endCol) = (endCol, startCol);
         }
         var newSelection =
@@ -1058,7 +1048,7 @@ public class EditorGridController: IDisposable {
     }
     internal void AddNoteAt(int col, bool onMouse) {
         double mouseInput = snapToGrid ? mouseBeatSnapped : mouseBeatUnsnapped;
-        Note n = new Note(onMouse ? mouseInput: currentSeekBeat, col);
+        Note n = new Note(onMouse ? mouseInput : currentSeekBeat, col);
         mapEditor.AddNotes(n);
     }
     internal void ShiftSelectionByRow(MoveNote direction) {
@@ -1108,12 +1098,9 @@ public class EditorGridController: IDisposable {
             e.Handled = true;
         });
         txtBlock.MouseLeftButtonUp += new MouseButtonEventHandler((src, e) => {
-            if (parentWindow.ctrlKeyDown)
-            {
+            if (parentWindow.ctrlKeyDown) {
                 mapEditor.SelectNotesInBookmark(b);
-            }
-            else
-            {
+            } else {
                 parentWindow.songSeekPosition = b.beat / mapEditor.globalBPM * 60000;
                 parentWindow.navMouseDown = false;
             }
@@ -1183,7 +1170,7 @@ public class EditorGridController: IDisposable {
             if (binarySearch > 0) {
                 return gridBeatLines[binarySearch];
             }
-            int indx1 = Math.Min(gridBeatLines.Count - 1, - binarySearch - 1);
+            int indx1 = Math.Min(gridBeatLines.Count - 1, -binarySearch - 1);
             int indx2 = Math.Max(0, indx1 - 1);
             snapped = (gridBeatLines[indx1] - unsnapped) < (unsnapped - gridBeatLines[indx2]) ? gridBeatLines[indx1] : gridBeatLines[indx2];
         }

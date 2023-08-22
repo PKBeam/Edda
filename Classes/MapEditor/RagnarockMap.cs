@@ -1,11 +1,11 @@
-﻿using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using Edda;
+﻿using Edda;
 using Edda.Const;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
+using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
 
 public class RagnarockMap {
 
@@ -416,7 +416,7 @@ public class RagnarockMap {
 
         var obj = JObject.Parse(infoStr);
         var beatmaps = (JArray)obj["_difficultyBeatmapSets"][0]["_difficultyBeatmaps"];
-        
+
         var tempMap = beatmaps[i];
         beatmaps[i] = beatmaps[j];
         beatmaps[j] = tempMap;
@@ -508,7 +508,7 @@ public class RagnarockMap {
                             if (val < 0) throw ex;
                             break;
                         case "_lineIndex":
-                            if ((int)val != val || val < 0 || 3 < val) 
+                            if ((int)val != val || val < 0 || 3 < val)
                                 throw ex;
                             break;
                         case "_lineLayer":
@@ -524,7 +524,7 @@ public class RagnarockMap {
                 }
             }
         }
-        
+
         InitCustomDataForMap(indx);
     }
     private void InitCustomDataForMap(int indx) {
@@ -581,7 +581,7 @@ public class RagnarockMap {
                 } else {
                     info[i] = insert;
                 }
-                
+
                 break;
             }
         }
@@ -602,7 +602,7 @@ public class RagnarockMap {
             BPMChange bc = new BPMChange(beat, bpm, gridDivision);
             BPMChanges.Add(bc);
         }
-        return BPMChanges; 
+        return BPMChanges;
     }
     public void SetBPMChangesForMap(int indx, List<BPMChange> BPMChanges) {
         JArray bcArr = new JArray();
