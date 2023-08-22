@@ -1,6 +1,6 @@
-using System.Diagnostics;
-using System.Collections.Generic;
 using StepmaniaUtils.Enums;
+using System.Collections.Generic;
+using System.Diagnostics;
 
 namespace StepmaniaUtils.StepData {
     [DebuggerDisplay("{PlayStyle} - {Difficulty} - {DifficultyRating} - {ChartAuthor}")]

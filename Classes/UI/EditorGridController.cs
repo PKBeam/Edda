@@ -1,23 +1,23 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Threading.Tasks;
-using Edda;
-using System.Windows;
-using System.Windows.Data;
-using System.Windows.Controls;
-using System.Windows.Shapes;
-using System.Diagnostics;
-using System.Windows.Media;
-using Image = System.Windows.Controls.Image;
-using System.Windows.Threading;
-using System.Windows.Media.Imaging;
-using Brushes = System.Windows.Media.Brushes;
-using System.Windows.Input;
-using Point = System.Windows.Point;
-using MediaColor = System.Windows.Media.Color;
-using DrawingColor = System.Drawing.Color;
+﻿using Edda;
 using Edda.Const;
+using System;
+using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
+using System.Threading.Tasks;
+using System.Windows;
+using System.Windows.Controls;
+using System.Windows.Data;
+using System.Windows.Input;
+using System.Windows.Media;
+using System.Windows.Media.Imaging;
+using System.Windows.Shapes;
+using System.Windows.Threading;
+using Brushes = System.Windows.Media.Brushes;
+using DrawingColor = System.Drawing.Color;
+using Image = System.Windows.Controls.Image;
+using MediaColor = System.Windows.Media.Color;
+using Point = System.Windows.Point;
 
 public class EditorGridController : IDisposable {
 

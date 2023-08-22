@@ -1,10 +1,10 @@
-﻿using System;
+﻿using Edda.Const;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
-using Edda.Const;
 
 namespace Edda {
     /// <summary>

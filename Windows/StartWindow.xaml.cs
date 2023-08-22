@@ -1,4 +1,6 @@
-﻿using System;
+﻿using Edda.Const;
+using NAudio.Gui;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.InteropServices;
@@ -13,8 +15,6 @@ using System.Windows.Interop;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Shapes;
-using Edda.Const;
-using NAudio.Gui;
 
 namespace Edda {
     /// <summary>
@@ -48,8 +48,7 @@ namespace Edda {
                 var attribute = DWMWINDOWATTRIBUTE.DWMWA_WINDOW_CORNER_PREFERENCE;
                 var preference = DWM_WINDOW_CORNER_PREFERENCE.DWMWCP_ROUND;
                 DwmSetWindowAttribute(hWnd, attribute, ref preference, sizeof(uint));
-            }
-            catch {
+            } catch {
                 Console.WriteLine("INFO: Could not set window corner preferences.");
             }
         }
@@ -105,7 +104,7 @@ namespace Edda {
                 OpenMap(path);
             });
 
-            item.MouseRightButtonUp += new MouseButtonEventHandler((sender, e) => { 
+            item.MouseRightButtonUp += new MouseButtonEventHandler((sender, e) => {
                 var res = MessageBox.Show(this, "Are you sure you want to remove this map from the list of recently opened maps?", "Confirm Removal", MessageBoxButton.YesNoCancel, MessageBoxImage.Warning);
 
                 if (res == MessageBoxResult.Yes) {
@@ -176,7 +175,7 @@ namespace Edda {
                 main.InitOpenMap(folder);
             } catch (Exception ex) {
                 MessageBox.Show(this, $"An error occured while opening the map:\n{ex.Message}.", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
-                
+
                 RecentMaps.RemoveRecentlyOpened(folder);
                 RecentMaps.Write();
 

@@ -1,11 +1,11 @@
+using StepmaniaUtils.Enums;
+using StepmaniaUtils.Readers;
+using StepmaniaUtils.StepData;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.IO;
 using System.Linq;
-using StepmaniaUtils.Enums;
-using StepmaniaUtils.Readers;
-using StepmaniaUtils.StepData;
 
 namespace StepmaniaUtils {
     /// <summary>

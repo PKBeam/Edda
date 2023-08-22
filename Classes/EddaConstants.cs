@@ -1,12 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Windows.Media;
 using System.IO;
+using System.Windows.Media;
 
 namespace Edda.Const {
 
-    using MediaColor = Color;
     using DrawingColor = System.Drawing.Color;
+    using MediaColor = Color;
     public static class Program {
 
         public const string Name = "Edda";

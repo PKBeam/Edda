@@ -1,14 +1,14 @@
-﻿using NAudio.Vorbis;
-using System.Linq;
+﻿using Edda.Const;
+using NAudio.Vorbis;
+using System;
 using System.Collections.Generic;
+using System.Diagnostics;
+using System.IO;
+using System.Linq;
+using System.Threading;
 using System.Windows;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
-using System.Diagnostics;
-using System;
-using System.IO;
-using System.Threading;
-using Edda.Const;
 
 public class VorbisWaveformGenerator : IDisposable {
 

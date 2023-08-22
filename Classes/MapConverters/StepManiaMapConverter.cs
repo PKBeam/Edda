@@ -1,12 +1,12 @@
+using Edda.Const;
+using StepmaniaUtils;
+using StepmaniaUtils.Enums;
+using StepmaniaUtils.StepData;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
-using Edda.Const;
-using StepmaniaUtils;
-using StepmaniaUtils.Enums;
-using StepmaniaUtils.StepData;
 
 /// <summary>
 /// Converts .sm or .ssc files into Ragnarock beat maps.

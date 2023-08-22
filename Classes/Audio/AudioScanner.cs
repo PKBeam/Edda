@@ -1,9 +1,9 @@
-﻿using System;
+﻿using Edda.Const;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Threading;
 using System.Threading.Tasks;
-using Edda.Const;
 
 public class AudioScanner : IDisposable {
     int scanIndex;

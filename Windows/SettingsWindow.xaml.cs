@@ -1,22 +1,22 @@
-﻿using System;
+﻿using Edda.Const;
+using Microsoft.WindowsAPICodePack.Dialogs;
+using NAudio.CoreAudioApi;
+using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Controls.Primitives;
 using System.Windows.Data;
-using System.Diagnostics;
 using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Shapes;
-using Microsoft.WindowsAPICodePack.Dialogs;
 using Path = System.IO.Path;
-using System.Windows.Controls.Primitives;
-using Edda.Const;
-using NAudio.CoreAudioApi;
 
 namespace Edda {
     /// <summary>

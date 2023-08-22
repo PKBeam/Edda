@@ -1,9 +1,9 @@
-﻿using System;
+﻿using Edda;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Threading;
 using System.Threading.Tasks;
-using Edda;
 
 public class NoteScanner : AudioScanner {
     MainWindow caller;

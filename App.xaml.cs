@@ -1,6 +1,6 @@
-﻿using System.Diagnostics;
+﻿using Edda.Const;
+using System.Diagnostics;
 using System.Windows;
-using Edda.Const;
 
 namespace RagnarockEditor {
     /// <summary>

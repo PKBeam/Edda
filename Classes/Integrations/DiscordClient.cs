@@ -1,6 +1,6 @@
-﻿using System;
+﻿using DiscordRPC;
 using Edda;
-using DiscordRPC;
+using System;
 
 public class DiscordClient {
     DiscordRpcClient client;

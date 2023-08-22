@@ -1,26 +1,26 @@
-﻿using System;
-using System.Diagnostics;
+﻿using Edda.Const;
+using Microsoft.WindowsAPICodePack.Dialogs;
+using NAudio.CoreAudioApi;
+using NAudio.Vorbis;
+using NAudio.Wave;
+using NAudio.Wave.SampleProviders;
+using SoundTouch.Net.NAudioSupport;
+using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
+using System.IO.Compression;
+using System.Linq;
+using System.Reactive.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
-using System.Windows.Media.Imaging;
 using System.Windows.Media.Animation;
-using Microsoft.WindowsAPICodePack.Dialogs;
-using NAudio.CoreAudioApi;
-using NAudio.Wave;
-using NAudio.Wave.SampleProviders;
-using NAudio.Vorbis;
-using System.Reactive.Linq;
-using System.Threading;
-using System.IO.Compression;
+using System.Windows.Media.Imaging;
 using Path = System.IO.Path;
 using Timer = System.Timers.Timer;
-using SoundTouch.Net.NAudioSupport;
-using Edda.Const;
-using System.Linq;
 
 /// <summary>
 /// Interaction logic for MainWindow.xaml

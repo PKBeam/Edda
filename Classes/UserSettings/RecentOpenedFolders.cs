@@ -51,4 +51,3 @@ public class RecentOpenedFolders {
         fileLines = new();
     }
 }
-

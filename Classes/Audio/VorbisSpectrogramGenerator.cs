@@ -1,18 +1,18 @@
-﻿using NAudio.Vorbis;
+﻿using Edda.Const;
+using NAudio.Vorbis;
+using Spectrogram;
+using System;
+using System.Diagnostics;
+using System.Drawing;
+using System.Drawing.Imaging;
+using System.IO;
 using System.Linq;
+using System.Runtime.InteropServices;
+using System.Threading;
 using System.Windows;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
-using System.Diagnostics;
-using System;
-using System.IO;
-using System.Threading;
-using Edda.Const;
-using Spectrogram;
 using DrawingColor = System.Drawing.Color;
-using System.Drawing;
-using System.Drawing.Imaging;
-using System.Runtime.InteropServices;
 
 public class VorbisSpectrogramGenerator : IDisposable {
 
