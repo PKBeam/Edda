@@ -1,10 +1,9 @@
 ﻿using Edda;
+using Edda.Classes.MapEditor.Stats;
 using Edda.Const;
 using Newtonsoft.Json.Linq;
-using SoundTouch;
 using System;
 using System.Collections.Generic;
-using System.Collections.Immutable;
 using System.Linq;
 
 #nullable enable
@@ -59,14 +58,37 @@ public class MapEditor : IDisposable {
     public string mapFolder;
     RagnarockMap beatMap;
     MainWindow parent;
-    public double globalBPM;
+    double globalBPM;
     public int defaultGridDivision;
-    public double songDuration; // duration of song in seconds
+    double songDuration; // duration of song in seconds
     public int currentDifficultyIndex = -1;
+    MapStats currentDifficultyStats;
     MapDifficulty?[] difficultyMaps = new MapDifficulty[3];
     SortedSet<Note> clipboard;
 
     public bool needsSave = false;
+
+    public double GlobalBPM {
+        get {
+            return globalBPM;
+        }
+        set {
+            globalBPM = value;
+            currentDifficultyStats.globalBPM = value;
+            RecalculateMapStats();
+        }
+    }
+
+    public double SongDuration { // duration of song in seconds
+        get {
+            return songDuration;
+        }
+        set {
+            songDuration = value;
+            currentDifficultyStats.songDuration = value;
+            RecalculateMapStats();
+        }
+    }
 
     public int numDifficulties {
         get {
@@ -103,6 +125,7 @@ public class MapEditor : IDisposable {
                 beatMap.GetBookmarksForMap(indx)
             );
         }
+        this.currentDifficultyStats = new MapStats(globalBPM, songDuration);
         this.clipboard = new();
     }
 
@@ -137,6 +160,7 @@ public class MapEditor : IDisposable {
         currentMapDifficulty?.notes.Clear();
         currentMapDifficulty?.bookmarks.Clear();
         currentMapDifficulty?.bpmChanges.Clear();
+        RecalculateMapStats();
     }
     public bool DeleteDifficulty() {
         return DeleteDifficulty(currentDifficultyIndex);
@@ -177,6 +201,7 @@ public class MapEditor : IDisposable {
             beatMap.SetBPMChangesForMap(currentDifficultyIndex, currentMapDifficulty?.bpmChanges?.ToList());
         }
         currentDifficultyIndex = indx;
+        RecalculateMapStats();
     }
     public void SortDifficulties() {
         //needsSave = true; - not needed, SwapDifficulties updates info.dat if anything changes
@@ -254,6 +279,7 @@ public class MapEditor : IDisposable {
         }
         currentMapDifficulty?.editorHistory.Print();
         parent.RefreshDiscordPresence();
+        RecalculateMapStats();
     }
     public void AddNotes(Note n, bool updateHistory = true) {
         AddNotes(new List<Note>() { n }, updateHistory);
@@ -281,6 +307,7 @@ public class MapEditor : IDisposable {
         currentMapDifficulty?.editorHistory.Print();
         SelectNewNotes(drawNotes);
         parent.RefreshDiscordPresence();
+        RecalculateMapStats();
     }
 
     public void UpdateNotes(Note o, Note n, bool updateHistory = true) {
@@ -300,10 +327,11 @@ public class MapEditor : IDisposable {
         // finally, unselect all removed notes
         foreach (Note n in noteList) {
             currentMapDifficulty?.notes.Remove(n);
-            UnselectNote(n);
+            UnselectNote(n, false);
         }
         currentMapDifficulty?.editorHistory.Print();
         parent.RefreshDiscordPresence();
+        RecalculateMapStats();
     }
     public void RemoveNotes(Note n, bool updateHistory = true) {
         RemoveNotes(new List<Note>() { n }, updateHistory);
@@ -320,22 +348,26 @@ public class MapEditor : IDisposable {
     }
     public void ToggleSelection(IEnumerable<Note> notes) {
         foreach (Note n in notes) {
-            ToggleSelection(n);
+            ToggleSelection(n, false);
         }
+        RecalculateMapStats();
     }
-    public void ToggleSelection(Note n) {
+    public void ToggleSelection(Note n, bool updateMapStats = true) {
         if (currentMapDifficulty?.selectedNotes.Contains(n) ?? false) {
-            UnselectNote(n);
+            UnselectNote(n, updateMapStats);
         } else {
-            SelectNotes(n);
+            SelectNotes(n, updateMapStats);
         }
     }
-    public void SelectNotes(Note n) {
-        SelectNotes(new List<Note>() { n });
+    public void SelectNotes(Note n, bool updateMapStats = true) {
+        SelectNotes(new List<Note>() { n }, updateMapStats);
     }
-    public void SelectNotes(IEnumerable<Note> notes) {
+    public void SelectNotes(IEnumerable<Note> notes, bool updateMapStats = true) {
         var selectNotes = notes.Where(n => currentMapDifficulty?.selectedNotes?.Add(n) == true);
         parent.gridController.HighlightNotes(selectNotes);
+        if (updateMapStats) {
+            RecalculateMapStats();
+        }
     }
     public void SelectAllNotes() {
         if (currentMapDifficulty == null) {
@@ -343,26 +375,32 @@ public class MapEditor : IDisposable {
         }
         SelectNewNotes(currentMapDifficulty.notes);
     }
-    public void SelectNewNotes(IEnumerable<Note> notes) {
-        UnselectAllNotes();
-        SelectNotes(notes);
+    public void SelectNewNotes(IEnumerable<Note> notes, bool updateMapStats = true) {
+        UnselectAllNotes(false);
+        SelectNotes(notes, updateMapStats);
     }
-    public void SelectNewNotes(Note n) {
-        SelectNewNotes(new List<Note>() { n });
+    public void SelectNewNotes(Note n, bool updateMapStats = true) {
+        SelectNewNotes(new List<Note>() { n }, updateMapStats);
     }
-    public void UnselectNote(Note n) {
+    public void UnselectNote(Note n, bool updateMapStats = true) {
         if (currentMapDifficulty?.selectedNotes == null) {
             return;
         }
         parent.gridController.UnhighlightNotes(n);
         currentMapDifficulty.selectedNotes.Remove(n);
+        if (updateMapStats) {
+            RecalculateMapStats();
+        }
     }
-    public void UnselectAllNotes() {
+    public void UnselectAllNotes(bool updateMapStats = true) {
         if (currentMapDifficulty?.selectedNotes == null) {
             return;
         }
         parent.gridController.UnhighlightNotes(currentMapDifficulty.selectedNotes);
         currentMapDifficulty.selectedNotes.Clear();
+        if (updateMapStats) {
+            RecalculateMapStats();
+        }
     }
     public void CopySelection() {
         if (currentMapDifficulty == null) {
@@ -602,5 +640,14 @@ public class MapEditor : IDisposable {
         } else {
             SelectNewNotes(notes);
         }
+    }
+
+    internal void RecalculateMapStats() {
+        if (currentMapDifficulty == null) {
+            currentDifficultyStats.Recalculate(new(), new());
+        } else {
+            currentDifficultyStats.Recalculate(currentMapDifficulty.notes, currentMapDifficulty.selectedNotes);
+        }
+        parent.SetMapStats(currentDifficultyStats);
     }
 }

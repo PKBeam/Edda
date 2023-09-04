@@ -1,16 +1,12 @@
 ﻿using Syncfusion.PMML;
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Globalization;
 using System.IO;
 using System.Linq;
-using System.Printing;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Documents;
 using System.Xml;
-using static System.Formats.Asn1.AsnWriter;
 
 namespace Edda.Windows {
     /// <summary>
@@ -30,8 +26,8 @@ namespace Edda.Windows {
             btnDifficulty2.IsEnabled = false;
             PanelPredictionResults.Visibility = Visibility.Hidden;
             var mapEditor = mainWindow.mapEditor;
-            var globalBpm = mapEditor.globalBPM;
-            var globalSongDuration = mapEditor.songDuration;
+            var globalBpm = mapEditor.GlobalBPM;
+            var globalSongDuration = mapEditor.SongDuration;
             for (int i = 0; i < mapEditor.numDifficulties; i++) {
                 var diff = mapEditor.GetDifficulty(i);
                 var diffNotes = diff.notes;
@@ -40,7 +36,7 @@ namespace Edda.Windows {
                 var noteDensity = GetNoteDensity(diffNotes, songDuration);
                 var localNoteDensity = GetLocalNoteDensity(diffNotes, songDuration, globalBpm);
                 var highLocalNoteDensity = Helper.GetQuantile(localNoteDensity, 0.95);
-                var predictedDiff = EvaluateModel(mapEditor.globalBPM, noteDensity, highLocalNoteDensity);
+                var predictedDiff = EvaluateModel(mapEditor.GlobalBPM, noteDensity, highLocalNoteDensity);
 
                 Label diffLabel;
                 switch (i) {
