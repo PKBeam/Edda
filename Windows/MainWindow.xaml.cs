@@ -48,6 +48,10 @@ namespace Edda {
                 return songStream?.TotalTime.TotalSeconds;
             }
         }
+        bool previewIsPlaying {
+            set { btnPlayPreview.Tag = (value == false) ? 0 : 1; }
+            get { return btnPlayPreview.Tag != null && (int)btnPlayPreview.Tag == 1; }
+        }
         bool mapIsLoaded {
             get {
                 return mapEditor != null;
@@ -119,6 +123,7 @@ namespace Edda {
 
         // audio playback
         CancellationTokenSource songPlaybackCancellationTokenSource;
+        CancellationTokenSource previewPlaybackCancellationTokenSource;
         int editorAudioLatency; // ms
         MMDeviceEnumerator deviceEnumerator = new MMDeviceEnumerator();
         DeviceChangeListener deviceChangeListener;
@@ -138,6 +143,10 @@ namespace Edda {
         public VorbisWaveReader songStream;
         SoundTouchWaveStream songTempoStream;
         public WasapiOut songPlayer;
+        SampleChannel previewChannel;
+        public VorbisWaveReader previewStream;
+        SoundTouchWaveStream previewTempoStream;
+        public WasapiOut previewPlayer;
         internal ParallelAudioPlayer drummer;
         ParallelAudioPlayer metronome;
         NoteScanner noteScanner;
@@ -305,6 +314,7 @@ namespace Edda {
             mapEditor = new MapEditor(this, mapFolder, false);
             gridController.InitMap(mapEditor);
             LoadSong(); // song file
+            LoadPreview();
             LoadCoverImage();
             InitUI(); // cover image file
 
@@ -386,6 +396,7 @@ namespace Edda {
                     mapEditor = oldMapEditor;
                     gridController.InitMap(oldMapEditor);
                     LoadSong();
+                    LoadPreview();
                     LoadCoverImage();
                     InitUI();
                 }
@@ -954,6 +965,10 @@ namespace Edda {
             var oldSongPlayer = songPlayer;
             InitSongPlayer();
             oldSongPlayer?.Dispose();
+            StopPreview();
+            var oldPreviewPlayer = previewPlayer;
+            InitPreviewPlayer();
+            oldPreviewPlayer?.Dispose();
             RestartDrummer();
             RestartMetronome();
         }
@@ -1174,6 +1189,81 @@ namespace Edda {
             //}
             //bool isPanned = userSettings.GetBoolForKey(Const.UserSettings.PanDrumSounds);
             //InitDrummer(userSettings.GetValueForKey(Const.UserSettings.DrumSampleFile), isPanned);
+        }
+        private void LoadPreview() {
+            var previewPath = Path.Combine(mapEditor.mapFolder, BeatmapDefaults.PreviewFilename);
+            try {
+                previewStream = new VorbisWaveReader(previewPath);
+                previewTempoStream = new SoundTouchWaveStream(previewStream);
+                previewChannel = new SampleChannel(previewTempoStream);
+                previewChannel.Volume = (float)sliderSongVol.Value;
+                InitPreviewPlayer();
+                btnPlayPreview.IsEnabled = true;
+                imgPreviewButton.Opacity = 1;
+            } catch (Exception) {
+                btnPlayPreview.IsEnabled = false;
+                imgPreviewButton.Opacity = 0.5;
+            }
+        }
+        private void InitPreviewPlayer() {
+            var device = playbackDevice;
+            if (device != null) {
+                previewPlayer = new WasapiOut(device, AudioClientShareMode.Shared, true, Audio.WASAPILatencyTarget);
+                previewPlayer.Init(previewChannel);
+
+                // subscribe to playbackstopped
+                previewPlayer.PlaybackStopped += (sender, args) => { StopPreview(); };
+            } else {
+                previewPlayer = null;
+            }
+        }
+        private void UnloadPreview() {
+            if (previewStream != null) {
+                var oldPreviewStream = previewStream;
+                previewStream = null;
+                oldPreviewStream.Dispose();
+            }
+            if (previewPlayer != null) {
+                var oldPreviewPlayer = previewPlayer;
+                previewPlayer = null;
+                oldPreviewPlayer.Dispose();
+            }
+            btnPlayPreview.IsEnabled = false;
+            imgPreviewButton.Opacity = 0.5;
+        }
+        private void PlayPreview() {
+            previewIsPlaying = true;
+
+            // toggle button appearance
+            imgPreviewButton.Source = Helper.BitmapGenerator("stopButton.png");
+
+            // set seek position for preview on start
+            previewStream.CurrentTime = TimeSpan.Zero;
+
+            // play the preview
+            if (editorAudioLatency == 0 || previewTempoStream.CurrentTime > new TimeSpan(0, 0, 0, 0, editorAudioLatency)) {
+                previewTempoStream.CurrentTime = previewTempoStream.CurrentTime - new TimeSpan(0, 0, 0, 0, editorAudioLatency);
+                previewPlayer?.Play();
+            } else {
+                previewTempoStream.CurrentTime = new TimeSpan(0);
+                var oldPreviewPlaybackCancellationTokenSource = previewPlaybackCancellationTokenSource;
+                previewPlaybackCancellationTokenSource = new();
+                oldPreviewPlaybackCancellationTokenSource.Dispose();
+                Task.Delay(new TimeSpan(0, 0, 0, 0, editorAudioLatency)).ContinueWith(o => {
+                    if (!previewPlaybackCancellationTokenSource.IsCancellationRequested) {
+                        previewPlayer?.Play();
+                    }
+                });
+            }
+        }
+        internal void StopPreview() {
+            if (!previewIsPlaying) {
+                return;
+            }
+            previewIsPlaying = false;
+            imgPreviewButton.Source = Helper.BitmapGenerator("playButton.png");
+
+            previewPlayer?.Stop();
         }
         internal void AnimateDrum(int num) {
             // this feature doesn't work properly for now

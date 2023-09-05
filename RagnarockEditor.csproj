@@ -80,6 +80,7 @@
     <None Remove="Resources\snaredrum2.wav" />
     <None Remove="Resources\snaredrum3.wav" />
     <None Remove="Resources\snaredrum4.wav" />
+    <None Remove="Resources\stopButton.png" />
     <None Remove="Resources\tick.png" />
     <None Remove="Resources\waterTexture.png" />
     <None Remove="Resources\waterTextureSmall.png" />
@@ -165,6 +166,7 @@
     <Resource Include="Resources\musicNote.png" />
     <Resource Include="Resources\newMap.png" />
     <Resource Include="Resources\openMap.png" />
+    <Resource Include="Resources\stopButton.png" />
     <Resource Include="Resources\pauseButton.png" />
     <Resource Include="Resources\placeholder.png" />
     <Resource Include="Resources\playButton.png" />

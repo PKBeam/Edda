@@ -188,14 +188,14 @@ public class StepManiaMapConverter : IMapConverter {
         if (double.TryParse(smFile[SmFileAttribute.SAMPLESTART], CultureInfo.InvariantCulture, out double sampleStart) &&
             double.TryParse(smFile[SmFileAttribute.SAMPLELENGTH], CultureInfo.InvariantCulture, out double sampleLength) &&
             File.Exists(songURL)) {
-            string saveURL = beatmap.PathOf("preview.ogg");
+            string saveURL = beatmap.PathOf(BeatmapDefaults.PreviewFilename);
             int startMin = (int)(sampleStart / 60);
             int startSec = (int)(sampleStart - 60 * startMin);
             int endMin = (int)((sampleStart + sampleLength) / 60);
             int endSec = (int)(sampleStart + sampleLength - 60 * endMin);
             int exitCode = Helper.FFmpeg(beatmap.PathOf(""), $"-i \"{songURL}\" -y -ss 00:{startMin:D2}:{startSec:D2} -to 00:{endMin:D2}:{endSec:D2} -vn \"{saveURL}\"");
             if (exitCode != 0) {
-                System.Diagnostics.Trace.WriteLine($"WARNING: Failed to generate preview.ogg");
+                System.Diagnostics.Trace.WriteLine($"WARNING: Failed to generate {BeatmapDefaults.PreviewFilename}");
             }
         }
     }
