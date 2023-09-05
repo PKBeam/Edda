@@ -4,6 +4,7 @@ using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Drawing;
 using System.Globalization;
 using System.IO;
 using System.Linq;
@@ -105,6 +106,23 @@ public class Helper {
         }
         return BeatmapDefaults.CoverFilename + coverExtension;
     }
+    public static bool IsValidCoverFile(string fileName) {
+        BitmapImage img = BitmapGenerator(new Uri(fileName));
+        return img.PixelWidth == img.PixelHeight;
+    }
+
+    public static string TrimCoverFile(string fileName) {
+        using Image src = Image.FromFile(fileName);
+        var size = Math.Min(src.Width, src.Height);
+        var cropRect = new Rectangle((src.Width - size) / 2, (src.Height - size) / 2, size, size);
+        using Bitmap target = new(size, size);
+        using Graphics g = Graphics.FromImage(target);
+        g.DrawImage(src, new Rectangle(0, 0, size, size), cropRect, GraphicsUnit.Pixel);
+        string newFileName = Path.GetTempPath() + Path.GetRandomFileName() + Path.GetExtension(fileName);
+        target.Save(newFileName);
+        return newFileName;
+    }
+
     public static string DefaultRagnarockMapPath() {
         string docPath = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
         string ragPath = Path.Combine(docPath, "Ragnarock");
@@ -332,7 +350,7 @@ public class Helper {
         return new Uri($"pack://application:,,,/resources/{file}");
     }
     public static BitmapImage BitmapGenerator(string resourceFile) {
-        return BitmapGenerator(new Uri($"pack://application:,,,/resources/{resourceFile}"));
+        return BitmapGenerator(UriForResource(resourceFile));
     }
     public static BitmapImage BitmapImageForBeat(double beat, bool isHighlighted = false) {
         double fracBeat = beat - (int)beat;
