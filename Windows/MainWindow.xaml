@@ -463,7 +463,7 @@
                             <Border Grid.Row="4" Grid.Column="1">
                                 <DockPanel>
                                     <TextBlock x:Name="txtSongTempo" DockPanel.Dock="Right" Width="30" Margin="5 0 0 0">1x</TextBlock>
-                                    <Slider x:Name="sliderSongTempo" Maximum="1" IsMoveToPointEnabled="True" ValueChanged="sliderSongTempo_ValueChanged" Minimum="0.1"/>
+                                    <Slider x:Name="sliderSongTempo" Maximum="2" IsMoveToPointEnabled="True" ValueChanged="sliderSongTempo_ValueChanged" Minimum="0.1" SmallChange="0.05" LargeChange="0.25" MouseDoubleClick="sliderSongTempo_MouseDoubleClick"/>
                                 </DockPanel>
                             </Border>
 
