@@ -74,21 +74,14 @@ namespace Edda.Classes.MapEditor.Stats {
         }
 
         private double CalculateNPSPeakBeat(SortedSet<Note> notes, double beats) {
-            var peakNPB = 0.0;
-            var startIt = notes.GetEnumerator();
-            startIt.MoveNext();
-            var startIndex = 0;
-            var noteIt = notes.GetEnumerator();
-            var noteIndex = 0;
-
-            while (noteIt.MoveNext()) {
-                while (Helper.DoubleApproxGreater(noteIt.Current.beat - startIt.Current.beat, beats)) {
-                    startIt.MoveNext();
-                    startIndex++;
-                }
-                peakNPB = Math.Max(peakNPB, (noteIndex - startIndex + 1) / beats);
-                noteIndex++;
-            }
+            var peakNPB = notes
+                .Select((note, noteIndex) => notes
+                    .GetViewBetween(new Note(note.beat - beats, -1), note)
+                    .Count
+                )
+                .Select(noteCount => noteCount / beats)
+                .DefaultIfEmpty(0)
+                .Max();
 
             return double.Round(peakNPB * globalBPM / 60, 2);
         }
