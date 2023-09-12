@@ -58,21 +58,6 @@ namespace Edda {
 
             songChannel = null;
 
-            var oldPreviewPlayer = previewPlayer;
-            previewPlayer = null;
-            oldPreviewPlayer?.Stop();
-            oldPreviewPlayer?.Dispose();
-
-            var oldPreviewStream = previewStream;
-            previewStream = null;
-            oldPreviewStream?.Dispose();
-
-            var oldPreviewTempoStream = previewTempoStream;
-            previewTempoStream = null;
-            oldPreviewTempoStream?.Dispose();
-
-            previewChannel = null;
-
             var oldNoteScanner = noteScanner;
             noteScanner = null;
             oldNoteScanner?.Dispose();
@@ -116,6 +101,10 @@ namespace Edda {
             var oldGridController = gridController;
             gridController = null;
             oldGridController?.Dispose();
+
+            var oldSongPreviewController = songPreviewController;
+            songPreviewController = null;
+            oldSongPreviewController?.Dispose();
 
             userSettings?.Clear();
             userSettings = null;
@@ -382,19 +371,20 @@ namespace Edda {
                 win = new SongPreviewWindow(mapEditor.mapFolder, Path.Combine(mapEditor.mapFolder, songFile), selectedTime / 60, selectedTime % 60);
                 win.Topmost = true;
                 win.Owner = this;
-                UnloadPreview();
-                win.Closed += (sender, e) => { LoadPreview(); };
+                songPreviewController?.UnloadPreview();
+                win.Closed += (sender, e) => {
+                    songPreviewController?.LoadPreview(mapEditor);
+                    if (songIsPlaying) {
+                        songPreviewController?.DisablePreviewButton();
+                    }
+                };
                 win.Show();
             } else {
                 win.Focus();
             }
         }
         private void BtnPlayPreview_Click(object sender, RoutedEventArgs e) {
-            if (!previewIsPlaying) {
-                PlayPreview();
-            } else {
-                StopPreview();
-            }
+            songPreviewController?.TogglePreview();
         }
         private void BtnPickCover_Click(object sender, RoutedEventArgs e) {
             SelectNewCoverImage();
@@ -439,9 +429,7 @@ namespace Edda {
         }
         private void SliderSongVol_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e) {
             songChannel.Volume = (float)sliderSongVol.Value;
-            if (previewChannel != null) {
-                previewChannel.Volume = (float)sliderSongVol.Value;
-            }
+            songPreviewController?.UpdateVolume();
             txtSongVol.Text = $"{(int)(sliderSongVol.Value * 100)}%";
         }
         private void SliderDrumVol_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e) {
