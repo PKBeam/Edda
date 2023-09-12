@@ -1,0 +1,19 @@
+name: Code Quality
+
+on:
+  pull_request:
+    branches: [ "master" ]
+
+jobs:
+  check_code_formatting:
+
+    runs-on: windows-latest
+
+    steps:
+    - uses: actions/checkout@v3
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v3
+      with:
+        dotnet-version: 7.0.x
+    - name: Formatting check
+      run: dotnet format ./RagnarockEditor.sln --verify-no-changes
