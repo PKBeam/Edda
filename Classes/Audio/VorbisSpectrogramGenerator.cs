@@ -125,9 +125,15 @@ public class VorbisSpectrogramGenerator : IDisposable {
         }
 
         var fftSize = (int)Math.Pow(2, Editor.Spectrogram.FftSizeExp);
-        var sg = new SpectrogramGenerator(sampleRate, fftSize: fftSize, stepSize: Editor.Spectrogram.StepSize * (int)quality, maxFreq: maxFreq);
+        var stepSize = Editor.Spectrogram.StepSize * (int)quality;
+        var sg = new SpectrogramGenerator(sampleRate, fftSize: fftSize, stepSize: stepSize, maxFreq: maxFreq);
         sg.Colormap = Colormap.GetColormap(colormap);
         sg.Add(audioBufferDouble);
+        // Due to windowing and step size, there can be a few pixels missing at the end.
+        // For longer songs, this is a problem, because after we stretch the image out, the peaks don't line up at the end.
+        // To account for that, we pad the audio sample data with zeros at the end.
+        var expectedWidth = (int)numSamples / stepSize;
+        sg.Add(new double[Math.Max(expectedWidth - sg.Width, 0) * stepSize]);
 
         Bitmap bmp = null;
         switch (type) {
