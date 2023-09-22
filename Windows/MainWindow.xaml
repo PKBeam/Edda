@@ -228,14 +228,19 @@
                         </Border>
 
                         <Border Grid.Row="1" Grid.ColumnSpan="2" Margin="0 5 0 5" HorizontalAlignment="Center">
-                            <Button x:Name="btnMakePreview" Width="199"  Padding="3" Click="BtnMakePreview_Click" VerticalAlignment="Top">
-                                <Button.Resources>
-                                    <Style TargetType="Border">
-                                        <Setter Property="CornerRadius" Value="5"/>
-                                    </Style>
-                                </Button.Resources>
-                                Create Song Preview
-                            </Button>
+                            <StackPanel Orientation="Horizontal">
+                                <Button x:Name="btnMakePreview" Width="174" Padding="3" Margin="0 0 5 0" Click="BtnMakePreview_Click" VerticalAlignment="Top">
+                                    <Button.Resources>
+                                        <Style TargetType="Border">
+                                            <Setter Property="CornerRadius" Value="5"/>
+                                        </Style>
+                                    </Button.Resources>
+                                    Create Song Preview
+                                </Button>
+                                <Button x:Name="btnPlayPreview" Width="20" Height="20" Click="BtnPlayPreview_Click">
+                                    <Image x:Name="imgPreviewButton" Source="pack://application:,,,/Edda;component/resources/playButton.png" RenderOptions.BitmapScalingMode="Fant"/>
+                                </Button>
+                            </StackPanel>
                         </Border>
 
                         <Border Grid.Row="5" Grid.Column="0">

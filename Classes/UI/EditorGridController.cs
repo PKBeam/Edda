@@ -755,7 +755,7 @@ public class EditorGridController : IDisposable {
         }
     }
     internal void DrawNavBookmarks() {
-        if (!parentWindow.songTotalTimeInSeconds.HasValue) {
+        if (!parentWindow.songTotalTimeInSeconds.HasValue || mapEditor.currentMapDifficulty == null) {
             return;
         }
         canvasBookmarks.Children.Clear();

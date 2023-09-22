@@ -77,7 +77,7 @@ namespace Edda {
                 return userSettings.GetValueForKey(UserSettingsKey.PlaybackDeviceID);
             }
         }
-        MMDevice playbackDevice {
+        internal MMDevice playbackDevice {
             get {
                 MMDevice device = null;
                 if (!string.IsNullOrEmpty(playbackDeviceID)) {
@@ -109,6 +109,7 @@ namespace Edda {
         // STATE VARIABLES
         public MapEditor mapEditor;
         public EditorGridController gridController;
+        SongPreviewController songPreviewController;
         Timer autosaveTimer;
         UserSettingsManager userSettings;
         public bool shiftKeyDown;
@@ -120,7 +121,7 @@ namespace Edda {
 
         // audio playback
         CancellationTokenSource songPlaybackCancellationTokenSource;
-        int editorAudioLatency; // ms
+        internal int editorAudioLatency; // ms
         MMDeviceEnumerator deviceEnumerator = new MMDeviceEnumerator();
         DeviceChangeListener deviceChangeListener;
         public string playbackDeviceID {
@@ -195,6 +196,8 @@ namespace Edda {
                 canvasBookmarkLabels,
                 lineSongMouseover
             );
+            // load preview UI
+            songPreviewController = new SongPreviewController(this);
 
             InitSettings();
 
@@ -259,6 +262,7 @@ namespace Edda {
             }
             mapEditor = new MapEditor(this, newMapFolder, true);
             gridController.InitMap(mapEditor);
+            songPreviewController?.LoadPreview(mapEditor);
 
             // load audio file
             LoadSongFile(file);
@@ -306,6 +310,7 @@ namespace Edda {
             mapEditor = new MapEditor(this, mapFolder, false);
             gridController.InitMap(mapEditor);
             LoadSong(); // song file
+            songPreviewController?.LoadPreview(mapEditor);
             LoadCoverImage();
             InitUI(); // cover image file
 
@@ -387,6 +392,7 @@ namespace Edda {
                     mapEditor = oldMapEditor;
                     gridController.InitMap(oldMapEditor);
                     LoadSong();
+                    songPreviewController?.LoadPreview(oldMapEditor);
                     LoadCoverImage();
                     InitUI();
                 }
@@ -970,6 +976,7 @@ namespace Edda {
             var oldSongPlayer = songPlayer;
             InitSongPlayer();
             oldSongPlayer?.Dispose();
+            songPreviewController?.Restart();
             RestartDrummer();
             RestartMetronome();
         }
@@ -1117,6 +1124,10 @@ namespace Edda {
             borderNavWaveform.IsEnabled = false;
             sliderSongTempo.IsEnabled = false;
 
+            // stop preview from interfering
+            songPreviewController?.StopPreview();
+            songPreviewController?.DisablePreviewButton();
+
             // hide editor
             gridController.SetPreviewNoteVisibility(Visibility.Hidden);
 
@@ -1174,6 +1185,7 @@ namespace Edda {
             sliderSongProgress.IsEnabled = true;
             borderNavWaveform.IsEnabled = true;
             sliderSongTempo.IsEnabled = true;
+            songPreviewController?.EnablePreviewButton();
 
             // reset scroll animation
             songPlayAnim.BeginTime = null;
@@ -1191,6 +1203,7 @@ namespace Edda {
             //bool isPanned = userSettings.GetBoolForKey(Const.UserSettings.PanDrumSounds);
             //InitDrummer(userSettings.GetValueForKey(Const.UserSettings.DrumSampleFile), isPanned);
         }
+
         internal void AnimateDrum(int num) {
             // this feature doesn't work properly for now
             // (drum sizes break on window resize after the animation is performed)
