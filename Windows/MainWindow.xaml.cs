@@ -566,7 +566,7 @@ namespace Edda {
 
             // init difficulty-specific UI 
             SwitchDifficultyMap(0);
-            sliderSongTempo.Value = 1.0;
+            SetupSongTempoSlider();
             UpdateDifficultyButtons();
             DrawEditorGrid();
             scrollEditor.ScrollToBottom();
@@ -591,6 +591,7 @@ namespace Edda {
             btnPickCover.IsEnabled = true;
             sliderSongVol.IsEnabled = true;
             sliderDrumVol.IsEnabled = true;
+            sliderSongTempo.IsEnabled = true;
             checkMetronome.IsEnabled = true;
             checkGridSnap.IsEnabled = true;
             txtDifficultyNumber.IsEnabled = true;
@@ -625,6 +626,7 @@ namespace Edda {
             btnPickCover.IsEnabled = false;
             sliderSongVol.IsEnabled = false;
             sliderDrumVol.IsEnabled = false;
+            sliderSongTempo.IsEnabled = false;
             checkMetronome.IsEnabled = false;
             checkGridSnap.IsEnabled = false;
             txtDifficultyNumber.IsEnabled = false;
@@ -894,6 +896,13 @@ namespace Edda {
         }
 
         // map difficulties
+        private void SetupSongTempoSlider() {
+            sliderSongTempo.Minimum = Audio.MinSongTempo;
+            sliderSongTempo.Maximum = Audio.MaxSongTempo;
+            sliderSongTempo.SmallChange = Audio.SongTempoSmallChange;
+            sliderSongTempo.LargeChange = Audio.SongTempoLargeChange;
+            sliderSongTempo.Value = Audio.DefaultSongTempo;
+        }
         public void UpdateDifficultyButtons() {
             var numDiff = mapEditor.numDifficulties;
 

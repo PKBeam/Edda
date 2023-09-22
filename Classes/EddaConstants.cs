@@ -184,6 +184,12 @@ namespace Edda.Const {
         public const int NotePlaybackStreams = 32;
         public const int NotePollRate = 15;  // ms
         public const double NoteDetectionDelta = 10;  // ms
+        // Song Tempo
+        public const double MaxSongTempo = 2.0;
+        public const double DefaultSongTempo = 1.0;
+        public const double MinSongTempo = 0.1;
+        public const double SongTempoSmallChange = 0.05;
+        public const double SongTempoLargeChange = 0.25;
 
         public const int MaxPreviewLength = 15; // sec
         public const int DefaultPreviewFadeIn = 1; // sec

@@ -446,6 +446,9 @@ namespace Edda {
             beatScanner.SetTempo(newTempo);
             txtSongTempo.Text = $"{Math.Round(newTempo, 2).ToString("0.00")}x";
         }
+        private void sliderSongTempo_MouseDoubleClick(object sender, MouseButtonEventArgs e) {
+            sliderSongTempo.Value = Audio.DefaultSongTempo;
+        }
         private void CheckMetronome_Click(object sender, RoutedEventArgs e) {
             if (metronome != null) {
                 metronome.isEnabled = (checkMetronome.IsChecked == true);
