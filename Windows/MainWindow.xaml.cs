@@ -834,20 +834,35 @@ namespace Edda {
                 return;
             }
 
+            string sourceFile = d.FileName;
+
+            if (!Helper.IsValidCoverFile(sourceFile)) {
+                var coverTrimResult = MessageBox.Show(this, $"Ragnarock will only display square cover images. Do you want Edda to create and use a cropped version of the selected image instead?", "Warning", MessageBoxButton.YesNoCancel, MessageBoxImage.Warning);
+                switch (coverTrimResult) {
+                    case MessageBoxResult.Yes:
+                        sourceFile = Helper.TrimCoverFile(sourceFile);
+                        break;
+                    case MessageBoxResult.No:
+                        break; // Continue
+                    case MessageBoxResult.Cancel:
+                        return; // Cancel the whole operation
+                }
+            }
+
             imgCover.Source = null;
 
             string prevPath = Path.Combine(mapEditor.mapFolder, (string)mapEditor.GetMapValue("_coverImageFilename"));
-            string newFile = Helper.SanitiseCoverFileName(d.FileName);
+            string newFile = Helper.SanitiseCoverFileName(sourceFile);
             string newPath = Path.Combine(mapEditor.mapFolder, newFile);
 
             // skip only when the chosen file is already the map cover file
-            if (prevPath != d.FileName) {
+            if (prevPath != sourceFile) {
                 // remove the previous cover image
                 Helper.FileDeleteIfExists(prevPath);
                 // delete any existing files in the map folder with conflicting names
                 Helper.FileDeleteIfExists(newPath);
                 // copy image file over
-                File.Copy(d.FileName, newPath);
+                File.Copy(sourceFile, newPath);
 
                 mapEditor.SetMapValue("_coverImageFilename", newFile);
                 SaveBeatmap();
