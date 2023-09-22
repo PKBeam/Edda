@@ -96,7 +96,6 @@
                     <TextBlock DockPanel.Dock="Right" Margin="0 0 15 0" x:Name="txtSongDuration" FontSize="16" VerticalAlignment="Center">0:00</TextBlock>
                     <Slider x:Name="sliderSongProgress" Margin="10 15 10 15" VerticalAlignment="Center" IsMoveToPointEnabled="True" ValueChanged="SliderSongProgress_ValueChanged"/>
                 </DockPanel>
-                <Image x:Name="imgWaveformHorizontal"></Image>
             </StackPanel>
         </Border>
         <Border x:Name="borderLeftDock" DockPanel.Dock="Left" Width="225" MinWidth="225" BorderBrush="{DynamicResource {x:Static SystemColors.ControlDarkDarkBrushKey}}" BorderThickness="0, 0, 1, 0" Background="{DynamicResource {x:Static SystemColors.ControlDarkBrushKey}}" FocusVisualStyle="{x:Null}" >
@@ -260,6 +259,164 @@
                             </Border>
                         </Border>
                     </Grid>
+                    <Line X1="0" X2="{Binding ElementName=LeftPanel, Path=ActualWidth}" Margin="0 10 0 0" StrokeThickness="1" Stroke="{DynamicResource {x:Static SystemColors.ControlDarkDarkBrushKey}}" HorizontalAlignment="Center"></Line>
+                    <Label Margin="5 5 0 0" FontWeight="Bold" FontSize="16" FontFamily="Bahnschrift">Map Stats</Label>
+                    <StackPanel Margin="10 0 5 0">
+                        <Expander x:Name="notesStats" IsExpanded="True">
+                            <Expander.Header>
+                                <TextBlock Text="Notes" FontWeight="DemiBold"/>
+                            </Expander.Header>
+                            <Grid VerticalAlignment="Center">
+                                <Grid.Resources>
+                                    <Style TargetType="Border" >
+                                        <Setter Property="Padding" Value="5,1,5,1" />
+                                    </Style>
+                                </Grid.Resources>
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="*" />
+                                    <RowDefinition Height="*" />
+                                </Grid.RowDefinitions>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="*" />
+                                </Grid.ColumnDefinitions>
+                                <Border Grid.Row="0" Grid.Column="0">
+                                    <TextBlock VerticalAlignment="Center">All</TextBlock>
+                                </Border>
+                                <Border Grid.Row="0" Grid.Column="1">
+                                    <TextBlock VerticalAlignment="Center">Select</TextBlock>
+                                </Border>
+                                <Border Grid.Row="0" Grid.Column="2">
+                                    <TextBlock VerticalAlignment="Center">Single</TextBlock>
+                                </Border>
+                                <Border Grid.Row="0" Grid.Column="3">
+                                    <TextBlock VerticalAlignment="Center">Double</TextBlock>
+                                </Border>
+                                <Border Grid.Row="1" Grid.Column="0">
+                                    <TextBlock x:Name="notesStatsAll" VerticalAlignment="Center">734</TextBlock>
+                                </Border>
+                                <Border Grid.Row="1" Grid.Column="1">
+                                    <TextBlock x:Name="notesStatsSelected" VerticalAlignment="Center">0</TextBlock>
+                                </Border>
+                                <Border Grid.Row="1" Grid.Column="2">
+                                    <TextBlock x:Name="notesStatsSingle" VerticalAlignment="Center">524</TextBlock>
+                                </Border>
+                                <Border Grid.Row="1" Grid.Column="3">
+                                    <TextBlock x:Name="notesStatsDouble" VerticalAlignment="Center">210</TextBlock>
+                                </Border>
+                                <Border Grid.RowSpan="2" Grid.Column="0" BorderBrush="{DynamicResource {x:Static SystemColors.ControlDarkDarkBrushKey}}" BorderThickness="0,0,1,0"/>
+                                <Border Grid.RowSpan="2" Grid.Column="1" BorderBrush="{DynamicResource {x:Static SystemColors.ControlDarkDarkBrushKey}}" BorderThickness="0,0,1,0"/>
+                                <Border Grid.RowSpan="2" Grid.Column="2" BorderBrush="{DynamicResource {x:Static SystemColors.ControlDarkDarkBrushKey}}" BorderThickness="0,0,1,0"/>
+                            </Grid>
+                        </Expander>
+                        <Border BorderBrush="{DynamicResource {x:Static SystemColors.ControlDarkDarkBrushKey}}" BorderThickness="0,0,0,1"/>
+                        <Expander x:Name="columnStats">
+                            <Expander.Header>
+                                <TextBlock Text="Column variety" FontWeight="DemiBold"/>
+                            </Expander.Header>
+                            <Grid VerticalAlignment="Center">
+                                <Grid.Resources>
+                                    <Style TargetType="Border" >
+                                        <Setter Property="Padding" Value="5,1,5,1" />
+                                    </Style>
+                                </Grid.Resources>
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="*" />
+                                    <RowDefinition Height="*" />
+                                </Grid.RowDefinitions>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="*" />
+                                </Grid.ColumnDefinitions>
+                                <Border Grid.Row="0" Grid.Column="0">
+                                    <TextBlock x:Name="columnStatsValue1" VerticalAlignment="Center">177</TextBlock>
+                                </Border>
+                                <Border Grid.Row="0" Grid.Column="1">
+                                    <TextBlock x:Name="columnStatsValue2" VerticalAlignment="Center">187</TextBlock>
+                                </Border>
+                                <Border Grid.Row="0" Grid.Column="2">
+                                    <TextBlock x:Name="columnStatsValue3" VerticalAlignment="Center">172</TextBlock>
+                                </Border>
+                                <Border Grid.Row="0" Grid.Column="3">
+                                    <TextBlock x:Name="columnStatsValue4" VerticalAlignment="Center">198</TextBlock>
+                                </Border>
+                                <Border Grid.Row="1" Grid.Column="0">
+                                    <TextBlock x:Name="columnStatsPercentage1" VerticalAlignment="Center">24.11%</TextBlock>
+                                </Border>
+                                <Border Grid.Row="1" Grid.Column="1">
+                                    <TextBlock x:Name="columnStatsPercentage2" VerticalAlignment="Center">25.48%</TextBlock>
+                                </Border>
+                                <Border Grid.Row="1" Grid.Column="2">
+                                    <TextBlock x:Name="columnStatsPercentage3" VerticalAlignment="Center">23.43%</TextBlock>
+                                </Border>
+                                <Border Grid.Row="1" Grid.Column="3">
+                                    <TextBlock x:Name="columnStatsPercentage4" VerticalAlignment="Center">26.98%</TextBlock>
+                                </Border>
+                                <Border Grid.RowSpan="2" Grid.Column="0" BorderBrush="{DynamicResource {x:Static SystemColors.ControlDarkDarkBrushKey}}" BorderThickness="0,0,1,0"/>
+                                <Border Grid.RowSpan="2" Grid.Column="1" BorderBrush="{DynamicResource {x:Static SystemColors.ControlDarkDarkBrushKey}}" BorderThickness="0,0,1,0"/>
+                                <Border Grid.RowSpan="2" Grid.Column="2" BorderBrush="{DynamicResource {x:Static SystemColors.ControlDarkDarkBrushKey}}" BorderThickness="0,0,1,0"/>
+                            </Grid>
+                        </Expander>
+                        <Border BorderBrush="{DynamicResource {x:Static SystemColors.ControlDarkDarkBrushKey}}" BorderThickness="0,0,0,1"/>
+                        <Expander x:Name="npsStats">
+                            <Expander.Header>
+                                <TextBlock Text="Notes per second (NPS)" FontWeight="DemiBold"/>
+                            </Expander.Header>
+                            <Grid VerticalAlignment="Center">
+                                <Grid.Resources>
+                                    <Style TargetType="Border" >
+                                        <Setter Property="Padding" Value="5,1,5,1" />
+                                    </Style>
+                                </Grid.Resources>
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="*" />
+                                    <RowDefinition Height="*" />
+                                    <RowDefinition Height="*" />
+                                </Grid.RowDefinitions>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="40" />
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="40" />
+                                </Grid.ColumnDefinitions>
+                                <Border Grid.Row="0" Grid.Column="0">
+                                    <TextBlock VerticalAlignment="Center">Song:</TextBlock>
+                                </Border>
+                                <Border Grid.Row="0" Grid.Column="1">
+                                    <TextBlock x:Name="npsStatsSong" VerticalAlignment="Center">4.26</TextBlock>
+                                </Border>
+                                <Border Grid.Row="0" Grid.Column="2">
+                                    <TextBlock VerticalAlignment="Center">16-beat:</TextBlock>
+                                </Border>
+                                <Border Grid.Row="0" Grid.Column="3">
+                                    <TextBlock x:Name="npsStats16Beat" VerticalAlignment="Center">5.21</TextBlock>
+                                </Border>
+                                <Border Grid.Row="1" Grid.Column="0">
+                                    <TextBlock VerticalAlignment="Center">Mapped:</TextBlock>
+                                </Border>
+                                <Border Grid.Row="1" Grid.Column="1">
+                                    <TextBlock x:Name="npsStatsMapped" VerticalAlignment="Center">4.33</TextBlock>
+                                </Border>
+                                <Border Grid.Row="1" Grid.Column="2">
+                                    <TextBlock VerticalAlignment="Center">8-beat:</TextBlock>
+                                </Border>
+                                <Border Grid.Row="1" Grid.Column="3">
+                                    <TextBlock x:Name="npsStats8Beat" VerticalAlignment="Center">5.32</TextBlock>
+                                </Border>
+                                <Border Grid.Row="2" Grid.Column="2">
+                                    <TextBlock VerticalAlignment="Center">4-beat:</TextBlock>
+                                </Border>
+                                <Border Grid.Row="2" Grid.Column="3">
+                                    <TextBlock x:Name="npsStats4Beat" VerticalAlignment="Center">5.72</TextBlock>
+                                </Border>
+                                <Border Grid.RowSpan="3" Grid.Column="1" BorderBrush="{DynamicResource {x:Static SystemColors.ControlDarkDarkBrushKey}}" BorderThickness="0,0,1,0"/>
+                            </Grid>
+                        </Expander>
+                    </StackPanel>
                 </StackPanel>
             </ScrollViewer>
         </Border>

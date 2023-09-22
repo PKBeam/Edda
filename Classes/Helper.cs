@@ -39,6 +39,17 @@ public class Helper {
     public static double DoubleRangeTruncate(double a, double x, double y) {
         return Math.Min(Math.Max(a, x), y);
     }
+    public class DoubleApproxEqualComparer : IEqualityComparer<double> {
+        public bool Equals(double x, double y) {
+            return DoubleApproxEqual(x, y);
+        }
+
+        public int GetHashCode(double obj) {
+            return double.Round(obj, 3).GetHashCode(); // We need this rounding to make sure all close-enough values will fall into the same bucket.
+        }
+    }
+
+
     public static string TimeFormat(int seconds) {
         int min = seconds / 60;
         int sec = seconds % 60;

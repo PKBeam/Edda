@@ -1,4 +1,5 @@
-﻿using Edda.Const;
+﻿using Edda.Classes.MapEditor.Stats;
+using Edda.Const;
 using Microsoft.WindowsAPICodePack.Dialogs;
 using NAudio.CoreAudioApi;
 using NAudio.Vorbis;
@@ -55,10 +56,10 @@ namespace Edda {
         }
         public double globalBPM {
             get {
-                return mapEditor.globalBPM;
+                return mapEditor.GlobalBPM;
             }
             set {
-                mapEditor.globalBPM = value;
+                mapEditor.GlobalBPM = value;
             }
         }
 
@@ -547,8 +548,8 @@ namespace Edda {
             checkWaveform.IsChecked = userSettings.GetBoolForKey(UserSettingsKey.EnableSpectrogram) != true;
             comboEnvironment.SelectedIndex = BeatmapDefaults.EnvironmentNames.IndexOf((string)mapEditor.GetMapValue("_environmentName"));
             MenuItemSnapToGrid.IsChecked = (checkGridSnap.IsChecked == true);
-            mapEditor.songDuration = songStream.TotalTime.TotalSeconds;
-            mapEditor.globalBPM = Helper.DoubleParseInvariant((string)mapEditor.GetMapValue("_beatsPerMinute"));
+            mapEditor.SongDuration = songStream.TotalTime.TotalSeconds;
+            mapEditor.GlobalBPM = Helper.DoubleParseInvariant((string)mapEditor.GetMapValue("_beatsPerMinute"));
             gridController.showWaveform = (checkWaveform.IsChecked == true);
             songTempoStream.Tempo = sliderSongTempo.Value;
             var songPath = Path.Combine(mapEditor.mapFolder, (string)mapEditor.GetMapValue("_songFilename"));
@@ -1358,6 +1359,40 @@ namespace Edda {
             } else {
                 win.Focus();
             }
+        }
+
+        public void SetMapStats(MapStats stats) {
+            SetNotesStats(stats);
+            SetColumnStats(stats);
+            SetNPSStats(stats);
+        }
+
+        private void SetNotesStats(MapStats stats) {
+            notesStatsAll.Text = stats.allNotes.ToString();
+            notesStatsSelected.Text = stats.selectedNotes.ToString();
+            notesStatsSingle.Text = stats.singleNotes.ToString();
+            notesStatsDouble.Text = stats.doubleNotes.ToString();
+        }
+
+        private void SetColumnStats(MapStats stats) {
+            // values
+            columnStatsValue1.Text = stats.columnCounts[0].ToString();
+            columnStatsValue2.Text = stats.columnCounts[1].ToString();
+            columnStatsValue3.Text = stats.columnCounts[2].ToString();
+            columnStatsValue4.Text = stats.columnCounts[3].ToString();
+            // percentages
+            columnStatsPercentage1.Text = $"{stats.columnPercentages[0]}%";
+            columnStatsPercentage2.Text = $"{stats.columnPercentages[1]}%";
+            columnStatsPercentage3.Text = $"{stats.columnPercentages[2]}%";
+            columnStatsPercentage4.Text = $"{stats.columnPercentages[3]}%";
+        }
+
+        private void SetNPSStats(MapStats stats) {
+            npsStatsSong.Text = stats.npsSong.ToString();
+            npsStatsMapped.Text = stats.npsMapped.ToString();
+            npsStats16Beat.Text = stats.nps16Beat.ToString();
+            npsStats8Beat.Text = stats.nps8Beat.ToString();
+            npsStats4Beat.Text = stats.nps4Beat.ToString();
         }
     }
 }

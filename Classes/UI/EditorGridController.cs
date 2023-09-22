@@ -433,7 +433,7 @@ public class EditorGridController : IDisposable {
     public void UpdateGridHeight() {
         // resize editor grid height to fit scrollEditor height
         if (parentWindow.songTotalTimeInSeconds.HasValue) {
-            double beats = mapEditor.globalBPM / 60 * parentWindow.songTotalTimeInSeconds.Value;
+            double beats = mapEditor.GlobalBPM / 60 * parentWindow.songTotalTimeInSeconds.Value;
             EditorGrid.Height = beats * unitLength + scrollEditor.ActualHeight;
         }
     }
@@ -450,7 +450,7 @@ public class EditorGridController : IDisposable {
 
         // end of song marker
         var l = MakeLine(EditorGrid.ActualWidth, 0);
-        Canvas.SetBottom(l, mapEditor.globalBPM / 60 * mapEditor.songDuration * unitLength + unitHeight / 2);
+        Canvas.SetBottom(l, mapEditor.GlobalBPM / 60 * mapEditor.SongDuration * unitLength + unitHeight / 2);
         l.Stroke = (SolidColorBrush)new BrushConverter().ConvertFrom(Editor.MajorGridlineColour);
         l.StrokeThickness = Editor.MajorGridlineThickness;
         EditorGrid.Children.Add(l);
@@ -503,7 +503,7 @@ public class EditorGridController : IDisposable {
         // the position to place gridlines
         var offset = 0.0;
 
-        var localBPM = mapEditor.globalBPM;
+        var localBPM = mapEditor.GlobalBPM;
         var localGridDiv = gridDivision;
 
         // draw gridlines
@@ -521,7 +521,7 @@ public class EditorGridController : IDisposable {
             }
             gridBeatLines.Add((offset) / unitLength);
 
-            offset += mapEditor.globalBPM / localBPM * unitLength / localGridDiv;
+            offset += mapEditor.GlobalBPM / localBPM * unitLength / localGridDiv;
             counter++;
 
             // check for BPM change
@@ -639,7 +639,7 @@ public class EditorGridController : IDisposable {
             label.Cursor = Cursors.Hand;
             return label;
         }
-        BPMChange prev = new BPMChange(0, mapEditor.globalBPM, gridDivision);
+        BPMChange prev = new BPMChange(0, mapEditor.GlobalBPM, gridDivision);
         foreach (BPMChange b in mapEditor.currentMapDifficulty.bpmChanges) {
             Canvas bpmChangeCanvas = new();
             Canvas bpmChangeFlagCanvas = new();
@@ -761,7 +761,7 @@ public class EditorGridController : IDisposable {
         canvasBookmarks.Children.Clear();
         canvasBookmarkLabels.Children.Clear();
         foreach (Bookmark b in mapEditor.currentMapDifficulty.bookmarks) {
-            var l = MakeLine(borderNavWaveform.ActualWidth, borderNavWaveform.ActualHeight * (1 - 60000 * b.beat / (mapEditor.globalBPM * parentWindow.songTotalTimeInSeconds.Value * 1000)));
+            var l = MakeLine(borderNavWaveform.ActualWidth, borderNavWaveform.ActualHeight * (1 - 60000 * b.beat / (mapEditor.GlobalBPM * parentWindow.songTotalTimeInSeconds.Value * 1000)));
             l.Stroke = (SolidColorBrush)new BrushConverter().ConvertFrom(Editor.NavBookmark.Colour);
             l.StrokeThickness = Editor.NavBookmark.Thickness;
             l.Opacity = Editor.NavBookmark.Opacity;
@@ -1028,7 +1028,7 @@ public class EditorGridController : IDisposable {
                 beat = snapToGrid ? mouseBeatSnapped : mouseBeatUnsnapped;
                 // add bookmark on nav waveform
             } else if (lineSongMouseover.Opacity > 0 && parentWindow.songTotalTimeInSeconds.HasValue) {
-                beat = mapEditor.globalBPM * parentWindow.songTotalTimeInSeconds.Value / 60000 * (1 - lineSongMouseover.Y1 / borderNavWaveform.ActualHeight);
+                beat = mapEditor.GlobalBPM * parentWindow.songTotalTimeInSeconds.Value / 60000 * (1 - lineSongMouseover.Y1 / borderNavWaveform.ActualHeight);
             }
         }
         mapEditor.AddBookmark(new Bookmark(beat, Editor.NavBookmark.DefaultName));
@@ -1038,7 +1038,7 @@ public class EditorGridController : IDisposable {
         if (!onMouse) {
             beat = currentSeekBeat;
         }
-        BPMChange previous = new BPMChange(0, mapEditor.globalBPM, gridDivision);
+        BPMChange previous = new BPMChange(0, mapEditor.GlobalBPM, gridDivision);
         foreach (var b in mapEditor.currentMapDifficulty.bpmChanges) {
             if (b.globalBeat < beat) {
                 previous = b;
@@ -1067,7 +1067,7 @@ public class EditorGridController : IDisposable {
     private BitmapImage RuneForBeat(double beat, bool highlight = false) {
         // find most recent BPM change
         double recentBPMChange = 0;
-        double recentBPM = mapEditor.globalBPM;
+        double recentBPM = mapEditor.GlobalBPM;
         foreach (var bc in mapEditor.currentMapDifficulty.bpmChanges) {
             if (Helper.DoubleApproxGreaterEqual(beat, bc.globalBeat)) {
                 recentBPMChange = bc.globalBeat;
@@ -1077,12 +1077,12 @@ public class EditorGridController : IDisposable {
             }
         }
         double beatNormalised = beat - recentBPMChange;
-        beatNormalised /= mapEditor.globalBPM / recentBPM;
+        beatNormalised /= mapEditor.GlobalBPM / recentBPM;
         beatNormalised -= (int)beatNormalised;
         return Helper.BitmapImageForBeat(beatNormalised, highlight);
     }
     private Label CreateBookmarkLabel(Bookmark b) {
-        var offset = borderNavWaveform.ActualHeight * (1 - 60000 * b.beat / (mapEditor.globalBPM * parentWindow.songTotalTimeInSeconds.Value * 1000));
+        var offset = borderNavWaveform.ActualHeight * (1 - 60000 * b.beat / (mapEditor.GlobalBPM * parentWindow.songTotalTimeInSeconds.Value * 1000));
         var txtBlock = new Label();
         txtBlock.Foreground = (SolidColorBrush)new BrushConverter().ConvertFrom(Editor.NavBookmark.NameColour);
 
@@ -1101,7 +1101,7 @@ public class EditorGridController : IDisposable {
             if (parentWindow.ctrlKeyDown) {
                 mapEditor.SelectNotesInBookmark(b);
             } else {
-                parentWindow.songSeekPosition = b.beat / mapEditor.globalBPM * 60000;
+                parentWindow.songSeekPosition = b.beat / mapEditor.GlobalBPM * 60000;
                 parentWindow.navMouseDown = false;
             }
             e.Handled = true;
