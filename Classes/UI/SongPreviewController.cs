@@ -153,11 +153,12 @@ namespace Edda {
             }
         }
 
-        internal void Restart() {
-            StopPreview();
-            var oldPreviewPlayer = previewPlayer;
-            InitPreviewPlayer();
-            oldPreviewPlayer?.Dispose();
+        internal void Restart(MapEditor mapEditor, bool songIsPlaying) {
+            UnloadPreview();
+            LoadPreview(mapEditor);
+            if (songIsPlaying) {
+                DisablePreviewButton();
+            }
         }
 
         internal void UpdateVolume() {

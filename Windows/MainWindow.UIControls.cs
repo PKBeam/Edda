@@ -373,10 +373,7 @@ namespace Edda {
                 win.Owner = this;
                 songPreviewController?.UnloadPreview();
                 win.Closed += (sender, e) => {
-                    songPreviewController?.LoadPreview(mapEditor);
-                    if (songIsPlaying) {
-                        songPreviewController?.DisablePreviewButton();
-                    }
+                    songPreviewController?.Restart(mapEditor, songIsPlaying);
                 };
                 win.Show();
             } else {
