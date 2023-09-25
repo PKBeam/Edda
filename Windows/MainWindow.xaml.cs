@@ -985,7 +985,7 @@ namespace Edda {
             var oldSongPlayer = songPlayer;
             InitSongPlayer();
             oldSongPlayer?.Dispose();
-            songPreviewController?.Restart();
+            songPreviewController?.Restart(mapEditor, songIsPlaying);
             RestartDrummer();
             RestartMetronome();
         }
