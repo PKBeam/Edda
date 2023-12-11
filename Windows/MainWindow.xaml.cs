@@ -863,8 +863,13 @@ namespace Edda {
             string newFile = Helper.SanitiseCoverFileName(sourceFile);
             string newPath = Path.Combine(mapEditor.mapFolder, newFile);
 
-            // skip only when the chosen file is already the map cover file
-            if (prevPath != sourceFile) {
+            // if there is no need to copy the file, only update map value
+            if (newPath == sourceFile) {
+                mapEditor.SetMapValue("_coverImageFilename", newFile);
+                SaveBeatmap();
+            }
+            // skip when the chosen file is already the map cover file
+            else if (prevPath != sourceFile) {
                 // remove the previous cover image
                 Helper.FileDeleteIfExists(prevPath);
                 // delete any existing files in the map folder with conflicting names
@@ -879,7 +884,18 @@ namespace Edda {
         }
         private void LoadCoverImage() {
             var fileName = (string)mapEditor.GetMapValue("_coverImageFilename");
-            if (fileName == "") {
+            var filePath = Path.Combine(mapEditor.mapFolder, fileName);
+            if (!string.IsNullOrEmpty(fileName) && !File.Exists(filePath)) {
+                fileName = "";
+                mapEditor.SetMapValue("_coverImageFilename", fileName);
+                MessageBox.Show(this,
+                    "Cover image file no longer exists",
+                    "Warning",
+                    MessageBoxButton.OK,
+                    MessageBoxImage.Warning
+                );
+            }
+            if (string.IsNullOrEmpty(fileName)) {
                 ClearCoverImage();
             } else {
                 // Need to ignore cache, since we replace the contents of the cover.* file.
