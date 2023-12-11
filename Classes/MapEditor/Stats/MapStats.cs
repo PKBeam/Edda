@@ -17,6 +17,8 @@ namespace Edda.Classes.MapEditor.Stats {
         public int selectedNotes;
         public int singleNotes;
         public int doubleNotes;
+        public int tripleNotes;
+        public int quadrupleNotes;
 
         /// <summary>
         /// Column variety
@@ -49,6 +51,8 @@ namespace Edda.Classes.MapEditor.Stats {
             this.selectedNotes = selectedNotes.Count;
             singleNotes = CalculateRowNotes(notes, 1);
             doubleNotes = CalculateRowNotes(notes, 2);
+            tripleNotes = CalculateRowNotes(notes, 3);
+            quadrupleNotes = CalculateRowNotes(notes, 4);
         }
 
         private static int CalculateRowNotes(SortedSet<Note> notes, int rowCount) {
