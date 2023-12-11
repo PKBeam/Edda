@@ -899,7 +899,7 @@ namespace Edda {
                 ClearCoverImage();
             } else {
                 // Need to ignore cache, since we replace the contents of the cover.* file.
-                BitmapImage b = Helper.BitmapGenerator(new Uri(Path.Combine(mapEditor.mapFolder, fileName)), true);
+                BitmapImage b = Helper.BitmapGenerator(new Uri(filePath), true);
                 imgCover.Source = b;
                 txtCoverFileName.Text = fileName;
                 borderImgCover.BorderThickness = new(2);
