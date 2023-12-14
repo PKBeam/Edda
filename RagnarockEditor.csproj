@@ -1,8 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
-
   <PropertyGroup>
     <OutputType>WinExe</OutputType>
-    <TargetFramework>net7.0-windows</TargetFramework>
+    <TargetFramework>net8.0-windows</TargetFramework>
     <UseWPF>true</UseWPF>
     <PublishSingleFile Condition="'$(Configuration)' == 'Release'">true</PublishSingleFile>
     <RuntimeIdentifier>win-x64</RuntimeIdentifier>
@@ -16,12 +15,10 @@
     <AssemblyOriginatorKeyFile>sigkey.snk</AssemblyOriginatorKeyFile>
     <DebugType>embedded</DebugType>
   </PropertyGroup>
-
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <Optimize>false</Optimize>
   </PropertyGroup>
-
   <ItemGroup>
     <None Remove="Resources\bassdrum1.wav" />
     <None Remove="Resources\bassdrum2.wav" />
@@ -85,25 +82,23 @@
     <None Remove="Resources\waterTexture.png" />
     <None Remove="Resources\waterTextureSmall.png" />
   </ItemGroup>
-
   <ItemGroup>
     <PackageReference Include="DiscordRichPresence" Version="1.1.3.18" />
     <PackageReference Include="Fano.StepmaniaUtils" Version="1.0.0" />
     <PackageReference Include="Microsoft.WindowsAPICodePack-Shell" Version="1.1.0">
       <NoWarn>NU1701</NoWarn>
     </PackageReference>
-	<PackageReference Include="Microsoft.WindowsAPICodePack-Core" Version="1.1.0">
-	  <NoWarn>NU1701</NoWarn>
-	</PackageReference>
+    <PackageReference Include="Microsoft.WindowsAPICodePack-Core" Version="1.1.0">
+      <NoWarn>NU1701</NoWarn>
+    </PackageReference>
     <PackageReference Include="NAudio" Version="2.1.0" />
     <PackageReference Include="NAudio.Vorbis" Version="1.5.0" />
-    <PackageReference Include="Newtonsoft.Json" Version="13.0.2" />
     <PackageReference Include="SoundTouch.Net.NAudioSupport.Core" Version="2.3.2" />
     <PackageReference Include="Spectrogram" Version="1.6.1" />
     <PackageReference Include="Syncfusion.PMML.Net.Core" Version="20.4.0.43" />
     <PackageReference Include="System.Reactive" Version="5.0.0" />
+    <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
   </ItemGroup>
-
   <ItemGroup>
     <Content Include="Resources\bassdrum1.wav">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
@@ -205,7 +200,6 @@
     <Resource Include="Resources\waterTexture.png" />
     <Resource Include="Resources\waterTextureSmall.png" />
   </ItemGroup>
-
   <ItemGroup>
     <Compile Update="Properties\Resources.Designer.cs">
       <DesignTime>True</DesignTime>
@@ -213,16 +207,13 @@
       <DependentUpon>Resources.resx</DependentUpon>
     </Compile>
   </ItemGroup>
-
   <ItemGroup>
     <EmbeddedResource Update="Properties\Resources.resx">
       <Generator>ResXFileCodeGenerator</Generator>
       <LastGenOutput>Resources.Designer.cs</LastGenOutput>
     </EmbeddedResource>
   </ItemGroup>
-
   <ItemGroup>
     <_DeploymentManifestIconFile Remove="Resources\AppIcon.ico" />
   </ItemGroup>
-
 </Project>
