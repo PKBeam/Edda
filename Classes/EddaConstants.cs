@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Windows;
 using System.Windows.Media;
 
 namespace Edda.Const {
@@ -150,6 +151,12 @@ namespace Edda.Const {
             public const double NameSize = 11;
             public const double NamePadding = 3;
             public const double Opacity = 0.75;
+        }
+        public static class Stats {
+            public static readonly MediaColor Colour = Colors.Black;
+            public static readonly MediaColor WarningColour = Colors.Crimson;
+            public static readonly FontWeight FontWeight = FontWeights.Regular;
+            public static readonly FontWeight WarningFontWeight = FontWeights.Bold;
         }
 
         // Waveform drawing

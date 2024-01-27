@@ -1429,6 +1429,16 @@ namespace Edda {
             notesStatsSelected.Text = stats.selectedNotes.ToString();
             notesStatsSingle.Text = stats.singleNotes.ToString();
             notesStatsDouble.Text = stats.doubleNotes.ToString();
+            var triplePlusNotes = stats.tripleNotes + stats.quadrupleNotes;
+            notesStatsTriplePlus.Text = triplePlusNotes.ToString();
+            var triplePlusFontWeight = triplePlusNotes > 0 ? Editor.Stats.WarningFontWeight : Editor.Stats.FontWeight;
+            notesStatsTriplePlusLabel.FontWeight = triplePlusFontWeight;
+            notesStatsTriplePlus.FontWeight = triplePlusFontWeight;
+            var triplePlusColor = new SolidColorBrush(
+                triplePlusNotes > 0 ? Editor.Stats.WarningColour : Editor.Stats.Colour
+            );
+            notesStatsTriplePlusLabel.Foreground = triplePlusColor;
+            notesStatsTriplePlus.Foreground = triplePlusColor;
         }
 
         private void SetColumnStats(MapStats stats) {

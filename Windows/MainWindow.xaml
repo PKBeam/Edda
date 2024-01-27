@@ -274,7 +274,7 @@
                             <Grid VerticalAlignment="Center">
                                 <Grid.Resources>
                                     <Style TargetType="Border" >
-                                        <Setter Property="Padding" Value="5,1,5,1" />
+                                        <Setter Property="Padding" Value="2.5,1,2.5,1" />
                                     </Style>
                                 </Grid.Resources>
                                 <Grid.RowDefinitions>
@@ -282,10 +282,11 @@
                                     <RowDefinition Height="*" />
                                 </Grid.RowDefinitions>
                                 <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="0.9*" />
+                                    <ColumnDefinition Width="0.85*" />
+                                    <ColumnDefinition Width="0.9*" />
                                     <ColumnDefinition Width="*" />
-                                    <ColumnDefinition Width="*" />
-                                    <ColumnDefinition Width="*" />
-                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="0.95*" />
                                 </Grid.ColumnDefinitions>
                                 <Border Grid.Row="0" Grid.Column="0">
                                     <TextBlock VerticalAlignment="Center">All</TextBlock>
@@ -299,6 +300,9 @@
                                 <Border Grid.Row="0" Grid.Column="3">
                                     <TextBlock VerticalAlignment="Center">Double</TextBlock>
                                 </Border>
+                                <Border Grid.Row="0" Grid.Column="4">
+                                    <TextBlock x:Name="notesStatsTriplePlusLabel" VerticalAlignment="Center">Triple+</TextBlock>
+                                </Border>
                                 <Border Grid.Row="1" Grid.Column="0">
                                     <TextBlock x:Name="notesStatsAll" VerticalAlignment="Center">734</TextBlock>
                                 </Border>
@@ -311,9 +315,13 @@
                                 <Border Grid.Row="1" Grid.Column="3">
                                     <TextBlock x:Name="notesStatsDouble" VerticalAlignment="Center">210</TextBlock>
                                 </Border>
+                                <Border Grid.Row="1" Grid.Column="4">
+                                    <TextBlock x:Name="notesStatsTriplePlus" VerticalAlignment="Center">0</TextBlock>
+                                </Border>
                                 <Border Grid.RowSpan="2" Grid.Column="0" BorderBrush="{DynamicResource {x:Static SystemColors.ControlDarkDarkBrushKey}}" BorderThickness="0,0,1,0"/>
                                 <Border Grid.RowSpan="2" Grid.Column="1" BorderBrush="{DynamicResource {x:Static SystemColors.ControlDarkDarkBrushKey}}" BorderThickness="0,0,1,0"/>
                                 <Border Grid.RowSpan="2" Grid.Column="2" BorderBrush="{DynamicResource {x:Static SystemColors.ControlDarkDarkBrushKey}}" BorderThickness="0,0,1,0"/>
+                                <Border Grid.RowSpan="2" Grid.Column="3" BorderBrush="{DynamicResource {x:Static SystemColors.ControlDarkDarkBrushKey}}" BorderThickness="0,0,1,0"/>
                             </Grid>
                         </Expander>
                         <Border BorderBrush="{DynamicResource {x:Static SystemColors.ControlDarkDarkBrushKey}}" BorderThickness="0,0,0,1"/>
