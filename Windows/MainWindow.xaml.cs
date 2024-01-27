@@ -83,6 +83,10 @@ namespace Edda {
                 if (!string.IsNullOrEmpty(playbackDeviceID)) {
                     try {
                         device = deviceEnumerator.GetDevice(playbackDeviceID);
+                        if (!device.State.HasFlag(DeviceState.Active)) {
+                            // Fallback to default device if the preferred device isn't available.
+                            device = null;
+                        }
                     } catch (Exception ex) {
                         Trace.WriteLine($"WARNING: Couldn't get the playback device with ID {playbackDeviceID} due to an error:\n{ex.Message}.\n{ex.StackTrace}", "Warning");
                         playbackDeviceID = null;
