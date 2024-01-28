@@ -1,6 +1,5 @@
 ﻿using Edda.Const;
 using System;
-using System.Diagnostics;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Data;
@@ -14,6 +13,11 @@ namespace Edda {
         internal bool navMouseDown = false;
         bool editorMouseDown = false;
         bool editorIsLoaded = false;
+
+        // grid hold scroll
+        bool editorIsHoldScrolling = false;
+        bool editorIsDeferredHoldScrollingStarted = false;
+        Point? editorScrollStart = null;
 
         private void BorderNavWaveform_SizeChanged(object sender, SizeChangedEventArgs e) {
             if (mapIsLoaded) {
@@ -86,7 +90,7 @@ namespace Edda {
             sliderSongProgress.Value = Double.IsNaN(value) ? 0 : value;
 
             // try to keep the scroller at the same percentage scroll that it was before
-            if (e.ExtentHeightChange != 0) {
+            if (e != null && e.ExtentHeightChange != 0) {
                 scrollEditor.ScrollToVerticalOffset((1 - prevScrollPercent) * scrollEditor.ScrollableHeight);
                 //Console.Write($"time: {txtSongPosition.Text} curr: {scrollEditor.VerticalOffset} max: {scrollEditor.ScrollableHeight} change: {e.ExtentHeightChange}\n");
             } else if (range != 0) {
@@ -102,19 +106,71 @@ namespace Edda {
             if (!editorIsLoaded) {
                 return;
             }
-            Point mousePos = e.GetPosition(EditorGrid);
-            gridController.GridMouseMove(mousePos);
+            if (editorIsHoldScrolling) {
+                editorIsDeferredHoldScrollingStarted = false; //standard scrolling (Mouse down -> Move)
 
-            // update beat display
-            lblSelectedBeat.Content = $"Time: {Helper.TimeFormat(gridController.snappedBeat * 60 / globalBPM)}, Global Beat: {Math.Round(gridController.snappedBeat, 3)} ({Math.Round(gridController.unsnappedBeat, 3)})";
+                var currentPosition = e.GetPosition(scrollEditor);
+                var offset = currentPosition - editorScrollStart.Value;
+                offset.Y /= Editor.HoldScroll.Slowdown;
 
-            // initiate drag selection
-            if (editorMouseDown) {
-                Vector delta = mousePos - editorDragSelectStart;
-                if (delta.Length > Editor.DragInitThreshold) {
-                    gridController.BeginDragSelection(mousePos);
+                if (Math.Abs(offset.Y) > Editor.HoldScroll.DeadZone / Editor.HoldScroll.Slowdown) {
+                    scrollEditor.ScrollToVerticalOffset(scrollEditor.VerticalOffset + offset.Y);
+                    ScrollEditor_ScrollChanged(null, null);
+                }
+            } else {
+                Point mousePos = e.GetPosition(EditorGrid);
+                gridController.GridMouseMove(mousePos);
+
+                // update beat display
+                lblSelectedBeat.Content = $"Time: {Helper.TimeFormat(gridController.snappedBeat * 60 / globalBPM)}, Global Beat: {Math.Round(gridController.snappedBeat, 3)} ({Math.Round(gridController.unsnappedBeat, 3)})";
+
+                // initiate drag selection
+                if (editorMouseDown) {
+                    Vector delta = mousePos - editorDragSelectStart;
+                    if (delta.Length > Editor.DragInitThreshold) {
+                        gridController.BeginDragSelection(mousePos);
+                    }
                 }
             }
+        }
+        private void scrollEditor_MouseDown(object sender, MouseButtonEventArgs e) {
+            if (!editorIsLoaded) {
+                return;
+            }
+            if (editorIsHoldScrolling) //Moving with a released wheel and pressing a button
+                scrollEditor_CancelHoldScrolling();
+            else if (e.ChangedButton == MouseButton.Middle && e.ButtonState == MouseButtonState.Pressed) {
+                if (!editorIsHoldScrolling) //Pressing a wheel the first time
+                {
+                    EditorGrid.CaptureMouse();
+                    editorIsHoldScrolling = true;
+                    editorScrollStart = e.GetPosition(sender as IInputElement);
+                    editorIsDeferredHoldScrollingStarted = true; //the default value is true until the opposite value is set
+
+                    scrollEditor_AddHoldScrollSign(e.GetPosition(scrollEditorHoldScrollLayer).X, e.GetPosition(scrollEditorHoldScrollLayer).Y);
+                }
+            }
+        }
+        private void scrollEditor_MouseUp(object sender, MouseButtonEventArgs e) {
+            if (e.ChangedButton == MouseButton.Middle && e.ButtonState == MouseButtonState.Released && editorIsDeferredHoldScrollingStarted != true) {
+                scrollEditor_CancelHoldScrolling();
+            }
+        }
+        private void scrollEditor_AddHoldScrollSign(double x, double y) {
+            Canvas.SetLeft(scrollEditorHoldIcon, x - scrollEditorHoldIcon.Width / 2);
+            Canvas.SetTop(scrollEditorHoldIcon, y - scrollEditorHoldIcon.Height / 2);
+            scrollEditorHoldScrollLayer.Visibility = Visibility.Visible;
+        }
+
+        private void scrollEditor_RemoveHoldScrollSign() {
+            scrollEditorHoldScrollLayer.Visibility = Visibility.Hidden;
+        }
+        private void scrollEditor_CancelHoldScrolling() {
+            EditorGrid.ReleaseMouseCapture();
+            editorIsHoldScrolling = false;
+            editorScrollStart = null;
+            editorIsDeferredHoldScrollingStarted = false;
+            scrollEditor_RemoveHoldScrollSign();
         }
         private void scrollEditor_MouseEnter(object sender, MouseEventArgs e) {
             if (!editorIsLoaded) {
@@ -135,24 +191,36 @@ namespace Edda {
             if (Keyboard.FocusedElement is TextBox || !editorIsLoaded) {
                 return;
             }
-            Point mousePos = e.GetPosition(EditorGrid);
-            editorDragSelectStart = mousePos;
-            gridController.GridMouseDown(mousePos);
-            editorMouseDown = true;
+            if (editorIsHoldScrolling) { //Moving with a released wheel and pressing a button
+                scrollEditor_CancelHoldScrolling();
+            } else {
+                Point mousePos = e.GetPosition(EditorGrid);
+                editorDragSelectStart = mousePos;
+                gridController.GridMouseDown(mousePos);
+                editorMouseDown = true;
+            }
         }
         private void scrollEditor_PreviewMouseLeftButtonUp(object sender, MouseButtonEventArgs e) {
             if (!editorIsLoaded) {
                 return;
             }
-            Point mousePos = e.GetPosition(EditorGrid);
-            gridController.GridMouseUp(mousePos);
-            editorMouseDown = false;
+            if (editorIsHoldScrolling) { //Moving with a released wheel and pressing a button
+                scrollEditor_CancelHoldScrolling();
+            } else {
+                Point mousePos = e.GetPosition(EditorGrid);
+                gridController.GridMouseUp(mousePos);
+                editorMouseDown = false;
+            }
         }
         private void scrollEditor_PreviewMouseRightButtonUp(object sender, MouseButtonEventArgs e) {
             if (!editorIsLoaded) {
                 return;
             }
-            gridController.GridRightMouseUp();
+            if (editorIsHoldScrolling) { //Moving with a released wheel and pressing a button
+                scrollEditor_CancelHoldScrolling();
+            } else {
+                gridController.GridRightMouseUp();
+            }
         }
         private void scrollEditor_Loaded(object sender, RoutedEventArgs e) {
             // Wait for all the background operations to finish before accepting input for the grid.
