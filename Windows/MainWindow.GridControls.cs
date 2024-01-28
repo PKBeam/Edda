@@ -9,7 +9,7 @@ namespace Edda {
     public partial class MainWindow : Window {
 
         // grid variables
-        Point editorDragSelectStart;
+        Point? editorDragSelectStart = null;
         internal bool navMouseDown = false;
         bool editorMouseDown = false;
         bool editorIsLoaded = false;
@@ -107,29 +107,27 @@ namespace Edda {
                 return;
             }
             if (editorIsHoldScrolling) {
-                editorIsDeferredHoldScrollingStarted = false; //standard scrolling (Mouse down -> Move)
-
                 var currentPosition = e.GetPosition(scrollEditor);
                 var offset = currentPosition - editorScrollStart.Value;
                 offset.Y /= Editor.HoldScroll.Slowdown;
 
                 if (Math.Abs(offset.Y) > Editor.HoldScroll.DeadZone / Editor.HoldScroll.Slowdown) {
+                    editorIsDeferredHoldScrollingStarted = false; //standard scrolling (Mouse down -> Move)
                     scrollEditor.ScrollToVerticalOffset(scrollEditor.VerticalOffset + offset.Y);
                     ScrollEditor_ScrollChanged(null, null);
                 }
-            } else {
-                Point mousePos = e.GetPosition(EditorGrid);
-                gridController.GridMouseMove(mousePos);
+            }
+            Point mousePos = e.GetPosition(EditorGrid);
+            gridController.GridMouseMove(mousePos);
 
-                // update beat display
-                lblSelectedBeat.Content = $"Time: {Helper.TimeFormat(gridController.snappedBeat * 60 / globalBPM)}, Global Beat: {Math.Round(gridController.snappedBeat, 3)} ({Math.Round(gridController.unsnappedBeat, 3)})";
+            // update beat display
+            lblSelectedBeat.Content = $"Time: {Helper.TimeFormat(gridController.snappedBeat * 60 / globalBPM)}, Global Beat: {Math.Round(gridController.snappedBeat, 3)} ({Math.Round(gridController.unsnappedBeat, 3)})";
 
-                // initiate drag selection
-                if (editorMouseDown) {
-                    Vector delta = mousePos - editorDragSelectStart;
-                    if (delta.Length > Editor.DragInitThreshold) {
-                        gridController.BeginDragSelection(mousePos);
-                    }
+            // initiate drag selection
+            if (editorMouseDown && editorDragSelectStart.HasValue) {
+                Vector delta = mousePos - editorDragSelectStart.Value;
+                if (delta.Length > Editor.DragInitThreshold) {
+                    gridController.BeginDragSelection(mousePos);
                 }
             }
         }
@@ -206,9 +204,11 @@ namespace Edda {
             }
             if (editorIsHoldScrolling) { //Moving with a released wheel and pressing a button
                 scrollEditor_CancelHoldScrolling();
-            } else {
+            }
+            if (editorDragSelectStart.HasValue || !editorIsHoldScrolling) {
                 Point mousePos = e.GetPosition(EditorGrid);
                 gridController.GridMouseUp(mousePos);
+                editorDragSelectStart = null;
                 editorMouseDown = false;
             }
         }
