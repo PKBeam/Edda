@@ -205,7 +205,7 @@ namespace Edda {
             if (editorIsHoldScrolling) { //Moving with a released wheel and pressing a button
                 scrollEditor_CancelHoldScrolling();
             }
-            if (editorDragSelectStart.HasValue || !editorIsHoldScrolling) {
+            if (editorDragSelectStart.HasValue) {
                 Point mousePos = e.GetPosition(EditorGrid);
                 gridController.GridMouseUp(mousePos);
                 editorDragSelectStart = null;
