@@ -72,6 +72,7 @@
     <None Remove="Resources\runeX.png" />
     <None Remove="Resources\runeXhighlight.png" />
     <None Remove="Resources\saveMap.png" />
+    <None Remove="Resources\scrollHold.png" />
     <None Remove="Resources\settings.png" />
     <None Remove="Resources\snaredrum1.wav" />
     <None Remove="Resources\snaredrum2.wav" />
@@ -195,6 +196,7 @@
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
     <Resource Include="Resources\saveMap.png" />
+    <Resource Include="Resources\scrollHold.png" />
     <Resource Include="Resources\settings.png" />
     <Resource Include="Resources\tick.png" />
     <Resource Include="Resources\waterTexture.png" />

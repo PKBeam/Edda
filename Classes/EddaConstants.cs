@@ -107,6 +107,12 @@ namespace Edda.Const {
         public const double DragInitThreshold = 10; // pixels
         public const int AutosaveInterval = 30; // seconds
 
+        // Hold Scrolling
+        public static class HoldScroll {
+            public const double Slowdown = 10;
+            public const double DeadZone = 15.0;
+        }
+
         // Difficulty
         public static class Difficulty {
             public static string SelectedColour => Colors.LightSkyBlue.ToString();
