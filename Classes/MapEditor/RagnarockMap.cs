@@ -170,6 +170,11 @@ public class RagnarockMap {
                 SetValue("_explicit", "false");
                 continue;
             }
+            if (i.Key == "_songTimeOffset" && (obj[i.Key] == null)) {
+                // this key is optional and e.g. in-game map editor doesn't set it.
+                SetValue("_songTimeOffset", 0);
+                continue;
+            }
             if (!i.Value.Contains(obj[i.Key]?.Type)) {
                 throw new Exception($"Incorrect or missing key {i.Key}");
             }
