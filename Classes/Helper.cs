@@ -130,7 +130,7 @@ public class Helper {
         using Graphics g = Graphics.FromImage(target);
         g.DrawImage(src, new Rectangle(0, 0, size, size), cropRect, GraphicsUnit.Pixel);
         string newFileName = Path.GetTempPath() + Path.GetRandomFileName() + Path.GetExtension(fileName);
-        target.Save(newFileName);
+        target.Save(newFileName, System.Drawing.Imaging.ImageFormat.Jpeg);
         return newFileName;
     }
 
