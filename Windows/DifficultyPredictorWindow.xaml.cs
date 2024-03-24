@@ -1,4 +1,5 @@
-﻿using Microsoft.ML.OnnxRuntime;
+﻿using Edda.Const;
+using Microsoft.ML.OnnxRuntime;
 using Microsoft.ML.OnnxRuntime.Tensors;
 using System;
 using System.Collections.Generic;
@@ -53,14 +54,14 @@ namespace Edda.Windows {
                     default: diffLabel = null; diffBtn = null; break;
                 }
                 diffBtn.IsEnabled = true;
-                diffLabel.Foreground = SystemColors.WindowTextBrush;
                 if (parametersInRange) {
+                    diffLabel.Foreground = new SolidColorBrush(DifficultyPrediction.Colour);
                     var predictedDiff = EvaluateModel((float)noteDensity, (float)averageTimeDifference, longestHighDensitySequence, (float)highLocalNoteDensity);
                     var showPreciseValue = CheckShowPreciseValues.IsChecked == true;
                     var predictionDisplay = Math.Round(predictedDiff, showPreciseValue ? 2 : 0);
                     diffLabel.Content = $"{predictionDisplay.ToString(showPreciseValue ? "##.00" : null)}";
                 } else {
-                    diffLabel.Foreground = Brushes.OrangeRed;
+                    diffLabel.Foreground = new SolidColorBrush(DifficultyPrediction.WarningColour);
                     PanelPredictionWarning.Visibility = Visibility.Visible;
                     diffLabel.Content = ">10";
                 }
@@ -68,11 +69,11 @@ namespace Edda.Windows {
             PanelPredictionResults.Visibility = Visibility.Visible;
         }
 
-        private double GetNoteDensity(IEnumerable<double> noteTimes, double songDuration) {
+        private static double GetNoteDensity(IEnumerable<double> noteTimes, double songDuration) {
             return noteTimes.Count() / songDuration;
         }
 
-        private List<double> GetLocalNoteDensity(IEnumerable<double> timeSeries, double songDuration, double windowLength = 2.75, double step = 0.25) {
+        private static List<double> GetLocalNoteDensity(IEnumerable<double> timeSeries, double songDuration, double windowLength = 2.75, double step = 0.25) {
             var densities = new List<double>();
             var firstNoteTime = timeSeries.First();
             var windowLower = firstNoteTime;
@@ -91,7 +92,7 @@ namespace Edda.Windows {
             return densities;
         }
 
-        private int GetLongestHighDensitySequence(List<double> timeDiffs) {
+        private static int GetLongestHighDensitySequence(List<double> timeDiffs) {
             var uniqueValues = timeDiffs.Distinct().ToList();
             var indices = uniqueValues.Select(val => timeDiffs.IndexOf(val)).ToList();
             var counts = uniqueValues.Select(val => timeDiffs.Count(t => t == val)).ToList();
@@ -122,7 +123,7 @@ namespace Edda.Windows {
             return seriesEnd - seriesStart + 1;
         }
 
-        private float EvaluateModel(float noteDensity, float averageTimeDifference, float longestHighDensitySequence, float peakNoteDensity) {
+        private static float EvaluateModel(float noteDensity, float averageTimeDifference, float longestHighDensitySequence, float peakNoteDensity) {
             string path = Path.Combine(Path.GetTempPath(), "Edda-MLDP_temp.onnx");
             File.WriteAllBytes(path, Properties.Resources.Edda_MLDP);
 
@@ -137,11 +138,11 @@ namespace Edda.Windows {
             return outputs[0].AsTensor<float>().First();
         }
 
-        private bool CheckParameterRanges(double noteDensity, double averageTimeDifference, int longestHighDensitySequence, double peakNoteDensity) {
-            return Helper.DoubleApproxGreaterEqual(7.615101, noteDensity) &&
-                Helper.DoubleApproxGreaterEqual(averageTimeDifference, 0.152743) &&
-                longestHighDensitySequence <= 2547 &&
-                Helper.DoubleApproxGreaterEqual(12.363636, peakNoteDensity);
+        private static bool CheckParameterRanges(double noteDensity, double averageTimeDifference, int longestHighDensitySequence, double peakNoteDensity) {
+            return Helper.DoubleApproxGreaterEqual(DifficultyPrediction.MaxNoteDensity, noteDensity) &&
+                Helper.DoubleApproxGreaterEqual(averageTimeDifference, DifficultyPrediction.MinAverageTimeDifference) &&
+                longestHighDensitySequence <= DifficultyPrediction.MaxLongestHighDensitySequence &&
+                Helper.DoubleApproxGreaterEqual(DifficultyPrediction.MaxPeakNoteDensity, peakNoteDensity);
         }
     }
 }
