@@ -90,7 +90,7 @@
                             </Button>
                         </StackPanel>
                     </StackPanel>
-                    <TextBlock x:Name="PanelPredictionWarning" TextWrapping="Wrap" Foreground="OrangeRed" Visibility="Hidden" FontSize="11" Margin="0 0 0 5" >Map parameters outside of normal range, predictions marked in orange can be incorrect.</TextBlock>
+                    <TextBlock x:Name="PanelPredictionWarning" TextWrapping="Wrap" Foreground="OrangeRed" Visibility="Hidden" FontSize="11" Margin="0 0 0 5" >Map parameters outside of normal range, predictions marked in orange couldn't be determined.</TextBlock>
                 </StackPanel>
             </StackPanel>
         </DockPanel>

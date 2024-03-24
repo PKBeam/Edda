@@ -41,7 +41,6 @@ namespace Edda.Windows {
                 var localNoteDensity = GetLocalNoteDensity(timeSeries, maxTime);
                 var longestHighDensitySequence = GetLongestHighDensitySequence(timeDifferencesNoZero);
                 var highLocalNoteDensity = Helper.GetQuantile(localNoteDensity, 0.95);
-                var predictedDiff = EvaluateModel((float)noteDensity, (float)averageTimeDifference, longestHighDensitySequence, (float)highLocalNoteDensity);
 
                 var parametersInRange = CheckParameterRanges(noteDensity, averageTimeDifference, longestHighDensitySequence, highLocalNoteDensity);
 
@@ -55,13 +54,16 @@ namespace Edda.Windows {
                 }
                 diffBtn.IsEnabled = true;
                 diffLabel.Foreground = SystemColors.WindowTextBrush;
-                if (!parametersInRange) {
+                if (parametersInRange) {
+                    var predictedDiff = EvaluateModel((float)noteDensity, (float)averageTimeDifference, longestHighDensitySequence, (float)highLocalNoteDensity);
+                    var showPreciseValue = CheckShowPreciseValues.IsChecked == true;
+                    var predictionDisplay = Math.Round(predictedDiff, showPreciseValue ? 2 : 0);
+                    diffLabel.Content = $"{predictionDisplay.ToString(showPreciseValue ? "##.00" : null)}";
+                } else {
                     diffLabel.Foreground = Brushes.OrangeRed;
                     PanelPredictionWarning.Visibility = Visibility.Visible;
+                    diffLabel.Content = ">10";
                 }
-                var showPreciseValue = CheckShowPreciseValues.IsChecked == true;
-                var predictionDisplay = Math.Round(predictedDiff, showPreciseValue ? 2 : 0);
-                diffLabel.Content = $"{predictionDisplay.ToString(showPreciseValue ? "##.00" : null)}";
             }
             PanelPredictionResults.Visibility = Visibility.Visible;
         }
@@ -136,10 +138,10 @@ namespace Edda.Windows {
         }
 
         private bool CheckParameterRanges(double noteDensity, double averageTimeDifference, int longestHighDensitySequence, double peakNoteDensity) {
-            return Helper.DoubleRangeCheck(noteDensity, 1.627074, 7.615101) &&
-                Helper.DoubleRangeCheck(averageTimeDifference, 0.152743, 0.793388) &&
+            return Helper.DoubleApproxGreaterEqual(7.615101, noteDensity) &&
+                Helper.DoubleApproxGreaterEqual(averageTimeDifference, 0.152743) &&
                 longestHighDensitySequence <= 2547 &&
-                Helper.DoubleRangeCheck(peakNoteDensity, 2.181818, 12.363636);
+                Helper.DoubleApproxGreaterEqual(12.363636, peakNoteDensity);
         }
     }
 }
