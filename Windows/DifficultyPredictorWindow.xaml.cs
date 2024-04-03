@@ -39,7 +39,7 @@ namespace Edda.Windows {
 
                 var noteDensity = GetNoteDensity(timeSeries, maxTime);
                 var averageTimeDifference = timeDifferencesNoZero.Average();
-                var localNoteDensity = GetLocalNoteDensity(timeSeries, maxTime);
+                var localNoteDensity = GetLocalNoteDensity(timeSeries, timeDifferencesNoZero);
                 var longestHighDensitySequence = GetLongestHighDensitySequence(timeDifferencesNoZero);
                 var highLocalNoteDensity = Helper.GetQuantile(localNoteDensity, 0.95);
 
@@ -73,23 +73,24 @@ namespace Edda.Windows {
             return noteTimes.Count() / songDuration;
         }
 
-        private static List<double> GetLocalNoteDensity(IEnumerable<double> timeSeries, double songDuration, double windowLength = 2.75, double step = 0.25) {
-            var densities = new List<double>();
-            var firstNoteTime = timeSeries.First();
-            var windowLower = firstNoteTime;
-            var windowUpper = windowLower + windowLength;
-            do { // we would like this to run at least once so we have some data when songDuration < windowLength
-                var numNotes = 0;
-                foreach (var noteTime in timeSeries) {
-                    if (windowLower <= noteTime && noteTime <= windowUpper) {
-                        numNotes += 1;
-                    }
-                }
-                densities.Add(numNotes / windowLength);
-                windowLower += step;
-                windowUpper += step;
-            } while (windowUpper < firstNoteTime + songDuration);
-            return densities;
+        private static List<double> GetLocalNoteDensity(List<double> timeSeries, List<double> timeDiff, double windowLength = 2.75) {
+            var cumulativeTime = timeDiff
+                .Select((t, i) => timeDiff.Take(i + 1).Sum())
+                .ToList();
+            var startTimes = timeSeries
+                .Select(t => t - windowLength)
+                .ToList();
+            var startIndices = startTimes
+                .Select(cumulativeTime.BinarySearch)
+                .Select(idx => idx >= 0 ? idx : ~idx)
+                .ToList();
+            var endIndices = timeSeries
+                .Select(cumulativeTime.BinarySearch)
+                .Select(idx => idx >= 0 ? idx : ~idx)
+                .ToList();
+            return startIndices
+                .Zip(endIndices, (start, end) => (end - start) / windowLength)
+                .ToList();
         }
 
         private static int GetLongestHighDensitySequence(List<double> timeDiffs) {
