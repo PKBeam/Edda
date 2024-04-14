@@ -246,7 +246,8 @@ namespace Edda.Const {
         // These values are based on the dataset used for the ML model training.
         public const double MaxNoteDensity = 7.615101;
         public const double MinAverageTimeDifference = 0.152743;
-        public const int MaxLongestHighDensitySequence = 2547;
-        public const double MaxPeakNoteDensity = 12.363636;
+        public const double MaxCountNoteDensityPerWindow = 1578.5;
+        public const double MaxPeakNoteDensity = 25.5;
+        public const double MinTypicalTimeDifference = 0.091463;
     }
 }

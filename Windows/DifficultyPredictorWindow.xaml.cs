@@ -39,11 +39,12 @@ namespace Edda.Windows {
 
                 var noteDensity = GetNoteDensity(timeSeries, maxTime);
                 var averageTimeDifference = timeDifferencesNoZero.Average();
-                var localNoteDensity = GetLocalNoteDensity(timeSeries, timeDifferencesNoZero);
-                var longestHighDensitySequence = GetLongestHighDensitySequence(timeDifferencesNoZero);
+                var countNoteDensityPerWindow = GetCountNoteDensityPerWindow(timeDifferencesNoZero);
+                var localNoteDensity = GetNoteDensitiesPerWindow(timeSeries, 2);
                 var highLocalNoteDensity = Helper.GetQuantile(localNoteDensity, 0.95);
+                var typicalTimeDifference = Helper.GetQuantile(timeDifferencesNoZero, 0.4);
 
-                var parametersInRange = CheckParameterRanges(noteDensity, averageTimeDifference, longestHighDensitySequence, highLocalNoteDensity);
+                var parametersInRange = CheckParameterRanges(noteDensity, averageTimeDifference, countNoteDensityPerWindow, highLocalNoteDensity, typicalTimeDifference);
 
                 Label diffLabel;
                 Button diffBtn;
@@ -56,7 +57,7 @@ namespace Edda.Windows {
                 diffBtn.IsEnabled = true;
                 if (parametersInRange) {
                     diffLabel.Foreground = new SolidColorBrush(DifficultyPrediction.Colour);
-                    var predictedDiff = EvaluateModel((float)noteDensity, (float)averageTimeDifference, longestHighDensitySequence, (float)highLocalNoteDensity);
+                    var predictedDiff = EvaluateModel((float)noteDensity, (float)averageTimeDifference, (float)countNoteDensityPerWindow, (float)highLocalNoteDensity, (float)typicalTimeDifference);
                     var showPreciseValue = CheckShowPreciseValues.IsChecked == true;
                     var predictionDisplay = Math.Round(predictedDiff, showPreciseValue ? 2 : 0);
                     diffLabel.Content = $"{predictionDisplay.ToString(showPreciseValue ? "##.00" : null)}";
@@ -73,19 +74,19 @@ namespace Edda.Windows {
             return noteTimes.Count() / songDuration;
         }
 
-        private static List<double> GetLocalNoteDensity(List<double> timeSeries, List<double> timeDiff, double windowLength = 2.75) {
-            var cumulativeTime = timeDiff
-                .Select((t, i) => timeDiff.Take(i + 1).Sum())
-                .ToList();
+        private static List<double> GetNoteDensitiesPerWindow(List<double> timeSeries, double windowLength = 2.75) {
             var startTimes = timeSeries
                 .Select(t => t - windowLength)
                 .ToList();
+            var endTimes = timeSeries
+                .Select(t => t + windowLength)
+                .ToList();
             var startIndices = startTimes
-                .Select(cumulativeTime.BinarySearch)
+                .Select(timeSeries.BinarySearch)
                 .Select(idx => idx >= 0 ? idx : ~idx)
                 .ToList();
-            var endIndices = timeSeries
-                .Select(cumulativeTime.BinarySearch)
+            var endIndices = endTimes
+                .Select(timeSeries.BinarySearch)
                 .Select(idx => idx >= 0 ? idx : ~idx)
                 .ToList();
             return startIndices
@@ -93,43 +94,18 @@ namespace Edda.Windows {
                 .ToList();
         }
 
-        private static int GetLongestHighDensitySequence(List<double> timeDiffs) {
-            var uniqueValues = timeDiffs.Distinct().ToList();
-            var indices = uniqueValues.Select(val => timeDiffs.IndexOf(val)).ToList();
-            var counts = uniqueValues.Select(val => timeDiffs.Count(t => t == val)).ToList();
-
-            var matrix = new int[uniqueValues.Count, timeDiffs.Count];
-
-            for (int i = 0; i < indices.Count; i++) {
-                var idx = indices[i];
-                var count = counts[i];
-                var valIndex = uniqueValues.IndexOf(timeDiffs[idx]);
-
-                for (int j = idx; j < idx + count; j++) {
-                    matrix[valIndex, j] = 1;
-                }
-            }
-
-            var rowSums = Enumerable
-                .Range(0, uniqueValues.Count)
-                .Select(i => Enumerable.Range(0, timeDiffs.Count).Sum(j => matrix[i, j]))
-                .ToList();
-
-            var maxDensityIndex = rowSums.IndexOf(rowSums.Max());
-            var maxDensity = (double)rowSums[maxDensityIndex] / timeDiffs.Count;
-
-            var seriesStart = Array.IndexOf(matrix.Cast<int>().ToArray(), 1, maxDensityIndex * timeDiffs.Count);
-            var seriesEnd = Array.LastIndexOf(matrix.Cast<int>().ToArray(), 1, (maxDensityIndex + 1) * timeDiffs.Count - 1);
-
-            return seriesEnd - seriesStart + 1;
+        private static int GetCountNoteDensityPerWindow(List<double> timeDiffs, double windowLength = 2) {
+            return timeDiffs
+                .Where(timeDiff => Helper.DoubleApproxGreaterEqual(windowLength, Math.Abs(timeDiff)))
+                .Count();
         }
 
-        private static float EvaluateModel(float noteDensity, float averageTimeDifference, float longestHighDensitySequence, float peakNoteDensity) {
+        private static float EvaluateModel(float noteDensity, float averageTimeDifference, float countNoteDensityPerWindow, float peakNoteDensity, float typicalTimeDifference) {
             string path = Path.Combine(Path.GetTempPath(), "Edda-MLDP_temp.onnx");
             File.WriteAllBytes(path, Properties.Resources.Edda_MLDP);
 
-            var sourceData = new float[] { noteDensity, averageTimeDifference, longestHighDensitySequence, peakNoteDensity };
-            var dimensions = new int[] { 1, 4 }; // batch_size = 1, 4 features
+            var sourceData = new float[] { noteDensity, averageTimeDifference, countNoteDensityPerWindow, peakNoteDensity, typicalTimeDifference };
+            var dimensions = new int[] { 1, sourceData.Length }; // dimensions are batch_size (1) times number of features in sourceData
 
             using var session = new InferenceSession(path);
             var tensor = new DenseTensor<float>(sourceData, dimensions);
@@ -139,11 +115,12 @@ namespace Edda.Windows {
             return outputs[0].AsTensor<float>().First();
         }
 
-        private static bool CheckParameterRanges(double noteDensity, double averageTimeDifference, int longestHighDensitySequence, double peakNoteDensity) {
+        private static bool CheckParameterRanges(double noteDensity, double averageTimeDifference, double countNoteDensityPerWindow, double peakNoteDensity, double typicalTimeDifference) {
             return Helper.DoubleApproxGreaterEqual(DifficultyPrediction.MaxNoteDensity, noteDensity) &&
                 Helper.DoubleApproxGreaterEqual(averageTimeDifference, DifficultyPrediction.MinAverageTimeDifference) &&
-                longestHighDensitySequence <= DifficultyPrediction.MaxLongestHighDensitySequence &&
-                Helper.DoubleApproxGreaterEqual(DifficultyPrediction.MaxPeakNoteDensity, peakNoteDensity);
+                Helper.DoubleApproxGreaterEqual(DifficultyPrediction.MaxCountNoteDensityPerWindow, countNoteDensityPerWindow) &&
+                Helper.DoubleApproxGreaterEqual(DifficultyPrediction.MaxPeakNoteDensity, peakNoteDensity) &&
+                Helper.DoubleApproxGreaterEqual(typicalTimeDifference, DifficultyPrediction.MinTypicalTimeDifference);
         }
     }
 }
