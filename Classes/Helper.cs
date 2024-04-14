@@ -223,7 +223,9 @@ public class Helper {
         string path = Path.Combine(Path.GetTempPath(), $"ffmpeg_temp_{Process.GetCurrentProcess().Id}.exe");
         File.WriteAllBytes(path, Edda.Properties.Resources.ffmpeg);
 
-        var p = Process.Start(path, arg);
+        var startInfo = new ProcessStartInfo(path, arg);
+        startInfo.WorkingDirectory = dir;
+        var p = Process.Start(startInfo);
         p.WaitForExit();
         int exitCode = p.ExitCode;
         p.Close(); // To free up the handle on ffmpeg_temp_{pid}.exe
