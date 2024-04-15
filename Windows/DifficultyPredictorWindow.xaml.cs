@@ -1,12 +1,13 @@
-﻿using Syncfusion.PMML;
+﻿using Edda.Const;
+using Microsoft.ML.OnnxRuntime;
+using Microsoft.ML.OnnxRuntime.Tensors;
 using System;
 using System.Collections.Generic;
-using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
-using System.Xml;
+using System.Windows.Media;
 
 namespace Edda.Windows {
     /// <summary>
@@ -25,144 +26,101 @@ namespace Edda.Windows {
             btnDifficulty1.IsEnabled = false;
             btnDifficulty2.IsEnabled = false;
             PanelPredictionResults.Visibility = Visibility.Hidden;
+            PanelPredictionWarning.Visibility = Visibility.Hidden;
             var mapEditor = mainWindow.mapEditor;
             var globalBpm = mapEditor.GlobalBPM;
             var globalSongDuration = mapEditor.SongDuration;
             for (int i = 0; i < mapEditor.numDifficulties; i++) {
                 var diff = mapEditor.GetDifficulty(i);
-                var diffNotes = diff.notes;
-                // treat the song as ending on the last placed note if map is WIP
-                var songDuration = CheckTreatMapsWip.IsChecked == true ? 60 / globalBpm * diffNotes.Last().beat : globalSongDuration;
-                var noteDensity = GetNoteDensity(diffNotes, songDuration);
-                var localNoteDensity = GetLocalNoteDensity(diffNotes, songDuration, globalBpm);
+                var timeSeries = diff.notes.Select(note => 60 / globalBpm * note.beat).ToList();
+                var timeDifferences = timeSeries.Zip(timeSeries.Skip(1), (a, b) => b - a).ToList();
+                var timeDifferencesNoZero = timeDifferences.Where(timeDiff => !Helper.DoubleApproxEqual(timeDiff, 0)).ToList();
+                var maxTime = timeSeries.Last() - timeSeries.First();
+
+                var noteDensity = GetNoteDensity(timeSeries, maxTime);
+                var averageTimeDifference = timeDifferencesNoZero.Average();
+                var countNoteDensityPerWindow = GetCountNoteDensityPerWindow(timeDifferencesNoZero);
+                var localNoteDensity = GetNoteDensitiesPerWindow(timeSeries, 2);
                 var highLocalNoteDensity = Helper.GetQuantile(localNoteDensity, 0.95);
-                var predictedDiff = EvaluateModel(mapEditor.GlobalBPM, noteDensity, highLocalNoteDensity);
+                var typicalTimeDifference = Helper.GetQuantile(timeDifferencesNoZero, 0.4);
+
+                var parametersInRange = CheckParameterRanges(noteDensity, averageTimeDifference, countNoteDensityPerWindow, highLocalNoteDensity, typicalTimeDifference);
 
                 Label diffLabel;
+                Button diffBtn;
                 switch (i) {
-                    case 0: diffLabel = lblDifficultyRank1; btnDifficulty0.IsEnabled = true; break;
-                    case 1: diffLabel = lblDifficultyRank2; btnDifficulty1.IsEnabled = true; break;
-                    case 2: diffLabel = lblDifficultyRank3; btnDifficulty2.IsEnabled = true; break;
-                    default: diffLabel = null; break;
+                    case 0: diffLabel = lblDifficultyRank1; diffBtn = btnDifficulty0; break;
+                    case 1: diffLabel = lblDifficultyRank2; diffBtn = btnDifficulty1; break;
+                    case 2: diffLabel = lblDifficultyRank3; diffBtn = btnDifficulty2; break;
+                    default: diffLabel = null; diffBtn = null; break;
                 }
-                var showPreciseValue = CheckShowPreciseValues.IsChecked == true;
-                var predictionDisplay = Math.Round(predictedDiff, showPreciseValue ? 1 : 0);
-                diffLabel.Content = $"{predictionDisplay.ToString(showPreciseValue ? "##.00" : null)}";
+                diffBtn.IsEnabled = true;
+                if (parametersInRange) {
+                    diffLabel.Foreground = new SolidColorBrush(DifficultyPrediction.Colour);
+                    var predictedDiff = EvaluateModel((float)noteDensity, (float)averageTimeDifference, (float)countNoteDensityPerWindow, (float)highLocalNoteDensity, (float)typicalTimeDifference);
+                    var showPreciseValue = CheckShowPreciseValues.IsChecked == true;
+                    var predictionDisplay = Math.Round(predictedDiff, showPreciseValue ? 2 : 0);
+                    diffLabel.Content = $"{predictionDisplay.ToString(showPreciseValue ? "##.00" : null)}";
+                } else {
+                    diffLabel.Foreground = new SolidColorBrush(DifficultyPrediction.WarningColour);
+                    PanelPredictionWarning.Visibility = Visibility.Visible;
+                    diffLabel.Content = ">10";
+                }
             }
             PanelPredictionResults.Visibility = Visibility.Visible;
         }
-        /*
 
-        def getLocalColumnVariety(diffMapData, duration, bpm, windowLength= 2.75, step= 0.25) :
-            variety = []
-                beatsPerWindow = bpm/60 * windowLength
-                windowLower = 0
-            windowUpper = windowLength
-            while windowUpper<duration:
-                localVariety = np.array([0, 0, 0, 0])
-                for n in diffMapData["_notes"]:
-                    noteTime = beatToSec(n["_time"], bpm)
-                    noteCol = n["_lineIndex"]
-                    if windowUpper <= noteTime:
-                        break
-                    if windowLower <= noteTime:
-                        localVariety[noteCol] += 1
-                    if np.linalg.norm(localVariety, 1) > 0:
-                        # L1-normalise or normalise for the amount of notes
-                        normLocalVariety = localVariety / np.linalg.norm(localVariety, 1)
-                        # maps with higher column variety will have a distribution closer to [.25, .25, .25, .25]
-                        score = np.linalg.norm(normLocalVariety - np.array([0.25, 0.25, 0.25, 0.25]), 2)
-                        # higher is better
-                        variety.append(-1 * score)
-        
-                windowLower += step
-                windowUpper += step
-        */
-        private double GetNoteDensity(IEnumerable<Note> notes, double songDuration) {
-            return notes.Count() / songDuration;
+        private static double GetNoteDensity(IEnumerable<double> noteTimes, double songDuration) {
+            return noteTimes.Count() / songDuration;
         }
-        private List<double> GetLocalNoteDensity(IEnumerable<Note> notes, double songDuration, double globalBpm, double windowLength = 2.75, double step = 0.25) {
-            var densities = new List<double>();
-            var windowLower = 0.0;
-            var windowUpper = windowLength;
-            do { // we would like this to run at least once so we have some data when songDuration < windowLength
-                var numNotes = 0;
-                foreach (var n in notes) {
-                    var noteTime = 60 / globalBpm * n.beat;
-                    if (windowLower <= noteTime && noteTime <= windowUpper) {
-                        numNotes += 1;
-                    }
-                }
-                densities.Add(numNotes / windowLength);
-                windowLower += step;
-                windowUpper += step;
-            } while (windowUpper < songDuration);
-            return densities;
-        }
-        // upper 25%
-        private double GetUpperQuartileColumnVariety(List<Note> notes, double songDuration, double globalBpm, double windowLength = 2.75, double step = 0.25) {
-            var variety = new List<double>();
-            var beatsPerWindow = globalBpm / 60 * windowLength;
-            var windowLower = 0.0;
-            var windowUpper = windowLength;
-            while (windowUpper < songDuration) {
-                var localVariety = new List<int>() { 0, 0, 0, 0 };
-                foreach (var n in notes) {
-                    var noteTime = 60 / globalBpm * n.beat;
-                    var noteCol = n.col;
-                    if (windowUpper <= noteTime) {
-                        break;
-                    }
-                    if (windowLower <= noteTime) {
-                        localVariety[noteCol] += 1;
-                    }
-                    var l1Norm = Helper.LpNorm(localVariety, 1);
-                    if (l1Norm > 0) {
-                        // L1-normalise or normalise for the amount of notes
-                        var normLocalVariety = Helper.LpNormalise(localVariety, 1);
-                        // maps with higher column variety will have a distribution closer to [.25, .25, .25, .25]
-                        var score = Helper.LpDistance(normLocalVariety, new List<double>() { 0.25, 0.25, 0.25, 0.25 }, 2);
-                        // higher is better
-                        variety.Add(-1 * score);
 
-                    }
-                }
-                windowLower += step;
-                windowUpper += step;
-            }
-            return Helper.GetQuantile(variety, 0.75);
+        private static List<double> GetNoteDensitiesPerWindow(List<double> timeSeries, double windowLength = 2.75) {
+            var startTimes = timeSeries
+                .Select(t => t - windowLength)
+                .ToList();
+            var endTimes = timeSeries
+                .Select(t => t + windowLength)
+                .ToList();
+            var startIndices = startTimes
+                .Select(timeSeries.BinarySearch)
+                .Select(idx => idx >= 0 ? idx : ~idx)
+                .ToList();
+            var endIndices = endTimes
+                .Select(timeSeries.BinarySearch)
+                .Select(idx => idx >= 0 ? idx : ~idx)
+                .ToList();
+            return startIndices
+                .Zip(endIndices, (start, end) => (end - start) / windowLength)
+                .ToList();
         }
-        private double EvaluateModel(double bpm, double noteDensity, double peakNoteDensity) {
-            string path = Path.Combine(Path.GetTempPath(), "Edda-MLDP_temp.pmml");
+
+        private static int GetCountNoteDensityPerWindow(List<double> timeDiffs, double windowLength = 2) {
+            return timeDiffs
+                .Where(timeDiff => Helper.DoubleApproxGreaterEqual(windowLength, Math.Abs(timeDiff)))
+                .Count();
+        }
+
+        private static float EvaluateModel(float noteDensity, float averageTimeDifference, float countNoteDensityPerWindow, float peakNoteDensity, float typicalTimeDifference) {
+            string path = Path.Combine(Path.GetTempPath(), "Edda-MLDP_temp.onnx");
             File.WriteAllBytes(path, Properties.Resources.Edda_MLDP);
 
-            var features = new {
-                BPM = bpm,
-                NoteDensity = noteDensity,
-                HighNoteDensity2s = peakNoteDensity,
-            };
-            var reader = File.OpenText(path);
-            var pmmlDocument = new PMMLDocument(reader);
-            // Syncfusion package uses current culture for parsing doubles, so we need to make sure it's consistent.
-            var currentCulture = CultureInfo.CurrentCulture;
-            CultureInfo.CurrentCulture = CultureInfo.InvariantCulture;
-            try {
-                var supportVector = new SupportVectorMachineModelEvaluator(pmmlDocument);
-                var predictedResult = supportVector.GetResult(features, null);
-                supportVector.Dispose();
+            var sourceData = new float[] { noteDensity, averageTimeDifference, countNoteDensityPerWindow, peakNoteDensity, typicalTimeDifference };
+            var dimensions = new int[] { 1, sourceData.Length }; // dimensions are batch_size (1) times number of features in sourceData
 
-                XmlDocument xmlDoc = new XmlDocument();
-                xmlDoc.Load(path);
+            using var session = new InferenceSession(path);
+            var tensor = new DenseTensor<float>(sourceData, dimensions);
+            var inputs = new List<NamedOnnxValue> { NamedOnnxValue.CreateFromTensor("input", tensor) }.AsReadOnly();
+            using var outputs = session.Run(inputs);
 
-                // Syncfusion package has a bug where it ignores rescaling of output value... so we have to do it ourselves
-                XmlNodeList constants = xmlDoc.GetElementsByTagName("Constant");
-                var unvariance = Helper.DoubleParseInvariant(constants[0].InnerText);
-                var unmean = Helper.DoubleParseInvariant(constants[1].InnerText);
-                return ((double)predictedResult.PredictedValue * unvariance) + unmean;
-            } finally {
-                CultureInfo.CurrentCulture = currentCulture;
-                reader.Close();
-            }
+            return outputs[0].AsTensor<float>().First();
+        }
+
+        private static bool CheckParameterRanges(double noteDensity, double averageTimeDifference, double countNoteDensityPerWindow, double peakNoteDensity, double typicalTimeDifference) {
+            return Helper.DoubleApproxGreaterEqual(DifficultyPrediction.MaxNoteDensity, noteDensity) &&
+                Helper.DoubleApproxGreaterEqual(averageTimeDifference, DifficultyPrediction.MinAverageTimeDifference) &&
+                Helper.DoubleApproxGreaterEqual(DifficultyPrediction.MaxCountNoteDensityPerWindow, countNoteDensityPerWindow) &&
+                Helper.DoubleApproxGreaterEqual(DifficultyPrediction.MaxPeakNoteDensity, peakNoteDensity) &&
+                Helper.DoubleApproxGreaterEqual(typicalTimeDifference, DifficultyPrediction.MinTypicalTimeDifference);
         }
     }
 }

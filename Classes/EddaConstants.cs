@@ -239,4 +239,15 @@ namespace Edda.Const {
         public const string PubKey = "c2710c1d8cd4d9a2a9460cd63e048781d32a3a08b171153c5898a6fe0ddb8e76";
         public const string IconKey = "icon";
     }
+
+    public static class DifficultyPrediction {
+        public static readonly MediaColor Colour = Colors.Black;
+        public static readonly MediaColor WarningColour = Colors.OrangeRed;
+        // These values are based on the dataset used for the ML model training.
+        public const double MaxNoteDensity = 7.615101;
+        public const double MinAverageTimeDifference = 0.152743;
+        public const double MaxCountNoteDensityPerWindow = 1578.5;
+        public const double MaxPeakNoteDensity = 25.5;
+        public const double MinTypicalTimeDifference = 0.091463;
+    }
 }

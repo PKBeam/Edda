@@ -16,7 +16,7 @@
                     </LinearGradientBrush>
                 </Border.Background>
                 <StackPanel>
-                    <TextBlock VerticalAlignment="Center" TextWrapping="WrapWithOverflow">The difficulty predictor uses a machine learning model trained on custom maps from Ragnacustoms.</TextBlock>
+                    <TextBlock VerticalAlignment="Center" TextWrapping="WrapWithOverflow">The difficulty predictor uses a machine learning model trained on OST and RAID songs (up to Jonathan Young RAID).</TextBlock>
                     <TextBlock FontWeight="SemiBold" VerticalAlignment="Center" Margin="0 10 0 0">For best results, use with completed maps.</TextBlock>
 
                 </StackPanel>
@@ -56,16 +56,6 @@
                         <ColumnDefinition Width="25" />
                     </Grid.ColumnDefinitions>
 
-                    <Border Grid.Row="1" Grid.Column="0">
-                        <TextBlock VerticalAlignment="Center">Treat maps as WIP</TextBlock>
-                    </Border>
-
-                    <Border Grid.Row="1" Grid.Column="1">
-                        <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
-                            <CheckBox x:Name="CheckTreatMapsWip" VerticalAlignment="Center"/>
-                        </StackPanel>
-                    </Border>
-
                     <Border Grid.Row="2" Grid.Column="0">
                         <TextBlock VerticalAlignment="Center">Show precise values</TextBlock>
                     </Border>
@@ -76,9 +66,9 @@
                         </StackPanel>
                     </Border>
                 </Grid>
-                <StackPanel x:Name="PanelPredictionResults" HorizontalAlignment="Center" Visibility="Hidden">
+                <StackPanel x:Name="PanelPredictionResults" Orientation="Vertical" Width="200" Visibility="Hidden">
                     <TextBlock FontSize="11" Margin="0 0 0 5" >Predicted Difficulty Ranks:</TextBlock>
-                    <StackPanel Orientation="Horizontal">
+                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
                         <StackPanel x:Name="DifficultyChangePanel" Orientation="Horizontal">
                             <Button x:Name="btnDifficulty0" Width="55" Height="40">
                                 <Grid Width="50">
@@ -100,6 +90,7 @@
                             </Button>
                         </StackPanel>
                     </StackPanel>
+                    <TextBlock x:Name="PanelPredictionWarning" TextWrapping="Wrap" Foreground="OrangeRed" Visibility="Hidden" FontSize="11" Margin="0 0 0 5" >Map parameters outside of normal range, predictions marked in orange couldn't be determined.</TextBlock>
                 </StackPanel>
             </StackPanel>
         </DockPanel>
