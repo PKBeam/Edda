@@ -517,7 +517,10 @@ public class RagnarockMap {
                                 throw ex;
                             break;
                         case "_lineLayer":
-                            if (val != 1) throw ex;
+                            // Technically, we should only have notes on layer 1, but the game doesn't complain if the notes are on different layers.
+                            // See https://github.com/PKBeam/Edda/issues/112.
+                            if ((int)val != val || val < 0 || 3 < val)
+                                throw ex;
                             break;
                         case "_type":
                             if (val != 0) throw ex;
