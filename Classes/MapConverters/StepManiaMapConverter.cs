@@ -57,7 +57,7 @@ public class StepManiaMapConverter : IMapConverter {
 
         var bpms = ParseBPMChanges(beatmap, smFile);
         PrepareTimingMetadatas(bpms, songTimeOffset, (double)beatmap.GetValue("_beatsPerMinute"));
-        var convertedBPMs = ConvertBPMChangesToRagnarockBeat(bpms);
+        var convertedBPMs = ConvertBPMChangesToRagnarockBeat();
 
         // DISPLAYBPMS not supported in RagnarockMap currently
         // STOPS, DELAYS, WARPS, TIMESIGNATURES, TICKCOUNTS, COMBOS, SPEEDS, SCROLLS, FAKES not supported in RagnarockMap currently
@@ -220,13 +220,11 @@ public class StepManiaMapConverter : IMapConverter {
         return bpms;
     }
 
-    private List<BPMChange> ConvertBPMChangesToRagnarockBeat(List<BPMChange> bpms) {
+    private List<BPMChange> ConvertBPMChangesToRagnarockBeat() {
         var convertedBPMs = new List<BPMChange>();
-        foreach (var bpm in bpms) {
-            var globalBeat = ConvertFromStepManiaBeatToRagnarockBeat(bpm.globalBeat);
-            if (globalBeat.HasValue) {
-                bpm.globalBeat = globalBeat.Value;
-                convertedBPMs.Add(bpm);
+        foreach (var timingMetadata in timingMetadatas) {
+            if (Helper.DoubleApproxGreater(timingMetadata.ragnarockGlobalBeat, 0)) {
+                convertedBPMs.Add(new(timingMetadata.ragnarockGlobalBeat, timingMetadata.ragnarockGlobalBPM, 4));
             }
         }
 
@@ -270,8 +268,8 @@ public class StepManiaMapConverter : IMapConverter {
         // Ceil the difference in SM beats, so we land on a full beat - otherwise the timing change screws up the alignment of the runes.
         var firstStepManiaBeatAfterZero = stepManiaBeatSoFar + Math.Ceiling(ConvertSecondsToBeats(deltaInSecondsToZero, stepManiaLastBPM));
         var deltaInSecondsFromZero = ConvertBeatsToSeconds(firstStepManiaBeatAfterZero - stepManiaBeatSoFar, stepManiaLastBPM);
-        var deltaInRagnarockGlobalBeatsAfterZero = ConvertSecondsToBeats(deltaInSecondsFromZero, ragnarockGlobalBPM);
-        return new TimingMetadata(firstStepManiaBeatAfterZero, stepManiaLastBPM, deltaInRagnarockGlobalBeatsAfterZero, ragnarockGlobalBPM);
+        ragnarockGlobalBeatSoFar += ConvertSecondsToBeats(deltaInSecondsFromZero, ragnarockGlobalBPM);
+        return new TimingMetadata(firstStepManiaBeatAfterZero, stepManiaLastBPM, ragnarockGlobalBeatSoFar, ragnarockGlobalBPM);
     }
 
     private double? ConvertFromStepManiaBeatToRagnarockBeat(double stepManiaBeat) {
