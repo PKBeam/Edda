@@ -174,7 +174,11 @@ public class MapEditor : IDisposable {
         beatMap.DeleteMap(indx);
         needsSave = false; // beatMap.DeleteMap force-saves info.dat
 
-        return currentDifficultyIndex <= beatMap.numDifficulties - 1;
+        var selectedDifficultyIsStillValid = currentDifficultyIndex <= beatMap.numDifficulties - 1;
+        if (selectedDifficultyIsStillValid) {
+            RecalculateMapStats();
+        }
+        return selectedDifficultyIsStillValid;
     }
     public void CreateDifficulty(bool copyCurrentMarkers) {
         needsSave = true; // beatMap.AddMap doesn't save info.dat (even though SwapMaps can do that later when sorting difficulties)
