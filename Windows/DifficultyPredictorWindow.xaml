@@ -62,7 +62,17 @@
 
                     <Border Grid.Row="2" Grid.Column="1">
                         <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
-                            <CheckBox x:Name="CheckShowPreciseValues" VerticalAlignment="Center" />
+                            <CheckBox x:Name="CheckShowPreciseValues" VerticalAlignment="Center" Click="CheckShowPreciseValues_Click" />
+                        </StackPanel>
+                    </Border>
+
+                    <Border Grid.Row="3" Grid.Column="0">
+                        <TextBlock VerticalAlignment="Center">Show in map stats</TextBlock>
+                    </Border>
+
+                    <Border Grid.Row="3" Grid.Column="1">
+                        <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+                            <CheckBox x:Name="CheckShowInMapStats" VerticalAlignment="Center" Click="CheckShowInMapStats_Click" />
                         </StackPanel>
                     </Border>
                 </Grid>

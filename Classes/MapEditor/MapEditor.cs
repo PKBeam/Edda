@@ -1,5 +1,5 @@
 ﻿using Edda;
-using Edda.Classes.MapEditor.Stats;
+using Edda.Classes.MapEditorNS.Stats;
 using Edda.Const;
 using Newtonsoft.Json.Linq;
 using System;
