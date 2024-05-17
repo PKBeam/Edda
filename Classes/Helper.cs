@@ -375,13 +375,13 @@ public class Helper {
         if (DoubleApproxEqual(fracBeat, 1.0 / 4.0)) {
             runeStr = "14";
         }
-        if (DoubleApproxEqual(fracBeat, 1.0 / 3.0)) {
+        if (DoubleApproxEqual(fracBeat, 1.0 / 3.0) || DoubleApproxEqual(fracBeat, 5.0 / 6.0)) {
             runeStr = "13";
         }
         if (DoubleApproxEqual(fracBeat, 1.0 / 2.0)) {
             runeStr = "12";
         }
-        if (DoubleApproxEqual(fracBeat, 2.0 / 3.0)) {
+        if (DoubleApproxEqual(fracBeat, 2.0 / 3.0) || DoubleApproxEqual(fracBeat, 1.0 / 6.0)) {
             runeStr = "23";
         }
         if (DoubleApproxEqual(fracBeat, 3.0 / 4.0)) {
