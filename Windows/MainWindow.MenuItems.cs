@@ -1,10 +1,5 @@
 ﻿using Edda.Const;
 using Edda.Windows;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows;
 
 namespace Edda {
@@ -138,7 +133,7 @@ namespace Edda {
             ShowUniqueWindow(() => new BPMCalcWindow());
         }
         private void MenuItemDifficultyPredictor_Click(object sender, RoutedEventArgs e) {
-            ShowUniqueWindow(() => new DifficultyPredictorWindow(this));
+            ShowUniqueWindow(() => new DifficultyPredictorWindow(this, userSettings));
         }
 
         private void MenuItemClearCache_Click(object sender, RoutedEventArgs e) {

@@ -265,7 +265,17 @@
                         </Border>
                     </Grid>
                     <Line X1="0" X2="{Binding ElementName=LeftPanel, Path=ActualWidth}" Margin="0 10 0 0" StrokeThickness="1" Stroke="{DynamicResource {x:Static SystemColors.ControlDarkDarkBrushKey}}" HorizontalAlignment="Center"></Line>
-                    <Label Margin="5 5 0 0" FontWeight="Bold" FontSize="16" FontFamily="Bahnschrift">Map Stats</Label>
+                    <Grid VerticalAlignment="Center">
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="*" />
+                        </Grid.RowDefinitions>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="*" />
+                        </Grid.ColumnDefinitions>
+                        <Label Grid.Row="0" Grid.Column="0" Margin="5 5 0 0" FontWeight="Bold" FontSize="16" FontFamily="Bahnschrift">Map Stats</Label>
+                        <Label x:Name="difficultyPrediction" Grid.Row="0" Grid.Column="1" Margin="0 5 5 0" VerticalAlignment="Center" HorizontalAlignment="Right">Difficulty: 0</Label>
+                    </Grid>
                     <StackPanel Margin="10 0 5 0">
                         <Expander x:Name="notesStats" IsExpanded="True">
                             <Expander.Header>

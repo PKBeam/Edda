@@ -60,6 +60,8 @@ namespace Edda.Const {
         public const bool CheckForUpdates = true;
         public const int MapSaveLocationIndex = 0;
         public const string MapSaveLocationPath = "";
+        public const bool DifficultyPredictorShowPrecise = false;
+        public const bool DifficultyPredictorShowInMapStats = false;
     }
 
     public static class UserSettingsKey {
@@ -83,6 +85,8 @@ namespace Edda.Const {
         public const string CheckForUpdates = "checkForUpdates";
         public const string MapSaveLocationIndex = "mapSaveLocationIndex";
         public const string MapSaveLocationPath = "mapSaveLocationPath";
+        public const string DifficultyPredictorShowPrecise = "difficultyPredictorShowPrecise";
+        public const string DifficultyPredictorShowInMapStats = "difficultyPredictorShowInMapStats";
     }
     public static class Editor {
         // Grid drawing

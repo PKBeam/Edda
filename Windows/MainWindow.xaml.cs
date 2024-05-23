@@ -1,4 +1,4 @@
-﻿using Edda.Classes.MapEditor.Stats;
+﻿using Edda.Classes.MapEditorNS.Stats;
 using Edda.Const;
 using Microsoft.WindowsAPICodePack.Dialogs;
 using NAudio.CoreAudioApi;
@@ -119,6 +119,7 @@ namespace Edda {
         public bool shiftKeyDown;
         public bool ctrlKeyDown;
         bool returnToStartMenuOnClose = false;
+        bool showDifficultyPrediction = false;
 
         DoubleAnimation songPlayAnim;            // used for animating scroll when playing a song
         double prevScrollPercent = 0;       // percentage of scroll progress before the scroll viewport was changed
@@ -787,6 +788,14 @@ namespace Edda {
                 userSettings.SetValueForKey(UserSettingsKey.MapSaveLocationIndex, DefaultUserSettings.MapSaveLocationIndex);
             }
 
+            if (userSettings.GetValueForKey(UserSettingsKey.DifficultyPredictorShowPrecise) == null) {
+                userSettings.SetValueForKey(UserSettingsKey.DifficultyPredictorShowPrecise, DefaultUserSettings.DifficultyPredictorShowPrecise);
+            }
+
+            if (userSettings.GetValueForKey(UserSettingsKey.DifficultyPredictorShowInMapStats) == null) {
+                userSettings.SetValueForKey(UserSettingsKey.DifficultyPredictorShowInMapStats, DefaultUserSettings.DifficultyPredictorShowInMapStats);
+            }
+
             userSettings.Write();
         }
         internal void LoadSettingsFile(bool reloadWaveforms = false) {
@@ -826,6 +835,13 @@ namespace Edda {
             if (reloadWaveforms) {
                 gridController.RefreshSpectrogramWaveform();
                 gridController.DrawSpectrogram();
+            }
+
+            showDifficultyPrediction = userSettings.GetBoolForKey(UserSettingsKey.DifficultyPredictorShowInMapStats);
+            if (showDifficultyPrediction) {
+                difficultyPrediction.Visibility = Visibility.Visible;
+            } else {
+                difficultyPrediction.Visibility = Visibility.Collapsed;
             }
 
             int.TryParse(userSettings.GetValueForKey(UserSettingsKey.EditorAudioLatency), out editorAudioLatency);
@@ -1422,6 +1438,22 @@ namespace Edda {
             SetNotesStats(stats);
             SetColumnStats(stats);
             SetNPSStats(stats);
+            UpdateDifficultyPrediction();
+        }
+
+        public void UpdateDifficultyPrediction() {
+            if (showDifficultyPrediction && mapEditor.currentMapDifficulty != null) {
+                var difficulty = DifficultyPredictor.PredictDifficulty(mapEditor, mapEditor.currentDifficultyIndex);
+                if (difficulty.HasValue) {
+                    difficultyPrediction.Foreground = new SolidColorBrush(DifficultyPrediction.Colour);
+                    var showPreciseValue = userSettings.GetBoolForKey(UserSettingsKey.DifficultyPredictorShowPrecise);
+                    var predictionDisplay = Math.Round(difficulty.Value, showPreciseValue ? 2 : 0);
+                    difficultyPrediction.Content = $"Difficulty: {predictionDisplay.ToString(showPreciseValue ? "#0.00" : null)}";
+                } else {
+                    difficultyPrediction.Foreground = new SolidColorBrush(DifficultyPrediction.WarningColour);
+                    difficultyPrediction.Content = ">10";
+                }
+            }
         }
 
         private void SetNotesStats(MapStats stats) {

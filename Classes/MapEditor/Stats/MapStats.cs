@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 
-namespace Edda.Classes.MapEditor.Stats {
+namespace Edda.Classes.MapEditorNS.Stats {
     public class MapStats {
         /// <summary>
         /// Song properties needed for calculations
