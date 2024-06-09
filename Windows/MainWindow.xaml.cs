@@ -498,6 +498,8 @@ namespace Edda {
                 return;
             }
 
+            SaveBeatmap();
+
             string songArtist = Helper.ValidFilenameFrom((string)mapEditor.GetMapValue("_songAuthorName"));
             string songName = Helper.ValidFilenameFrom((string)mapEditor.GetMapValue("_songName"));
             string baseFolder = mapEditor.mapFolder;
@@ -509,10 +511,27 @@ namespace Edda {
             try {
                 Helper.FileDeleteIfExists(zipPath);
 
-                var copyFiles = new List<string>();
-                foreach (var file in Directory.GetFiles(baseFolder)) {
-                    copyFiles.Add(file);
+                // only select the files that need to be in the ZIP
+                var copyFiles = new List<string> {
+                    Path.Combine(baseFolder, "info.dat")
+                };
+                string songFilename = (string)mapEditor.GetMapValue("_songFilename");
+                if (songFilename != null && File.Exists(Path.Combine(baseFolder, songFilename))) {
+                    copyFiles.Add(Path.Combine(baseFolder, songFilename));
                 }
+                string coverFilename = (string)mapEditor.GetMapValue("_coverImageFilename");
+                if (coverFilename != null && File.Exists(Path.Combine(baseFolder, coverFilename))) {
+                    copyFiles.Add(Path.Combine(baseFolder, coverFilename));
+                }
+                string previewFile = Path.Combine(baseFolder, "preview.ogg");
+                if (File.Exists(previewFile)) {
+                    copyFiles.Add(previewFile);
+                }
+                for (int diffIndex = 0; diffIndex < mapEditor.numDifficulties; ++diffIndex) {
+                    var filename = (string)mapEditor.GetMapValue("_beatmapFilename", (RagnarockMapDifficulties)diffIndex);
+                    copyFiles.Add(Path.Combine(baseFolder, filename));
+                }
+                // --
 
                 if (Directory.Exists(zipFolder)) {
                     Directory.Delete(zipFolder, true);
@@ -522,7 +541,7 @@ namespace Edda {
                 // need to use cmd to copy files; .NET Filesystem API throws an exception because "the file is being used"
                 //Helper.CmdCopyFiles(copyFiles, zipFolder);
                 foreach (var file in copyFiles) {
-                    File.Copy(file, System.IO.Path.Combine(zipFolder, System.IO.Path.GetFileName(file)));
+                    File.Copy(file, Path.Combine(zipFolder, Path.GetFileName(file)));
                 }
                 ZipFile.CreateFromDirectory(zipFolder, zipPath);
 
