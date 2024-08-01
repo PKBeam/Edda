@@ -57,7 +57,7 @@ public class StepManiaMapConverter : IMapConverter {
 
         var bpms = ParseBPMChanges(beatmap, smFile);
         PrepareTimingMetadatas(bpms, songTimeOffset, (double)beatmap.GetValue("_beatsPerMinute"));
-        var convertedBPMs = ConvertBPMChangesToRagnarockBeat(bpms);
+        var convertedBPMs = ConvertBPMChangesToRagnarockBeat();
 
         // DISPLAYBPMS not supported in RagnarockMap currently
         // STOPS, DELAYS, WARPS, TIMESIGNATURES, TICKCOUNTS, COMBOS, SPEEDS, SCROLLS, FAKES not supported in RagnarockMap currently
@@ -220,13 +220,11 @@ public class StepManiaMapConverter : IMapConverter {
         return bpms;
     }
 
-    private List<BPMChange> ConvertBPMChangesToRagnarockBeat(List<BPMChange> bpms) {
+    private List<BPMChange> ConvertBPMChangesToRagnarockBeat() {
         var convertedBPMs = new List<BPMChange>();
-        foreach (var bpm in bpms) {
-            var globalBeat = ConvertFromStepManiaBeatToRagnarockBeat(bpm.globalBeat);
-            if (globalBeat.HasValue) {
-                bpm.globalBeat = globalBeat.Value;
-                convertedBPMs.Add(bpm);
+        foreach (var timingMetadata in timingMetadatas) {
+            if (Helper.DoubleApproxGreater(timingMetadata.ragnarockGlobalBeat, 0)) {
+                convertedBPMs.Add(new(timingMetadata.ragnarockGlobalBeat, timingMetadata.ragnarockGlobalBPM, 4));
             }
         }
 
@@ -247,26 +245,31 @@ public class StepManiaMapConverter : IMapConverter {
         foreach (var bpmChange in stepManiaBPMChanges) {
             var deltaInSeconds = ConvertBeatsToSeconds(bpmChange.globalBeat - stepManiaBeatSoFar, stepManiaLastBPM);
             var deltaInRagnarockGlobalBeats = ConvertSecondsToBeats(deltaInSeconds, ragnarockGlobalBPM);
-            if (ragnarockGlobalBeatSoFar < 0 && ragnarockGlobalBeatSoFar + deltaInRagnarockGlobalBeats > 0) {
+            if (Helper.DoubleApproxGreater(0, ragnarockGlobalBeatSoFar) && Helper.DoubleApproxGreater(ragnarockGlobalBeatSoFar + deltaInRagnarockGlobalBeats, 0)) {
                 // This is in case the offset was positive - we partially save the timing of the BPM change that started with negative "global" beat, but ended with positive "global" beat.
                 // Thanks to this, we can still re-time notes and bookmarks that happen halfway through this BPM change.
-                var deltaInSecondsToZero = ConvertBeatsToSeconds(-ragnarockGlobalBeatSoFar, ragnarockGlobalBPM);
-                var stepManiaBeatAtZero = stepManiaBeatSoFar + ConvertSecondsToBeats(deltaInSecondsToZero, stepManiaLastBPM);
-                timingMetadatas.Add(new TimingMetadata(stepManiaBeatAtZero, stepManiaLastBPM, 0, ragnarockGlobalBPM));
+                timingMetadatas.Add(PrepareCutOffTimingMetadataAroundZero(ragnarockGlobalBeatSoFar, ragnarockGlobalBPM, stepManiaBeatSoFar, stepManiaLastBPM));
             }
             stepManiaBeatSoFar = bpmChange.globalBeat;
             stepManiaLastBPM = bpmChange.BPM;
             ragnarockGlobalBeatSoFar += deltaInRagnarockGlobalBeats;
-            if (ragnarockGlobalBeatSoFar > 0) {
+            if (Helper.DoubleApproxGreater(ragnarockGlobalBeatSoFar, 0)) {
                 timingMetadatas.Add(new TimingMetadata(stepManiaBeatSoFar, stepManiaLastBPM, ragnarockGlobalBeatSoFar, ragnarockGlobalBPM));
             }
         }
         // Check the partial cut-off for the last BPM change - needed in case when there is only 1 BPM change at the start for the whole map
-        if (ragnarockGlobalBeatSoFar < 0) {
-            var deltaInSecondsToZero = ConvertBeatsToSeconds(-ragnarockGlobalBeatSoFar, ragnarockGlobalBPM);
-            var stepManiaBeatAtZero = stepManiaBeatSoFar + ConvertSecondsToBeats(deltaInSecondsToZero, stepManiaLastBPM);
-            timingMetadatas.Add(new TimingMetadata(stepManiaBeatAtZero, stepManiaLastBPM, 0, ragnarockGlobalBPM));
+        if (Helper.DoubleApproxGreaterEqual(0, ragnarockGlobalBeatSoFar)) {
+            timingMetadatas.Add(PrepareCutOffTimingMetadataAroundZero(ragnarockGlobalBeatSoFar, ragnarockGlobalBPM, stepManiaBeatSoFar, stepManiaLastBPM));
         }
+    }
+
+    private TimingMetadata PrepareCutOffTimingMetadataAroundZero(double ragnarockGlobalBeatSoFar, double ragnarockGlobalBPM, double stepManiaBeatSoFar, double stepManiaLastBPM) {
+        var deltaInSecondsToZero = ConvertBeatsToSeconds(-ragnarockGlobalBeatSoFar, ragnarockGlobalBPM);
+        // Ceil the difference in SM beats, so we land on a full beat - otherwise the timing change screws up the alignment of the runes.
+        var firstStepManiaBeatAfterZero = stepManiaBeatSoFar + Math.Ceiling(ConvertSecondsToBeats(deltaInSecondsToZero, stepManiaLastBPM));
+        var deltaInSecondsFromZero = ConvertBeatsToSeconds(firstStepManiaBeatAfterZero - stepManiaBeatSoFar, stepManiaLastBPM);
+        ragnarockGlobalBeatSoFar += ConvertSecondsToBeats(deltaInSecondsFromZero, ragnarockGlobalBPM);
+        return new TimingMetadata(firstStepManiaBeatAfterZero, stepManiaLastBPM, ragnarockGlobalBeatSoFar, ragnarockGlobalBPM);
     }
 
     private double? ConvertFromStepManiaBeatToRagnarockBeat(double stepManiaBeat) {
