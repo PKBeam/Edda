@@ -5,11 +5,21 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using static Edda.Classes.MapEditorNS.Stats.IDifficultyPredictor.Features;
 
 namespace Edda.Classes.MapEditorNS.Stats {
-    public class DifficultyPredictor {
+    /// <summary>
+    /// Difficulty predictor utilizing PCA-based ONNX model developed by <see href="https://github.com/Nytilde">Nytilde</see> and trained on
+    /// all Ragnarock OST and RAID maps up to (and including) Jonathan Young RAID. <br/>
+    /// When map parameters are outside of the trained data range, a fallback one-dimensional PCA model is used for extrapolation instead.
+    /// </summary>
+    public class DifficultyPredictorNytilde : IDifficultyPredictor {
 
-        public static float? PredictDifficulty(MapEditor mapEditor, int difficultyIndex) {
+        public IDifficultyPredictor.Features GetSupportedFeatures() {
+            return PreciseFloat | AlwaysPredict | RealTime;
+        }
+
+        public float? PredictDifficulty(MapEditor mapEditor, int difficultyIndex) {
             var diff = mapEditor.GetDifficulty(difficultyIndex);
             var timeSeries = diff.notes.Select(note => 60 / mapEditor.GlobalBPM * note.beat).ToList();
             if (timeSeries.Count == 0) return 0;
@@ -19,21 +29,24 @@ namespace Edda.Classes.MapEditorNS.Stats {
 
             var noteDensity = GetNoteDensity(timeSeries, maxTime);
             var averageTimeDifference = timeDifferencesNoZero.Average();
-            var countNoteDensityPerWindow = GetCountNoteDensityPerWindow(timeDifferencesNoZero);
+            var melchiorDiffScore = GetMelchiorDifficultyScore(diff.notes, mapEditor.GlobalBPM);
             var localNoteDensity = GetNoteDensitiesPerWindow(timeSeries, 2);
             var highLocalNoteDensity = Helper.GetQuantile(localNoteDensity, 0.95);
-            var typicalTimeDifference = Helper.GetQuantile(timeDifferencesNoZero, 0.4);
+            var typicalTimeDifference = Helper.GetQuantile(timeDifferencesNoZero, 0.3);
+            var countNoteDensityPerWindow = GetCountNoteDensityPerWindow(timeDifferencesNoZero);
 
-            return CheckParameterRanges(noteDensity, averageTimeDifference, countNoteDensityPerWindow, highLocalNoteDensity, typicalTimeDifference)
-                ? EvaluateModel((float)noteDensity, (float)averageTimeDifference, countNoteDensityPerWindow, (float)highLocalNoteDensity, (float)typicalTimeDifference)
-                : null;
+            var model = CheckParameterRanges(noteDensity, averageTimeDifference, countNoteDensityPerWindow, highLocalNoteDensity, typicalTimeDifference)
+                ? Properties.Resources.Edda_MLDP_Nytilde
+                : Properties.Resources.Edda_MLDP_Nytilde_Fallback;
+
+            return EvaluateModel(model, (float)noteDensity, (float)averageTimeDifference, (float)melchiorDiffScore, countNoteDensityPerWindow, (float)highLocalNoteDensity, (float)typicalTimeDifference);
         }
 
-        private static float EvaluateModel(float noteDensity, float averageTimeDifference, float countNoteDensityPerWindow, float peakNoteDensity, float typicalTimeDifference) {
-            string path = Path.Combine(Path.GetTempPath(), "Edda-MLDP_temp.onnx");
-            File.WriteAllBytes(path, Properties.Resources.Edda_MLDP);
+        private static float EvaluateModel(byte[] model, float noteDensity, float averageTimeDifference, float melchiorDiffScore, float countNoteDensityPerWindow, float peakNoteDensity, float typicalTimeDifference) {
+            string path = Path.Combine(Path.GetTempPath(), "Edda-MLDP_Nytilde_temp.onnx");
+            File.WriteAllBytes(path, model);
 
-            var sourceData = new float[] { noteDensity, averageTimeDifference, countNoteDensityPerWindow, peakNoteDensity, typicalTimeDifference };
+            var sourceData = new float[] { noteDensity, averageTimeDifference, melchiorDiffScore, peakNoteDensity, typicalTimeDifference, countNoteDensityPerWindow };
             var dimensions = new int[] { 1, sourceData.Length }; // dimensions are batch_size (1) times number of features in sourceData
 
             using var session = new InferenceSession(path);
@@ -73,7 +86,27 @@ namespace Edda.Classes.MapEditorNS.Stats {
                 .Where(timeDiff => Helper.DoubleApproxGreaterEqual(windowLength, Math.Abs(timeDiff)))
                 .Count();
         }
+
+        private static double GetMelchiorDifficultyScore(SortedSet<Note> notes, double globalBPM, double timeThreshold = 0.02) {
+            if (notes.Count < 2) return 0;
+
+            var handNotes = notes.Take(2).OrderBy(note => note.col).ToList();
+            var diffPoints = 0.0;
+            foreach (var note in notes.Skip(2)) {
+                var handDiffPoints = handNotes
+                    .Select(handNote => (Math.Abs(handNote.col - note.col) + 1) / Math.Max(timeThreshold, Math.Pow(60 * (note.beat - handNote.beat) / globalBPM, 2)))
+                    .ToList();
+                var bestScore = handDiffPoints.Min();
+                var bestHand = handDiffPoints.IndexOf(bestScore);
+                diffPoints += bestScore;
+                handNotes[bestHand] = note;
+            }
+
+            return diffPoints;
+        }
+
         private static bool CheckParameterRanges(double noteDensity, double averageTimeDifference, double countNoteDensityPerWindow, double peakNoteDensity, double typicalTimeDifference) {
+            // TODO: Add MelchiorDiffScore range
             return Helper.DoubleApproxGreaterEqual(DifficultyPrediction.MaxNoteDensity, noteDensity) &&
                 Helper.DoubleApproxGreaterEqual(averageTimeDifference, DifficultyPrediction.MinAverageTimeDifference) &&
                 Helper.DoubleApproxGreaterEqual(DifficultyPrediction.MaxCountNoteDensityPerWindow, countNoteDensityPerWindow) &&
