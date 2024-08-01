@@ -229,6 +229,20 @@ namespace Edda {
                 editorIsLoaded = true;
             }), System.Windows.Threading.DispatcherPriority.ContextIdle);
         }
+
+        private void EditorPanel_SizeChanged(object sender, SizeChangedEventArgs e) {
+            /**
+             * FIXME: the ratio of the spectrogram column is still not the same after resizing down in a way that makes the EditorPanel wider than the slot in the DockPanel.
+             *        In this situation, this event doesn't trigger unless height is changed as well.
+             *        If the height changes as well, this even handler will resize the width down, which triggers the event again (this time for width change) and the resulting ratio is not the same.
+             * Replication steps: increase window width, drag spectrogram column as far right as possible and then reduce the window width.
+             **/
+            if (editorIsLoaded) {
+                var previousSpectrogramRatio = (gridSpectrogram.ActualWidth - spectrogramResize.Width) / e.PreviousSize.Width;
+                var newSpectrogramWidth = Math.Min(EditorPanel.ActualWidth, EditorPanel.MaxWidth) * previousSpectrogramRatio;
+                gridSpectrogram.ColumnDefinitions[0].Width = new GridLength(newSpectrogramWidth);
+            }
+        }
     }
 
     public class DoubleOffsetConverter : IValueConverter {

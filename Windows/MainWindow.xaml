@@ -10,8 +10,9 @@
     <Window.Resources>
         <edda:DoubleOffsetConverter x:Key="SpectrogramColumnMaxWidthConverter" Offset="320"/>
         <edda:DoubleOffsetConverter x:Key="SpectrogramResizeMaxWidthConverter" Offset="323"/>
+        <edda:DoubleOffsetConverter x:Key="EditorPanelMaxWidthConverter" Offset="450"/>
     </Window.Resources>
-    <DockPanel>
+    <DockPanel x:Name="DockPanel">
         <Border DockPanel.Dock="Top" Name="TopPanel" BorderBrush="{DynamicResource {x:Static SystemColors.ControlDarkDarkBrushKey}}" BorderThickness="0, 0, 0, 1">
             <Border.Background>
                 <LinearGradientBrush EndPoint="0.5,1" StartPoint="0.5,0">
@@ -704,7 +705,7 @@
                 </ScrollViewer>
             </DockPanel>
         </Border>
-        <Grid Name="EditorPanel" MinWidth="300">
+        <Grid Name="EditorPanel" SizeChanged="EditorPanel_SizeChanged" MinWidth="300" MaxWidth="{Binding ElementName=DockPanel, Path=ActualWidth, Converter={StaticResource EditorPanelMaxWidthConverter}}">
             <Grid.Background>
                 <ImageBrush ImageSource="/Resources/waterTexture.png" TileMode="Tile" ViewportUnits="Absolute" Viewport="0,0,256,256"/>
             </Grid.Background>
