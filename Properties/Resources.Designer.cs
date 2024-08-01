@@ -169,9 +169,19 @@ namespace Edda.Properties {
         /// <summary>
         ///   Looks up a localized resource of type System.Byte[].
         /// </summary>
-        internal static byte[] Edda_MLDP {
+        internal static byte[] Edda_MLDP_Nytilde {
             get {
-                object obj = ResourceManager.GetObject("Edda-MLDP", resourceCulture);
+                object obj = ResourceManager.GetObject("Edda-MLDP_Nytilde", resourceCulture);
+                return ((byte[])(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Byte[].
+        /// </summary>
+        internal static byte[] Edda_MLDP_Nytilde_Fallback {
+            get {
+                object obj = ResourceManager.GetObject("Edda-MLDP_Nytilde_Fallback", resourceCulture);
                 return ((byte[])(obj));
             }
         }

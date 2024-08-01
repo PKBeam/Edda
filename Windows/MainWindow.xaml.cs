@@ -120,6 +120,7 @@ namespace Edda {
         public bool ctrlKeyDown;
         bool returnToStartMenuOnClose = false;
         bool showDifficultyPrediction = false;
+        public IDifficultyPredictor difficultyPredictor = new DifficultyPredictorNytilde();
 
         DoubleAnimation songPlayAnim;            // used for animating scroll when playing a song
         double prevScrollPercent = 0;       // percentage of scroll progress before the scroll viewport was changed
@@ -857,7 +858,7 @@ namespace Edda {
             }
 
             showDifficultyPrediction = userSettings.GetBoolForKey(UserSettingsKey.DifficultyPredictorShowInMapStats);
-            if (showDifficultyPrediction) {
+            if (showDifficultyPrediction && difficultyPredictor.GetSupportedFeatures().HasFlag(IDifficultyPredictor.Features.RealTime)) {
                 difficultyPrediction.Visibility = Visibility.Visible;
             } else {
                 difficultyPrediction.Visibility = Visibility.Collapsed;
@@ -1461,16 +1462,20 @@ namespace Edda {
         }
 
         public void UpdateDifficultyPrediction() {
-            if (showDifficultyPrediction && mapEditor.currentMapDifficulty != null) {
-                var difficulty = DifficultyPredictor.PredictDifficulty(mapEditor, mapEditor.currentDifficultyIndex);
+            var supportedFeatures = difficultyPredictor.GetSupportedFeatures();
+            if (showDifficultyPrediction && mapEditor.currentMapDifficulty != null && supportedFeatures.HasFlag(IDifficultyPredictor.Features.RealTime)) {
+                var difficulty = difficultyPredictor.PredictDifficulty(mapEditor, mapEditor.currentDifficultyIndex);
                 if (difficulty.HasValue) {
                     difficultyPrediction.Foreground = new SolidColorBrush(DifficultyPrediction.Colour);
-                    var showPreciseValue = userSettings.GetBoolForKey(UserSettingsKey.DifficultyPredictorShowPrecise);
+                    var showPreciseValue = userSettings.GetBoolForKey(UserSettingsKey.DifficultyPredictorShowPrecise) && supportedFeatures.HasFlag(IDifficultyPredictor.Features.PreciseFloat);
                     var predictionDisplay = Math.Round(difficulty.Value, showPreciseValue ? 2 : 0);
                     difficultyPrediction.Content = $"Difficulty: {predictionDisplay.ToString(showPreciseValue ? "#0.00" : null)}";
-                } else {
+                } else if (!supportedFeatures.HasFlag(IDifficultyPredictor.Features.AlwaysPredict)) {
                     difficultyPrediction.Foreground = new SolidColorBrush(DifficultyPrediction.WarningColour);
-                    difficultyPrediction.Content = ">10";
+                    difficultyPrediction.Content = "Difficulty: ???";
+                } else {
+                    difficultyPrediction.Foreground = new SolidColorBrush(DifficultyPrediction.Colour);
+                    difficultyPrediction.Content = "Difficulty: 0";
                 }
             }
         }

@@ -16,6 +16,7 @@
                     </LinearGradientBrush>
                 </Border.Background>
                 <StackPanel>
+                    <!-- TODO: Add selection of models - re-implement PKBeam's old model and maybe see if Melchior's algo will be good enough to include -->
                     <TextBlock VerticalAlignment="Center" TextWrapping="WrapWithOverflow">The difficulty predictor uses a machine learning model trained on OST and RAID songs (up to Jonathan Young RAID).</TextBlock>
                     <TextBlock FontWeight="SemiBold" VerticalAlignment="Center" Margin="0 10 0 0">For best results, use with completed maps.</TextBlock>
 

@@ -1,5 +1,4 @@
-﻿using Edda.Classes.MapEditorNS.Stats;
-using Edda.Const;
+﻿using Edda.Const;
 using System;
 using System.Windows;
 using System.Windows.Controls;
@@ -19,7 +18,6 @@ namespace Edda.Windows {
             InitializeComponent();
             CheckShowPreciseValues.IsChecked = userSettings.GetBoolForKey(UserSettingsKey.DifficultyPredictorShowPrecise);
             CheckShowInMapStats.IsChecked = userSettings.GetBoolForKey(UserSettingsKey.DifficultyPredictorShowInMapStats);
-            this.userSettings = userSettings;
         }
 
         private void BtnPredict_Click(object sender, RoutedEventArgs e) {
@@ -30,7 +28,8 @@ namespace Edda.Windows {
             PanelPredictionWarning.Visibility = Visibility.Hidden;
             var mapEditor = mainWindow.mapEditor;
             for (int i = 0; i < mapEditor.numDifficulties; i++) {
-                var diffPrediction = DifficultyPredictor.PredictDifficulty(mapEditor, i);
+                var supportedFeatures = mainWindow.difficultyPredictor.GetSupportedFeatures();
+                var diffPrediction = mainWindow.difficultyPredictor.PredictDifficulty(mapEditor, i);
                 Label diffLabel;
                 Button diffBtn;
                 switch (i) {
@@ -42,13 +41,16 @@ namespace Edda.Windows {
                 diffBtn.IsEnabled = true;
                 if (diffPrediction.HasValue) {
                     diffLabel.Foreground = new SolidColorBrush(DifficultyPrediction.Colour);
-                    var showPreciseValue = CheckShowPreciseValues.IsChecked == true;
+                    var showPreciseValue = CheckShowPreciseValues.IsChecked == true && supportedFeatures.HasFlag(Classes.MapEditorNS.Stats.IDifficultyPredictor.Features.PreciseFloat);
                     var predictionDisplay = Math.Round(diffPrediction.Value, showPreciseValue ? 2 : 0);
                     diffLabel.Content = $"{predictionDisplay.ToString(showPreciseValue ? "#0.00" : null)}";
-                } else {
+                } else if (!supportedFeatures.HasFlag(Classes.MapEditorNS.Stats.IDifficultyPredictor.Features.AlwaysPredict)) {
                     diffLabel.Foreground = new SolidColorBrush(DifficultyPrediction.WarningColour);
                     PanelPredictionWarning.Visibility = Visibility.Visible;
-                    diffLabel.Content = ">10";
+                    diffLabel.Content = "???";
+                } else {
+                    diffLabel.Foreground = new SolidColorBrush(DifficultyPrediction.Colour);
+                    diffLabel.Content = "0";
                 }
             }
             PanelPredictionResults.Visibility = Visibility.Visible;
