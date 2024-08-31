@@ -1045,9 +1045,9 @@ namespace Edda {
             playbackDeviceID = newPlaybackDeviceID;
             playingOnDefaultDevice = isDefaultDevice;
             defaultDeviceAvailable = true; // Might not be true, but will be checked next time playback device is accessed.
-                                           // Song is paused here in order to clean up old objects in peace. 
-                                           // When trying to do this while the song is still playing, there's some hard-to-track issues with 
-                                           // objects not being disposed correctly, resulting in memory leaks.
+            // Song is paused here in order to clean up old objects in peace. 
+            // When trying to do this while the song is still playing, there's some hard-to-track issues with 
+            // objects not being disposed correctly, resulting in memory leaks.
             PauseSong();
             var oldSongPlayer = songPlayer;
             InitSongPlayer();
