@@ -151,8 +151,14 @@
   <data name="drum" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\drum.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
-  <data name="Edda-MLDP" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\Resources\Edda-MLDP.onnx;System.Byte[], mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  <data name="Edda-MLDP_PKBeam" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\Edda-MLDP_PKBeam.pmml;System.Byte[], mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="Edda-MLDP_Nytilde" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\Edda-MLDP_Nytilde.onnx;System.Byte[], mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="Edda-MLDP_Nytilde_Fallback" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\Edda-MLDP_Nytilde_Fallback.onnx;System.Byte[], mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>
   <data name="exportMap" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\exportMap.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
@@ -174,6 +180,9 @@
   </data>
   <data name="icon" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\icon.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="info_icon" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\info_icon.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
   <data name="importMap" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\importMap.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>

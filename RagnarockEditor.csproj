@@ -38,6 +38,7 @@
     <None Remove="Resources\hihat3.wav" />
     <None Remove="Resources\hihat4.wav" />
     <None Remove="Resources\icon.png" />
+    <None Remove="Resources\info_icon.png" />
     <None Remove="Resources\importMap.png" />
     <None Remove="Resources\medalBronze.png" />
     <None Remove="Resources\medalGold.png" />
@@ -97,6 +98,7 @@
     <PackageReference Include="NAudio.Vorbis" Version="1.5.0" />
     <PackageReference Include="SoundTouch.Net.NAudioSupport.Core" Version="2.3.2" />
     <PackageReference Include="Spectrogram" Version="1.6.1" />
+    <PackageReference Include="Syncfusion.PMML.Net.Core" Version="20.4.0.43" />
     <PackageReference Include="System.Numerics.Tensors" Version="8.0.0" />
     <PackageReference Include="System.Reactive" Version="5.0.0" />
     <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
@@ -140,6 +142,7 @@
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Resource>
     <Resource Include="Resources\icon.png" />
+    <Resource Include="Resources\info_icon.png" />
     <Resource Include="Resources\importMap.png" />
     <Resource Include="Resources\medalBronze.png" />
     <Resource Include="Resources\medalGold.png" />

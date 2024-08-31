@@ -169,9 +169,29 @@ namespace Edda.Properties {
         /// <summary>
         ///   Looks up a localized resource of type System.Byte[].
         /// </summary>
-        internal static byte[] Edda_MLDP {
+        internal static byte[] Edda_MLDP_Nytilde {
             get {
-                object obj = ResourceManager.GetObject("Edda-MLDP", resourceCulture);
+                object obj = ResourceManager.GetObject("Edda-MLDP_Nytilde", resourceCulture);
+                return ((byte[])(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Byte[].
+        /// </summary>
+        internal static byte[] Edda_MLDP_Nytilde_Fallback {
+            get {
+                object obj = ResourceManager.GetObject("Edda-MLDP_Nytilde_Fallback", resourceCulture);
+                return ((byte[])(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Byte[].
+        /// </summary>
+        internal static byte[] Edda_MLDP_PKBeam {
+            get {
+                object obj = ResourceManager.GetObject("Edda-MLDP_PKBeam", resourceCulture);
                 return ((byte[])(obj));
             }
         }
@@ -248,6 +268,16 @@ namespace Edda.Properties {
         internal static System.Drawing.Bitmap importMap {
             get {
                 object obj = ResourceManager.GetObject("importMap", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Drawing.Bitmap.
+        /// </summary>
+        internal static System.Drawing.Bitmap info_icon {
+            get {
+                object obj = ResourceManager.GetObject("info_icon", resourceCulture);
                 return ((System.Drawing.Bitmap)(obj));
             }
         }
