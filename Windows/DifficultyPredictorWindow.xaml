@@ -20,7 +20,8 @@
                     <RadioButton x:Name="PKBeamAlgoRadioButton" GroupName="diffAlgo" Checked="PKBeamAlgoRadioButton_Checked">
                         <WrapPanel>
                             <TextBlock Text="PKBeam's ML model "/>
-                            <Image Source="/Resources/info_icon.png" Margin="0,2,0,0" Width="12" Height="12">
+                            <Image Source="/Resources/info_icon.png" Margin="0,2,0,0" Width="12" Height="12"
+                                   ToolTipService.IsEnabled="True" ToolTipService.InitialShowDelay="0" ToolTipService.ShowOnDisabled="True">
                                 <Image.ToolTip>
                                     <ToolTip MaxWidth="400">
                                         <TextBlock Text="Machine learning model developed by PKBeam and trained on selected custom maps. Overall best option at the moment, but it has issues estimating difficulty above 9. For best results, use with completed maps." TextWrapping="WrapWithOverflow"/>
@@ -32,7 +33,8 @@
                     <RadioButton x:Name="NytildeAlgoRadioButton" GroupName="diffAlgo" Checked="NytildeAlgoRadioButton_Checked">
                         <WrapPanel>
                             <TextBlock Text="Nytilde's ML model (beta) "/>
-                            <Image Source="/Resources/info_icon.png" Margin="0,2,0,0" Width="12" Height="12">
+                            <Image Source="/Resources/info_icon.png" Margin="0,2,0,0" Width="12" Height="12"
+                                   ToolTipService.IsEnabled="True" ToolTipService.InitialShowDelay="0" ToolTipService.ShowOnDisabled="True">
                                 <Image.ToolTip>
                                     <ToolTip MaxWidth="400">
                                         <TextBlock Text="Machine learning model developed by Nytilde and trained on OST maps up to Jonathan Young RAID. It has known issues with estimating difficulty for very hard maps and non-standard mapping patterns. Best used to estimate difficulty of maps in 3-7 range." TextWrapping="WrapWithOverflow"/>
@@ -44,7 +46,8 @@
                     <RadioButton x:Name="MelchiorAlgoRadioButton" GroupName="diffAlgo" Checked="MelchiorAlgoRadioButton_Checked">
                         <WrapPanel>
                             <TextBlock Text="Melchior's scoring "/>
-                            <Image Source="/Resources/info_icon.png" Margin="0,2,0,0" Width="12" Height="12">
+                            <Image Source="/Resources/info_icon.png" Margin="0,2,0,0" Width="12" Height="12"
+                                   ToolTipService.IsEnabled="True" ToolTipService.InitialShowDelay="0" ToolTipService.ShowOnDisabled="True">
                                 <Image.ToolTip>
                                     <ToolTip MaxWidth="400">
                                         <TextBlock Text="A simple scoring algorithm suggested by Melchior. It takes into account horizontal and vertical distances that each hand needs to move to hit the runes to estimate the map difficulty. More accurate for harder maps and best used with fully completed maps." TextWrapping="WrapWithOverflow"/>
