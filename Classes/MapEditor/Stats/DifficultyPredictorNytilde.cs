@@ -14,6 +14,7 @@ namespace Edda.Classes.MapEditorNS.Stats {
     /// When map parameters are outside of the trained data range, a fallback one-dimensional PCA model is used for extrapolation instead.
     /// </summary>
     public class DifficultyPredictorNytilde : IDifficultyPredictor {
+        public static readonly DifficultyPredictorNytilde SINGLETON = new();
 
         public IDifficultyPredictor.Features GetSupportedFeatures() {
             return PreciseFloat | AlwaysPredict | RealTime;
@@ -107,11 +108,11 @@ namespace Edda.Classes.MapEditorNS.Stats {
 
         private static bool CheckParameterRanges(double noteDensity, double averageTimeDifference, double countNoteDensityPerWindow, double peakNoteDensity, double typicalTimeDifference) {
             // TODO: Add MelchiorDiffScore range
-            return Helper.DoubleApproxGreaterEqual(DifficultyPrediction.MaxNoteDensity, noteDensity) &&
-                Helper.DoubleApproxGreaterEqual(averageTimeDifference, DifficultyPrediction.MinAverageTimeDifference) &&
-                Helper.DoubleApproxGreaterEqual(DifficultyPrediction.MaxCountNoteDensityPerWindow, countNoteDensityPerWindow) &&
-                Helper.DoubleApproxGreaterEqual(DifficultyPrediction.MaxPeakNoteDensity, peakNoteDensity) &&
-                Helper.DoubleApproxGreaterEqual(typicalTimeDifference, DifficultyPrediction.MinTypicalTimeDifference);
+            return Helper.DoubleApproxGreaterEqual(DifficultyPrediction.Nytilde.MaxNoteDensity, noteDensity) &&
+                Helper.DoubleApproxGreaterEqual(averageTimeDifference, DifficultyPrediction.Nytilde.MinAverageTimeDifference) &&
+                Helper.DoubleApproxGreaterEqual(DifficultyPrediction.Nytilde.MaxCountNoteDensityPerWindow, countNoteDensityPerWindow) &&
+                Helper.DoubleApproxGreaterEqual(DifficultyPrediction.Nytilde.MaxPeakNoteDensity, peakNoteDensity) &&
+                Helper.DoubleApproxGreaterEqual(typicalTimeDifference, DifficultyPrediction.Nytilde.MinTypicalTimeDifference);
         }
     }
 }

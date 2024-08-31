@@ -60,6 +60,7 @@ namespace Edda.Const {
         public const bool CheckForUpdates = true;
         public const int MapSaveLocationIndex = 0;
         public const string MapSaveLocationPath = "";
+        public const string DifficultyPredictorAlgorithm = DifficultyPrediction.SupportedAlgorithms.PKBeam;
         public const bool DifficultyPredictorShowPrecise = false;
         public const bool DifficultyPredictorShowInMapStats = false;
     }
@@ -85,6 +86,7 @@ namespace Edda.Const {
         public const string CheckForUpdates = "checkForUpdates";
         public const string MapSaveLocationIndex = "mapSaveLocationIndex";
         public const string MapSaveLocationPath = "mapSaveLocationPath";
+        public const string DifficultyPredictorAlgorithm = "difficultyPredictorAlgorithm";
         public const string DifficultyPredictorShowPrecise = "difficultyPredictorShowPrecise";
         public const string DifficultyPredictorShowInMapStats = "difficultyPredictorShowInMapStats";
     }
@@ -247,11 +249,22 @@ namespace Edda.Const {
     public static class DifficultyPrediction {
         public static readonly MediaColor Colour = Colors.Black;
         public static readonly MediaColor WarningColour = Colors.OrangeRed;
-        // These values are based on the dataset used for the ML model training.
-        public const double MaxNoteDensity = 7.615101;
-        public const double MinAverageTimeDifference = 0.152743;
-        public const double MaxCountNoteDensityPerWindow = 1578.5;
-        public const double MaxPeakNoteDensity = 25.5;
-        public const double MinTypicalTimeDifference = 0.091463;
+        public static class SupportedAlgorithms {
+            public const string PKBeam = "PKBeam_ML";
+            public const string Nytilde = "Nytilde_ML";
+            public const string Melchior = "Melchior";
+        }
+        public static class Nytilde {
+            // These values are based on the dataset used for the ML model training.
+            public const double MaxNoteDensity = 7.615101;
+            public const double MinAverageTimeDifference = 0.152743;
+            public const double MaxCountNoteDensityPerWindow = 1578.5;
+            public const double MaxPeakNoteDensity = 25.5;
+            public const double MinTypicalTimeDifference = 0.091463;
+        }
+        public static class Melchior {
+            // These values come from a curve fitting on the available dataset.
+            public const double FitCoefficient = 0.6632333348;
+        }
     }
 }

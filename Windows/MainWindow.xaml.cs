@@ -120,7 +120,7 @@ namespace Edda {
         public bool ctrlKeyDown;
         bool returnToStartMenuOnClose = false;
         bool showDifficultyPrediction = false;
-        public IDifficultyPredictor difficultyPredictor = new DifficultyPredictorNytilde();
+        public IDifficultyPredictor difficultyPredictor = DifficultyPredictorPKBeam.SINGLETON;
 
         DoubleAnimation songPlayAnim;            // used for animating scroll when playing a song
         double prevScrollPercent = 0;       // percentage of scroll progress before the scroll viewport was changed
@@ -808,6 +808,10 @@ namespace Edda {
                 userSettings.SetValueForKey(UserSettingsKey.MapSaveLocationIndex, DefaultUserSettings.MapSaveLocationIndex);
             }
 
+            if (userSettings.GetValueForKey(UserSettingsKey.DifficultyPredictorAlgorithm) == null) {
+                userSettings.SetValueForKey(UserSettingsKey.DifficultyPredictorAlgorithm, DefaultUserSettings.DifficultyPredictorAlgorithm);
+            }
+
             if (userSettings.GetValueForKey(UserSettingsKey.DifficultyPredictorShowPrecise) == null) {
                 userSettings.SetValueForKey(UserSettingsKey.DifficultyPredictorShowPrecise, DefaultUserSettings.DifficultyPredictorShowPrecise);
             }
@@ -856,6 +860,13 @@ namespace Edda {
                 gridController.RefreshSpectrogramWaveform();
                 gridController.DrawSpectrogram();
             }
+
+            difficultyPredictor = userSettings.GetValueForKey(UserSettingsKey.DifficultyPredictorAlgorithm) switch {
+                DifficultyPrediction.SupportedAlgorithms.PKBeam => DifficultyPredictorPKBeam.SINGLETON,
+                DifficultyPrediction.SupportedAlgorithms.Nytilde => DifficultyPredictorNytilde.SINGLETON,
+                DifficultyPrediction.SupportedAlgorithms.Melchior => DifficultyPredictorMelchior.SINGLETON,
+                _ => DifficultyPredictorPKBeam.SINGLETON
+            };
 
             showDifficultyPrediction = userSettings.GetBoolForKey(UserSettingsKey.DifficultyPredictorShowInMapStats);
             if (showDifficultyPrediction && difficultyPredictor.GetSupportedFeatures().HasFlag(IDifficultyPredictor.Features.RealTime)) {
@@ -1034,9 +1045,9 @@ namespace Edda {
             playbackDeviceID = newPlaybackDeviceID;
             playingOnDefaultDevice = isDefaultDevice;
             defaultDeviceAvailable = true; // Might not be true, but will be checked next time playback device is accessed.
-            // Song is paused here in order to clean up old objects in peace. 
-            // When trying to do this while the song is still playing, there's some hard-to-track issues with 
-            // objects not being disposed correctly, resulting in memory leaks.
+                                           // Song is paused here in order to clean up old objects in peace. 
+                                           // When trying to do this while the song is still playing, there's some hard-to-track issues with 
+                                           // objects not being disposed correctly, resulting in memory leaks.
             PauseSong();
             var oldSongPlayer = songPlayer;
             InitSongPlayer();

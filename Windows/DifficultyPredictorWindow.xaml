@@ -16,10 +16,43 @@
                     </LinearGradientBrush>
                 </Border.Background>
                 <StackPanel>
-                    <!-- TODO: Add selection of models - re-implement PKBeam's old model and maybe see if Melchior's algo will be good enough to include -->
-                    <TextBlock VerticalAlignment="Center" TextWrapping="WrapWithOverflow">The difficulty predictor uses a machine learning model trained on OST and RAID songs (up to Jonathan Young RAID).</TextBlock>
-                    <TextBlock FontWeight="SemiBold" VerticalAlignment="Center" Margin="0 10 0 0">For best results, use with completed maps.</TextBlock>
-
+                    <TextBlock VerticalAlignment="Center" TextWrapping="WrapWithOverflow" Margin="0,0,0,5">Select the algorithm used for prediction:</TextBlock>
+                    <RadioButton x:Name="PKBeamAlgoRadioButton" GroupName="diffAlgo" Checked="PKBeamAlgoRadioButton_Checked">
+                        <WrapPanel>
+                            <TextBlock Text="PKBeam's ML model "/>
+                            <Image Source="/Resources/info_icon.png" Margin="0,2,0,0" Width="12" Height="12">
+                                <Image.ToolTip>
+                                    <ToolTip MaxWidth="400">
+                                        <TextBlock Text="Machine learning model developed by PKBeam and trained on selected custom maps. Overall best option at the moment, but it has issues estimating difficulty above 9. For best results, use with completed maps." TextWrapping="WrapWithOverflow"/>
+                                    </ToolTip>
+                                </Image.ToolTip>
+                            </Image>
+                        </WrapPanel>
+                    </RadioButton>
+                    <RadioButton x:Name="NytildeAlgoRadioButton" GroupName="diffAlgo" Checked="NytildeAlgoRadioButton_Checked">
+                        <WrapPanel>
+                            <TextBlock Text="Nytilde's ML model (beta) "/>
+                            <Image Source="/Resources/info_icon.png" Margin="0,2,0,0" Width="12" Height="12">
+                                <Image.ToolTip>
+                                    <ToolTip MaxWidth="400">
+                                        <TextBlock Text="Machine learning model developed by Nytilde and trained on OST maps up to Jonathan Young RAID. It has known issues with estimating difficulty for very hard maps and non-standard mapping patterns. Best used to estimate difficulty of maps in 3-7 range." TextWrapping="WrapWithOverflow"/>
+                                    </ToolTip>
+                                </Image.ToolTip>
+                            </Image>
+                        </WrapPanel>
+                    </RadioButton>
+                    <RadioButton x:Name="MelchiorAlgoRadioButton" GroupName="diffAlgo" Checked="MelchiorAlgoRadioButton_Checked">
+                        <WrapPanel>
+                            <TextBlock Text="Melchior's scoring "/>
+                            <Image Source="/Resources/info_icon.png" Margin="0,2,0,0" Width="12" Height="12">
+                                <Image.ToolTip>
+                                    <ToolTip MaxWidth="400">
+                                        <TextBlock Text="A simple scoring algorithm suggested by Melchior. It takes into account horizontal and vertical distances that each hand needs to move to hit the runes to estimate the map difficulty. More accurate for harder maps and best used with fully completed maps." TextWrapping="WrapWithOverflow"/>
+                                    </ToolTip>
+                                </Image.ToolTip>
+                            </Image>
+                        </WrapPanel>
+                    </RadioButton>
                 </StackPanel>
             </Border>
 
@@ -37,7 +70,7 @@
             <StackPanel HorizontalAlignment="Center">
                 <Grid VerticalAlignment="Center" Margin="0 15 0 15">
                     <Grid.Resources>
-                        <Style TargetType="Border" >
+                        <Style TargetType="{x:Type Border}" >
                             <Setter Property="Padding" Value="5,5,5,5" />
                         </Style>
                     </Grid.Resources>
@@ -53,55 +86,56 @@
                         <RowDefinition Height="*" />
                     </Grid.RowDefinitions>
                     <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="150" />
+                        <ColumnDefinition Width="11.684" />
+                        <ColumnDefinition Width="138.316"/>
                         <ColumnDefinition Width="25" />
                     </Grid.ColumnDefinitions>
 
-                    <Border Grid.Row="2" Grid.Column="0">
-                        <TextBlock VerticalAlignment="Center">Show precise values</TextBlock>
+                    <Border Grid.Row="2" Grid.Column="0" Grid.ColumnSpan="2" Margin="0,0,0,26" Grid.RowSpan="2">
+                        <TextBlock VerticalAlignment="Center"><Run Text="Show precise values"/></TextBlock>
                     </Border>
 
-                    <Border Grid.Row="2" Grid.Column="1">
+                    <Border Grid.Row="2" Grid.Column="2" Margin="0,0,0,26" Grid.RowSpan="2">
                         <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
                             <CheckBox x:Name="CheckShowPreciseValues" VerticalAlignment="Center" Click="CheckShowPreciseValues_Click" />
                         </StackPanel>
                     </Border>
 
-                    <Border Grid.Row="3" Grid.Column="0">
-                        <TextBlock VerticalAlignment="Center">Show in map stats</TextBlock>
+                    <Border Grid.Row="3" Grid.Column="0" Grid.ColumnSpan="2" Grid.RowSpan="6">
+                        <TextBlock VerticalAlignment="Center"><Run Text="Show in map stats"/></TextBlock>
                     </Border>
 
-                    <Border Grid.Row="3" Grid.Column="1">
+                    <Border Grid.Row="3" Grid.Column="2" Grid.RowSpan="6">
                         <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
                             <CheckBox x:Name="CheckShowInMapStats" VerticalAlignment="Center" Click="CheckShowInMapStats_Click" />
                         </StackPanel>
                     </Border>
                 </Grid>
                 <StackPanel x:Name="PanelPredictionResults" Orientation="Vertical" Width="200" Visibility="Hidden">
-                    <TextBlock FontSize="11" Margin="0 0 0 5" >Predicted Difficulty Ranks:</TextBlock>
+                    <TextBlock FontSize="11" Margin="0 0 0 5" ><Run Text="Predicted Difficulty Ranks:"/></TextBlock>
                     <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
                         <StackPanel x:Name="DifficultyChangePanel" Orientation="Horizontal">
                             <Button x:Name="btnDifficulty0" Width="55" Height="40">
                                 <Grid Width="50">
                                     <Image Source="pack://application:,,,/Edda;component/resources/difficulty1.png" RenderOptions.BitmapScalingMode="Fant"/>
-                                    <Label x:Name="lblDifficultyRank1" VerticalAlignment="Bottom" Padding="0 0 2 1" HorizontalAlignment="Right" FontWeight="Bold"></Label>
+                                    <Label x:Name="lblDifficultyRank1" VerticalAlignment="Bottom" Padding="0 0 2 1" HorizontalAlignment="Right" FontWeight="Bold"/>
                                 </Grid>
                             </Button>
                             <Button x:Name="btnDifficulty1" Width="55" Height="40">
                                 <Grid Width="50">
                                     <Image Source="pack://application:,,,/Edda;component/resources/difficulty2.png" RenderOptions.BitmapScalingMode="Fant"/>
-                                    <Label x:Name="lblDifficultyRank2" VerticalAlignment="Bottom" Padding="0 0 2 1" HorizontalAlignment="Right" FontWeight="Bold"></Label>
+                                    <Label x:Name="lblDifficultyRank2" VerticalAlignment="Bottom" Padding="0 0 2 1" HorizontalAlignment="Right" FontWeight="Bold"/>
                                 </Grid>
                             </Button>
                             <Button x:Name="btnDifficulty2" Width="55" Height="40">
                                 <Grid Width="50">
                                     <Image Source="pack://application:,,,/Edda;component/resources/difficulty3.png" RenderOptions.BitmapScalingMode="Fant"/>
-                                    <Label x:Name="lblDifficultyRank3" VerticalAlignment="Bottom" Padding="0 0 2 1" HorizontalAlignment="Right" FontWeight="Bold"></Label>
+                                    <Label x:Name="lblDifficultyRank3" VerticalAlignment="Bottom" Padding="0 0 2 1" HorizontalAlignment="Right" FontWeight="Bold"/>
                                 </Grid>
                             </Button>
                         </StackPanel>
                     </StackPanel>
-                    <TextBlock x:Name="PanelPredictionWarning" TextWrapping="Wrap" Foreground="OrangeRed" Visibility="Hidden" FontSize="11" Margin="0 0 0 5" >Map parameters outside of normal range, predictions marked in orange couldn't be determined.</TextBlock>
+                    <TextBlock x:Name="PanelPredictionWarning" TextWrapping="Wrap" Foreground="OrangeRed" Visibility="Hidden" FontSize="11" Margin="0 0 0 5" ><Run Text="Map parameters outside of normal range, predictions marked in orange couldn't be determined."/></TextBlock>
                 </StackPanel>
             </StackPanel>
         </DockPanel>
