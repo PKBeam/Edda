@@ -29,7 +29,7 @@ namespace Edda.Classes.MapEditorNS.Stats {
             var maxTime = timeSeries.Last() - timeSeries.First();
 
             var noteDensity = GetNoteDensity(timeSeries, maxTime);
-            var averageTimeDifference = timeDifferencesNoZero.Average();
+            var averageTimeDifference = timeDifferencesNoZero.Count > 0 ? timeDifferencesNoZero.Average() : 0.0;
             var melchiorDiffScore = GetMelchiorDifficultyScore(diff.notes, mapEditor.GlobalBPM);
             var localNoteDensity = GetNoteDensitiesPerWindow(timeSeries, 2);
             var highLocalNoteDensity = Helper.GetQuantile(localNoteDensity, 0.95);
