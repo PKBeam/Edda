@@ -4,29 +4,30 @@
 
 ## Mouse Controls
 
+### General
+
+- **On the editing grid:**
+    - **Middle-click** to enter/leave a scrolling mode, in which moving mouse up or down scrolls the grid automatically.
+    - Scrolling mode is also enabled while **holding Middle-click**.
+    - **Ctrl-MouseWheel** changes Grid Division of the section the mouse points at once (either the global one, or on the applicable timing change). Changes are visible on the grid **after** Ctrl is released.
+
 ### Notes
 
-Click and drag to select multiple notes.
-
-Left-click to place a new note or select an existing note.
-
-Shift+Left-click to add or remove a note to/from the selection.
-
-Right-click to delete a note or clear the selection.
+- **Left-click and drag** to select multiple notes.
+    - Note: It's possible to enter scrolling mode after starting to drag the selection box, scroll up or down, and then leave scrolling mode to select longer sections of notes.
+- **Left-click** to place a new note or select an existing note.
+- **Shift+Left-click** to add or remove a note to/from the selection.
+- **Right-click** to delete a note or clear the selection.
 
 ### Markers
 
-**On the editing grid:**
-
-Click and drag a bookmark or timing change to move it (hold Shift to snap to grid).
-
-**On the navigational waveform:**
-
-Right-click a bookmark to rename it.
-
-Right-click a timing change on either the BPM or beat division fields to edit them.
-
-Middle-click a bookmark or timing change to delete it.
+- **On the editing grid:**  
+    - **Left-click and drag a bookmark or timing change** to move it (**hold Shift** to snap to grid).
+    - **Ctrl+Left-click a bookmark or timing change** to add or remove all notes between it and the next one to/from the selection.
+- **On the navigational waveform:**  
+    - **Right-click a bookmark** to rename it.
+    - **Right-click a timing change** on either the BPM or beat division fields to edit t  hem.
+    - **Middle-click a bookmark or timing change** to delete it.
 
 ## Keyboard Controls
 
@@ -37,11 +38,15 @@ Edda comes with many keyboard shortcuts for ease of use.
 |**Ctrl-N**      |New Map
 |**Ctrl-O**      |Open Map
 |**Ctrl-S**      |Save Map
+|**Ctrl-I**      |Import Map
+|**Ctrl-E**      |Export Map
+|**Ctrl-W**      |Close Map
 |**Ctrl-A**      |Select All
 |**Ctrl-C**      |Copy Selection
 |**Ctrl-X**      |Cut Selection
 |**Ctrl-V**      |Paste Clipboard
-|**Ctrl-M**     |Mirror Selected Notes
+|**Ctrl-M**      |Mirror Selected Notes
+|**Ctrl-Q**      |Quantize Selected Notes  | Notes are moved to their closest major or minor gridline.
 |**Ctrl-Z**      |Undo
 |**Ctrl-Y**<br/>**Ctrl-Shift-Z**    |Redo
 |**Ctrl-B**      |Add Bookmark  | The bookmark is placed on your mouse. You can add a bookmark on either the editor grid or navigational waveform. 

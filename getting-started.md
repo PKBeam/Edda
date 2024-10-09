@@ -6,11 +6,6 @@ Want to make your own Ragnarock maps? Let's get started.
 
 - [System requirements](#system-requirements)
 - [Installation](#installation)
-- [Setting up your song](#setting-up-your-song)
-  - [Choosing a good song](#choosing-a-good-song)
-  - [Getting a song file](#getting-a-song-file)
-    - [Lossless encoding](#lossless-encoding)
-    - [Lossy encoding](#lossy-encoding)
 
 ## System requirements
 
@@ -24,7 +19,7 @@ Older versions of Windows (back to Windows 7) may work, but are not officially s
 
 Linux users can use [Proton](https://github.com/ValveSoftware/Proton) to run Edda, although it has considerable audio latency and may not function perfectly. WINE alone is not sufficient to run Edda.
 
-> **NOTE**: Testing was performed with Arch Linux using Edda v1.1.0. 
+> **NOTE**: Testing was last performed with Arch Linux using Edda v1.1.0. Users reported issues getting Proton to run Edda v1.2.0+.
 
 ### macOS
 
@@ -42,9 +37,10 @@ If you want to use the smaller `NoRuntime` zip package, you need to have the .NE
 
 |Edda version|.NET version|
 ---|---
-|after 1.1.0  |[7.0]((https://dotnet.microsoft.com/download/dotnet/7.0/runtime)) or later|
+|after 1.2.4    |[8.0]((https://dotnet.microsoft.com/download/dotnet/8.0/runtime)) or later|
+|1.1.0 to 1.2.4 |[7.0]((https://dotnet.microsoft.com/download/dotnet/7.0/runtime)) or later|
 |1.0.0 to 1.1.0 |[6.0]((https://dotnet.microsoft.com/download/dotnet/6.0/runtime)) or later|
-|before 1.1.0    |[5.0]((https://dotnet.microsoft.com/download/dotnet/5.0/runtime)) or later|
+|before 1.0.0   |[5.0]((https://dotnet.microsoft.com/download/dotnet/5.0/runtime)) or later|
 
 Once you've downloaded the zip package, extract it somewhere on your PC.
 
