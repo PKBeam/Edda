@@ -42,7 +42,8 @@ namespace Edda.Const {
     }
     public static class DefaultUserSettings {
         public const bool EnableSpectrogram = true;
-        public const int DefaultNoteSpeed = 15;
+        public const int DefaultNoteSpeed = Editor.DefaultNoteSpeed;
+        public const int DefaultGridSpacing = Editor.DefaultGridSpacing;
         public const int AudioLatency = -20; // ms
         public const string DrumSampleFile = "snaredrum";
         public const float DefaultSongVolume = 0.4F;
@@ -68,6 +69,7 @@ namespace Edda.Const {
     public static class UserSettingsKey {
         public const string EnableSpectrogram = "enableSpectrogram";
         public const string DefaultNoteSpeed = "defaultNoteSpeed";
+        public const string DefaultGridSpacing = "defaultGridSpacing";
         public const string EditorAudioLatency = "editorAudioLatency";
         public const string PlaybackDeviceID = "playbackDeviceID";
         public const string DrumSampleFile = "drumSampleFile";
@@ -92,8 +94,9 @@ namespace Edda.Const {
     }
     public static class Editor {
         // Grid drawing
-        public const double DefaultGridSpacing = 2;
-        public const double DefaultGridDivision = 4;
+        public const int DefaultNoteSpeed = 20;
+        public const int DefaultGridSpacing = 2;
+        public const int DefaultGridDivision = 4;
         public const double GridDrawRange = 1;
         public const int DrawDebounceInterval = 100; // ms
         public const string MajorGridlineColour = "#333333";
@@ -225,7 +228,6 @@ namespace Edda.Const {
         public const int Shuffle = 0;           // what do
         public const double ShufflePeriod = 0.5;         // these do??
         public const string BeatmapCharacteristicName = "Standard";
-        private const double NoteJumpMovementSpeed = 20;
         public static List<string> DifficultyNames => new() { "Easy", "Normal", "Hard" };
         public static List<string> EnvironmentNames => new() { "Midgard", "Alfheim", "Nidavellir", "Asgard", "Muspelheim", "Helheim", "Hellfest", "Sabaton", "Empty", "DarkEmpty" };
         //public const string DefaultEnvironmentAlias = "Midgard";
@@ -233,9 +235,18 @@ namespace Edda.Const {
         public static double GetPreferredNoteJumpMovementSpeed() {
             var userSettings = new UserSettingsManager(Program.SettingsFile);
             try {
-                return double.Parse(userSettings.GetValueForKey(Const.UserSettingsKey.DefaultNoteSpeed));
+                return double.Parse(userSettings.GetValueForKey(UserSettingsKey.DefaultNoteSpeed));
             } catch {
-                return NoteJumpMovementSpeed;
+                return Editor.DefaultNoteSpeed;
+            }
+        }
+
+        public static double GetPreferredGridSpacing() {
+            var userSettings = new UserSettingsManager(Program.SettingsFile);
+            try {
+                return double.Parse(userSettings.GetValueForKey(UserSettingsKey.DefaultGridSpacing));
+            } catch {
+                return Editor.DefaultGridSpacing;
             }
         }
     }
