@@ -22,6 +22,8 @@ Now that you have Edda installed, let's make a map!
   - [Basic controls](#basic-controls)
   - [Selecting notes](#selecting-notes)
   - [Note playback](#note-playback)
+  - [Spectrogram](#spectrogram)
+  - [Map Stats](#map-stats)
   - [Exporting your map](#exporting-your-map)
   
  
@@ -74,7 +76,7 @@ You can then transcode to Vorbis format by using Audacity or ffmpeg as described
 
 ## Getting to know the UI 
 
-Go to the folder you extracted Edda to, and open `Edda.exe`.  
+Go to the folder you extracted Edda to, and open `Edda.exe`.
 
 You'll be greeted with a start screen. 
 
@@ -173,7 +175,7 @@ Under **File Info**, click the button with a folder icon next to the *Image* fie
 
 The preview is what plays in-game when you select a song. It should be shorter than 15 seconds and it should showcase the best part of your song, for example the chorus.
 
-You don't need a preview for your song to be playable, but it's a good idea to have one.  
+You don't need a preview for your song to be playable, but it's a good idea to have one. If you don't provide one, the game will automatically play first few seconds of your song instead.
 
 Using the media controls in the bottom of Edda's main window, pick out the start and end times of what you want the preview to be.
 
@@ -183,7 +185,7 @@ Under **File Info**, click the "Create Song Preview" button. Put in your start a
 
 #### The navigational waveform
 
-Let's take a look at the navigational waveform next to the editor grid.
+Let's take a look at the navigational waveform to the right of the editor grid.
 
 The waveform of the entire song is displayed here, and the dark blue horizontal line indicates the position of the scan line (the current position). 
 
@@ -225,7 +227,7 @@ Each difficulty has a *Difficulty Level*, *Note Speed*, and **Medal Distances**.
 
 The *Difficulty Level* is a number from 1 to 10 (inclusive) that represents how hard the map is. You should be familiar with this number if you've played Ragnarock before.
 
-The *Note Speed* is how fast the runes approach you when you play the map in-game. You'll have to experiment with this in the game to get a feel for what the numbers mean. A good place to start is 15, which represents an average speed. You can increase this a few units to make the notes approach even faster.
+The *Note Speed* is how fast the runes approach you when you play the map in-game. The value you set here is the default one used by the game, but the players can override it with the "Custom Rune Speed" setting. You'll have to experiment with this in the game to get a feel for what the numbers mean. A good place to start is 15, which represents an average speed. You can increase this a few units to make the notes approach even faster. The maximum value Ragnarock allows players to set is 30, but you can set it even higher in Edda, although you'll need to inform the players that they have to disable "Custom Rune Speed" to see the intended effect.
 
 **Medal Distances** represent how many metres your boat must row in order to achieve a certain medal. In most cases, you should leave these set to "Auto" so that Ragnarock will automatically calculate medal distances for you.  
 
@@ -233,7 +235,7 @@ The *Note Speed* is how fast the runes approach you when you play the map in-gam
 
 Now that everything else is set up, let's start placing notes.
 
-While you map, it might be helpful to refer to the *Grid Waveform*.
+While you map, it might be helpful to refer to the *Grid Waveform* and *Spectrogram*.
 
 ### Basic controls
 
@@ -252,6 +254,8 @@ To remove a note, simply right-click it.
 You can select notes by either clicking them individually or dragging across the editing grid (to select multiple notes).
 
 If you hold down the `Shift` key while selecting, you can add to your selection instead of clearing it.
+
+Once you place some bookmarks or timing changes, you can click them while holding `Ctrl` to toggle selection of all the notes between that bookmark/timing change and the next one, to quickly select whole sections of a map.
 
 Pressing `Ctrl-A` will select every note on the map.
 
@@ -277,6 +281,20 @@ You can use the media controls to do so, or press `Space` to play/pause the song
 It may be helpful to adjust the *Song Volume* and *Note Volume* in the right sidebar to help you hear notes properly.
 
 To slow down or speed up the song, adjust the *Song Speed* slider in the right sidebar.
+
+### Spectrogram
+
+Spectrogram is a useful tool that visualizes the frequencies present in the audio. Drum beats will generally cause a characteristic "peak" to be visible on a spectrogram, so you can use it as a guide for the timing of your notes.
+
+There is a small bar between Spectrogram and Editing Grid that can be clicked and dragged to resize it if you need to get a closer look.
+
+Spectrogram can be enabled/disabled in the settings. Further options for configuring it are explained on [Spectrogram advanced settings](advanced-topics#spectrogram-advanced-settings) page.
+
+### Map Stats
+
+During the mapping process, you'll be able to see some useful stats in the left sidebar: number of notes of different types, what percentage of notes are in each column, and how many notes per second players will have to hit.
+
+If you configure the difficulty predictor in the settings, you'll also see an estimation of the map difficulty.
 
 ### Exporting your map
 

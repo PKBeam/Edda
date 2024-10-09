@@ -1,7 +1,7 @@
 ---
 ---
 
-> **NOTE**: This website was last updated for Edda v1.1.0.
+> **NOTE**: This website was last updated for Edda v1.2.6.
 
 # About Edda
 Edda is a beatmap editor for the VR rhythm game [Ragnarock](https://store.steampowered.com/app/1345820/Ragnarock/).  
