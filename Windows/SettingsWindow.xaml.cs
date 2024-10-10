@@ -2,20 +2,11 @@
 using Microsoft.WindowsAPICodePack.Dialogs;
 using NAudio.CoreAudioApi;
 using System;
-using System.Collections.Generic;
-using System.Diagnostics;
 using System.IO;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Controls.Primitives;
-using System.Windows.Data;
 using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Shapes;
 using Path = System.IO.Path;
 
 namespace Edda {
@@ -33,6 +24,7 @@ namespace Edda {
             InitComboPlaybackDevices();
             InitComboDrumSample();
             txtDefaultNoteSpeed.Text = userSettings.GetValueForKey(UserSettingsKey.DefaultNoteSpeed);
+            txtDefaultGridSpacing.Text = userSettings.GetValueForKey(UserSettingsKey.DefaultGridSpacing);
             txtAudioLatency.Text = userSettings.GetValueForKey(UserSettingsKey.EditorAudioLatency);
             checkPanNotes.IsChecked = userSettings.GetBoolForKey(UserSettingsKey.PanDrumSounds);
             sliderSongVol.Value = float.Parse(userSettings.GetValueForKey(UserSettingsKey.DefaultSongVolume));
@@ -74,8 +66,22 @@ namespace Edda {
                 MessageBox.Show(this, $"The note speed must be numerical.", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
                 noteSpeed = prevNoteSpeed;
             }
-            txtAudioLatency.Text = noteSpeed.ToString();
+            txtDefaultNoteSpeed.Text = noteSpeed.ToString();
         }
+
+        private void TxtDefaultGridSpacing_LostFocus(object sender, RoutedEventArgs e) {
+            double gridSpacing;
+            double prevGridSpacing = double.Parse(userSettings.GetValueForKey(UserSettingsKey.DefaultGridSpacing));
+            if (double.TryParse(txtDefaultGridSpacing.Text, out gridSpacing)) {
+                userSettings.SetValueForKey(UserSettingsKey.DefaultGridSpacing, gridSpacing);
+                UpdateSettings();
+            } else {
+                MessageBox.Show(this, $"The grid spacing must be numerical.", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                gridSpacing = prevGridSpacing;
+            }
+            txtDefaultGridSpacing.Text = gridSpacing.ToString();
+        }
+
         private void ComboPlaybackDevice_SelectionChanged(object sender, SelectionChangedEventArgs e) {
             if (doneInit) {
                 var newPlaybackDeviceID = ((PlaybackDevice)comboPlaybackDevice.SelectedItem).ID;

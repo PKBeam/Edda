@@ -258,6 +258,7 @@ public class RagnarockMap {
         //}
 
         // per beatmap custom data
+        var defaultGridSpacing = BeatmapDefaults.GetPreferredGridSpacing();
         Dictionary<string, List<JTokenType?>> expectedTypes = new Dictionary<string, List<JTokenType?>> {
             {"_editorOldOffset",    numericTypes },
             {"_editorGridSpacing",  numericTypes },
@@ -274,7 +275,7 @@ public class RagnarockMap {
         };
         Dictionary<string, float> defaultValues = new Dictionary<string, float> {
             {"_editorOldOffset",    0 },
-            {"_editorGridSpacing",  (float)Editor.DefaultGridSpacing },
+            {"_editorGridSpacing",  (float)defaultGridSpacing },
             {"_editorGridDivision", (float)Editor.DefaultGridDivision },
         };
 
@@ -283,8 +284,8 @@ public class RagnarockMap {
             if (map["_customData"]?.Type != JTokenType.Object) {
                 var customDataObject = new {
                     _editorOldOffset = 0,
-                    _editorGridSpacing = Editor.DefaultGridSpacing,
-                    _editorGridDivision = 4,
+                    _editorGridSpacing = defaultGridSpacing,
+                    _editorGridDivision = Editor.DefaultGridDivision,
                     _warnings = new List<object>(),
                     _information = new List<object>(),
                     _suggestions = new List<object>(),
@@ -360,8 +361,8 @@ public class RagnarockMap {
             _noteJumpStartBeatOffset = 0,
             _customData = new {
                 _editorOldOffset = 0,
-                _editorGridSpacing = Editor.DefaultGridSpacing,
-                _editorGridDivision = 4,
+                _editorGridSpacing = BeatmapDefaults.GetPreferredGridSpacing(),
+                _editorGridDivision = Editor.DefaultGridDivision,
                 _warnings = new List<object>(),
                 _information = new List<object>(),
                 _suggestions = new List<object>(),

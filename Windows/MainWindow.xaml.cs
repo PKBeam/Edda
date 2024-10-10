@@ -719,6 +719,12 @@ namespace Edda {
             }
 
             try {
+                double.Parse(userSettings.GetValueForKey(UserSettingsKey.DefaultGridSpacing));
+            } catch {
+                userSettings.SetValueForKey(UserSettingsKey.DefaultGridSpacing, DefaultUserSettings.DefaultGridSpacing);
+            }
+
+            try {
                 int.Parse(userSettings.GetValueForKey(UserSettingsKey.EditorAudioLatency));
             } catch {
                 userSettings.SetValueForKey(UserSettingsKey.EditorAudioLatency, DefaultUserSettings.AudioLatency);
