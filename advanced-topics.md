@@ -5,19 +5,36 @@
 Now that you're comfortable with using Edda, here are some more advanced topics to help you make the most of your mapping experience.  
 
 - [Settings](#settings)
+    - [Spectrogram advanced settings](#spectrogram-advanced-settings)
 - [Backups](#backups)
 - [Timing changes](#timing-changes)
 - [Note runes](#note-runes)
 - [Audio latency](#audio-latency)
-  - [Technical details](#technical-details)
+    - [Technical details](#technical-details)
 - [Drum hitsounds](#drum-hitsounds)
+- [Audio devices](#audio-devices)
 - [Map save location](#map-save-location)
+- [Import Map](#import-map)
 
 ## Settings
 
 Since Edda v1.0.0, the settings are automatically stored in `AppData/Roaming/Edda/settings.txt`.
 
 You can migrate settings from other Edda installs by replacing `settings.txt`. 
+
+### Spectrogram advanced settings
+
+Once Spectrogram is enabled in the settings, a new section appears that allows you to customize the appearance and other technical details.
+
+The `Color Theme` can be changed by selecting one of the built-in options. Try different ones to decide which one is most clear to you.
+
+Generating spectrogram is costly on CPU, so there's an option to `Cache Images` in a dedicated cache folder. You can also speed up this process by decreasing `Max Frequency` (level of horizontal detail) or `Quality` (level of vertical detail), but this is generally not advised unless your machine struggles a lot.
+
+> **NOTE** For longer songs, the generated image can be bigger than the bitmap format allows for, so it's also recommended to `Enable Chunking`, which generates the spectrogram image in many smaller chunks. 
+>
+> This can cause small artifacts to appear at the "stitches" of those chunks.
+
+> **NOTE** Once caching is enabled, a new option appears in *Menu Bar* under *Tools* that can be used to clear the cache folder.
 
 ## Backups
 
@@ -91,8 +108,8 @@ Each note in Ragnarock has a rune inscribed on it. The runes indicate what beat 
 ---|---
 |ᛄ  |0 (or 1)|
 |ᚼ  |1/2|
-|ᛝ  |1/3|
-|ᛞ  |2/3|
+|ᛝ  |1/3 and 5/6|
+|ᛞ  |1/6 and 2/3|
 |ᛁ   |1/4|
 |ᚾ  |3/4|
 |ᚷ  |other|
@@ -147,7 +164,7 @@ When you play back a map in Edda, a snare drum sound will play when the scan lin
 
 That's the default hitsound for Edda, and it can be changed in the Settings menu (under **Audio Playback**, then *Playback Sound*).
 
-By default Edda also provides a bass drum sound and a hi-hat sound, but you can add your own hitsounds if you aren't satisfied with either.
+By default Edda also provides a bass drum sound, a hi-hat sound and a tick sound from MMA2, but you can add your own hitsounds if you aren't satisfied with either.
 
 To add your own hitsounds, go to the `Resources` folder in your Edda install and place `.mp3` or `.wav` files there.
 
@@ -163,6 +180,10 @@ Some users may find panned audio harder to hear or may experience audio playback
 
 When panned audio is disabled, all drum hitsounds will be played in the middle of both ears.  
 
+## Audio devices
+
+If you have multiple audio devices connected to your computer, you can select which one to use for Edda in the settings.
+
 ## Map save location
 
 Ragnarock lets you store your custom maps in two locations: in your Documents folder or in the game install folder.  
@@ -177,3 +198,8 @@ If you choose the *Game Install* option, you must specify the folder that Ragnar
 
 Once selected, this path is shown in blue in the Settings menu and can be respecified by clicking on it.
 
+## Import Map
+
+Since Edda v1.2.0 (stable since v1.2.5), there's an option for importing StepMania map files into Edda. Both `.sm` and `.ssc` format files are supported.
+
+Since the format for Ragnarock maps is the same as the format used by BeatSaber, their maps can be opened in Edda without importing, although there might be some issues if the map contains objects or features that are not supported in Ragnarock (Please feel free to [report](https://github.com/PKBeam/Edda/issues) any such issues).
