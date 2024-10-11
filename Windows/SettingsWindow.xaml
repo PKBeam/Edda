@@ -62,7 +62,7 @@
                         </Border>
 
                         <Border Grid.Row="2" Grid.Column="0">
-                            <TextBlock FontSize="10" VerticalAlignment="Center">Default Mapper</TextBlock>
+                            <TextBlock VerticalAlignment="Center">Default Mapper</TextBlock>
                         </Border>
 
                         <Border Grid.Row="2" Grid.Column="1">
