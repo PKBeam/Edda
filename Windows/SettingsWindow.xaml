@@ -62,20 +62,30 @@
                         </Border>
 
                         <Border Grid.Row="2" Grid.Column="0">
-                            <TextBlock FontSize="10" VerticalAlignment="Center">Default Note Speed</TextBlock>
+                            <TextBlock FontSize="10" VerticalAlignment="Center">Default Mapper</TextBlock>
                         </Border>
 
                         <Border Grid.Row="2" Grid.Column="1">
+                            <StackPanel Orientation="Horizontal">
+                                <TextBox x:Name="txtDefaultMapper" Width="100" LostFocus="TxtDefaultMapper_LostFocus" VerticalAlignment="Center"/>
+                            </StackPanel>
+                        </Border>
+
+                        <Border Grid.Row="3" Grid.Column="0">
+                            <TextBlock FontSize="10" VerticalAlignment="Center">Default Note Speed</TextBlock>
+                        </Border>
+
+                        <Border Grid.Row="3" Grid.Column="1">
                             <StackPanel Orientation="Horizontal">
                                 <TextBox x:Name="txtDefaultNoteSpeed" Width="35" LostFocus="TxtDefaultNoteSpeed_LostFocus" VerticalAlignment="Center"/>
                             </StackPanel>
                         </Border>
 
-                        <Border Grid.Row="3" Grid.Column="0">
+                        <Border Grid.Row="4" Grid.Column="0">
                             <TextBlock FontSize="10" VerticalAlignment="Center">Default Grid Spacing</TextBlock>
                         </Border>
 
-                        <Border Grid.Row="3" Grid.Column="1">
+                        <Border Grid.Row="4" Grid.Column="1">
                             <StackPanel Orientation="Horizontal">
                                 <TextBox x:Name="txtDefaultGridSpacing" Width="35" LostFocus="TxtDefaultGridSpacing_LostFocus" VerticalAlignment="Center"/>
                             </StackPanel>

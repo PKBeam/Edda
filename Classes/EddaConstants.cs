@@ -42,6 +42,7 @@ namespace Edda.Const {
     }
     public static class DefaultUserSettings {
         public const bool EnableSpectrogram = true;
+        public const string DefaultMapper = "";
         public const int DefaultNoteSpeed = Editor.DefaultNoteSpeed;
         public const int DefaultGridSpacing = Editor.DefaultGridSpacing;
         public const int AudioLatency = -20; // ms
@@ -68,6 +69,7 @@ namespace Edda.Const {
 
     public static class UserSettingsKey {
         public const string EnableSpectrogram = "enableSpectrogram";
+        public const string DefaultMapper = "defaultMapper";
         public const string DefaultNoteSpeed = "defaultNoteSpeed";
         public const string DefaultGridSpacing = "defaultGridSpacing";
         public const string EditorAudioLatency = "editorAudioLatency";
@@ -247,6 +249,15 @@ namespace Edda.Const {
                 return double.Parse(userSettings.GetValueForKey(UserSettingsKey.DefaultGridSpacing));
             } catch {
                 return Editor.DefaultGridSpacing;
+            }
+        }
+
+        public static string GetPreferredMapper() {
+            var userSettings = new UserSettingsManager(Program.SettingsFile);
+            try {
+                return userSettings.GetValueForKey(UserSettingsKey.DefaultMapper);
+            } catch {
+                return string.Empty;
             }
         }
     }

@@ -23,6 +23,7 @@ namespace Edda {
             this.userSettings = userSettings;
             InitComboPlaybackDevices();
             InitComboDrumSample();
+            txtDefaultMapper.Text = userSettings.GetValueForKey(UserSettingsKey.DefaultMapper);
             txtDefaultNoteSpeed.Text = userSettings.GetValueForKey(UserSettingsKey.DefaultNoteSpeed);
             txtDefaultGridSpacing.Text = userSettings.GetValueForKey(UserSettingsKey.DefaultGridSpacing);
             txtAudioLatency.Text = userSettings.GetValueForKey(UserSettingsKey.EditorAudioLatency);
@@ -53,6 +54,11 @@ namespace Edda {
             bool newStatus = CheckShowSpectrogram.IsChecked ?? false;
             ToggleSpectrogramOptionsVisibility();
             userSettings.SetValueForKey(UserSettingsKey.EnableSpectrogram, newStatus);
+            UpdateSettings();
+        }
+
+        private void TxtDefaultMapper_LostFocus(object sender, RoutedEventArgs e) {
+            userSettings.SetValueForKey(UserSettingsKey.DefaultMapper, txtDefaultMapper.Text);
             UpdateSettings();
         }
 

@@ -80,7 +80,7 @@ public class RagnarockMap {
             _songName = "",
             _songSubName = "",                              // unused?
             _songAuthorName = "",
-            _levelAuthorName = "",
+            _levelAuthorName = BeatmapDefaults.GetPreferredMapper(),
             _explicit = "false",
             _beatsPerMinute = BeatmapDefaults.BeatsPerMinute,
             _shuffle = BeatmapDefaults.Shuffle,              // unused?
