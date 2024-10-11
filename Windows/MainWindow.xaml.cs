@@ -272,6 +272,7 @@ namespace Edda {
 
             // load audio file
             LoadSongFile(file);
+            SetMapDetailsFromSongMetadata();
 
             recentMaps.AddRecentlyOpened((string)mapEditor.GetMapValue("_songName"), newMapFolder);
             recentMaps.Write();
@@ -712,6 +713,10 @@ namespace Edda {
                 userSettings.SetValueForKey(UserSettingsKey.EnableSpectrogram, DefaultUserSettings.EnableSpectrogram);
             }
 
+            if (userSettings.GetValueForKey(UserSettingsKey.DefaultMapper) == null) {
+                userSettings.SetValueForKey(UserSettingsKey.DefaultMapper, DefaultUserSettings.DefaultMapper);
+            }
+
             try {
                 double.Parse(userSettings.GetValueForKey(UserSettingsKey.DefaultNoteSpeed));
             } catch {
@@ -1147,6 +1152,22 @@ namespace Edda {
             }
             //awd = new AudioVisualiser_Float32(new VorbisWaveReader(songPath));
         }
+
+        private void SetMapDetailsFromSongMetadata() {
+            var songPath = Path.Combine(mapEditor.mapFolder, (string)mapEditor.GetMapValue("_songFilename"));
+            var songMetadata = new VorbisSampleProvider(File.OpenRead(songPath), closeOnDispose: true).Tags;
+            var dataChanged = false;
+            if (songMetadata.Artist != null) {
+                txtArtistName.Text = songMetadata.Artist;
+                dataChanged = true;
+            }
+            if (songMetadata.Title != null) {
+                txtSongName.Text = songMetadata.Title;
+                dataChanged = true;
+            }
+            if (dataChanged) SaveBeatmap();
+        }
+
         internal void ClearSongCache() {
             var cacheDirectoryPath = Path.Combine(mapEditor.mapFolder, Program.CachePath);
             if (Directory.Exists(cacheDirectoryPath)) {
