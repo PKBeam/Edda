@@ -64,6 +64,7 @@ namespace Edda.Const {
         public const string DifficultyPredictorAlgorithm = DifficultyPrediction.SupportedAlgorithms.PKBeam;
         public const bool DifficultyPredictorShowPrecise = false;
         public const bool DifficultyPredictorShowInMapStats = false;
+        public const string NotePasteBehavior = Editor.DefaultNotePasteBehavior;
     }
 
     public static class UserSettingsKey {
@@ -91,12 +92,14 @@ namespace Edda.Const {
         public const string DifficultyPredictorAlgorithm = "difficultyPredictorAlgorithm";
         public const string DifficultyPredictorShowPrecise = "difficultyPredictorShowPrecise";
         public const string DifficultyPredictorShowInMapStats = "difficultyPredictorShowInMapStats";
+        public const string NotePasteBehavior = "notePasteBehavior";
     }
     public static class Editor {
         // Grid drawing
         public const int DefaultNoteSpeed = 20;
         public const int DefaultGridSpacing = 2;
         public const int DefaultGridDivision = 4;
+        public const string DefaultNotePasteBehavior = NotePasteBehavior.AlignToNoteBPM;
         public const double GridDrawRange = 1;
         public const int DrawDebounceInterval = 100; // ms
         public const string MajorGridlineColour = "#333333";
@@ -115,6 +118,13 @@ namespace Edda.Const {
         public const double PreviewNoteOpacity = 0.30; // percentage of 1.0
         public const double DragInitThreshold = 10; // pixels
         public const int AutosaveInterval = 30; // seconds
+
+        // Note Paste Behavior
+        public static class NotePasteBehavior {
+            public const string AlignToGlobalBeat = "AlignToGlobalBeat"; // paste notes as-if they were copied from the same global BPM and disregard any BPM changes.
+            public const string AlignToFirstNoteBPM = "AlignToFirstNoteBPM"; // paste notes only scaling by a factor based on the first pasted note BPM and mouse position BPM.
+            public const string AlignToNoteBPM = "AlignToNoteBPM"; // paste notes by aligning each note timing based on all the BPM changes in the pasted notes and mouse position BPM.
+        }
 
         // Hold Scrolling
         public static class HoldScroll {

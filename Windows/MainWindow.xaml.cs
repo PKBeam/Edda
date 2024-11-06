@@ -1,4 +1,5 @@
-﻿using Edda.Classes.MapEditorNS.Stats;
+﻿using Edda.Classes.MapEditorNS.NoteNS;
+using Edda.Classes.MapEditorNS.Stats;
 using Edda.Const;
 using Microsoft.WindowsAPICodePack.Dialogs;
 using NAudio.CoreAudioApi;
@@ -888,6 +889,10 @@ namespace Edda {
             SetDiscordRPC(userSettings.GetBoolForKey(UserSettingsKey.EnableDiscordRPC));
             autosaveTimer.Enabled = userSettings.GetBoolForKey(UserSettingsKey.EnableAutosave);
 
+        }
+
+        internal string GetUserSetting(string key) {
+            return userSettings.GetValueForKey(key);
         }
 
         // song cover image
