@@ -91,11 +91,11 @@
                             </StackPanel>
                         </Border>
 
-                        <Border Grid.Row="4" Grid.Column="0">
+                        <Border Grid.Row="5" Grid.Column="0">
                             <TextBlock FontSize="10" VerticalAlignment="Center">Note Paste Behavior</TextBlock>
                         </Border>
 
-                        <Border Grid.Row="4" Grid.Column="1">
+                        <Border Grid.Row="5" Grid.Column="1">
                             <ComboBox x:Name="comboNotePasteBehavior" DisplayMemberPath="Label" SelectionChanged="ComboNotePasteBehavior_SelectionChanged" VerticalAlignment="Center"/>
                         </Border>
 
