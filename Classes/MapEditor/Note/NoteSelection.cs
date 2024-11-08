@@ -102,7 +102,7 @@ namespace Edda.Classes.MapEditorNS.NoteNS {
                 var scaleFactor = editor.GetGridLength(currentEditorBeatChange.BPM, 1) / (notesGlobalBPM / noteBPM);
                 var projectedBeat = (note.beat - lastNoteBeat) * scaleFactor + beatOffset;
                 var projectedEditorBeatChange = editor.GetLastBeatChange(projectedBeat);
-                while (projectedEditorBeatChange != currentEditorBeatChange) {
+                while (!projectedEditorBeatChange.Equals(currentEditorBeatChange)) {
                     // We went through (potentially several) BPM changes between notes, so we need to first re-align offsets to the last one before projected note placement
                     foreach (var bpmChange in editor.currentMapDifficulty.bpmChanges.GetViewBetween(currentEditorBeatChange, projectedEditorBeatChange)) {
                         lastNoteBeat += (bpmChange.globalBeat - beatOffset) / editor.GetGridLength(currentEditorBeatChange.BPM, 1);
