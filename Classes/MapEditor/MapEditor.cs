@@ -386,7 +386,9 @@ public class MapEditor : IDisposable {
         if (currentMapDifficulty == null) {
             return;
         }
-        currentMapDifficulty.notes.Select(currentMapDifficulty.selectedNotes.Add);
+        foreach (var note in currentMapDifficulty.notes) {
+            currentMapDifficulty.selectedNotes.Add(note);
+        }
         parent.gridController.HighlightAllNotes();
         RecalculateMapStats();
     }
