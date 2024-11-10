@@ -1,4 +1,6 @@
 ﻿using Edda;
+using Edda.Classes.MapEditorNS;
+using Edda.Classes.MapEditorNS.NoteNS;
 using Edda.Const;
 using System;
 using System.Collections.Generic;
@@ -823,10 +825,12 @@ public class EditorGridController : IDisposable {
     }
     internal void HighlightNotes(IEnumerable<Note> notes) {
         foreach (Note n in notes) {
+            var noteUid = Helper.UidGenerator(n);
             foreach (UIElement e in noteCanvas.Children) {
-                if (e.Uid == Helper.UidGenerator(n)) {
+                if (e.Uid == noteUid) {
                     var img = (Image)e;
                     img.Source = RuneForBeat(n.beat, true);
+                    break; // UID is unique
                 }
             }
         }
@@ -834,18 +838,36 @@ public class EditorGridController : IDisposable {
     internal void HighlightNotes(Note n) {
         HighlightNotes(new List<Note>() { n });
     }
+    internal void HighlightAllNotes() {
+        foreach (UIElement e in noteCanvas.Children) {
+            if (e is not Image img) continue;
+            var n = Helper.NoteFromUid(e.Uid);
+            if (n == null) continue;
+            img.Source = RuneForBeat(n.beat, true);
+        }
+    }
     internal void UnhighlightNotes(IEnumerable<Note> notes) {
         foreach (Note n in notes) {
+            var noteUid = Helper.UidGenerator(n);
             foreach (UIElement e in noteCanvas.Children) {
-                if (e.Uid == Helper.UidGenerator(n)) {
+                if (e.Uid == noteUid) {
                     var img = (Image)e;
                     img.Source = RuneForBeat(n.beat);
+                    break; // UID is unique
                 }
             }
         }
     }
     internal void UnhighlightNotes(Note n) {
         UnhighlightNotes(new List<Note>() { n });
+    }
+    internal void UnhighlightAllNotes() {
+        foreach (UIElement e in noteCanvas.Children) {
+            if (e is not Image img) continue;
+            var n = Helper.NoteFromUid(e.Uid);
+            if (n == null) continue;
+            img.Source = RuneForBeat(n.beat);
+        }
     }
     internal List<double> GetBeats() {
         return majorGridBeatLines;
@@ -1065,20 +1087,9 @@ public class EditorGridController : IDisposable {
         return l;
     }
     private BitmapImage RuneForBeat(double beat, bool highlight = false) {
-        // find most recent BPM change
-        double recentBPMChange = 0;
-        double recentBPM = mapEditor.GlobalBPM;
-        foreach (var bc in mapEditor.currentMapDifficulty.bpmChanges) {
-            if (Helper.DoubleApproxGreaterEqual(beat, bc.globalBeat)) {
-                recentBPMChange = bc.globalBeat;
-                recentBPM = bc.BPM;
-            } else {
-                break;
-            }
-        }
-        double beatNormalised = beat - recentBPMChange;
-        beatNormalised /= mapEditor.GlobalBPM / recentBPM;
-        beatNormalised -= (int)beatNormalised;
+        var lastBPMChange = mapEditor.GetLastBeatChange(beat);
+        double beatNormalised = beat - lastBPMChange.globalBeat;
+        beatNormalised /= mapEditor.GetGridLength(lastBPMChange.BPM, 1);
         return Helper.BitmapImageForBeat(beatNormalised, highlight);
     }
     private Label CreateBookmarkLabel(Bookmark b) {

@@ -1,4 +1,5 @@
-﻿using Edda.Const;
+﻿using Edda.Classes.MapEditorNS.NoteNS;
+using Edda.Const;
 using Microsoft.WindowsAPICodePack.Dialogs;
 using Newtonsoft.Json.Linq;
 using System;
@@ -14,7 +15,7 @@ using System.Text.RegularExpressions;
 using System.Windows;
 using System.Windows.Media.Imaging;
 
-public class Helper {
+public partial class Helper {
 
     // Math
     private static double threshold = 0.0001;
@@ -340,8 +341,18 @@ public class Helper {
     public static string UidGenerator(Note n) {
         return $"Note({Math.Round(n.beat, 4)},{n.col})";
     }
+    [GeneratedRegex(@"Note\((.*?),(\d)\)", RegexOptions.Compiled)]
+    private static partial Regex UidRegex();
+    public static Note NoteFromUid(string uid) {
+        var match = UidRegex().Match(uid);
+        if (match.Success) {
+            return new(double.Parse(match.Groups[1].Value), int.Parse(match.Groups[2].Value));
+        } else {
+            return null;
+        }
+    }
     public static string NameGenerator(Note n) {
-        return "N" + n.GetHashCode().ToString();
+        return "N" + n.GetHashCode().ToString().Replace("-", "_"); // '-' is an invalid character for identifiers
     }
     public static BitmapImage BitmapGenerator(Uri u, bool ignoreCache = false) {
         var b = new BitmapImage();
@@ -366,27 +377,19 @@ public class Helper {
         return BitmapGenerator(UriForResource(resourceFile));
     }
     public static BitmapImage BitmapImageForBeat(double beat, bool isHighlighted = false) {
-        double fracBeat = beat - (int)beat;
-        string runeStr = "X";
-        if (DoubleApproxEqual(fracBeat, 0.0) ||
-            DoubleApproxEqual(fracBeat, 1.0)) {
-            runeStr = "1";
-        }
-        if (DoubleApproxEqual(fracBeat, 1.0 / 4.0)) {
-            runeStr = "14";
-        }
-        if (DoubleApproxEqual(fracBeat, 1.0 / 3.0) || DoubleApproxEqual(fracBeat, 5.0 / 6.0)) {
-            runeStr = "13";
-        }
-        if (DoubleApproxEqual(fracBeat, 1.0 / 2.0)) {
-            runeStr = "12";
-        }
-        if (DoubleApproxEqual(fracBeat, 2.0 / 3.0) || DoubleApproxEqual(fracBeat, 1.0 / 6.0)) {
-            runeStr = "23";
-        }
-        if (DoubleApproxEqual(fracBeat, 3.0 / 4.0)) {
-            runeStr = "34";
-        }
+        const int m = Editor.GridDivisionMax * 6;
+        int fracBeat = (int)Math.Round(beat * m) % m; // closest approximation of numerator with given denominator
+        string runeStr = fracBeat switch {
+            0 => "1",
+            m * 1 / 4 => "14",
+            m * 1 / 3 => "13",
+            m * 5 / 6 => "13",
+            m * 1 / 2 => "12",
+            m * 2 / 3 => "23",
+            m * 1 / 6 => "23",
+            m * 3 / 4 => "34",
+            _ => "X"
+        };
         return BitmapGenerator($"rune{runeStr}{(isHighlighted ? "highlight" : "")}.png");
     }
 }

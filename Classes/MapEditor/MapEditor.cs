@@ -1,10 +1,15 @@
 ﻿using Edda;
+using Edda.Classes.MapEditorNS;
+using Edda.Classes.MapEditorNS.NoteNS;
 using Edda.Classes.MapEditorNS.Stats;
 using Edda.Const;
 using Newtonsoft.Json.Linq;
+using RagnaRuneString;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
+using System.Windows.Forms;
 
 #nullable enable
 
@@ -64,7 +69,6 @@ public class MapEditor : IDisposable {
     public int currentDifficultyIndex = -1;
     MapStats currentDifficultyStats;
     MapDifficulty?[] difficultyMaps = new MapDifficulty[3];
-    SortedSet<Note> clipboard;
 
     public bool needsSave = false;
 
@@ -87,6 +91,12 @@ public class MapEditor : IDisposable {
             songDuration = value;
             currentDifficultyStats.songDuration = value;
             RecalculateMapStats();
+        }
+    }
+
+    public string NotePasteBehavior {
+        get {
+            return parent.GetUserSetting(UserSettingsKey.NotePasteBehavior);
         }
     }
 
@@ -126,14 +136,13 @@ public class MapEditor : IDisposable {
             );
         }
         this.currentDifficultyStats = new MapStats(globalBPM, songDuration);
-        this.clipboard = new();
     }
 
     public void Dispose() {
         beatMap = null;
         parent = null;
         difficultyMaps = null;
-        clipboard = null;
+        GC.SuppressFinalize(this);
     }
 
     public MapDifficulty? GetDifficulty(int indx) {
@@ -377,7 +386,11 @@ public class MapEditor : IDisposable {
         if (currentMapDifficulty == null) {
             return;
         }
-        SelectNewNotes(currentMapDifficulty.notes);
+        foreach (var note in currentMapDifficulty.notes) {
+            currentMapDifficulty.selectedNotes.Add(note);
+        }
+        parent.gridController.HighlightAllNotes();
+        RecalculateMapStats();
     }
     public void SelectNewNotes(IEnumerable<Note> notes, bool updateMapStats = true) {
         UnselectAllNotes(false);
@@ -400,7 +413,7 @@ public class MapEditor : IDisposable {
         if (currentMapDifficulty?.selectedNotes == null) {
             return;
         }
-        parent.gridController.UnhighlightNotes(currentMapDifficulty.selectedNotes);
+        parent.gridController.UnhighlightAllNotes();
         currentMapDifficulty.selectedNotes.Clear();
         if (updateMapStats) {
             RecalculateMapStats();
@@ -410,9 +423,14 @@ public class MapEditor : IDisposable {
         if (currentMapDifficulty == null) {
             return;
         }
-        clipboard.Clear();
-        foreach (var n in currentMapDifficulty.selectedNotes) {
-            clipboard.Add(n);
+        try {
+            var noteSelection = new NoteSelection(this);
+            var clipboardData = new DataObject("Edda_Note_Selection", noteSelection);
+            RagnaRuneString.Version1.RuneStringData runeStringData = noteSelection;
+            clipboardData.SetText(RuneStringSerializer.Serialize(runeStringData, RagnaRuneString.Version.VERSION_1));
+            Clipboard.SetDataObject(clipboardData, true);
+        } catch (Exception ex) {
+            Trace.WriteLine($"WARNING: Failed to copy notes due to an exception: {ex}");
         }
     }
     public void CutSelection() {
@@ -423,18 +441,30 @@ public class MapEditor : IDisposable {
         RemoveNotes(currentMapDifficulty.selectedNotes);
     }
     public void PasteClipboard(double beatOffset, int? colStart) {
-        if (currentMapDifficulty == null || clipboard.Count() == 0) {
+        if (currentMapDifficulty == null) {
             return;
         }
-        // paste notes so that the first note lands on the given beat offset
-        Note clipboardFirst = clipboard.First();
-        double rowOffset = beatOffset - clipboardFirst.beat;
-        int colOffset = colStart == null ? 0 : (int)colStart - clipboardFirst.col;
-        AddNotes(clipboard
-            .Select(n => new Note(n.beat + rowOffset, n.col + colOffset))
-            // don't paste the note if it goes beyond the duration of the song or overflows on the columns
-            .Where(n => n.beat <= globalBPM * songDuration / 60 && n.col >= 0 && n.col <= 3)
-        );
+
+        NoteSelection? noteSelection = null;
+        var clipboardData = Clipboard.GetDataObject();
+        if (clipboardData == null) return;
+        if (clipboardData.GetDataPresent("Edda_Note_Selection")) {
+            object? data = clipboardData.GetData("Edda_Note_Selection");
+            if (data == null || data is not NoteSelection) return;
+            noteSelection = (NoteSelection)data;
+        } else if (clipboardData.GetDataPresent(DataFormats.Text)) {
+            string clipboardText = (clipboardData.GetData(DataFormats.Text) as string)!;
+            try {
+                noteSelection = new NoteSelection(RuneStringSerializer.DeserializeV1(clipboardText.Trim()));
+            } catch (Exception) {
+                Trace.WriteLine($"DEBUG: tried to paste invalid rune string: \"{clipboardText}\"");
+                return;
+            }
+        }
+
+        if (noteSelection == null || noteSelection?.notes.Count == 0) return;
+
+        AddNotes(noteSelection!.GetPasteNotes(this, beatOffset, colStart));
     }
     public void QuantizeSelection() {
         if (currentMapDifficulty == null) {
@@ -467,21 +497,15 @@ public class MapEditor : IDisposable {
     }
     public BPMChange GetLastBeatChange(double beat) {
         return currentMapDifficulty?.bpmChanges
-            .OrderByDescending(obj => obj.globalBeat)
-            .Where(obj => obj.globalBeat <= beat)
-            .Select(obj => obj)
-            .FirstOrDefault() ?? new BPMChange(0.0, globalBPM, defaultGridDivision);
+            .Where(obj => Helper.DoubleApproxGreaterEqual(beat, obj.globalBeat))
+            .LastOrDefault() ?? new BPMChange(0.0, globalBPM, defaultGridDivision);
     }
     private void ApplyEdit(EditList<Note> e) {
-        foreach (var edit in e.items) {
-            if (edit.isAdd) {
-                AddNotes(edit.item, false);
-            } else {
-                RemoveNotes(edit.item, false);
-            }
-            UnselectAllNotes();
-        }
-
+        var notesToAdd = e.items.Where(edit => edit.isAdd).Select(edit => edit.item).ToList();
+        if (notesToAdd.Count > 0) AddNotes(notesToAdd, false);
+        var notesToRemove = e.items.Where(edit => !edit.isAdd).Select(edit => edit.item).ToList();
+        if (notesToRemove.Count > 0) RemoveNotes(notesToRemove, false);
+        UnselectAllNotes();
     }
     public void MirrorSelection() {
         if (currentMapDifficulty == null) {
