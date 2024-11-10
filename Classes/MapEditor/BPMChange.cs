@@ -3,9 +3,9 @@
 namespace Edda.Classes.MapEditorNS {
     [Serializable]
     public class BPMChange(double globalBeat, double BPM, int gridDivision) : IComparable, IEquatable<BPMChange> {
-        public double globalBeat = globalBeat;
-        public double BPM = BPM;
-        public int gridDivision = gridDivision;
+        public double globalBeat { get; set; } = globalBeat;
+        public double BPM { get; set; } = BPM;
+        public int gridDivision { get; set; } = gridDivision;
 
         public BPMChange() : this(0, 120, 4) { }
 
