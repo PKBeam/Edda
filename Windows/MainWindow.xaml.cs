@@ -1392,15 +1392,21 @@ namespace Edda {
         private void InitMetronome() {
             var device = playbackDevice;
             if (device != null) {
-                metronome = new ParallelAudioPlayer(
-                    device,
-                    Audio.MetronomeFilename,
-                    Audio.MetronomeStreams,
-                    Audio.WASAPILatencyTarget,
-                    checkMetronome.IsChecked == true,
-                    false,
-                    float.Parse(userSettings.GetValueForKey(UserSettingsKey.DefaultNoteVolume))
-                );
+                try {
+                    metronome = new ParallelAudioPlayer(
+                        device,
+                        Audio.MetronomeFilename,
+                        Audio.MetronomeStreams,
+                        Audio.WASAPILatencyTarget,
+                        checkMetronome.IsChecked == true,
+                        false,
+                        float.Parse(userSettings.GetValueForKey(UserSettingsKey.DefaultNoteVolume))
+                    );
+                } catch (FileNotFoundException ex) {
+                    Trace.TraceError(ex.Message);
+                    MessageBox.Show(this, $"{ex.Message}. Make sure Edda.exe is next to Resources folder and you're starting Edda from the directory where Edda.exe is stored.", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                    Close();
+                }
                 beatScanner?.SetAudioPlayer(metronome);
             } else {
                 metronome = null;
@@ -1415,14 +1421,20 @@ namespace Edda {
         private void InitDrummer() {
             var device = playbackDevice;
             if (device != null) {
-                drummer = new ParallelAudioPlayer(
-                    device,
-                    userSettings.GetValueForKey(UserSettingsKey.DrumSampleFile),
-                    Audio.NotePlaybackStreams,
-                    Audio.WASAPILatencyTarget,
-                    userSettings.GetBoolForKey(UserSettingsKey.PanDrumSounds),
-                    float.Parse(userSettings.GetValueForKey(Const.UserSettingsKey.DefaultNoteVolume))
-                );
+                try {
+                    drummer = new ParallelAudioPlayer(
+                        device,
+                        userSettings.GetValueForKey(UserSettingsKey.DrumSampleFile),
+                        Audio.NotePlaybackStreams,
+                        Audio.WASAPILatencyTarget,
+                        userSettings.GetBoolForKey(UserSettingsKey.PanDrumSounds),
+                        float.Parse(userSettings.GetValueForKey(Const.UserSettingsKey.DefaultNoteVolume))
+                    );
+                } catch (FileNotFoundException ex) {
+                    Trace.TraceError(ex.Message);
+                    MessageBox.Show(this, $"{ex.Message}. Make sure Edda.exe is next to Resources folder and you're starting Edda from the directory where Edda.exe is stored.", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                    Close();
+                }
                 drummer.ChangeVolume(sliderDrumVol.Value);
                 noteScanner?.SetAudioPlayer(drummer);
             } else {
