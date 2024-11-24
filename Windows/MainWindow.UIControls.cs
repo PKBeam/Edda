@@ -504,6 +504,19 @@ namespace Edda {
                 win.Focus();
             }
         }
+
+        private void BtnCustomizeNavBar_Click(object sender, RoutedEventArgs e) {
+            var win = Helper.GetFirstWindow<CustomizeNavBarWindow>();
+            if (win == null) {
+                win = new CustomizeNavBarWindow(this, userSettings);
+                win.Topmost = true;
+                win.Owner = this;
+                win.Show();
+            } else {
+                win.Focus();
+            }
+        }
+
         private void TxtSongOffset_LostFocus(object sender, RoutedEventArgs e) {
             double offset;
             double prevOffset = Helper.DoubleParseInvariant((string)mapEditor.GetMapValue("_songTimeOffset"));

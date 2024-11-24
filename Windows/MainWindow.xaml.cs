@@ -199,8 +199,11 @@ namespace Edda {
                 panelSpectrogram,
                 EditorMarginGrid,
                 canvasNavInputBox,
+                canvasNavNotes,
                 canvasBookmarks,
                 canvasBookmarkLabels,
+                canvasTimingChanges,
+                canvasTimingChangeLabels,
                 lineSongMouseover
             );
             // load preview UI
@@ -634,6 +637,7 @@ namespace Edda {
             sliderSongProgress.IsEnabled = true;
             scrollEditor.IsEnabled = true;
             borderNavWaveform.IsEnabled = true;
+            btnCustomizeNavBar.IsEnabled = true;
         }
         private void DisableUI() {
             btnChangeDifficulty0.IsEnabled = false;
@@ -669,6 +673,7 @@ namespace Edda {
             sliderSongProgress.IsEnabled = false;
             scrollEditor.IsEnabled = false;
             borderNavWaveform.IsEnabled = false;
+            btnCustomizeNavBar.IsEnabled = false;
         }
         private void ToggleLeftDock() {
             if (borderLeftDock.Visibility == Visibility.Collapsed) {
@@ -832,6 +837,34 @@ namespace Edda {
                 userSettings.SetValueForKey(UserSettingsKey.DifficultyPredictorShowInMapStats, DefaultUserSettings.DifficultyPredictorShowInMapStats);
             }
 
+            if (userSettings.GetValueForKey(UserSettingsKey.EnableNavWaveform) == null) {
+                userSettings.SetValueForKey(UserSettingsKey.EnableNavWaveform, DefaultUserSettings.EnableNavWaveform);
+            }
+
+            if (userSettings.GetValueForKey(UserSettingsKey.EnableNavBookmarks) == null) {
+                userSettings.SetValueForKey(UserSettingsKey.EnableNavBookmarks, DefaultUserSettings.EnableNavBookmarks);
+            }
+
+            try {
+                double.Parse(userSettings.GetValueForKey(UserSettingsKey.NavBookmarkShadowOpacity));
+            } catch {
+                userSettings.SetValueForKey(UserSettingsKey.NavBookmarkShadowOpacity, Editor.NavBookmark.ShadowOpacity);
+            }
+
+            if (userSettings.GetValueForKey(UserSettingsKey.EnableNavBPMChanges) == null) {
+                userSettings.SetValueForKey(UserSettingsKey.EnableNavBPMChanges, DefaultUserSettings.EnableNavBPMChanges);
+            }
+
+            try {
+                double.Parse(userSettings.GetValueForKey(UserSettingsKey.NavBPMChangeShadowOpacity));
+            } catch {
+                userSettings.SetValueForKey(UserSettingsKey.NavBPMChangeShadowOpacity, Editor.NavBPMChange.ShadowOpacity);
+            }
+
+            if (userSettings.GetValueForKey(UserSettingsKey.EnableNavNotes) == null) {
+                userSettings.SetValueForKey(UserSettingsKey.EnableNavNotes, DefaultUserSettings.EnableNavNotes);
+            }
+
             userSettings.Write();
         }
         internal void LoadSettingsFile(bool reloadWaveforms = false) {
@@ -894,6 +927,12 @@ namespace Edda {
             SetDiscordRPC(userSettings.GetBoolForKey(UserSettingsKey.EnableDiscordRPC));
             autosaveTimer.Enabled = userSettings.GetBoolForKey(UserSettingsKey.EnableAutosave);
 
+            imgWaveformVertical.Visibility = userSettings.GetBoolForKey(UserSettingsKey.EnableNavWaveform) ? Visibility.Visible : Visibility.Hidden;
+            canvasBookmarks.Visibility = userSettings.GetBoolForKey(UserSettingsKey.EnableNavBookmarks) ? Visibility.Visible : Visibility.Hidden;
+            canvasBookmarkLabels.Visibility = userSettings.GetBoolForKey(UserSettingsKey.EnableNavBookmarks) ? Visibility.Visible : Visibility.Hidden;
+            canvasTimingChanges.Visibility = userSettings.GetBoolForKey(UserSettingsKey.EnableNavBPMChanges) ? Visibility.Visible : Visibility.Hidden;
+            canvasTimingChangeLabels.Visibility = userSettings.GetBoolForKey(UserSettingsKey.EnableNavBPMChanges) ? Visibility.Visible : Visibility.Hidden;
+            canvasNavNotes.Visibility = userSettings.GetBoolForKey(UserSettingsKey.EnableNavNotes) ? Visibility.Visible : Visibility.Hidden;
         }
 
         internal string GetUserSetting(string key) {

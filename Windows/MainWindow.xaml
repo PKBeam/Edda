@@ -601,14 +601,24 @@
                             </Grid.ColumnDefinitions>
 
                             <Border Grid.Row="0" Grid.ColumnSpan="2" Margin="0 0 0 5" Padding="0 5 0 10">
-                                <Button x:Name="btnChangeBPM" Width="199" Padding="3" HorizontalAlignment="Center" Click="BtnChangeBPM_Click">
-                                    <Button.Resources>
-                                        <Style TargetType="Border">
-                                            <Setter Property="CornerRadius" Value="5"/>
-                                        </Style>
-                                    </Button.Resources> 
-                                    Edit Song Timing
-                                </Button>
+                                <StackPanel Orientation="Vertical">
+                                    <Button x:Name="btnChangeBPM" Width="199" Padding="3" Margin="0 0 0 5" HorizontalAlignment="Center" Click="BtnChangeBPM_Click">
+                                        <Button.Resources>
+                                            <Style TargetType="Border">
+                                                <Setter Property="CornerRadius" Value="5"/>
+                                            </Style>
+                                        </Button.Resources> 
+                                        Edit Song Timing
+                                    </Button>
+                                    <Button x:Name="btnCustomizeNavBar" Width="199" Padding="3" HorizontalAlignment="Center" Click="BtnCustomizeNavBar_Click">
+                                        <Button.Resources>
+                                            <Style TargetType="Border">
+                                                <Setter Property="CornerRadius" Value="5"/>
+                                            </Style>
+                                        </Button.Resources>
+                                        Customize Navigation Bar
+                                    </Button>
+                                </StackPanel>
                             </Border>
 
                             <Border Grid.Row="1" Grid.Column="0" Padding="5 0 0 5">
@@ -717,10 +727,13 @@
             <Border x:Name="borderNavWaveform" Grid.Column="2" BorderBrush="{DynamicResource {x:Static SystemColors.ControlDarkDarkBrushKey}}" BorderThickness="1 0 0 0" Background="#20000000" MouseMove="BorderNavWaveform_MouseMove" MouseEnter="BorderNavWaveform_MouseEnter" MouseLeave="BorderNavWaveform_MouseLeave" MouseLeftButtonDown="BorderNavWaveform_MouseLeftButtonDown" MouseLeftButtonUp="BorderNavWaveform_MouseLeftButtonUp">
                 <Grid>
                     <Image x:Name="imgWaveformVertical" Width="{Binding ElementName=borderNavWaveform, Path=ActualWidth}"/>
+                    <Canvas x:Name="canvasNavNotes"/>
                     <Line x:Name="lineSongMouseover" StrokeThickness="1" X2="{Binding ElementName=borderNavWaveform, Path=ActualWidth}"></Line>
                     <Canvas x:Name="canvasBookmarks"/>
+                    <Canvas x:Name="canvasTimingChanges"/>
                     <Line x:Name="lineSongProgress" Stroke="Navy" StrokeThickness="1" X2="{Binding ElementName=borderNavWaveform, Path=ActualWidth}" Y1="{Binding ElementName=borderNavWaveform, Path=ActualHeight}" Y2="{Binding ElementName=borderNavWaveform, Path=ActualHeight}"/>
                     <Canvas x:Name="canvasBookmarkLabels"/>
+                    <Canvas x:Name="canvasTimingChangeLabels"/>
                     <Canvas x:Name="canvasNavInputBox"/>
                 </Grid>
             </Border>
