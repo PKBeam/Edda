@@ -31,6 +31,8 @@ namespace Edda {
         private void AppMainWindow_Closed(object sender, EventArgs e) {
             Trace.WriteLine("INFO: Closing main window...");
 
+            editorIsLoaded = false;
+
             // Audio resources
             if (deviceEnumerator != null) {
                 if (deviceChangeListener != null) {
