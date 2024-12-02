@@ -1270,6 +1270,7 @@ namespace Edda {
             sliderSongProgress.IsEnabled = false;
             borderNavWaveform.IsEnabled = false;
             sliderSongTempo.IsEnabled = false;
+            btnCustomizeNavBar.IsEnabled = false;
 
             // stop preview from interfering
             songPreviewController?.StopPreview();
@@ -1332,6 +1333,7 @@ namespace Edda {
             sliderSongProgress.IsEnabled = true;
             borderNavWaveform.IsEnabled = true;
             sliderSongTempo.IsEnabled = true;
+            btnCustomizeNavBar.IsEnabled = true;
             songPreviewController?.EnablePreviewButton();
 
             // reset scroll animation
