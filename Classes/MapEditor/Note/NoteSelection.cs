@@ -13,7 +13,7 @@ namespace Edda.Classes.MapEditorNS.NoteNS {
             notes = editor.currentMapDifficulty.selectedNotes;
             bpmChanges = new(
                 editor.currentMapDifficulty.bpmChanges
-                    .Append(new BPMChange(0, editor.GlobalBPM, 4)) // RagnaRuneString represents global BPM as a BPM change with timing 0.
+                    .Append(new BPMChange(-1, editor.GlobalBPM, 4)) // RagnaRuneString represents global BPM as a BPM change with timing -1.
             );
         }
 
@@ -73,7 +73,7 @@ namespace Edda.Classes.MapEditorNS.NoteNS {
         private IEnumerable<Note> GetPasteNotesAlignToFirstNoteBPM(MapEditor editor, double beatOffset, int? colStart) {
             Note firstNote = notes.First();
             int colOffset = colStart == null ? 0 : (int)colStart - firstNote.col;
-            var notesGlobalBPM = GetLastBeatChange(0)?.BPM ?? editor.GlobalBPM;
+            var notesGlobalBPM = GetLastBeatChange(-1)?.BPM ?? editor.GlobalBPM;
             var firstNoteBPM = GetLastBeatChange(firstNote.beat)?.BPM ?? notesGlobalBPM;
             var scaleFactor = editor.GetGridLength(editor.GetLastBeatChange(beatOffset).BPM, 1) / (notesGlobalBPM / firstNoteBPM);
             return notes.Select(n => new Note((n.beat - firstNote.beat) * scaleFactor + beatOffset, n.col + colOffset));
@@ -94,7 +94,7 @@ namespace Edda.Classes.MapEditorNS.NoteNS {
         private IEnumerable<Note> GetPasteNotesAlignToNoteBPM(MapEditor editor, double beatOffset, int? colStart) {
             Note firstNote = notes.First();
             int colOffset = colStart == null ? 0 : (int)colStart - firstNote.col;
-            var notesGlobalBPM = GetLastBeatChange(0)?.BPM ?? editor.GlobalBPM;
+            var notesGlobalBPM = GetLastBeatChange(-1)?.BPM ?? editor.GlobalBPM;
             var currentEditorBeatChange = editor.GetLastBeatChange(beatOffset);
             double lastNoteBeat = firstNote.beat;
             foreach (var note in notes) {
