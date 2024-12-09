@@ -1,31 +1,31 @@
 ﻿using System;
 
-public class Note : IComparable, IEquatable<Note> {
-    public double beat;
-    public int col;
-    public Note(double beat, int col) {
-        this.beat = beat;
-        this.col = col;
-    }
-    public Note() : this(0, 0) { }
+namespace Edda.Classes.MapEditorNS.NoteNS {
+    [Serializable]
+    public class Note(double beat, int col) : IComparable, IEquatable<Note> {
+        public double beat = beat;
+        public int col = col;
 
-    public int CompareTo(object obj) {
-        if (!(obj is Note n)) {
-            throw new Exception();
-        }
-        if (this.Equals(n)) {
-            return 0;
-        }
-        if (Helper.DoubleApproxGreater(this.beat, n.beat)) {
-            return 1;
-        }
-        if (Helper.DoubleApproxEqual(n.beat, this.beat) && this.col > n.col) {
-            return 1;
-        }
-        return -1;
-    }
+        public Note() : this(0, 0) { }
 
-    public bool Equals(Note n) {
-        return Helper.DoubleApproxEqual(n.beat, this.beat) && n.col == this.col;
+        public int CompareTo(object obj) {
+            if (obj is not Note n) {
+                throw new Exception();
+            }
+            if (Equals(n)) {
+                return 0;
+            }
+            if (Helper.DoubleApproxGreater(beat, n.beat)) {
+                return 1;
+            }
+            if (Helper.DoubleApproxEqual(n.beat, beat) && col > n.col) {
+                return 1;
+            }
+            return -1;
+        }
+
+        public override bool Equals(object obj) => obj is Note n && Equals(n);
+        public override int GetHashCode() => HashCode.Combine(Math.Round(beat, 4), col);
+        public bool Equals(Note n) => Helper.DoubleApproxEqual(n.beat, beat) && n.col == col;
     }
 }

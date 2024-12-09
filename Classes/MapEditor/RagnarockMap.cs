@@ -1,4 +1,6 @@
 ﻿using Edda;
+using Edda.Classes.MapEditorNS;
+using Edda.Classes.MapEditorNS.NoteNS;
 using Edda.Const;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;

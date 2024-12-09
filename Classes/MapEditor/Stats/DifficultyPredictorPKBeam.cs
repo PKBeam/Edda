@@ -1,4 +1,5 @@
-﻿using Syncfusion.PMML;
+﻿using Edda.Classes.MapEditorNS.NoteNS;
+using Syncfusion.PMML;
 using System;
 using System.Collections.Generic;
 using System.Globalization;

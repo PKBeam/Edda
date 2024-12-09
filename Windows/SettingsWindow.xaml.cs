@@ -26,6 +26,7 @@ namespace Edda {
             txtDefaultMapper.Text = userSettings.GetValueForKey(UserSettingsKey.DefaultMapper);
             txtDefaultNoteSpeed.Text = userSettings.GetValueForKey(UserSettingsKey.DefaultNoteSpeed);
             txtDefaultGridSpacing.Text = userSettings.GetValueForKey(UserSettingsKey.DefaultGridSpacing);
+            InitComboNotePasteBehavior();
             txtAudioLatency.Text = userSettings.GetValueForKey(UserSettingsKey.EditorAudioLatency);
             checkPanNotes.IsChecked = userSettings.GetBoolForKey(UserSettingsKey.PanDrumSounds);
             sliderSongVol.Value = float.Parse(userSettings.GetValueForKey(UserSettingsKey.DefaultSongVolume));
@@ -86,6 +87,27 @@ namespace Edda {
                 gridSpacing = prevGridSpacing;
             }
             txtDefaultGridSpacing.Text = gridSpacing.ToString();
+        }
+
+        private void ComboNotePasteBehavior_SelectionChanged(object sender, SelectionChangedEventArgs e) {
+            userSettings.SetValueForKey(UserSettingsKey.NotePasteBehavior, ((NotePasteBehavior)comboNotePasteBehavior.SelectedItem).Value);
+            if (doneInit) {
+                UpdateSettings();
+            }
+        }
+        private void InitComboNotePasteBehavior() {
+            string selectedNotePasteBehavior = userSettings.GetValueForKey(UserSettingsKey.NotePasteBehavior) ?? DefaultUserSettings.NotePasteBehavior;
+            NotePasteBehavior[] notePasteBehaviors = [
+                new(Editor.NotePasteBehavior.AlignToGlobalBeat, "Align to global beat"),
+                new(Editor.NotePasteBehavior.AlignToFirstNoteBPM, "Align to first note BPM"),
+                new(Editor.NotePasteBehavior.AlignToNoteBPM, "Align to all notes BPM")
+            ];
+            foreach (var notePasteBehavior in notePasteBehaviors) {
+                int i = comboNotePasteBehavior.Items.Add(notePasteBehavior);
+                if (notePasteBehavior.Value == selectedNotePasteBehavior) {
+                    comboNotePasteBehavior.SelectedIndex = i;
+                }
+            }
         }
 
         private void ComboPlaybackDevice_SelectionChanged(object sender, SelectionChangedEventArgs e) {
@@ -375,6 +397,11 @@ namespace Edda {
                 this.ID = device.ID;
                 this.Name = device.FriendlyName;
             }
+        }
+
+        class NotePasteBehavior(string value, string label) {
+            public string Value { get; private set; } = value;
+            public string Label { get; private set; } = label;
         }
     }
 }
