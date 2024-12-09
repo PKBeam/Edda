@@ -380,7 +380,7 @@ public class MapEditor : IDisposable {
         SelectNotes([n], updateMapStats);
     }
     public void SelectNotes(IEnumerable<Note> notes, bool updateMapStats = true) {
-        var selectNotes = notes.Where(n => currentMapDifficulty?.selectedNotes?.Add(n) == true);
+        var selectNotes = notes.Where(n => currentMapDifficulty?.selectedNotes?.Add(n) == true).ToList();
         parent.gridController.HighlightNotes(selectNotes);
         parent.gridController.HighlightNavNotes(selectNotes);
         if (updateMapStats) {
