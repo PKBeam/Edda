@@ -94,30 +94,53 @@ namespace Edda.Classes.MapEditorNS.NoteNS {
         private IEnumerable<Note> GetPasteNotesAlignToNoteBPM(MapEditor editor, double beatOffset, int? colStart) {
             Note firstNote = notes.First();
             int colOffset = colStart == null ? 0 : (int)colStart - firstNote.col;
-            var notesGlobalBPM = GetLastBeatChange(-1)?.BPM ?? editor.GlobalBPM;
-            var currentEditorBeatChange = editor.GetLastBeatChange(beatOffset);
-            double lastNoteBeat = firstNote.beat;
+            var notesGlobalBeatChange = GetLastBeatChange(-1) ?? editor.GetLastBeatChange(-1);
+
+            // We start from the first note beat assuming it will be placed on the specified beat offset.
+            // Then, we "march" through both note selection and editor beats while keeping them in sync until we arrive at the next note to place.
+
+            var noteSelectionBeat = firstNote.beat;
+            var noteSelectionBeatChange = GetLastBeatChange(noteSelectionBeat) ?? notesGlobalBeatChange;
+
+            var editorBeat = beatOffset;
+            var editorBeatChange = editor.GetLastBeatChange(editorBeat);
+
             foreach (var note in notes) {
-                var noteBPM = GetLastBeatChange(note.beat)?.BPM ?? notesGlobalBPM;
-                var scaleFactor = editor.GetGridLength(currentEditorBeatChange.BPM, 1) / (notesGlobalBPM / noteBPM);
-                var projectedBeat = (note.beat - lastNoteBeat) * scaleFactor + beatOffset;
-                var projectedEditorBeatChange = editor.GetLastBeatChange(projectedBeat);
-                while (!projectedEditorBeatChange.Equals(currentEditorBeatChange)) {
-                    // We went through (potentially several) BPM changes between notes, so we need to first re-align offsets to the last one before projected note placement
-                    foreach (var bpmChange in editor.currentMapDifficulty.bpmChanges.GetViewBetween(currentEditorBeatChange, projectedEditorBeatChange)) {
-                        lastNoteBeat += (bpmChange.globalBeat - beatOffset) / editor.GetGridLength(currentEditorBeatChange.BPM, 1);
-                        beatOffset = bpmChange.globalBeat;
-                        currentEditorBeatChange = bpmChange;
+                var noteBeatChange = GetLastBeatChange(note.beat) ?? notesGlobalBeatChange;
+                while (Helper.DoubleApproxGreater(note.beat, noteSelectionBeat)) {
+                    // Decide the next target to march towards. There are 3 possibilities:
+                    // 1. We first hit a BPM change on the note selection
+                    // 2. We first hit a BPM change on the editor
+                    // 3. We first hit the note.
+                    var nextNoteSelectionBeatChange = noteSelectionBeatChange.Equals(noteBeatChange) ? null : bpmChanges.GetViewBetween(noteSelectionBeatChange, noteBeatChange).SkipWhile(bpmChange => bpmChange.Equals(noteSelectionBeatChange)).FirstOrDefault() ?? noteSelectionBeatChange;
+                    var noteSelectionMarchBeat = nextNoteSelectionBeatChange?.globalBeat ?? note.beat;
+
+                    var scaleFactor = editor.GetGridLength(editorBeatChange.BPM, 1) / (notesGlobalBeatChange.BPM / noteSelectionBeatChange.BPM);
+                    var noteSelectionMarchEditorBeat = (noteSelectionMarchBeat - noteSelectionBeat) * scaleFactor + editorBeat;
+
+                    var noteSelectionMarchEditorBeatChange = editor.GetLastBeatChange(noteSelectionMarchEditorBeat);
+                    if (!noteSelectionMarchEditorBeatChange.Equals(editorBeatChange)) {
+                        // There is a BPM change on the editor grid before the note selection march destination - case 2.
+                        var nextEditorBeatChange = editor.currentMapDifficulty.bpmChanges.GetViewBetween(editorBeatChange, noteSelectionMarchEditorBeatChange).SkipWhile(bpmChange => bpmChange.Equals(editorBeatChange)).FirstOrDefault() ?? editorBeatChange;
+                        noteSelectionBeat += (nextEditorBeatChange.globalBeat - editorBeat) / scaleFactor;
+                        noteSelectionBeatChange = GetLastBeatChange(noteSelectionBeat) ?? notesGlobalBeatChange;
+                        editorBeat = nextEditorBeatChange.globalBeat;
+                        editorBeatChange = nextEditorBeatChange;
+                    } else if (nextNoteSelectionBeatChange != null) {
+                        // There are no BPM changes on the editor grid, but there is a BPM change on the note selection grid - case 1.
+                        noteSelectionBeat = noteSelectionMarchBeat;
+                        noteSelectionBeatChange = nextNoteSelectionBeatChange;
+                        editorBeat = noteSelectionMarchEditorBeat;
+                        editorBeatChange = noteSelectionMarchEditorBeatChange;
+                    } else {
+                        // There are no BPM changes on the editor grid or note selection grid before the note - case 3.
+                        noteSelectionBeat = noteSelectionMarchBeat;
+                        noteSelectionBeatChange = GetLastBeatChange(noteSelectionBeat) ?? notesGlobalBeatChange;
+                        editorBeat = noteSelectionMarchEditorBeat;
+                        editorBeatChange = noteSelectionMarchEditorBeatChange;
                     }
-                    // Recalculate projected beat
-                    scaleFactor = editor.GetGridLength(currentEditorBeatChange.BPM, 1) / (notesGlobalBPM / noteBPM);
-                    projectedBeat = (note.beat - lastNoteBeat) * scaleFactor + beatOffset;
-                    projectedEditorBeatChange = editor.GetLastBeatChange(projectedBeat);
                 }
-                yield return new Note(projectedBeat, note.col + colOffset);
-                beatOffset = projectedBeat;
-                currentEditorBeatChange = projectedEditorBeatChange;
-                lastNoteBeat = note.beat;
+                yield return new Note(editorBeat, note.col + colOffset);
             }
         }
 
