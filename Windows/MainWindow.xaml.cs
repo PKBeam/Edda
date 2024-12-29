@@ -1024,8 +1024,8 @@ namespace Edda {
             mapEditor.SelectDifficulty(indx);
             bool difficultyDirtyState = mapEditor.currentMapDifficulty.needsSave; // Store the "dirty" state of the difficulty map, so we can restore it after UI is initialized.
 
-            noteScanner = new NoteScanner(this, drummer);
-            beatScanner = new BeatScanner(metronome);
+            noteScanner = new NoteScanner(this, drummer, sliderSongTempo.Value);
+            beatScanner = new BeatScanner(metronome, sliderSongTempo.Value);
 
             txtDifficultyNumber.Text = (string)mapEditor.GetMapValue("_difficultyRank", (RagnarockMapDifficulties)indx);
             txtNoteSpeed.Text = (string)mapEditor.GetMapValue("_noteJumpMovementSpeed", (RagnarockMapDifficulties)indx);

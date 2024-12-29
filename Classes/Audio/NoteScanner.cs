@@ -1,15 +1,11 @@
 ﻿using Edda;
-using System;
 using System.Collections.Generic;
-using System.Diagnostics;
-using System.Threading;
-using System.Threading.Tasks;
 
 public class NoteScanner : AudioScanner {
     MainWindow caller;
     List<Note> notesPlayed;
     public bool playedLateNote { get; set; }
-    public NoteScanner(MainWindow caller, ParallelAudioPlayer parallelAudioPlayer) : base(parallelAudioPlayer) {
+    public NoteScanner(MainWindow caller, ParallelAudioPlayer parallelAudioPlayer, double tempo) : base(parallelAudioPlayer, tempo) {
         this.caller = caller;
         this.playedLateNote = false;
     }
