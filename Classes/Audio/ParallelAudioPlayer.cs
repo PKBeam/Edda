@@ -3,7 +3,6 @@ using NAudio.CoreAudioApi;
 using NAudio.Wave;
 using NAudio.Wave.SampleProviders;
 using System;
-using System.Diagnostics;
 using System.IO;
 
 public class ParallelAudioPlayer : IDisposable {
@@ -22,19 +21,19 @@ public class ParallelAudioPlayer : IDisposable {
     public bool isPanned { get; set; }
 
     public ParallelAudioPlayer(MMDevice playbackDevice, string basePath, int streams, int desiredLatency, bool isEnabled, bool isPanned, float defaultVolume) {
-        this.lastPlayedStream = 0;
+        lastPlayedStream = 0;
         this.streams = streams;
         this.isEnabled = isEnabled;
         this.isPanned = isPanned;
         this.desiredLatency = desiredLatency;
         this.basePath = basePath;
         this.playbackDevice = playbackDevice;
-        this.uniqueSamples = 0;
-        while (File.Exists(GetFilePath(basePath, this.uniqueSamples + 1))) {
-            this.uniqueSamples++;
+        uniqueSamples = 0;
+        while (File.Exists(GetFilePath(basePath, uniqueSamples + 1))) {
+            uniqueSamples++;
         }
         if (uniqueSamples < 1) {
-            throw new FileNotFoundException();
+            throw new FileNotFoundException($"Couldn't find the file {GetFilePath(basePath, uniqueSamples + 1)}");
         }
         InitAudioOut(defaultVolume);
     }

@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+using Edda.Classes.MapEditorNS.NoteNS;
+using System.Collections.Generic;
 
 public class BeatScanner : AudioScanner {
     public BeatScanner(ParallelAudioPlayer parallelAudioPlayer, double tempo) : base(parallelAudioPlayer, tempo) {

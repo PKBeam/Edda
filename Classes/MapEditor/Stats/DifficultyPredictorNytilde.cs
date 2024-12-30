@@ -1,4 +1,5 @@
-﻿using Edda.Const;
+﻿using Edda.Classes.MapEditorNS.NoteNS;
+using Edda.Const;
 using Microsoft.ML.OnnxRuntime;
 using Microsoft.ML.OnnxRuntime.Tensors;
 using System;

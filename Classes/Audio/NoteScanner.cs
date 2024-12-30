@@ -1,4 +1,5 @@
-﻿using Edda;
+using Edda;
+using Edda.Classes.MapEditorNS.NoteNS;
 using System.Collections.Generic;
 
 public class NoteScanner : AudioScanner {

@@ -1,3 +1,5 @@
+using Edda.Classes.MapEditorNS;
+using Edda.Classes.MapEditorNS.NoteNS;
 using Edda.Const;
 using StepmaniaUtils;
 using StepmaniaUtils.Enums;

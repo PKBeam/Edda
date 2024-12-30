@@ -1,4 +1,6 @@
 ﻿using Edda;
+using Edda.Classes.MapEditorNS;
+using Edda.Classes.MapEditorNS.NoteNS;
 using Edda.Const;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
@@ -477,7 +479,8 @@ public class RagnarockMap {
     }
     private void ValidateMap(int indx) {
         Dictionary<string, List<JTokenType?>> expectedTypesL1 = new Dictionary<string, List<JTokenType?>> {
-            {"_version",   stringTypes },
+            // The game doesn't actually check for beatmap version - see https://github.com/PKBeam/Edda/issues/143
+            // {"_version",   stringTypes },
             {"_events",    arrayTypes },
             {"_notes",     arrayTypes },
             {"_obstacles", arrayTypes }

@@ -1,4 +1,5 @@
-﻿using Edda.Const;
+﻿using Edda.Classes.MapEditorNS;
+using Edda.Const;
 using System;
 using System.Collections.Generic;
 using System.Linq;
