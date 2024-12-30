@@ -24,6 +24,10 @@ namespace Edda {
                 var lineY = sliderSongProgress.Value / sliderSongProgress.Maximum * borderNavWaveform.ActualHeight;
                 gridController.DrawNavWaveform();
                 gridController.DrawNavBookmarks();
+                gridController.DrawNavBPMChanges();
+                canvasNavNotes.Children.Clear();
+                gridController.DrawNavNotes(mapEditor.currentMapDifficulty.notes);
+                gridController.HighlightNavNotes(mapEditor.currentMapDifficulty.selectedNotes);
                 gridController.SetSongMouseoverLinePosition(lineY);
             }
         }

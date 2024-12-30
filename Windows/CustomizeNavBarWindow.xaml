@@ -1,0 +1,160 @@
+﻿<Window x:Class="Edda.CustomizeNavBarWindow"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:xctk="http://schemas.xceed.com/wpf/xaml/toolkit"
+    mc:Ignorable="d"
+    Title="Customize Navigational Bar" Name="Window" Width="450" MinWidth="450" MaxWidth="450" Height="260" ResizeMode="NoResize" WindowStartupLocation="CenterOwner" Background="{DynamicResource {x:Static SystemColors.ControlDarkBrushKey}}">
+    <Grid>
+        <DockPanel>
+
+            <Border DockPanel.Dock="Bottom" BorderBrush="{DynamicResource {x:Static SystemColors.ControlDarkDarkBrushKey}}" BorderThickness="0, 1, 0, 0">
+                <Border.Background>
+                    <LinearGradientBrush EndPoint="0.5,1" StartPoint="0.5,0">
+                        <GradientStop Color="{DynamicResource {x:Static SystemColors.ControlLightColorKey}}"/>
+                        <GradientStop Color="{DynamicResource {x:Static SystemColors.ControlDarkColorKey}}" Offset="1"/>
+                    </LinearGradientBrush>
+                </Border.Background>
+                <StackPanel>
+                    <Button x:Name="btnSave" Margin="0 10 10 10" Width="70" HorizontalAlignment="Right" Click="BtnSave_Click">OK</Button>
+                </StackPanel>
+            </Border>
+            <StackPanel Margin="5 5 0 20" HorizontalAlignment="Left">
+                <Grid Margin="15 0 5 0" VerticalAlignment="Center">
+                    <Grid.Resources>
+                        <Style TargetType="Border" >
+                            <Setter Property="Padding" Value="5,5,5,5" />
+                        </Style>
+                    </Grid.Resources>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="*" />
+                        <RowDefinition Height="*" />
+                        <RowDefinition Height="*" />
+                        <RowDefinition Height="*" />
+                        <RowDefinition Height="*" />
+                        <RowDefinition Height="*" />
+                        <RowDefinition Height="*" />
+                        <RowDefinition Height="*" />
+                        <RowDefinition Height="*" />
+                    </Grid.RowDefinitions>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="95" />
+                        <ColumnDefinition Width="40" />
+                        <ColumnDefinition Width="60" />
+                        <ColumnDefinition Width="60" />
+                        <ColumnDefinition Width="100" />
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+
+                    <Border Grid.Row="0" Grid.Column="1">
+                        <TextBlock FontWeight="DemiBold" HorizontalAlignment="Center" VerticalAlignment="Center">Show</TextBlock>
+                    </Border>
+
+                    <Border Grid.Row="0" Grid.Column="2">
+                        <TextBlock FontWeight="DemiBold" HorizontalAlignment="Center" VerticalAlignment="Center">Color</TextBlock>
+                    </Border>
+
+                    <Border Grid.Row="0" Grid.Column="3">
+                        <TextBlock FontWeight="DemiBold" HorizontalAlignment="Center" VerticalAlignment="Center">Color #2</TextBlock>
+                    </Border>
+
+                    <Border Grid.Row="0" Grid.Column="4">
+                        <TextBlock FontWeight="DemiBold" HorizontalAlignment="Center" VerticalAlignment="Center">Shadow</TextBlock>
+                    </Border>
+
+                    <Border Grid.Row="1" Grid.Column="0">
+                        <TextBlock HorizontalAlignment="Right" VerticalAlignment="Center">Waveform</TextBlock>
+                    </Border>
+
+                    <Border Grid.Row="1" Grid.Column="1">
+                        <CheckBox x:Name="CheckWaveform" HorizontalAlignment="Center" VerticalAlignment="Center" Click="CheckWaveform_Click"/>
+                    </Border>
+
+                    <Border Grid.Row="1" Grid.Column="2">
+                        <xctk:ColorPicker x:Name="ColorWaveform" SelectedColorChanged="ColorWaveform_SelectedColorChanged" LostFocus="ColorWaveform_LostFocus"/>
+                    </Border>
+
+                    <Border Grid.Row="1" Grid.Column="5">
+                        <Button x:Name="ButtonResetWaveform" Width="40" Click="ButtonResetWaveform_Click">Reset</Button>
+                    </Border>
+
+                    <Border Grid.Row="2" Grid.Column="0">
+                        <TextBlock HorizontalAlignment="Right" VerticalAlignment="Center">Bookmarks</TextBlock>
+                    </Border>
+
+                    <Border Grid.Row="2" Grid.Column="1">
+                        <CheckBox x:Name="CheckBookmark" HorizontalAlignment="Center" VerticalAlignment="Center" Click="CheckBookmark_Click"/>
+                    </Border>
+
+                    <Border Grid.Row="2" Grid.Column="2">
+                        <xctk:ColorPicker x:Name="ColorBookmark" SelectedColorChanged="ColorBookmark_SelectedColorChanged"/>
+                    </Border>
+
+                    <Border Grid.Row="2" Grid.Column="3">
+                        <xctk:ColorPicker x:Name="ColorBookmarkName" SelectedColorChanged="ColorBookmarkName_SelectedColorChanged"/>
+                    </Border>
+
+                    <Border Grid.Row="2" Grid.Column="4">
+                        <StackPanel Orientation="Horizontal">
+                            <Slider x:Name="SliderBookmarkShadowOpacity" Minimum="0" Maximum="1" Width="70" VerticalAlignment="Center" ValueChanged="SliderBookmarkShadowOpacity_ValueChanged" MouseDoubleClick="SliderBookmarkShadowOpacity_MouseDoubleClick"/>
+                            <Label Content="{Binding ElementName=SliderBookmarkShadowOpacity, Path=Value}"/>
+                        </StackPanel>
+                    </Border>
+
+                    <Border Grid.Row="2" Grid.Column="5">
+                        <Button x:Name="ButtonResetBookmark" Width="40" Click="ButtonResetBookmark_Click">Reset</Button>
+                    </Border>
+
+                    <Border Grid.Row="3" Grid.Column="0">
+                        <TextBlock HorizontalAlignment="Right" VerticalAlignment="Center">Timing Changes</TextBlock>
+                    </Border>
+
+                    <Border Grid.Row="3" Grid.Column="1">
+                        <CheckBox x:Name="CheckBPMChange" HorizontalAlignment="Center" VerticalAlignment="Center" Click="CheckBPMChange_Click"/>
+                    </Border>
+
+                    <Border Grid.Row="3" Grid.Column="2">
+                        <xctk:ColorPicker x:Name="ColorBPMChange" SelectedColorChanged="ColorBPMChange_SelectedColorChanged"/>
+                    </Border>
+
+                    <Border Grid.Row="3" Grid.Column="3">
+                        <xctk:ColorPicker x:Name="ColorBPMChangeLabel" SelectedColorChanged="ColorBPMChangeLabel_SelectedColorChanged"/>
+                    </Border>
+
+                    <Border Grid.Row="3" Grid.Column="4">
+                        <StackPanel Orientation="Horizontal">
+                            <Slider x:Name="SliderBPMChangeShadowOpacity" Minimum="0" Maximum="1" Width="70" VerticalAlignment="Center" ValueChanged="SliderBPMChangeShadowOpacity_ValueChanged" MouseDoubleClick="SliderBPMChangeShadowOpacity_MouseDoubleClick"/>
+                            <Label Content="{Binding ElementName=SliderBPMChangeShadowOpacity, Path=Value}"/>
+                        </StackPanel>
+                    </Border>
+
+                    <Border Grid.Row="3" Grid.Column="5">
+                        <Button x:Name="ButtonResetBPMChange" Width="40" Click="ButtonResetBPMChange_Click">Reset</Button>
+                    </Border>
+
+                    <Border Grid.Row="4" Grid.Column="0">
+                        <TextBlock HorizontalAlignment="Right" VerticalAlignment="Center">Notes</TextBlock>
+                    </Border>
+
+                    <Border Grid.Row="4" Grid.Column="1">
+                        <CheckBox x:Name="CheckNote" HorizontalAlignment="Center" VerticalAlignment="Center" Click="CheckNote_Click"/>
+                    </Border>
+
+                    <Border Grid.Row="4" Grid.Column="2">
+                        <xctk:ColorPicker x:Name="ColorNote" SelectedColorChanged="ColorNote_SelectedColorChanged"/>
+                    </Border>
+
+                    <Border Grid.Row="4" Grid.Column="3">
+                        <xctk:ColorPicker x:Name="ColorSelectedNote" SelectedColorChanged="ColorSelectedNote_SelectedColorChanged"/>
+                    </Border>
+
+                    <Border Grid.Row="4" Grid.Column="5">
+                        <Button x:Name="ButtonResetNote" Width="40" Click="ButtonResetNote_Click">Reset</Button>
+                    </Border>
+
+                </Grid>
+            </StackPanel>
+        </DockPanel>
+    </Grid>
+</Window>

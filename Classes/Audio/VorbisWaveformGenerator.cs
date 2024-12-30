@@ -4,7 +4,6 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
-using System.Linq;
 using System.Threading;
 using System.Windows;
 using System.Windows.Media;
@@ -14,11 +13,17 @@ public class VorbisWaveformGenerator : IDisposable {
 
     private CancellationTokenSource tokenSource;
     private string filePath;
+    private Color color;
     private bool isDrawing;
-    public VorbisWaveformGenerator(string filePath) {
+    public VorbisWaveformGenerator(string filePath, Color color) {
         RecreateTokens();
         this.filePath = filePath;
+        this.color = color;
         this.isDrawing = false;
+    }
+
+    public void ChangeColor(Color color) {
+        this.color = color;
     }
 
     public void Dispose() {
@@ -53,7 +58,7 @@ public class VorbisWaveformGenerator : IDisposable {
         reader.Position = 0;
         DrawingVisual dv = new DrawingVisual();
         using (DrawingContext dc = dv.RenderOpen()) {
-            Pen bluePen = new Pen(new SolidColorBrush(Editor.Waveform.ColourWPF), Editor.Waveform.ThicknessWPF);
+            Pen bluePen = new(new SolidColorBrush(color), Editor.Waveform.ThicknessWPF);
             bluePen.Freeze();
 
             int channels = reader.WaveFormat.Channels;
