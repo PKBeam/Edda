@@ -5,7 +5,7 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:colorpicker="clr-namespace:ColorPicker;assembly=ColorPicker"
     mc:Ignorable="d"
-    Title="Customize Navigational Bar" Name="Window" Width="450" MinWidth="450" MaxWidth="450" Height="260" ResizeMode="NoResize" WindowStartupLocation="CenterOwner" Background="{DynamicResource {x:Static SystemColors.ControlDarkBrushKey}}">
+    Title="Customize Navigation Bar" Name="Window" Width="450" MinWidth="450" MaxWidth="450" Height="260" ResizeMode="NoResize" WindowStartupLocation="CenterOwner" Background="{DynamicResource {x:Static SystemColors.ControlDarkBrushKey}}">
     <Grid>
         <DockPanel>
 
