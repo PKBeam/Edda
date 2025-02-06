@@ -392,4 +392,34 @@ public partial class Helper {
         };
         return BitmapGenerator($"rune{runeStr}{(isHighlighted ? "highlight" : "")}.png");
     }
+
+    // https://stackoverflow.com/questions/329355/cannot-delete-directory-with-directory-deletepath-true
+    public static void DeleteDirectory(string target_dir) {
+        string[] files = Directory.GetFiles(target_dir);
+        string[] dirs = Directory.GetDirectories(target_dir);
+
+        foreach (string file in files) {
+            File.SetAttributes(file, FileAttributes.Normal);
+            File.Delete(file);
+        }
+
+        foreach (string dir in dirs) {
+            DeleteDirectory(dir);
+        }
+
+        try {
+            Directory.Delete(target_dir, false);
+        } catch (IOException ex) {
+            Trace.WriteLine(ex);
+            ShowOneDriveWarning();
+        }
+    }
+    public static void ShowOneDriveWarning() {
+        MessageBox.Show(
+            "There's been an issue with managing map files, likely due to OneDrive or similar application blocking Edda from accessing the files.\n\nPlease consider disabling OneDrive on the folder where the map is stored, to avoid losing work.",
+            "Warning",
+            MessageBoxButton.OK,
+            MessageBoxImage.Warning
+        );
+    }
 }
