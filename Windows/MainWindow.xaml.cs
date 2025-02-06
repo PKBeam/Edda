@@ -188,6 +188,7 @@ namespace Edda {
             // load editor UI
             gridController = new EditorGridController(
                 this,
+                MainWaveform,
                 EditorGrid,
                 scrollEditor,
                 DrumCol,

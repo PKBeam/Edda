@@ -27,6 +27,7 @@ public class EditorGridController : IDisposable {
 
     // constructor variables
     MainWindow parentWindow;
+    Canvas MainWaveform;
     Canvas EditorGrid;
     ScrollViewer scrollEditor;
     ColumnDefinition referenceCol;
@@ -170,6 +171,7 @@ public class EditorGridController : IDisposable {
     // constructor
     public EditorGridController(
         MainWindow parentWindow,
+        Canvas MainWaveform,
         Canvas EditorGrid,
         ScrollViewer scrollEditor,
         ColumnDefinition referenceCol,
@@ -186,6 +188,7 @@ public class EditorGridController : IDisposable {
         Line lineSongMouseover
     ) {
         this.parentWindow = parentWindow;
+        this.MainWaveform = MainWaveform;
         this.EditorGrid = EditorGrid;
         this.referenceCol = referenceCol;
         this.referenceRow = referenceRow;
@@ -239,6 +242,7 @@ public class EditorGridController : IDisposable {
         // Clear the most memory-heavy components
         noteCanvas.Children.Clear();
         EditorGrid.Children.Clear();
+        MainWaveform.Children.Clear();
         panelSpectrogram.Children.Clear();
         imgWaveformVertical.Source = null;
         imgAudioWaveform.Source = null;
@@ -249,6 +253,7 @@ public class EditorGridController : IDisposable {
         // Unbind references
         mapEditor = null;
         parentWindow = null;
+        MainWaveform = null;
         EditorGrid = null;
         scrollEditor = null;
         referenceCol = null;
@@ -327,20 +332,20 @@ public class EditorGridController : IDisposable {
         }
     }
     public void DrawMainWaveform() {
-        if (!EditorGrid.Children.Contains(imgAudioWaveform)) {
-            EditorGrid.Children.Add(imgAudioWaveform);
+        if (!MainWaveform.Children.Contains(imgAudioWaveform)) {
+            MainWaveform.Children.Add(imgAudioWaveform);
         }
         ResizeMainWaveform();
-        double height = EditorGrid.Height - scrollEditor.ActualHeight;
-        double width = EditorGrid.ActualWidth * Editor.Waveform.Width;
+        double height = MainWaveform.Height - scrollEditor.ActualHeight;
+        double width = MainWaveform.ActualWidth * Editor.Waveform.Width;
         CreateMainWaveform(height, width);
     }
     public void UndrawMainWaveform() {
-        EditorGrid.Children.Remove(imgAudioWaveform);
+        MainWaveform.Children.Remove(imgAudioWaveform);
     }
     private void ResizeMainWaveform() {
-        imgAudioWaveform.Height = EditorGrid.Height - scrollEditor.ActualHeight;
-        imgAudioWaveform.Width = EditorGrid.ActualWidth;
+        imgAudioWaveform.Height = MainWaveform.Height - scrollEditor.ActualHeight;
+        imgAudioWaveform.Width = MainWaveform.ActualWidth;
         Canvas.SetBottom(imgAudioWaveform, unitHeight / 2);
     }
     private void CreateMainWaveform(double height, double width) {
@@ -458,9 +463,6 @@ public class EditorGridController : IDisposable {
         EditorGrid.Children.Add(l);
 
         // then draw the waveform
-        if (showWaveform) {
-            EditorGrid.Children.Add(imgAudioWaveform);
-        }
         if (redrawWaveform && EditorGrid.Height - scrollEditor.ActualHeight > 0) {
             DrawScrollingWaveforms();
         }
