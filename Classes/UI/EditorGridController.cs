@@ -417,9 +417,11 @@ public class EditorGridController : IDisposable {
 
             if (bmps != null && bmps.Length == numChunks) {
                 this.dispatcher.Invoke(() => {
+                    double totalBmpLength = bmps.Sum(bmp => bmp.Height);
                     for (int i = 0; i < numChunks; ++i) {
                         if (bmps != null) {
                             imgSpectrogramChunks[i].Source = bmps[i];
+                            imgSpectrogramChunks[i].Height = (EditorGrid.Height - scrollEditor.ActualHeight) * bmps[i].Height / totalBmpLength;
                         }
                     }
                     DrawingColor bgColor = audioSpectrogram.GetBackgroundColor();
