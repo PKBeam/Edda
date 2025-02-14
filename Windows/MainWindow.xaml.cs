@@ -432,23 +432,6 @@ namespace Edda {
             */
         }
         private void BackupAndSaveBeatmap() {
-            // https://stackoverflow.com/questions/329355/cannot-delete-directory-with-directory-deletepath-true
-            void DeleteDirectory(string target_dir) {
-                string[] files = Directory.GetFiles(target_dir);
-                string[] dirs = Directory.GetDirectories(target_dir);
-
-                foreach (string file in files) {
-                    File.SetAttributes(file, FileAttributes.Normal);
-                    File.Delete(file);
-                }
-
-                foreach (string dir in dirs) {
-                    DeleteDirectory(dir);
-                }
-
-                Directory.Delete(target_dir, false);
-            }
-
             // save beatmap
             SaveBeatmap();
 
@@ -481,7 +464,7 @@ namespace Edda {
 
             // delete oldest backup if we have too many
             if (existingBackups.Count == Program.MaxBackups) {
-                DeleteDirectory(existingBackups[0]);
+                Helper.DeleteDirectory(existingBackups[0]);
             }
 
             // make new backup file
@@ -539,7 +522,7 @@ namespace Edda {
                 // --
 
                 if (Directory.Exists(zipFolder)) {
-                    Directory.Delete(zipFolder, true);
+                    Helper.DeleteDirectory(zipFolder);
                 }
                 Directory.CreateDirectory(zipFolder);
 
@@ -554,7 +537,7 @@ namespace Edda {
                 MessageBox.Show(this, $"An error occured while creating the zip file.", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
             } finally {
                 if (Directory.Exists(zipFolder)) {
-                    Directory.Delete(zipFolder, true);
+                    Helper.DeleteDirectory(zipFolder);
                 }
             }
         }
@@ -1177,7 +1160,7 @@ namespace Edda {
         internal void ClearSongCache() {
             var cacheDirectoryPath = Path.Combine(mapEditor.mapFolder, Program.CachePath);
             if (Directory.Exists(cacheDirectoryPath)) {
-                Directory.Delete(cacheDirectoryPath, true);
+                Helper.DeleteDirectory(cacheDirectoryPath);
             }
         }
         private void InitSongPlayer() {
