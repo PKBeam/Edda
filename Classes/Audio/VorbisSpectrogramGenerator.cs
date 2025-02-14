@@ -4,6 +4,7 @@ using Spectrogram;
 using System;
 using System.Diagnostics;
 using System.Drawing;
+using System.Drawing.Drawing2D;
 using System.Drawing.Imaging;
 using System.IO;
 using System.Linq;
@@ -206,6 +207,7 @@ public class VorbisSpectrogramGenerator : IDisposable {
                 var endPixel = source.Width * (i + 1) / numChunks;
                 Bitmap bmp = new Bitmap(endPixel - startPixel, source.Height);
                 using (Graphics g = Graphics.FromImage(bmp)) {
+                    g.PixelOffsetMode = PixelOffsetMode.HighQuality;
                     g.DrawImage(source, 0, 0, new Rectangle(startPixel, 0, bmp.Width, bmp.Height), GraphicsUnit.Pixel);
                 }
                 splitBmps[i] = bmp;
