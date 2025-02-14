@@ -286,6 +286,7 @@ public class MapEditor : IDisposable {
         // note: by drawing this note out of order, it is inconsistently layered with other notes.
         //       should we take the performance hit of redrawing the entire grid for visual consistency?
         parent.gridController.DrawNotes(drawNotes);
+        parent.gridController.DrawNavNotes(drawNotes);
 
         if (updateHistory) {
             currentMapDifficulty?.editorHistory.Add(new EditList<Note>(true, drawNotes));
@@ -305,12 +306,14 @@ public class MapEditor : IDisposable {
 
         // undraw the added notes
         parent.gridController.UndrawNotes(undrawNotes);
+        parent.gridController.UndrawNavNotes(undrawNotes);
 
         // add new notes
         var drawNotes = newNotes.Where(n => currentMapDifficulty?.notes?.Add(n) == true).ToList();
 
         // draw new notes
         parent.gridController.DrawNotes(drawNotes);
+        parent.gridController.DrawNavNotes(drawNotes);
 
         if (updateHistory) {
             currentMapDifficulty?.editorHistory.Add(new EditList<Note>(false, undrawNotes));
@@ -333,6 +336,7 @@ public class MapEditor : IDisposable {
 
         // undraw the added notes
         parent.gridController.UndrawNotes(noteList);
+        parent.gridController.UndrawNavNotes(noteList);
 
         if (updateHistory) {
             currentMapDifficulty?.editorHistory.Add(new EditList<Note>(false, noteList));
@@ -347,7 +351,7 @@ public class MapEditor : IDisposable {
         RecalculateMapStats();
     }
     public void RemoveNotes(Note n, bool updateHistory = true) {
-        RemoveNotes(new List<Note>() { n }, updateHistory);
+        RemoveNotes([n], updateHistory);
     }
     internal void RemoveNote(Note n) {
         if (currentMapDifficulty?.notes?.Contains(n) == true) {
@@ -373,11 +377,12 @@ public class MapEditor : IDisposable {
         }
     }
     public void SelectNotes(Note n, bool updateMapStats = true) {
-        SelectNotes(new List<Note>() { n }, updateMapStats);
+        SelectNotes([n], updateMapStats);
     }
     public void SelectNotes(IEnumerable<Note> notes, bool updateMapStats = true) {
-        var selectNotes = notes.Where(n => currentMapDifficulty?.selectedNotes?.Add(n) == true);
+        var selectNotes = notes.Where(n => currentMapDifficulty?.selectedNotes?.Add(n) == true).ToList();
         parent.gridController.HighlightNotes(selectNotes);
+        parent.gridController.HighlightNavNotes(selectNotes);
         if (updateMapStats) {
             RecalculateMapStats();
         }
@@ -390,6 +395,7 @@ public class MapEditor : IDisposable {
             currentMapDifficulty.selectedNotes.Add(note);
         }
         parent.gridController.HighlightAllNotes();
+        parent.gridController.HighlightAllNavNotes();
         RecalculateMapStats();
     }
     public void SelectNewNotes(IEnumerable<Note> notes, bool updateMapStats = true) {
@@ -404,6 +410,7 @@ public class MapEditor : IDisposable {
             return;
         }
         parent.gridController.UnhighlightNotes(n);
+        parent.gridController.UnhighlightNavNotes(n);
         currentMapDifficulty.selectedNotes.Remove(n);
         if (updateMapStats) {
             RecalculateMapStats();
@@ -414,6 +421,7 @@ public class MapEditor : IDisposable {
             return;
         }
         parent.gridController.UnhighlightAllNotes();
+        parent.gridController.UnhighlightAllNavNotes();
         currentMapDifficulty.selectedNotes.Clear();
         if (updateMapStats) {
             RecalculateMapStats();

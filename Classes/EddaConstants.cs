@@ -66,6 +66,10 @@ namespace Edda.Const {
         public const bool DifficultyPredictorShowPrecise = false;
         public const bool DifficultyPredictorShowInMapStats = false;
         public const string NotePasteBehavior = Editor.DefaultNotePasteBehavior;
+        public const bool EnableNavWaveform = true;
+        public const bool EnableNavBookmarks = true;
+        public const bool EnableNavBPMChanges = false;
+        public const bool EnableNavNotes = false;
     }
 
     public static class UserSettingsKey {
@@ -95,6 +99,19 @@ namespace Edda.Const {
         public const string DifficultyPredictorShowPrecise = "difficultyPredictorShowPrecise";
         public const string DifficultyPredictorShowInMapStats = "difficultyPredictorShowInMapStats";
         public const string NotePasteBehavior = "notePasteBehavior";
+        public const string EnableNavWaveform = "enableNavWaveform";
+        public const string NavWaveformColor = "navWaveformColor";
+        public const string EnableNavBookmarks = "enableNavBookmarks";
+        public const string NavBookmarkColor = "navBookmarkColor";
+        public const string NavBookmarkNameColor = "navBookmarkNameColor";
+        public const string NavBookmarkShadowOpacity = "navBookmarkShadowOpacity";
+        public const string EnableNavBPMChanges = "enableNavBPMChanges";
+        public const string NavBPMChangeColor = "navBPMChangeColor";
+        public const string NavBPMChangeLabelColor = "navBPMChangeLabelColor";
+        public const string NavBPMChangeShadowOpacity = "navBPMChangeShadowOpacity";
+        public const string EnableNavNotes = "enableNavNotes";
+        public const string NavNoteColor = "navNoteColor";
+        public const string NavSelectedNoteColor = "navSelectedNoteColor";
     }
     public static class Editor {
         // Grid drawing
@@ -155,10 +172,10 @@ namespace Edda.Const {
             public static string DefaultName = "Bookmark";
             public static string Colour => Colors.SkyBlue.ToString();
             public static string NameColour => Colors.SkyBlue.ToString();
-            public static string BackgroundColour => Colors.SkyBlue.ToString();
             public const double Thickness = 1;
             public const double NameSize = 10;
             public const double NamePadding = 1;
+            public const double ShadowOpacity = 0.5;
             public const double Opacity = 1;
         }
         public static class GridBookmark {
@@ -170,7 +187,16 @@ namespace Edda.Const {
             public const double NamePadding = 3;
             public const double Opacity = 0.75;
         }
-        public static class BPMChange {
+        public static class NavBPMChange {
+            public static string Colour => Colors.Violet.ToString();
+            public static string LabelColour => Colors.Violet.ToString();
+            public const double Thickness = 1;
+            public const double LabelSize = 10;
+            public const double LabelPadding = 1;
+            public const double ShadowOpacity = 0.5;
+            public const double Opacity = 1;
+        }
+        public static class GridBPMChange {
             public static string Colour => Colors.MediumPurple.ToString();
             public static string NameColour => Colors.MediumPurple.ToString();
             public static string BackgroundColour => Colors.MediumPurple.ToString();
@@ -178,6 +204,12 @@ namespace Edda.Const {
             public const double NameSize = 11;
             public const double NamePadding = 3;
             public const double Opacity = 0.75;
+        }
+        public static class NavNote {
+            public static string Colour => MediaColor.FromRgb(210, 210, 210).ToString();
+            public static string HighlightColour => Colors.Gold.ToString();
+            public const double Size = 3;
+            public const double ColumnGap = 4;
         }
         public static class Stats {
             public static readonly MediaColor Colour = Colors.Black;
