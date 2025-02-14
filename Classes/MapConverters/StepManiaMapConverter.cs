@@ -226,7 +226,7 @@ public class StepManiaMapConverter : IMapConverter {
         var convertedBPMs = new List<BPMChange>();
         foreach (var timingMetadata in timingMetadatas) {
             if (Helper.DoubleApproxGreater(timingMetadata.ragnarockGlobalBeat, 0)) {
-                convertedBPMs.Add(new(timingMetadata.ragnarockGlobalBeat, timingMetadata.ragnarockGlobalBPM, 4));
+                convertedBPMs.Add(new(timingMetadata.ragnarockGlobalBeat, timingMetadata.stepManiaBPM, 4));
             }
         }
 
