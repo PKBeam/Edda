@@ -811,7 +811,10 @@
                 </Grid>
                 <!-- Map Notes -->
                 <ScrollViewer x:Name="scrollEditor" VerticalScrollBarVisibility="Hidden" CanContentScroll="False" ScrollChanged="ScrollEditor_ScrollChanged" PreviewMouseWheel="ScrollEditor_PreviewMouseWheel" MouseMove="scrollEditor_MouseMove" MouseDown="scrollEditor_MouseDown" MouseUp="scrollEditor_MouseUp" MouseEnter="scrollEditor_MouseEnter" MouseLeave="scrollEditor_MouseLeave" PreviewMouseLeftButtonDown="scrollEditor_PreviewMouseLeftButtonDown" MouseLeftButtonUp="scrollEditor_PreviewMouseLeftButtonUp" MouseRightButtonUp="scrollEditor_PreviewMouseRightButtonUp" Loaded="scrollEditor_Loaded">
-                    <Canvas x:Name="EditorGrid"/>
+                    <Grid x:Name="EditorGridContainer">
+                        <Canvas x:Name="MainWaveform" Height="{Binding ElementName=EditorGrid, Path=Height}"/>
+                        <Canvas x:Name="EditorGrid"/>
+                    </Grid>
                 </ScrollViewer>
                 <Canvas x:Name="scrollEditorHoldScrollLayer" Visibility="Hidden" IsHitTestVisible="False">
                     <Image x:Name="scrollEditorHoldIcon" Width="30" Height="30" Source="pack://application:,,,/Edda;component/resources/scrollHold.png" RenderOptions.BitmapScalingMode="Fant"/>
